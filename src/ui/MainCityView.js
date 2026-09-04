@@ -44,14 +44,12 @@ export class MainCityView {
         <div class="classic-shop-caption">SHOP</div>
         ${classicChatMarkup()}
         <button type="button" class="classic-recharge-btn">钻石充值</button>
-        <button type="button" class="classic-city-settings-btn">设置</button>
       </div>
       </div>
     `;
 
     bindClassicChat(root);
     root.querySelector('.classic-recharge-btn')?.addEventListener('click', () => audio.playButton('mainCity'));
-    root.querySelector('.classic-city-settings-btn')?.addEventListener('click', () => this.onNavigate?.('settings'));
     const stage = root.querySelector('.classic-city-stage');
     for (const building of BUILDINGS) {
       const button = root.querySelector('.city-btn[data-route=' + building.id + ']');

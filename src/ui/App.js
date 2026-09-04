@@ -34,6 +34,7 @@ const BOTTOM_NAV = [
   { id: 'social', label: '\u597D\u53CB' },
   { id: 'battle', label: '\u5927\u5385' },
   { id: 'worldmap', label: '\u66F4\u591A' },
+  { id: 'settings', label: '\u8BBE\u7F6E' },
   { id: 'main', label: '\u8FD4\u56DE' },
 ];                                                   /*UI索引值  */
 

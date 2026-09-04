@@ -12,7 +12,7 @@ import {
 export { isBossUnlocked, markBossCleared } from '../core/BossProgress.js';
 
 const STORAGE_KEY = 'clbwz_worldmap_v1';
-const BOSS_MAP_SELECT_ART = new URL('../../resources/background/bossmap1.png', import.meta.url).href;
+const BOSS_MAP_SELECT_ART = new URL('../../resources/background/bossmap.png', import.meta.url).href;
 const LOGICAL_W = 1100;
 const LOGICAL_H = 600;
 const ART_W = 1500;
