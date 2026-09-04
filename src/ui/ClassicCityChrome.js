@@ -129,16 +129,37 @@ export function bindClassicChat(root, { onSend } = {}) {
     if (Number.isFinite(existing) && existing > 0) return existing;
     const friendData = await authStore.api.get('/social/friends').catch(() => ({ friends: [] }));
     const friends = friendData.friends ?? [];
-    const hint = friends.map((f) => `${f.nickname || f.username}(${f.userId})`).join('、');
-    const targetText = prompt(`请选择私聊对象(填好友昵称或ID)：\n${hint || '你还没有好友'}`);
-    if (!targetText) return null;
-    const matched = friends.find((f) => String(f.nickname || f.username) === targetText.trim() || String(f.userId) === targetText.trim());
-    const targetId = matched ? Number(matched.userId) : Number(targetText);
-    if (Number.isFinite(targetId) && targetId > 0) {
-      if (input) input.dataset.privateTarget = targetId;
-      return targetId;
-    }
-    return null;
+    return new Promise((resolve) => {
+      const picker = document.createElement('div');
+      picker.className = 'classic-private-picker';
+      picker.style.cssText = 'position:fixed;right:220px;bottom:86px;z-index:99999;max-width:280px;max-height:260px;overflow:auto;background:#10261a;border:1px solid #7a5ac8;border-radius:10px;padding:8px;box-shadow:0 8px 24px rgba(0,0,0,.6);color:#fff;';
+      if (!friends.length) {
+        picker.innerHTML = '<div style="padding:8px;color:#aaa;">你还没有好友</div>';
+      } else {
+        picker.innerHTML = `<div style="font-weight:700;color:#c77dff;margin-bottom:6px;">选择私聊对象</div>${friends.map((f) => `
+          <button type="button" data-private-user="${f.userId}" style="display:block;width:100%;text-align:left;margin:3px 0;padding:6px 8px;border-radius:6px;border:0;background:#1c2a1c;color:#fff;cursor:pointer;">
+            ${escapeHtml(f.nickname || f.username)} <small style="color:#888;">Lv.${f.level ?? 1} ${f.online ? '· 在线' : '· 离线'}</small>
+          </button>`).join('')}`;
+      }
+      const dismiss = () => { picker.remove(); resolve(null); };
+      picker.querySelectorAll('[data-private-user]').forEach((btn) => btn.addEventListener('click', () => {
+        const userId = Number(btn.dataset.privateUser);
+        if (Number.isFinite(userId) && userId > 0) {
+          if (input) input.dataset.privateTarget = userId;
+          picker.remove();
+          resolve(userId);
+        }
+      }));
+      const closeBtn = document.createElement('button');
+      closeBtn.textContent = '×';
+      closeBtn.style.cssText = 'position:sticky;top:0;float:right;font-size:18px;background:transparent;border:0;color:#fff;cursor:pointer;';
+      picker.prepend(closeBtn);
+      closeBtn.addEventListener('click', dismiss);
+      document.body.append(picker);
+      setTimeout(() => {
+        if (picker.isConnected) { picker.remove(); resolve(null); }
+      }, 12000);
+    });
   };
 
   const selectChannel = async (event) => {
