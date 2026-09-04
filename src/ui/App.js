@@ -18,6 +18,7 @@ import { FriendView } from './FriendView.js';
 import { HallView } from './HallView.js';
 import { GuildView } from './GuildView.js';
 import { AuctionView } from './AuctionView.js';
+import { SettingsView } from './SettingsView.js';
 import { ShopView } from './ShopView.js';
 import { WorldMapView, markWorldStageCleared } from './WorldMapView.js';
 import { RoomView } from './RoomView.js';
@@ -490,6 +491,10 @@ export class App {
     } else if (route === 'auction') {
       const auction = new AuctionView();
       auction.render(renderRoot);
+      this.updateResourceDisplay('--', '--');
+    } else if (route === 'settings') {
+      const settings = new SettingsView();
+      settings.render(renderRoot);
       this.updateResourceDisplay('--', '--');
     } else if (PLACEHOLDER_MODULES.has(route)) {
       new PlaceholderView(route).render(renderRoot);

@@ -103,8 +103,33 @@ export class GuildView {
     el.innerHTML = `
       <div style="background:#101d10;border:1px solid #3a5a3a;border-radius:12px;padding:14px;">
         <h4 style="margin:0 0 8px;">公会仓库</h4>
-        ${data.items.map((it) => `<div style="padding:5px 0;border-bottom:1px solid #223322;">道具#${it.itemId} ×${it.count}</div>`).join('') || '<div style="color:#888;">仓库为空</div>'}
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px;">
+          <input id="gh-item" type="number" min="1" placeholder="道具ID" style="width:110px;padding:6px;border-radius:6px;border:1px solid #7aa75a;background:#1c2a1c;color:#fff;" />
+          <input id="gh-count" type="number" min="1" value="1" placeholder="数量" style="width:90px;padding:6px;border-radius:6px;border:1px solid #7aa75a;background:#1c2a1c;color:#fff;" />
+          <button id="gh-deposit" type="button" style="padding:6px 12px;border-radius:6px;border:0;background:#4a7a3a;color:#fff;cursor:pointer;">存入仓库</button>
+          <button id="gh-withdraw" type="button" style="padding:6px 12px;border-radius:6px;border:0;background:#6a5a2a;color:#fff;cursor:pointer;">取出仓库</button>
+        </div>
+        <div>${data.items.map((it) => `<div style="padding:5px 0;border-bottom:1px solid #223322;">道具#${it.itemId} ×${it.count}</div>`).join('') || '<div style="color:#888;">仓库为空</div>'}</div>
       </div>`;
+
+    el.querySelector('#gh-deposit')?.addEventListener('click', async () => {
+      const itemId = Number(el.querySelector('#gh-item').value);
+      const count = Number(el.querySelector('#gh-count').value) || 1;
+      try {
+        await this.api.post(`/guild/${guildId}/warehouse/deposit`, { itemId, count });
+        alert('已存入仓库');
+        this.showWarehouse(guildId);
+      } catch (e) { alert(e.message); }
+    });
+    el.querySelector('#gh-withdraw')?.addEventListener('click', async () => {
+      const itemId = Number(el.querySelector('#gh-item').value);
+      const count = Number(el.querySelector('#gh-count').value) || 1;
+      try {
+        await this.api.post(`/guild/${guildId}/warehouse/withdraw`, { itemId, count });
+        alert('已从仓库取出');
+        this.showWarehouse(guildId);
+      } catch (e) { alert(e.message); }
+    });
   }
 }
 

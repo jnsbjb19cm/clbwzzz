@@ -1,5 +1,6 @@
 import { authStore } from '../core/AuthStore.js';
 import { ItemDatabase } from '../core/ItemDatabase.js';
+import { getCraftMaterialImage } from './SmithyMaterialArtwork.js';
 
 const itemDb = new ItemDatabase();
 
@@ -13,6 +14,13 @@ function esc(text) {
 
 function itemName(id) {
   return itemDb?.getById?.(Number(id))?.name || `道具#${id}`;
+}
+
+function itemIcon(id) {
+  const img = getCraftMaterialImage(Number(id));
+  return img
+    ? `<img src="${img}" alt="" style="width:30px;height:30px;vertical-align:middle;margin-right:6px;border-radius:6px;background:#243b24;">`
+    : '';
 }
 
 export class AuctionView {
@@ -46,7 +54,7 @@ export class AuctionView {
     const myEl = this.root.querySelector('#auction-my');
     list.innerHTML = (data.listings ?? []).map((a) => `
       <div style="background:#14261a;border:1px solid #4a7a3a;border-radius:10px;padding:10px;display:flex;flex-direction:column;gap:6px;">
-        <div><strong>${esc(itemName(a.itemId))}</strong> ×${a.count}</div>
+        <div>${itemIcon(a.itemId)}<strong>${esc(itemName(a.itemId))}</strong> ×${a.count}</div>
         <div style="font-size:12px;color:#bbb;">${esc(a.sellerName || '玩家')} · Lv.${a.sellerLevel ?? 1}</div>
         <div style="font-size:14px;color:#ffd97a;">${a.price} 金币</div>
         <button type="button" data-buy="${a.listingId}" style="padding:5px;border-radius:6px;border:0;background:#4a7a3a;color:#fff;cursor:pointer;">购买</button>
@@ -55,13 +63,13 @@ export class AuctionView {
       <h3 style="margin:0 0 6px;">我的非绑定物品</h3>
       <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px;">
         ${(myItems.items ?? []).map((it) => `
-          <button type="button" data-item="${it.itemId}" data-count="${it.count}" style="padding:5px 10px;border-radius:6px;border:1px solid #7aa75a;background:#1c2a1c;color:#fff;cursor:pointer;">${esc(itemName(it.itemId))} ×${it.count}</button>
+          <button type="button" data-item="${it.itemId}" data-count="${it.count}" style="padding:5px 10px;border-radius:6px;border:1px solid #7aa75a;background:#1c2a1c;color:#fff;cursor:pointer;">${itemIcon(it.itemId)}${esc(itemName(it.itemId))} ×${it.count}</button>
         `).join('') || '<span style="color:#888;">暂无非绑定道具</span>'}
       </div>
       <h3 style="margin:0 0 6px;">我的上架</h3>
       ${(my.listings ?? []).map((a) => `
         <div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid #223322;">
-          <span>${esc(itemName(a.itemId))} ×${a.count} · ${a.price}金币 <small style="color:#888;">${a.status}</small></span>
+          <span>${itemIcon(a.itemId)}${esc(itemName(a.itemId))} ×${a.count} · ${a.price}金币 <small style="color:#888;">${a.status}</small></span>
           ${a.status === 'active' ? `<button type="button" data-cancel="${a.listingId}" style="padding:3px 8px;border-radius:6px;border:0;background:#6a3a3a;color:#fff;cursor:pointer;">取消</button>` : ''}
         </div>`).join('') || '<div style="color:#888;">你没有上架物品</div>'}`;
     list.querySelectorAll('[data-buy]').forEach((btn) => btn.addEventListener('click', () => this.buy(Number(btn.dataset.buy))));
