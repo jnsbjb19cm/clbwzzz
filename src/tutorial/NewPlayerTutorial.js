@@ -11,6 +11,11 @@ const PROTECTED_ENEMY_BASE_HP = 800;
 const FINAL_ENEMY_BASE_HP = 260;
 const TUTORIAL_PLAYER_BASE_HP = 1200;
 const TUTORIAL_RESOURCE_START = 40;
+const TUTORIAL_MIDDLE_LANE = 2; // 第三路（lane 从 0 开始）
+const STATIC_DEFENSE_LANES = [0, 1, 4]; // 给第三路留出完整的首次教学通道
+const PLAYER_STATIC_DEFENSE_COL = 4;
+const ENEMY_STATIC_DEFENSE_COL = 7;
+const PREFERRED_DEFENSE_CARD_IDS = [2, 21];
 
 function isTutorialView(view) {
   return Boolean(
@@ -27,6 +32,52 @@ function finite(value, fallback = 0) {
 
 function cardName(card) {
   return String(card?.name ?? card?.card_name ?? `卡牌${card?.id ?? ''}`);
+}
+
+function cardMoveSpeed(card) {
+  return finite(card?.moveSpeed ?? card?.move_speed, 0);
+}
+
+function cardAtkStyle(card) {
+  return finite(card?.atkStyle ?? card?.atk_style, -1);
+}
+
+function cardCategory(card) {
+  return finite(card?.card_category ?? card?.category, -1);
+}
+
+/**
+ * 选择真正的“不可移动防御卡”作为教程预摆阵地。
+ * 优先项目既有的 2/21 防御卡，再退化到 atkStyle=1 的不可移动战斗卡。
+ * 预摆后仍会把单位攻击力强制设为 0，因此它们只负责展示阵地和阻挡，不会抢教学操作。
+ */
+function getTutorialDefenseCards(db, limit = 2) {
+  const all = (db?.cards ?? []).filter((card) => {
+    const id = Number(card?.id ?? card?.card_id);
+    const category = cardCategory(card);
+    return Number.isFinite(id)
+      && id > 0
+      && id < 500
+      && cardMoveSpeed(card) <= 0
+      && (category === 0 || category === 1 || category === -1);
+  });
+  const byId = new Map(all.map((card) => [Number(card.id ?? card.card_id), card]));
+  const picked = [];
+  const used = new Set();
+  const add = (card) => {
+    const id = Number(card?.id ?? card?.card_id);
+    if (!card || !id || used.has(id) || picked.length >= limit) return;
+    used.add(id);
+    picked.push(card);
+  };
+
+  PREFERRED_DEFENSE_CARD_IDS.map((id) => byId.get(id)).filter(Boolean).forEach(add);
+  all
+    .filter((card) => cardAtkStyle(card) === 1)
+    .sort((a, b) => finite(a?.quality ?? a?.card_quality, 1) - finite(b?.quality ?? b?.card_quality, 1))
+    .forEach(add);
+  all.forEach(add);
+  return picked.slice(0, limit);
 }
 
 function prepareTutorialEngine(view) {
@@ -83,10 +134,12 @@ class NewPlayerTutorialController {
     this.engine = view.engine;
     this.stepIndex = 0;
     this.deployedCount = 0;
-    this.killGoal = 0;
     this.skillMpBefore = this.engine.heroMp;
     this.destroyed = false;
     this.enemyCards = getTutorialEnemyCards(view.db, 5);
+    this.defenseCards = getTutorialDefenseCards(view.db, 2);
+    this.stepEnemyUids = new Set();
+    this.weakEnemySpawnSeq = 0;
     this._onResize = () => this.updateFocus();
   }
 
@@ -97,7 +150,7 @@ class NewPlayerTutorialController {
         title: '第一步：先知道怎样获胜',
         target: '#orb-enemy-hp',
         text: '战场左边是你的基地，右边是敌方基地。<b>把右侧敌方基地生命打到 0 就获胜</b>；如果左侧自己的基地先归零，就会失败。',
-        hint: '教程最后不会自动判你完成，你需要亲手击破右侧基地。',
+        hint: '双方已经预摆了几张不可移动防御卡。教学期间这些预摆卡不会移动、不会攻击，只负责展示防线和阻挡关系；第三路特意留空作为首次教学通道。',
         manual: true,
       },
       {
@@ -111,8 +164,8 @@ class NewPlayerTutorialController {
         key: 'combat',
         title: '第三步：让卡牌完成第一次战斗',
         target: '#battle-canvas',
-        text: '敌人已经出现。卡牌放下后会自动移动、寻找目标并攻击。前排负责接敌，后排远程更适合安全输出。',
-        hint: '击败这个教学敌人后会自动进入下一步。',
+        text: '第一只教学怪会固定从<b>第三路（中路）</b>出现。卡牌放下后会自动移动、寻找目标并攻击。前排负责接敌，后排远程更适合安全输出。',
+        hint: '击败第三路的这个教学敌人后会自动进入下一步。两侧预摆防御卡仍保持静止且不攻击。',
       },
       {
         key: 'resource',
@@ -132,7 +185,7 @@ class NewPlayerTutorialController {
         key: 'defend',
         title: '第六步：守住基地并清理敌人',
         target: '#orb-player-hp',
-        text: '现在会再来一小波敌人。注意左侧基地生命值：如果敌人突破你的防线，它们会攻击基地。把这波敌人清掉。',
+        text: '现在会再来一小波敌人。注意左侧基地生命值：如果敌人突破你的防线，它们会攻击基地。预摆的防御卡可以挡住部分路线，但它们不会替你攻击。',
         hint: '守住自己的基地只是前提；最终仍然要推进并摧毁右侧基地才能赢。',
       },
       {
@@ -140,16 +193,65 @@ class NewPlayerTutorialController {
         title: '最终训练：亲手赢下一局',
         target: '#battle-canvas',
         text: '教学保护已经解除。清掉剩余敌人，继续部署和推进，<b>把右侧敌方基地生命打到 0</b>。做到这一点才算完成新手教程。',
-        hint: '这一步没有“下一步”按钮；真正取得胜利后教程才会完成。',
+        hint: '这一步没有“下一步”按钮；真正取得胜利后教程才会完成。预摆防御卡继续保持不移动、不攻击。',
       },
     ];
   }
 
   start() {
     this.mount();
+    this.setupStaticDefenses();
     this.enterStep(0);
     window.addEventListener('resize', this._onResize);
     this.timer = window.setInterval(() => this.monitor(), 120);
+  }
+
+  /**
+   * 双方预摆静态防线：第 1、2、5 路各一张，第三路完全留给第一次教学怪。
+   * 这些单位强制 atk=0、moveSpeed=0，因此不会主动攻击/移动；仍保留实体碰撞和生命值，
+   * 让新人直观看到“不可移动防御卡就是一道防线”。
+   */
+  setupStaticDefenses() {
+    if (!this.defenseCards.length || this.engine.__tutorialStaticDefensesReady) return;
+    this.engine.__tutorialStaticDefensesReady = true;
+
+    STATIC_DEFENSE_LANES.forEach((lane, index) => {
+      const playerCard = this.defenseCards[index % this.defenseCards.length];
+      const enemyCard = this.defenseCards[(index + 1) % this.defenseCards.length] ?? playerCard;
+      this.spawnStaticDefense(playerCard, lane, PLAYER_STATIC_DEFENSE_COL, 'player');
+      this.spawnStaticDefense(enemyCard, lane, ENEMY_STATIC_DEFENSE_COL, 'enemy');
+    });
+
+    this.engine.pushLog?.('双方教学防线已布置：预摆防御卡不会移动或攻击。');
+  }
+
+  spawnStaticDefense(card, lane, col, team) {
+    const cardId = Number(card?.id ?? card?.card_id);
+    if (!cardId) return null;
+    const unit = this.engine.spawnSummon?.(cardId, lane, col, team, {
+      exact: true,
+      deployEffect: true,
+      preload: true,
+      log: false,
+    });
+    if (!unit) return null;
+
+    unit.tutorialStaticDefense = true;
+    unit.moveSpeed = 0;
+    unit.atk = 0;
+    unit.baseAtk = 0;
+    unit.atkSpeed = 0;
+    unit.atkTimer = 999999;
+    unit.lockedTargetUid = null;
+    unit.specialEffect = 0;
+    unit.specialAtkEffect = 0;
+
+    // 防御卡要能体现“挡线”，但不能成为脆皮装饰；同时也不设成无敌，最终战仍可被正常打掉。
+    const targetHp = team === 'player' ? 320 : 260;
+    unit.maxHp = Math.max(targetHp, finite(unit.maxHp, targetHp));
+    unit.baseMaxHp = unit.maxHp;
+    unit.hp = unit.maxHp;
+    return unit;
   }
 
   mount() {
@@ -198,8 +300,8 @@ class NewPlayerTutorialController {
     }
 
     if (step.key === 'combat') {
-      this.killGoal = finite(this.engine.killsThisBattle) + 1;
-      this.spawnWeakEnemies(1);
+      // 第一只怪固定第三路（lane=2），与两侧预摆防御阵地互不干扰。
+      this.spawnWeakEnemies(1, 0, { lanes: [TUTORIAL_MIDDLE_LANE] });
     } else if (step.key === 'resource') {
       this.engine.sunlight = TUTORIAL_RESOURCE_START;
       this.engine.food = TUTORIAL_RESOURCE_START;
@@ -213,7 +315,6 @@ class NewPlayerTutorialController {
       this.view.lastSkillKey = '';
       this.view.renderSkillPanel?.(this.root);
     } else if (step.key === 'defend') {
-      this.killGoal = finite(this.engine.killsThisBattle) + 2;
       this.engine.heroHp = Math.max(this.engine.heroHp, 900);
       this.spawnWeakEnemies(2);
     } else if (step.key === 'final') {
@@ -274,6 +375,15 @@ class NewPlayerTutorialController {
     return Object.values(this.engine.skills?.cooldowns ?? {}).some((value) => finite(value) > 0);
   }
 
+  stepEnemiesCleared() {
+    if (!this.stepEnemyUids.size) return false;
+    for (const uid of this.stepEnemyUids) {
+      const alive = this.engine.units.some((unit) => unit.uid === uid && unit.alive);
+      if (alive) return false;
+    }
+    return true;
+  }
+
   monitor() {
     if (this.destroyed || !this.engine) return;
     const step = this.steps[this.stepIndex];
@@ -291,13 +401,13 @@ class NewPlayerTutorialController {
 
     if (step.key === 'deploy' && this.deployedCount >= 1) {
       this.advance();
-    } else if (step.key === 'combat' && finite(this.engine.killsThisBattle) >= this.killGoal) {
+    } else if (step.key === 'combat' && this.stepEnemiesCleared()) {
       this.advance();
     } else if (step.key === 'resource' && this.deployedCount >= 2) {
       this.advance();
     } else if (step.key === 'skill' && this.skillWasUsed()) {
       this.advance();
-    } else if (step.key === 'defend' && finite(this.engine.killsThisBattle) >= this.killGoal) {
+    } else if (step.key === 'defend' && this.stepEnemiesCleared()) {
       this.advance();
     } else if (step.key === 'final' && this.engine.status === 'win') {
       this.complete();
@@ -311,12 +421,15 @@ class NewPlayerTutorialController {
     this.enterStep(this.stepIndex + 1);
   }
 
-  spawnWeakEnemies(count, strength = 0) {
+  spawnWeakEnemies(count, strength = 0, { lanes = null } = {}) {
     if (!this.enemyCards.length) return;
-    const lanes = [2, 1, 3, 0, 4];
+    const laneOrder = Array.isArray(lanes) && lanes.length ? lanes : [2, 1, 3, 0, 4];
+    this.stepEnemyUids = new Set();
+
     for (let index = 0; index < count; index += 1) {
-      const card = this.enemyCards[(finite(this.engine.killsThisBattle) + index) % this.enemyCards.length];
-      const lane = lanes[(this.stepIndex + index) % lanes.length];
+      const card = this.enemyCards[this.weakEnemySpawnSeq % this.enemyCards.length];
+      this.weakEnemySpawnSeq += 1;
+      const lane = laneOrder[index % laneOrder.length];
       const before = new Set(this.engine.units.map((unit) => unit.uid));
       const placed = this.engine.placeEnemyUnit?.(card, lane, false, 10);
       if (!placed) continue;
@@ -332,7 +445,8 @@ class NewPlayerTutorialController {
       unit.atk = Math.min(Math.max(1, finite(unit.atk, 6)), 7 + strength * 2);
       unit.baseAtk = unit.atk;
       unit.tutorialEnemy = true;
-      this.engine.pushLog?.(`教学敌人【${cardName(card)}】出现`);
+      this.stepEnemyUids.add(unit.uid);
+      this.engine.pushLog?.(`教学敌人【${cardName(card)}】出现 · 第${lane + 1}路`);
     }
   }
 
