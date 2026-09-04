@@ -7,6 +7,7 @@ import {
 import { resolveBattleBackground } from '../battle/BattleBackground.js';
 import { BattleRenderer } from '../battle/BattleRenderer.js';
 import { unitAnimPlayer } from '../battle/UnitAnimPlayer.js';
+import { authStore } from '../core/AuthStore.js';
 import { BattleView } from './BattleView.js';
 
 const PATCH_FLAG = Symbol.for('clbwzzz.battleUserPresentation20260903');
@@ -26,6 +27,49 @@ function isPeachBurst(fx) {
 
 function clamp(value, min, max) {
   return Math.max(min, Math.min(max, value));
+}
+
+function finite(value, fallback = 0) {
+  const number = Number(value);
+  return Number.isFinite(number) ? number : fallback;
+}
+
+function syncAuthorityPlayerState(view) {
+  if (!view?.pvp || view?.pvp?.spectator || !view?.engine) return;
+  const snapshot = view.__pvpLatestSnapshot;
+  if (!snapshot) return;
+
+  const userId = Number(
+    authStore.user?.id
+      ?? authStore.snapshot?.profile?.userId
+      ?? view.pvp?.userId
+      ?? 0,
+  );
+  if (!Number.isFinite(userId) || userId <= 0) return;
+
+  const engine = view.engine;
+  const resources = snapshot.resourcesByUser?.[String(userId)];
+  if (resources) {
+    engine.sunlight = Math.max(0, finite(resources.sun, engine.sunlight));
+    engine.food = Math.max(0, finite(resources.food, engine.food));
+  }
+
+  const skill = snapshot.skillsByUser?.[String(userId)];
+  if (!skill) return;
+
+  engine.heroMpMax = Math.max(1, finite(skill.maxMp, engine.heroMpMax));
+  engine.heroMp = clamp(finite(skill.mp, engine.heroMp), 0, engine.heroMpMax);
+
+  if (Array.isArray(skill.loadout)) {
+    engine.skillLoadout = [...skill.loadout];
+  }
+
+  if (engine.skills) {
+    engine.skills.cooldowns ??= {};
+    for (const [skillId, cooldown] of Object.entries(skill.cooldowns ?? {})) {
+      engine.skills.cooldowns[skillId] = Math.max(0, finite(cooldown));
+    }
+  }
 }
 
 function forcePeachFlyingLayout(layout, unit) {
@@ -217,6 +261,12 @@ export function installBattleUserPresentation20260903() {
     for (const fx of special) {
       if (!hasVisibleNativePeachSuicide(engine, fx)) drawPeachBurst(ctx, fx);
     }
+  };
+
+  const previousSyncHud = BattleView.prototype.syncHud;
+  BattleView.prototype.syncHud = function syncHudWithAuthorityPlayerState(root) {
+    syncAuthorityPlayerState(this);
+    return previousSyncHud.call(this, root);
   };
 
   const previousRenderBattle = BattleView.prototype.renderBattle;
