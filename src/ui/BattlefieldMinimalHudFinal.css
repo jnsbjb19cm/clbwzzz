@@ -1,0 +1,231 @@
+/*
+ * 战斗场最终收口：冰柱完整贴住视口最左/最右；放置格只按状态着色；
+ * 战斗时移除城市底部导航，只保留退出、技能、放置三个按钮。
+ */
+
+/*
+ * 柱子透明素材按整屏高度等比显示。素材两侧带透明留白，因此只做小幅外移；
+ * 不能再使用上一版约 -10.8vw 的偏移，否则柱身会被裁到屏幕外，只剩顶部和柱脚。
+ */
+body.battle-immersive .battle-fullscreen-final > .bg-layer-left-column,
+body.battle-immersive .battle-fullscreen-final > .bg-layer-right-column,
+body.battle-immersive .battle-fullscreen-final.battle-viewport-wide > .bg-layer-left-column,
+body.battle-immersive .battle-fullscreen-final.battle-viewport-wide > .bg-layer-right-column,
+body.battle-immersive .battle-fullscreen-final.battle-viewport-ultrawide > .bg-layer-left-column,
+body.battle-immersive .battle-fullscreen-final.battle-viewport-ultrawide > .bg-layer-right-column,
+body.battle-immersive .battle-fullscreen-final.battle-viewport-compact > .bg-layer-left-column,
+body.battle-immersive .battle-fullscreen-final.battle-viewport-compact > .bg-layer-right-column {
+  top: 0 !important;
+  bottom: 0 !important;
+  width: clamp(390px, 24vw, 570px) !important;
+  height: 100dvh !important;
+  transform: none !important;
+  background-size: auto 100% !important;
+  background-repeat: no-repeat !important;
+  z-index: 46 !important;
+}
+
+body.battle-immersive .battle-fullscreen-final > .bg-layer-left-column,
+body.battle-immersive .battle-fullscreen-final.battle-viewport-wide > .bg-layer-left-column,
+body.battle-immersive .battle-fullscreen-final.battle-viewport-ultrawide > .bg-layer-left-column,
+body.battle-immersive .battle-fullscreen-final.battle-viewport-compact > .bg-layer-left-column {
+  left: clamp(-118px, -4.8vw, -58px) !important;
+  right: auto !important;
+  background-position: left center !important;
+}
+
+body.battle-immersive .battle-fullscreen-final > .bg-layer-right-column,
+body.battle-immersive .battle-fullscreen-final.battle-viewport-wide > .bg-layer-right-column,
+body.battle-immersive .battle-fullscreen-final.battle-viewport-ultrawide > .bg-layer-right-column,
+body.battle-immersive .battle-fullscreen-final.battle-viewport-compact > .bg-layer-right-column {
+  right: clamp(-118px, -4.8vw, -58px) !important;
+  left: auto !important;
+  background-position: right center !important;
+}
+
+/*
+ * 彻底去掉旧棋盘的橙色底板。透明格必须直接透出冰面，而不是透出橙色容器。
+ * 使用更高选择器优先级覆盖 BattlefieldIceSceneFinal.css 中的 #f3a426 底色。
+ */
+body.battle-immersive
+  .battle-fullscreen-final
+  .game-container.battlefield-fullscreen-repair.battle-fullscreen-final-stage
+  .battle-placement-layer,
+body.battle-immersive
+  .battle-fullscreen-final
+  .game-container.battlefield-fullscreen-repair.battle-fullscreen-final-stage
+  #place-grid-overlay {
+  background: transparent !important;
+  background-color: transparent !important;
+  background-image: none !important;
+}
+
+body.battle-immersive
+  .battle-fullscreen-final
+  .game-container.battlefield-fullscreen-repair.battle-fullscreen-final-stage
+  .battle-placement-layer {
+  gap: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  box-shadow: none !important;
+}
+
+/* 所有格子先清空底色，只保留黄色边框；具体颜色只由后面的状态规则添加。 */
+body.battle-immersive
+  .battle-fullscreen-final
+  .game-container.battlefield-fullscreen-repair
+  .place-grid-cell {
+  box-sizing: border-box !important;
+  border: 0 !important;
+  border-radius: 5px !important;
+  background: transparent !important;
+  background-color: transparent !important;
+  background-image: none !important;
+  box-shadow:
+    inset 0 0 0 2px #f2a12a,
+    inset 0 0 0 3px rgba(255, 226, 134, .18) !important;
+}
+
+/* 普通可放置格：内部完全透明，只显示黄色格子边框与真实冰面。 */
+body.battle-immersive
+  .battle-fullscreen-final
+  .game-container.battlefield-fullscreen-repair
+  .place-grid-cell.place-ok,
+body.battle-immersive
+  .battle-fullscreen-final
+  .game-container.battlefield-fullscreen-repair
+  .place-grid-cell.zone-ally.place-ok {
+  background: transparent !important;
+  background-color: transparent !important;
+  background-image: none !important;
+}
+
+/* 鼠标当前指向且即将放置的单格，才显示参考图中的蓝色高亮。 */
+body.battle-immersive
+  .battle-fullscreen-final
+  .game-container.battlefield-fullscreen-repair
+  .place-grid-cell.place-ok.place-hover {
+  background:
+    linear-gradient(180deg, rgba(183, 238, 255, .92), rgba(54, 167, 226, .86)) !important;
+  box-shadow:
+    inset 0 0 0 2px #f2a12a,
+    inset 0 0 0 4px rgba(241, 254, 255, .80),
+    inset 0 0 20px rgba(131, 228, 255, .48),
+    0 0 13px rgba(52, 198, 255, .84) !important;
+}
+
+/* 技能目标格继续按技能状态显示；技能当前目标也使用同一蓝色。 */
+body.battle-immersive
+  .battle-fullscreen-final
+  .game-container.battlefield-fullscreen-repair
+  .place-grid-cell.skill-target-ok {
+  background: transparent !important;
+}
+
+body.battle-immersive
+  .battle-fullscreen-final
+  .game-container.battlefield-fullscreen-repair
+  .place-grid-cell.skill-target-ok.skill-target-hover {
+  background:
+    linear-gradient(180deg, rgba(183, 238, 255, .92), rgba(54, 167, 226, .86)) !important;
+}
+
+/* 不可放置、敌方与已占用格保持参考图中的红色。 */
+body.battle-immersive
+  .battle-fullscreen-final
+  .game-container.battlefield-fullscreen-repair
+  .place-grid-cell.place-forbidden,
+body.battle-immersive
+  .battle-fullscreen-final
+  .game-container.battlefield-fullscreen-repair
+  .place-grid-cell.place-occupied,
+body.battle-immersive
+  .battle-fullscreen-final
+  .game-container.battlefield-fullscreen-repair
+  .place-grid-cell.skill-target-forbidden,
+body.battle-immersive
+  .battle-fullscreen-final
+  .game-container.battlefield-fullscreen-repair
+  .place-grid-cell.zone-enemy:not(.skill-target-ok) {
+  background:
+    linear-gradient(180deg, rgba(248, 119, 119, .78), rgba(204, 58, 69, .72)) !important;
+}
+
+/* 战斗界面不再显示地图、任务、战斗、铁匠铺、商城等城市导航。 */
+body.battle-immersive .bottom-nav {
+  display: none !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+}
+
+/* 三个操作按钮已经被移动进 battle-game-wrap，旧底部 HUD 完全移除。 */
+body.battle-immersive .battle-immersive-dock {
+  display: none !important;
+}
+
+body.battle-immersive .battle-fab.battle-field-controls {
+  position: absolute !important;
+  right: clamp(18px, 2vw, 36px) !important;
+  bottom: clamp(14px, 2.2vh, 28px) !important;
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  gap: 10px !important;
+  width: auto !important;
+  height: auto !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  z-index: 220 !important;
+  pointer-events: auto !important;
+}
+
+body.battle-immersive .battle-fab.battle-field-controls .fab-btn {
+  min-width: 72px !important;
+  height: 38px !important;
+  padding: 0 15px !important;
+  border: 2px solid rgba(124, 210, 230, .84) !important;
+  border-radius: 9px !important;
+  color: #f4ffff !important;
+  font-size: 16px !important;
+  font-weight: 800 !important;
+  line-height: 34px !important;
+  text-align: center !important;
+  background:
+    linear-gradient(180deg, rgba(34, 92, 112, .95), rgba(10, 45, 61, .96)) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.24),
+    0 3px 7px rgba(2, 20, 31, .42) !important;
+  text-shadow: 0 1px 2px #000 !important;
+}
+
+body.battle-immersive .battle-fab.battle-field-controls .fab-btn:hover,
+body.battle-immersive .battle-fab.battle-field-controls .fab-btn.active {
+  border-color: #e5fbff !important;
+  background:
+    linear-gradient(180deg, rgba(65, 177, 215, .98), rgba(17, 95, 128, .98)) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.36),
+    0 0 12px rgba(52, 194, 241, .72) !important;
+}
+
+/* 设置面板不再强制隐藏：由 .settings-panel.hidden 控制显隐，保证战斗内“设置”可打开。 */
+@media (max-width: 1000px), (max-height: 650px) {
+  body.battle-immersive .battle-fullscreen-final > .bg-layer-left-column,
+  body.battle-immersive .battle-fullscreen-final > .bg-layer-right-column {
+    width: clamp(330px, 25vw, 430px) !important;
+  }
+
+  body.battle-immersive .battle-fab.battle-field-controls {
+    right: 12px !important;
+    bottom: 10px !important;
+    gap: 7px !important;
+  }
+
+  body.battle-immersive .battle-fab.battle-field-controls .fab-btn {
+    min-width: 62px !important;
+    height: 34px !important;
+    padding: 0 11px !important;
+    font-size: 14px !important;
+    line-height: 30px !important;
+  }
+}

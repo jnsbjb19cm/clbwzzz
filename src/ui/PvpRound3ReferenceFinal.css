@@ -1,0 +1,233 @@
+/*
+ * PVP/BOSS 战斗场地参考图标定。
+ * 战斗阶段必须脱离准备房间 1632×918 的缩放容器；浏览器窗口变化只改变显示矩形，
+ * 不改变逻辑战斗坐标。
+ */
+body.pvp-battle-active,
+body.pvp-battle-active .lobby-stage,
+body.pvp-battle-active .battle-page,
+body.pvp-battle-active .battle-game-wrap,
+body.pvp-battle-active .game-container {
+  overflow: hidden !important;
+}
+
+/* 房间从半屏进入全屏时，RoomView.fitScale 仍会给 lobby-stage 写 transform。
+ * 战斗期间明确取消该缩放，避免左右半场被父级裁掉。 */
+body.pvp-battle-active .lobby-stage {
+  position: fixed !important;
+  inset: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  min-width: 100vw !important;
+  min-height: 100vh !important;
+  max-width: 100vw !important;
+  max-height: 100vh !important;
+  transform: none !important;
+  transform-origin: 0 0 !important;
+}
+
+body.pvp-battle-active .battle-page,
+body.pvp-battle-active .battle-game-wrap,
+body.pvp-battle-active .game-container {
+  position: fixed !important;
+  inset: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  min-width: 100vw !important;
+  min-height: 100vh !important;
+  max-width: 100vw !important;
+  max-height: 100vh !important;
+  transform: none !important;
+  transform-origin: 0 0 !important;
+}
+
+body.pvp-battle-active .battlefield-wrap.battlefield-grid-v2 {
+  position: fixed !important;
+  inset: auto !important;
+  left: 9.2vw !important;
+  top: 23.3vh !important;
+  right: auto !important;
+  bottom: auto !important;
+  width: 78vw !important;
+  height: 61.3vh !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+  max-width: none !important;
+  max-height: none !important;
+  overflow: visible !important;
+  border-radius: 0 !important;
+  transform: none !important;
+  z-index: 18 !important;
+}
+
+/*
+ * 逻辑棋盘 y=81..486：
+ * top = -81/(486-81) = -20%；height = 702/(486-81) = 173.333%。
+ */
+body.pvp-battle-active .battlefield-wrap.battlefield-grid-v2 .battle-canvas.battle-unit-health-layer {
+  position: absolute !important;
+  inset: auto !important;
+  left: -0.0512% !important;
+  top: -20% !important;
+  right: auto !important;
+  bottom: auto !important;
+  width: 100.1024% !important;
+  height: 173.3334% !important;
+  max-width: none !important;
+  max-height: none !important;
+  transform: none !important;
+  transform-origin: 0 0 !important;
+  pointer-events: auto !important;
+  z-index: 25 !important;
+}
+
+body.pvp-battle-active .battlefield-wrap.battlefield-grid-v2 .place-grid-overlay.battle-placement-layer,
+body.pvp-battle-active .battlefield-wrap.battlefield-grid-v2 .battle-obstacle-layer {
+  position: absolute !important;
+  inset: 0 !important;
+  left: 0 !important;
+  top: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  grid-template-columns: repeat(12, minmax(0, 1fr)) !important;
+  grid-template-rows: repeat(5, minmax(0, 1fr)) !important;
+  gap: clamp(1px, 0.16vw, 3px) !important;
+  transform: none !important;
+  transform-origin: 0 0 !important;
+}
+
+/* 默认不显示格子；选中卡牌或目标型技能时才显示。 */
+body.pvp-battle-active .battlefield-wrap.battlefield-grid-v2 .place-grid-overlay.battle-placement-layer {
+  display: grid !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+  z-index: 24 !important;
+  pointer-events: none !important;
+}
+
+body.pvp-battle-active .battlefield-wrap.battlefield-grid-v2 .place-grid-overlay.battle-placement-layer.hidden {
+  display: grid !important;
+  opacity: 0 !important;
+  visibility: hidden !important;
+}
+
+body.pvp-battle-active .battlefield-grid-v2 .place-grid-cell {
+  position: relative !important;
+  inset: auto !important;
+  width: auto !important;
+  height: auto !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+  margin: 0 !important;
+  box-sizing: border-box !important;
+  border: clamp(2px, 0.18vw, 4px) solid rgba(245, 168, 37, 0.98) !important;
+  border-radius: clamp(8px, 0.72vw, 13px) !important;
+  background: transparent !important;
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 235, 158, 0.18),
+    inset 0 0 18px rgba(255, 255, 255, 0.04) !important;
+  transition: background 90ms linear, box-shadow 90ms linear, border-color 90ms linear !important;
+}
+
+body.pvp-battle-active .battlefield-grid-v2 .place-grid-cell.place-ok,
+body.pvp-battle-active .battlefield-grid-v2 .place-grid-cell.skill-target-ok {
+  background: rgba(255, 255, 255, 0.015) !important;
+}
+
+body.pvp-battle-active .battlefield-grid-v2 .place-grid-cell.place-forbidden,
+body.pvp-battle-active .battlefield-grid-v2 .place-grid-cell.place-occupied,
+body.pvp-battle-active .battlefield-grid-v2 .place-grid-cell.zone-enemy,
+body.pvp-battle-active .battlefield-grid-v2 .place-grid-cell.zone-obstacle {
+  background:
+    radial-gradient(circle at 50% 48%, rgba(255, 156, 151, 0.68), rgba(212, 75, 78, 0.52) 72%) !important;
+}
+
+body.pvp-battle-active .battlefield-grid-v2 .place-grid-cell.place-hover,
+body.pvp-battle-active .battlefield-grid-v2 .place-grid-cell.skill-target-hover {
+  border-color: #fff0a0 !important;
+  background:
+    linear-gradient(180deg, rgba(109, 224, 255, 0.86), rgba(32, 162, 232, 0.76)) !important;
+  box-shadow:
+    inset 0 0 0 2px rgba(235, 254, 255, 0.5),
+    inset 0 0 20px rgba(255, 255, 255, 0.38),
+    0 0 11px rgba(53, 205, 255, 0.68) !important;
+}
+
+body.pvp-battle-active .battlefield-grid-v2 .place-grid-cell::before,
+body.pvp-battle-active .battlefield-grid-v2 .place-grid-cell::after {
+  content: none !important;
+  display: none !important;
+}
+
+/*
+ * 柱子素材并不是“11.2vw 的细条”：龙头、冰台和下部岩壁都会向战场内侧伸出。
+ * 之前 max 205px 把整张素材横向压窄，虽然最外缘贴住了视口，看起来却像没有覆盖满。
+ * 参考图在 1600px 宽时素材完整占约 290~300px，因此恢复为约 18.5vw 的完整边缘带。
+ */
+body.pvp-battle-active .pvp-authority-column {
+  top: -4vh !important;
+  width: clamp(210px, 17vw, 360px) !important;
+  min-width: clamp(210px, 17vw, 360px) !important;
+  max-width: clamp(210px, 17vw, 360px) !important;
+  height: 108vh !important;
+  background-size: 100% 100% !important;
+  z-index: 34 !important;
+}
+
+body.pvp-battle-active .pvp-authority-column.left {
+  background-position: left top !important;
+}
+
+body.pvp-battle-active .pvp-authority-column.right {
+  background-position: right top !important;
+  transform: none !important;
+}
+
+@media (max-width: 900px), (max-height: 620px) {
+  body.pvp-battle-active .battlefield-wrap.battlefield-grid-v2 {
+    left: 9.2vw !important;
+    top: 23.3vh !important;
+    width: 78vw !important;
+    height: 61.3vh !important;
+  }
+
+  body.pvp-battle-active .pvp-authority-column {
+    top: -4vh !important;
+    width: clamp(140px, 16vw, 220px) !important;
+    min-width: clamp(140px, 16vw, 220px) !important;
+    max-width: clamp(140px, 16vw, 220px) !important;
+    height: 108vh !important;
+  }
+}
+
+/* Per-map column geometry: sand keeps its accepted visual size; grass and ice
+   preserve each supplied side image's own proportions. Both bases sit partly
+   outside the viewport, matching the original battle frame. */
+body.pvp-battle-active .pvp-authority-column {
+  top: -4vh !important;
+  height: 108vh !important;
+  min-height: 108vh !important;
+  max-height: 108vh !important;
+  background-size: 100% 100% !important;
+  transform: none !important;
+}
+
+body.pvp-battle-active .pvp-authority-column.left {
+  left: calc(0px - clamp(18px, 2.2vw, 44px)) !important;
+  right: auto !important;
+  width: var(--column-left-width, clamp(210px, 17vw, 360px)) !important;
+  min-width: var(--column-left-width, clamp(210px, 17vw, 360px)) !important;
+  max-width: var(--column-left-width, clamp(210px, 17vw, 360px)) !important;
+  background-position: left top !important;
+}
+
+body.pvp-battle-active .pvp-authority-column.right {
+  left: auto !important;
+  right: calc(0px - clamp(18px, 2.2vw, 44px)) !important;
+  width: var(--column-right-width, clamp(210px, 17vw, 360px)) !important;
+  min-width: var(--column-right-width, clamp(210px, 17vw, 360px)) !important;
+  max-width: var(--column-right-width, clamp(210px, 17vw, 360px)) !important;
+  background-position: right top !important;
+}

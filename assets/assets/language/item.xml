@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<language name="item">
+	<language key="item_1" value="装备"/>
+	<language key="item_2" value="道具"/>
+	<language key="item_3" value="强化"/>
+	<language key="item_4" value="熔炼"/>
+	<language key="item_5" value="礼包"/>
+	<language key="item_6" value="转职"/>
+	<language key="item_7" value="礼包"/>
+	<language key="item_8" value="地图"/>
+</language>

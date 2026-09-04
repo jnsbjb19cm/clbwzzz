@@ -1,0 +1,43 @@
+[
+  {
+    "id": 0,
+    "name": "普通邮件"
+  },
+  {
+    "id": 1,
+    "name": "道具"
+  },
+  {
+    "id": 2,
+    "name": "卡牌"
+  },
+  {
+    "id": 3,
+    "name": "金币",
+    "res": "gold"
+  },
+  {
+    "id": 4,
+    "name": "红钻",
+    "res": "red-diamond"
+  },
+  {
+    "id": 5,
+    "name": "蓝钻",
+    "res": "blue-diamond"
+  },
+  {
+    "id": 6,
+    "name": "荣誉点"
+  },
+  {
+    "id": 7,
+    "name": "勋章",
+    "res": "coin-badge"
+  },
+  {
+    "id": 27,
+    "name": "经验",
+    "res": "exp-icon"
+  }
+]

@@ -1,0 +1,92 @@
+/*
+ * 参考视频棋盘二次修正：
+ * 1. 棋盘伸入左右冰柱内缘，不再停留在中央窄面板；
+ * 2. 可放置区域只保留极轻的蓝色透明提示，让冰面背景直接透出；
+ * 3. 黄色分隔线由格子自身绘制，避免橙色底板污染透明格。
+ */
+
+body.battle-immersive
+  .battle-fullscreen-final
+  .battlefield-wrap.battlefield-grid-v2 {
+  left: var(--battle-reference-field-side, 52px) !important;
+  right: var(--battle-reference-field-side, 52px) !important;
+}
+
+/* 覆盖上一层 wide / ultrawide / compact 的固定左右边距。 */
+body.battle-immersive
+  .battle-fullscreen-final.battle-viewport-wide
+  .battlefield-wrap.battlefield-grid-v2,
+body.battle-immersive
+  .battle-fullscreen-final.battle-viewport-ultrawide
+  .battlefield-wrap.battlefield-grid-v2,
+body.battle-immersive
+  .battle-fullscreen-final.battle-viewport-compact
+  .battlefield-wrap.battlefield-grid-v2 {
+  left: var(--battle-reference-field-side, 52px) !important;
+  right: var(--battle-reference-field-side, 52px) !important;
+}
+
+body.battle-immersive .battle-fullscreen-final .battle-placement-layer,
+body.battle-immersive .battle-fullscreen-final #place-grid-overlay {
+  width: 100% !important;
+  max-width: none !important;
+}
+
+/* 不再使用整块橙色底板；否则透明蓝格会透出橙色而不是冰面。 */
+body.battle-immersive .battle-fullscreen-final .battle-placement-layer {
+  gap: 0 !important;
+  padding: 0 !important;
+  border: 2px solid #f2a12a !important;
+  border-radius: 7px !important;
+  background: transparent !important;
+  box-shadow:
+    0 1px 3px rgba(64, 36, 5, .28),
+    inset 0 0 0 1px rgba(255, 224, 124, .38) !important;
+}
+
+body.battle-immersive .battle-fullscreen-final .place-grid-cell {
+  border: 0 !important;
+  border-radius: 5px !important;
+  outline: 0 !important;
+  background-clip: padding-box !important;
+  box-shadow:
+    inset 0 0 0 2px #f2a12a,
+    inset 0 0 0 3px rgba(255, 226, 134, .20) !important;
+}
+
+/* 可放置格：以透明为主，只留极轻冷色提示，直接显示冰场本身的蓝色。 */
+body.battle-immersive .battle-fullscreen-final .place-grid-cell.place-ok,
+body.battle-immersive .battle-fullscreen-final .place-grid-cell.skill-target-ok,
+body.battle-immersive .battle-fullscreen-final .place-grid-cell.zone-ally.place-ok {
+  background: rgba(74, 187, 235, .07) !important;
+}
+
+/* 不可放置区域仍保留参考图中的红色，但降低遮挡，让底图仍有层次。 */
+body.battle-immersive .battle-fullscreen-final .place-grid-cell.place-forbidden,
+body.battle-immersive .battle-fullscreen-final .place-grid-cell.place-occupied {
+  background:
+    linear-gradient(180deg, rgba(244, 105, 105, .70), rgba(201, 55, 65, .64)) !important;
+}
+
+body.battle-immersive .battle-fullscreen-final .place-grid-cell.place-ok.place-hover,
+body.battle-immersive .battle-fullscreen-final .place-grid-cell.skill-target-ok.skill-target-hover {
+  background: rgba(88, 211, 255, .18) !important;
+  box-shadow:
+    inset 0 0 0 2px #f2a12a,
+    inset 0 0 0 4px rgba(239, 254, 255, .82),
+    inset 0 0 22px rgba(119, 225, 255, .42),
+    0 0 13px rgba(55, 199, 255, .78) !important;
+}
+
+/* 技能无效格和敌方格继续显示红色，不受透明蓝格规则影响。 */
+body.battle-immersive .battle-fullscreen-final .place-grid-cell.skill-target-forbidden,
+body.battle-immersive .battle-fullscreen-final .place-grid-cell.zone-enemy:not(.skill-target-ok) {
+  background:
+    linear-gradient(180deg, rgba(244, 105, 105, .70), rgba(201, 55, 65, .64)) !important;
+}
+
+body.battle-immersive .battle-fullscreen-final .place-grid-cell::before,
+body.battle-immersive .battle-fullscreen-final .place-grid-cell::after {
+  content: none !important;
+  display: none !important;
+}

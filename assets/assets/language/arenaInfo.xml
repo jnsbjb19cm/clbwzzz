@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<language name="arena">
+	<language key="jifen" value="积分"/>
+	<language key="paiming" value="排名"/>
+	<language key="shenglv" value="胜率"/>
+	<language key="zhankuang" value="本周战况"/>
+	<language key="wanchengPVP" value="已完成PVP战斗："/>
+	<language key="lingjiangPVP" value="领奖还需战斗："/>
+	<language key="yujijiangli" value="本周预计奖励："/>
+	<language key="shijian" value="截止时间："/>
+	<language key="guize" value="查看规则"/>
+	<language key="paihangbang" value="排行榜"/>
+	<language key="xunzhang" value="荣誉勋章："/>
+</language>

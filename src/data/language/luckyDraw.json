@@ -1,0 +1,11 @@
+{
+  "startDraw": "开始抽奖",
+  "drawDesc": "提升VIP等级可以增加翻牌次数。&#xa;幸运抽奖每天 00:00 重置。",
+  "curState": "当前状态",
+  "lowDraw": "普通翻牌",
+  "midDraw": "高级翻牌",
+  "highDraw": "特级翻牌",
+  "freeCount": "免费翻牌次数",
+  "goldCount": "红钻翻牌次数",
+  "pleaseDraw": "请翻牌"
+}

@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<data name="mail">
+	<mail id="0" name="普通邮件"/>
+	<mail id="1" name="道具"/>
+	<mail id="2" name="卡牌"/>
+	<mail id="3" name="金币" res="gold"/>
+	<mail id="4" name="红钻" res="red-diamond"/>
+	<mail id="5" name="蓝钻" res="blue-diamond"/>
+	<mail id="6" name="荣誉点"/>
+	<mail id="7" name="勋章" res="coin-badge"/>
+	<mail id="27" name="经验" res="exp-icon"/>
+</data>

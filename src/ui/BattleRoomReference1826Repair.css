@@ -1,0 +1,410 @@
+/*
+ * 1826 × 1117 reference-room repair tail.
+ *
+ * This file intentionally loads after every legacy room skin. It fixes the
+ * remaining overlap-prone areas and styles the live DOM produced by
+ * BattleRoomRebuild/BattleRoomDeckUiV3 without changing their business logic.
+ */
+
+.game-room.room-exact.room-reference-1826 {
+  font-size: clamp(12px, 1.06cqw, 20px) !important;
+  overflow: hidden !important;
+  background:
+    radial-gradient(ellipse at 50% 43%, rgba(244, 248, 167, .98) 0%, rgba(226, 239, 130, .97) 23%, rgba(188, 219, 83, .96) 48%, rgba(126, 177, 36, .98) 77%, #689219 100%) !important;
+}
+
+/* The old state guards used inline important geometry. The bridge removes it;
+ * these declarations are the single authoritative coordinates afterwards. */
+.game-room.room-exact.room-reference-1826 .room-left-side {
+  position: absolute !important;
+  left: 0 !important;
+  right: auto !important;
+  top: 0 !important;
+  bottom: auto !important;
+  width: 35.6517% !important;
+  height: 66.6069% !important;
+  transform: none !important;
+  z-index: 12 !important;
+}
+
+.game-room.room-exact.room-reference-1826 .room-right-side {
+  position: absolute !important;
+  left: 63.1435% !important;
+  right: auto !important;
+  top: 0 !important;
+  bottom: auto !important;
+  width: 36.3090% !important;
+  height: 66.6069% !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  overflow: visible !important;
+  border: 0 !important;
+  background: transparent !important;
+  transform: none !important;
+  z-index: 12 !important;
+  pointer-events: none !important;
+}
+
+.game-room.room-exact.room-reference-1826 .room-right-side .top-enemy {
+  position: absolute !important;
+  left: 51.8854% !important;
+  right: auto !important;
+  top: 0 !important;
+  bottom: auto !important;
+  width: 48.1146% !important;
+  height: 49.3279% !important;
+  margin: 0 !important;
+  transform: none !important;
+  pointer-events: auto !important;
+}
+
+.game-room.room-exact.room-reference-1826 .room-right-side .enemy-slots-row {
+  position: static !important;
+  inset: auto !important;
+  display: contents !important;
+  width: auto !important;
+  height: auto !important;
+  margin: 0 !important;
+  transform: none !important;
+}
+
+.game-room.room-exact.room-reference-1826 .room-right-side .enemy-slots-row > .enemy-slot:nth-child(1) {
+  position: absolute !important;
+  inset: auto !important;
+  left: 0 !important;
+  top: 50.2688% !important;
+  width: 48.8688% !important;
+  height: 49.8656% !important;
+  margin: 0 !important;
+  transform: none !important;
+  pointer-events: auto !important;
+}
+
+.game-room.room-exact.room-reference-1826 .room-right-side .enemy-slots-row > .enemy-slot:nth-child(2) {
+  position: absolute !important;
+  inset: auto !important;
+  left: 51.8854% !important;
+  top: 51.3441% !important;
+  width: 48.1146% !important;
+  height: 48.6559% !important;
+  margin: 0 !important;
+  transform: none !important;
+  pointer-events: auto !important;
+}
+
+/* Header/deck keep a clean corridor between the two team columns. */
+.game-room.room-exact.room-reference-1826 .room-top-bar {
+  left: 18.4556% !important;
+  top: 0 !important;
+  width: 62.8697% !important;
+  height: 7.5201% !important;
+}
+
+.game-room.room-exact.room-reference-1826 .room-center-area {
+  left: 19.2760% !important;
+  top: 10.2954% !important;
+  width: 61.2815% !important;
+  height: 22.2919% !important;
+}
+
+.game-room.room-exact.room-reference-1826 .deck-header {
+  box-sizing: border-box !important;
+  width: 99.73% !important;
+  height: 39.3574% !important;
+  padding-inline: 1.34cqw !important;
+  gap: .82cqw !important;
+}
+
+.game-room.room-exact.room-reference-1826 .deck-tabs {
+  gap: .82cqw !important;
+}
+
+.game-room.room-exact.room-reference-1826 .deck-tab {
+  height: 1.88cqw !important;
+  padding-left: 1.58cqw !important;
+  line-height: 1.88cqw !important;
+}
+
+.game-room.room-exact.room-reference-1826 .deck-tab::before {
+  width: 1.16cqw !important;
+  height: 1.16cqw !important;
+}
+
+.game-room.room-exact.room-reference-1826 .deck-tab::after {
+  font-size: 1.08cqw !important;
+  line-height: 1.88cqw !important;
+}
+
+.game-room.room-exact.room-reference-1826 .swap-card-btn {
+  flex-basis: 8.15cqw !important;
+  width: 8.15cqw !important;
+  height: 3.04cqw !important;
+  font-size: 1.24cqw !important;
+}
+
+.game-room.room-exact.room-reference-1826 .deck-slots-row {
+  box-sizing: border-box !important;
+  top: 45.7831% !important;
+  width: 100% !important;
+  height: 54.2169% !important;
+  grid-template-columns: repeat(10, minmax(0, 1fr)) !important;
+  gap: .10cqw !important;
+}
+
+/* VS is centered in the empty middle field rather than spanning into teams. */
+.game-room.room-exact.room-reference-1826 .room-vs {
+  left: 40.10% !important;
+  top: 39.00% !important;
+  width: 19.80% !important;
+  height: 21.00% !important;
+  transform: skewX(-7deg) scaleY(.90) !important;
+  font-size: 6.15cqw !important;
+  letter-spacing: -.40cqw !important;
+  -webkit-text-stroke-width: .18cqw !important;
+  z-index: 18 !important;
+}
+
+/* Bottom row: chat and map are siblings with a fixed gap. */
+.game-room.room-exact.room-reference-1826 .exact-room-chat {
+  left: .0548% !important;
+  top: 66.5175% !important;
+  bottom: auto !important;
+  width: 47.3713% !important;
+  height: 32.5873% !important;
+  z-index: 30 !important;
+}
+
+.game-room.room-exact.room-reference-1826 .room-mid-actions {
+  position: absolute !important;
+  inset: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  display: block !important;
+  transform: none !important;
+  overflow: visible !important;
+  z-index: 31 !important;
+  pointer-events: none !important;
+}
+
+.game-room.room-exact.room-reference-1826 .room-mid-actions > .mid-btn,
+.game-room.room-exact.room-reference-1826 .room-mid-actions > button {
+  position: absolute !important;
+  inset: auto !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+  margin: 0 !important;
+  transform: none !important;
+  pointer-events: auto !important;
+}
+
+.game-room.room-exact.room-reference-1826 .dice-btn {
+  left: 47.9737% !important;
+  top: 66.5175% !important;
+  width: 14.8959% !important;
+  height: 22.2919% !important;
+  border-radius: .70cqw !important;
+  overflow: hidden !important;
+}
+
+/* Old pseudo text "死亡模式" collides with the requested live map type. */
+.game-room.room-exact.room-reference-1826 .dice-btn::after {
+  display: none !important;
+}
+
+.game-room.room-exact.room-reference-1826 .dice-btn .room-vector-label,
+.game-room.room-exact.room-reference-1826 .dice-label {
+  left: .72cqw !important;
+  top: .48cqw !important;
+  color: #ffb329 !important;
+  font-size: 1.02cqw !important;
+  -webkit-text-stroke: .055cqw #794000 !important;
+}
+
+.game-room.room-exact.room-reference-1826 .dice-btn .room-vector-icon,
+.game-room.room-exact.room-reference-1826 .dice-icon {
+  left: 50% !important;
+  top: 48% !important;
+  width: 6.15cqw !important;
+  height: 5.40cqw !important;
+}
+
+.game-room.room-exact.room-reference-1826 .reference-room-map-type {
+  position: absolute !important;
+  right: .52cqw !important;
+  bottom: .42cqw !important;
+  z-index: 8 !important;
+  max-width: 10.7cqw !important;
+  padding: .20cqw .48cqw !important;
+  overflow: hidden !important;
+  border: .06cqw solid rgba(87, 113, 10, .55) !important;
+  border-radius: .48cqw !important;
+  color: #f7efad !important;
+  background: rgba(67, 105, 10, .72) !important;
+  box-shadow: inset 0 .08cqw .10cqw rgba(255,255,255,.16) !important;
+  font-size: .83cqw !important;
+  font-weight: 900 !important;
+  line-height: 1.25 !important;
+  white-space: nowrap !important;
+  text-overflow: ellipsis !important;
+  pointer-events: none !important;
+}
+
+.game-room.room-exact.room-reference-1826 .dice-btn[data-map-random-pending="1"],
+.game-room.room-exact.room-reference-1826[data-map-random-pending="1"] .dice-btn {
+  filter: brightness(.94) saturate(.92) !important;
+}
+
+.game-room.room-exact.room-reference-1826 .skill-btn {
+  left: 63.9649% !important;
+  top: 69.1137% !important;
+  width: 10.4053% !important;
+  height: 16.8308% !important;
+}
+
+.game-room.room-exact.room-reference-1826 .team-btn {
+  left: 75.7941% !important;
+  top: 69.1137% !important;
+  width: 10.5696% !important;
+  height: 16.8308% !important;
+}
+
+.game-room.room-exact.room-reference-1826 .skill-btn .room-vector-label,
+.game-room.room-exact.room-reference-1826 .team-btn .room-vector-label,
+.game-room.room-exact.room-reference-1826 .skill-label,
+.game-room.room-exact.room-reference-1826 .team-label {
+  font-size: 1.55cqw !important;
+  -webkit-text-stroke-width: .065cqw !important;
+}
+
+.game-room.room-exact.room-reference-1826 .skill-btn .room-vector-icon,
+.game-room.room-exact.room-reference-1826 .team-btn .room-vector-icon,
+.game-room.room-exact.room-reference-1826 .skill-icon,
+.game-room.room-exact.room-reference-1826 .team-icon {
+  top: 35% !important;
+  width: 4.55cqw !important;
+  height: 4.10cqw !important;
+}
+
+.game-room.room-exact.room-reference-1826 .room-ready-btn {
+  position: absolute !important;
+  left: 87.5685% !important;
+  right: auto !important;
+  top: 69.0242% !important;
+  bottom: auto !important;
+  width: 10.5696% !important;
+  height: 17.0098% !important;
+  margin: 0 !important;
+  transform: none !important;
+  z-index: 32 !important;
+}
+
+.game-room.room-exact.room-reference-1826 .room-ready-btn .ready-text {
+  font-size: 2.05cqw !important;
+  -webkit-text-stroke-width: .10cqw !important;
+}
+
+/* Gold recharge sits directly under the random-map panel and never shares the
+ * footer's horizontal lane. */
+.game-room.room-exact.room-reference-1826 .reference-room-recharge {
+  left: 48.55% !important;
+  top: 89.15% !important;
+  width: 13.25% !important;
+  height: 6.70% !important;
+  z-index: 38 !important;
+}
+
+.game-room.room-exact.room-reference-1826 .reference-room-recharge > span {
+  font-size: 1.20cqw !important;
+}
+
+/* The old footer started at 48.6%, exactly on top of Random Map/Recharge.
+ * Move it to the right-hand lane below Skill/Switch/Ready. */
+.game-room.room-exact.room-reference-1826 .room-bottom-bar {
+  position: absolute !important;
+  left: 63.35% !important;
+  right: 1.05% !important;
+  top: 87.42% !important;
+  bottom: auto !important;
+  width: auto !important;
+  height: 11.00% !important;
+  margin: 0 !important;
+  display: grid !important;
+  grid-template-columns: repeat(8, minmax(0, 1fr)) !important;
+  gap: .18cqw !important;
+  transform: none !important;
+  z-index: 40 !important;
+}
+
+.game-room.room-exact.room-reference-1826 .room-bottom-bar .bottom-btn {
+  min-width: 0 !important;
+  min-height: 0 !important;
+  height: 100% !important;
+  margin: 0 !important;
+  padding: .18cqw .02cqw .10cqw !important;
+  gap: .08cqw !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: flex-end !important;
+  overflow: hidden !important;
+  border: 0 !important;
+  border-radius: .38cqw !important;
+  color: #fff1ad !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+.game-room.room-exact.room-reference-1826 .room-bottom-bar .bottom-btn:hover {
+  background: rgba(117, 154, 39, .32) !important;
+}
+
+.game-room.room-exact.room-reference-1826 .room-bottom-bar .room-vector-icon {
+  width: 2.75cqw !important;
+  height: 2.75cqw !important;
+  margin: 0 !important;
+  color: #ffe568 !important;
+  filter: drop-shadow(.08cqw .10cqw .05cqw rgba(48, 58, 7, .42)) !important;
+}
+
+.game-room.room-exact.room-reference-1826 .room-bottom-bar .room-vector-label {
+  font-size: .70cqw !important;
+  color: #f5efaa !important;
+  line-height: 1.1 !important;
+  text-shadow: 0 .06cqw .04cqw rgba(38, 48, 5, .75) !important;
+}
+
+.game-room.room-exact.room-reference-1826 .room-bottom-bar .bottom-btn[data-action="shop"] .room-vector-icon { color: #ffd145 !important; }
+.game-room.room-exact.room-reference-1826 .room-bottom-bar .bottom-btn[data-action="bag"] .room-vector-icon { color: #b8ed63 !important; }
+.game-room.room-exact.room-reference-1826 .room-bottom-bar .bottom-btn[data-action="smithy"] .room-vector-icon { color: #ffd67c !important; }
+.game-room.room-exact.room-reference-1826 .room-bottom-bar .bottom-btn[data-action="hero"] .room-vector-icon { color: #93e6ff !important; }
+.game-room.room-exact.room-reference-1826 .room-bottom-bar .bottom-btn[data-action="mail"] .room-vector-icon { color: #ffbd79 !important; }
+.game-room.room-exact.room-reference-1826 .room-bottom-bar .bottom-btn[data-action="friend"] .room-vector-icon { color: #ff9ab8 !important; }
+
+/* Keep overlays above the repaired stage. */
+.game-room.room-exact.room-reference-1826 .card-drawer,
+.game-room.room-exact.room-reference-1826 .room-setting-modal,
+.game-room.room-exact.room-reference-1826 .room-rule-modal,
+.game-room.room-exact.room-reference-1826 .kick-modal,
+.game-room.room-exact.room-reference-1826 .room-toast,
+.game-room.room-exact.room-reference-1826 .more-dropdown,
+.game-room.room-exact.room-reference-1826 .room-tool-overlay {
+  z-index: 120 !important;
+}
+
+/* Drawer opens below the deck strip instead of covering header/player columns. */
+.game-room.room-exact.room-reference-1826 .card-drawer {
+  left: 19.65% !important;
+  top: 33.25% !important;
+  width: 60.70% !important;
+  height: 52.30% !important;
+  transform-origin: 50% 0 !important;
+}
+
+@media (max-aspect-ratio: 1826/1117) {
+  .game-room.room-exact.room-reference-1826 {
+    width: calc(100vh * 1.63473590) !important;
+    height: 100vh !important;
+  }
+}

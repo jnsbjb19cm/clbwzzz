@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<language name="rank">
+	<language key="realeyRank" value="排名"/>
+    <language key="rankName" value="昵称"/>
+    <language key="rankLevel" value="等级"/>
+    <language key="rankExp" value="经验"/>
+    <language key="rankMyLevel" value="您的等级"/>
+    <language key="rankMyExp" value="您的经验"/>
+    <language key="rankGold" value="金币"/>
+    <language key="rankMyGold" value="您的金币"/>
+    <language key="rankRateOfStory" value="最远关卡"/>
+    <language key="rankPurpleCard" value="紫卡数"/>
+    <language key="rankRedCard" value="红卡数"/>
+    <language key="rankOrangeCard" value="橙卡数"/>
+    <language key="rankMyPurple" value="您的紫卡数"/>
+    <language key="rankMyRed" value="您的红卡数"/>
+    <language key="rankMyOrange" value="您的橙卡数"/>
+    <language key="rankCardPercent" value="收集率"/>
+    <language key="myRank" value="您的排名："/>
+    <language key="ABoy" value="男"/>
+    <language key="AGirl" value="女"/>
+    <language key="rankNoctice" value="榜单每天凌晨00:00刷新"/>
+    <language key="rankzengjiachallengeTime" value="增加"/>
+    <language key="rankzengjiachallengeTimeTips" value="增加1次挑战次数"/>
+    <language key="rankBuyTimeOverTips" value="今日购买次数已用完"/>
+    <language key="rankArenaChallengeUseOver" value="挑战次数已用完"/>
+    <language key="rankArenaChallengeTimeMax" value="你的次数已满，请挑战完后再买"/>
+    <language key="rankArena_helpDesc0" value="挑战并击败对手，可抢占对方的排名，并可立即获得相应荣誉点数x6倍的奖励。"/>
+    <language key="rankArena_helpDesc1" value="根据排名，每10分钟可获得一次荣誉点奖励。"/>
+    <language key="rankArena_helpDesc2" value="荣誉点可在荣誉商店兑换各种奖励。"/>
+ </language>

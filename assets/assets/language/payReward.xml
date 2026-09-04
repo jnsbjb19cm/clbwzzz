@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<language name="payReward">
+	<language key="payReward_getReward" value="领取奖励"/>
+	<language key="payReward_alert" value="完成首次充值即可领取大奖"/>
+	<language key="payReward_gotoPay" value="前往充值"/>
+	<language key="payReward_goOnPay" value="继续充值"/>
+	<language key="payReward_chong" value="充 "/>	
+	<language key="payReward_song" value=" 送 "/>
+	<language key="payReward_appstorePoint" value=" ￥"/>
+	<language key="payReward_gain" value="充{0}，您将获得{1}"/>
+	<language key="payReward_X2" value="X 2"/>
+	<language key="payReward_nextVip" value="成为下阶段VIP即可获得"/>
+	<language key="payReward_maxVip" value="您已获得所有VIP奖励"/>
+	<language key="payReward_huobi" value=""/>
+</language>

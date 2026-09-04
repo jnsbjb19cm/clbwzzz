@@ -1,0 +1,243 @@
+/*
+ * 战斗场最终视口层：保持1248×832逻辑坐标不变，扩大实际战斗区域与手牌，
+ * 底部HUD改为覆盖层，避免继续挤压战场高度。
+ */
+body.battle-immersive,
+body.battle-immersive .app-shell-X,
+body.battle-immersive .view-root-X,
+body.battle-immersive .battle-immersive-page {
+  width: 100vw !important;
+  height: 100dvh !important;
+  min-height: 100dvh !important;
+  max-height: 100dvh !important;
+  overflow: hidden !important;
+}
+
+body.battle-immersive .battle-immersive-page {
+  position: relative !important;
+}
+
+body.battle-immersive .battle-game-wrap {
+  position: absolute !important;
+  inset: 0 !important;
+  width: 100vw !important;
+  height: 100dvh !important;
+  min-height: 0 !important;
+  overflow: hidden !important;
+  background:
+    radial-gradient(circle at 50% 45%, rgba(80,157,65,.42), transparent 62%),
+    #1a5d2c !important;
+}
+
+body.battle-immersive .battle-game-wrap > .game-container {
+  position: absolute !important;
+  left: 50% !important;
+  top: 50% !important;
+  width: 1248px !important;
+  height: 832px !important;
+  margin: 0 !important;
+  transform: translate(-50%, -50%) scale(var(--battle-scale, 1)) !important;
+  transform-origin: center center !important;
+  overflow: hidden !important;
+  border-radius: 10px !important;
+}
+
+/* 战场从原来的左右92px收至24px，纵向也尽量铺满。 */
+body.battle-immersive .game-container.battlefield-runtime-audited .battlefield-wrap {
+  left: 24px !important;
+  right: 24px !important;
+  top: 99px !important;
+  bottom: 14px !important;
+  width: auto !important;
+  height: auto !important;
+  overflow: visible !important;
+}
+
+body.battle-immersive .game-container.battlefield-runtime-audited .battle-canvas,
+body.battle-immersive .game-container.battlefield-runtime-audited .place-grid-overlay,
+body.battle-immersive .game-container.battlefield-runtime-audited .battle-obstacle-layer {
+  position: absolute !important;
+  inset: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+}
+
+body.battle-immersive .game-container.battlefield-runtime-audited .base-hp-slot.player {
+  left: 18px !important;
+  top: 91px !important;
+}
+
+body.battle-immersive .game-container.battlefield-runtime-audited .base-hp-slot.enemy {
+  right: 18px !important;
+  top: 91px !important;
+}
+
+/* 顶部卡牌区由874×95扩大到1110×114。 */
+body.battle-immersive .game-container.battlefield-runtime-audited .top-ui {
+  left: 50% !important;
+  top: 2px !important;
+  width: 1110px !important;
+  max-width: calc(100% - 54px) !important;
+  height: 114px !important;
+  transform: translateX(-50%) !important;
+  overflow: hidden !important;
+}
+
+body.battle-immersive .game-container.battlefield-runtime-audited .top-ui .slots-container {
+  position: absolute !important;
+  left: 142px !important;
+  right: 7px !important;
+  top: 25px !important;
+  width: auto !important;
+  height: 84px !important;
+  overflow: hidden !important;
+}
+
+body.battle-immersive #hand.battle-hand-large {
+  position: absolute !important;
+  inset: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  display: grid !important;
+  grid-template-columns: repeat(10, minmax(0, 1fr)) !important;
+  grid-template-rows: 1fr !important;
+  gap: 2px !important;
+  align-items: stretch !important;
+  overflow: hidden !important;
+}
+
+body.battle-immersive #hand.battle-hand-large .deck-slot {
+  position: relative !important;
+  left: auto !important;
+  top: auto !important;
+  width: auto !important;
+  min-width: 0 !important;
+  max-width: none !important;
+  height: 84px !important;
+  min-height: 84px !important;
+  margin: 0 !important;
+  transform: none !important;
+  overflow: hidden !important;
+}
+
+body.battle-immersive #hand.battle-hand-large .slot-face {
+  inset: 1px 1px 20px !important;
+}
+
+body.battle-immersive #hand.battle-hand-large .slot-portrait {
+  left: 0 !important;
+  top: 2% !important;
+  width: 100% !important;
+  height: 98% !important;
+  object-fit: contain !important;
+}
+
+body.battle-immersive #hand.battle-hand-large .slot-stars {
+  left: 3px !important;
+  right: 3px !important;
+  top: 1px !important;
+  width: calc(100% - 6px) !important;
+  height: 13px !important;
+}
+
+body.battle-immersive #hand.battle-hand-large .slot-meta {
+  left: 2px !important;
+  right: 2px !important;
+  bottom: 1px !important;
+  height: 19px !important;
+}
+
+body.battle-immersive #hand.battle-hand-large .slot-cost {
+  min-width: 30px !important;
+  height: 18px !important;
+  line-height: 18px !important;
+  font-size: 14px !important;
+}
+
+body.battle-immersive #hand.battle-hand-large .slot-function,
+body.battle-immersive #hand.battle-hand-large .slot-function img {
+  width: 18px !important;
+  height: 18px !important;
+}
+
+body.battle-immersive #hand.battle-hand-large .slot-cd {
+  font-size: 27px !important;
+  text-shadow: 0 2px 4px #000 !important;
+}
+
+/* HUD不再参与flex高度计算，覆盖在战场底部。 */
+body.battle-immersive .battle-immersive-dock {
+  position: absolute !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  z-index: 90 !important;
+  width: 100% !important;
+  height: 62px !important;
+  min-height: 62px !important;
+  max-height: 62px !important;
+  padding: 5px 10px 7px !important;
+  background: linear-gradient(180deg, rgba(7,20,14,.12), rgba(4,14,9,.88)) !important;
+  pointer-events: none !important;
+}
+
+body.battle-immersive .battle-immersive-dock > * {
+  pointer-events: auto !important;
+}
+
+/* 自定义预览只跟随鼠标，不吸附到格子中心。 */
+body.battle-immersive #drag-ghost {
+  position: fixed !important;
+  z-index: 100000 !important;
+  width: 118px !important;
+  min-width: 118px !important;
+  height: 132px !important;
+  margin: 0 !important;
+  transform: translate(-8%, -72%) !important;
+  transform-origin: center !important;
+  pointer-events: none !important;
+  border: 0 !important;
+  outline: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+body.battle-immersive #drag-ghost-canvas {
+  width: 112px !important;
+  height: 112px !important;
+  display: block !important;
+  filter: drop-shadow(0 6px 5px rgba(0,0,0,.58)) !important;
+}
+
+body.battle-immersive #drag-ghost-label {
+  display: block !important;
+  max-width: 118px !important;
+  margin-top: -3px !important;
+  padding: 2px 6px !important;
+  overflow: hidden !important;
+  color: #fff !important;
+  font-size: 14px !important;
+  font-weight: 800 !important;
+  line-height: 1.15 !important;
+  text-align: center !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+  border-radius: 7px !important;
+  background: rgba(5,16,11,.76) !important;
+  text-shadow: 0 1px 2px #000 !important;
+}
+
+body.battle-immersive #drag-ghost.hidden {
+  display: none !important;
+}
+
+@media (max-width: 900px), (max-height: 650px) {
+  body.battle-immersive .game-container.battlefield-runtime-audited .top-ui {
+    width: 1088px !important;
+  }
+
+  body.battle-immersive .battle-immersive-dock {
+    height: 54px !important;
+    min-height: 54px !important;
+  }
+}

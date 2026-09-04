@@ -1,0 +1,216 @@
+{
+  "res": "115",
+  "frameW": 320,
+  "frameH": 320,
+  "animations": {
+    "yidong": {
+      "frameRate": 12,
+      "frames": [
+        {
+          "x": 0,
+          "y": 0,
+          "w": 320,
+          "h": 320,
+          "bounds": {
+            "left": 135,
+            "top": 139,
+            "right": 185,
+            "bottom": 182,
+            "opaque": 1724
+          }
+        }
+      ],
+      "loop": true,
+      "duration": 0.041666666666666664
+    },
+    "baoza": {
+      "frameRate": 12,
+      "frames": [
+        {
+          "x": 0,
+          "y": 320,
+          "w": 320,
+          "h": 320,
+          "bounds": {
+            "left": 123,
+            "top": 116,
+            "right": 203,
+            "bottom": 199,
+            "opaque": 4323
+          }
+        },
+        {
+          "x": 0,
+          "y": 640,
+          "w": 320,
+          "h": 320,
+          "bounds": {
+            "left": 115,
+            "top": 112,
+            "right": 214,
+            "bottom": 209,
+            "opaque": 5555
+          }
+        },
+        {
+          "x": 0,
+          "y": 960,
+          "w": 320,
+          "h": 320,
+          "bounds": {
+            "left": 106,
+            "top": 107,
+            "right": 226,
+            "bottom": 220,
+            "opaque": 6609
+          }
+        },
+        {
+          "x": 0,
+          "y": 1280,
+          "w": 320,
+          "h": 320,
+          "bounds": {
+            "left": 97,
+            "top": 98,
+            "right": 238,
+            "bottom": 232,
+            "opaque": 7315
+          }
+        },
+        {
+          "x": 0,
+          "y": 1600,
+          "w": 320,
+          "h": 320,
+          "bounds": {
+            "left": 110,
+            "top": 99,
+            "right": 220,
+            "bottom": 213,
+            "opaque": 6080
+          }
+        },
+        {
+          "x": 0,
+          "y": 1920,
+          "w": 320,
+          "h": 320,
+          "bounds": {
+            "left": 106,
+            "top": 94,
+            "right": 224,
+            "bottom": 217,
+            "opaque": 6959
+          }
+        },
+        {
+          "x": 0,
+          "y": 2240,
+          "w": 320,
+          "h": 320,
+          "bounds": {
+            "left": 103,
+            "top": 90,
+            "right": 229,
+            "bottom": 221,
+            "opaque": 7838
+          }
+        },
+        {
+          "x": 0,
+          "y": 2560,
+          "w": 320,
+          "h": 320,
+          "bounds": {
+            "left": 99,
+            "top": 86,
+            "right": 235,
+            "bottom": 224,
+            "opaque": 8807
+          }
+        },
+        {
+          "x": 0,
+          "y": 2880,
+          "w": 320,
+          "h": 320,
+          "bounds": {
+            "left": 96,
+            "top": 81,
+            "right": 237,
+            "bottom": 228,
+            "opaque": 9866
+          }
+        },
+        {
+          "x": 0,
+          "y": 3200,
+          "w": 320,
+          "h": 320,
+          "bounds": {
+            "left": 92,
+            "top": 77,
+            "right": 241,
+            "bottom": 232,
+            "opaque": 10928
+          }
+        },
+        {
+          "x": 0,
+          "y": 3520,
+          "w": 320,
+          "h": 320,
+          "bounds": {
+            "left": 89,
+            "top": 73,
+            "right": 245,
+            "bottom": 235,
+            "opaque": 12083
+          }
+        },
+        {
+          "x": 0,
+          "y": 3840,
+          "w": 320,
+          "h": 320,
+          "bounds": {
+            "left": 86,
+            "top": 69,
+            "right": 252,
+            "bottom": 239,
+            "opaque": 13313
+          }
+        },
+        {
+          "x": 0,
+          "y": 4160,
+          "w": 320,
+          "h": 320,
+          "bounds": {
+            "left": 82,
+            "top": 64,
+            "right": 253,
+            "bottom": 242,
+            "opaque": 14556
+          }
+        },
+        {
+          "x": 0,
+          "y": 4480,
+          "w": 320,
+          "h": 320,
+          "bounds": {
+            "left": 79,
+            "top": 60,
+            "right": 258,
+            "bottom": 246,
+            "opaque": 15855
+          }
+        }
+      ],
+      "loop": false,
+      "duration": 0.6666666666666666
+    }
+  }
+}

@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<language name="pay">
+    <language key="pay_hongzuan" value="红钻"/>
+    <language key="pay_goumai" value="购买"/>
+ </language>

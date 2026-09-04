@@ -1,0 +1,44 @@
+.pvp-deck-editor-body .game-room > :not(#card-drawer) {
+  display: none !important;
+}
+
+.pvp-deck-editor-body #card-drawer.card-drawer-v3-host {
+  position: absolute !important;
+  inset: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  max-width: none !important;
+  max-height: none !important;
+  transform: none !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+  pointer-events: auto !important;
+  border: 0 !important;
+  background: linear-gradient(180deg, rgba(117, 171, 61, .98), rgba(72, 127, 45, .98)) !important;
+}
+
+.pvp-deck-editor-body #card-drawer .deck-drawer-v3 {
+  position: absolute !important;
+  inset: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  display: grid !important;
+  grid-template-rows: 46px 30px minmax(0, 1fr) 58px !important;
+  padding: 8px 12px !important;
+  box-sizing: border-box !important;
+}
+
+.pvp-deck-editor-body .v3-drawer-body {
+  min-height: 0 !important;
+  grid-template-columns: 96px minmax(0, 1fr) 86px !important;
+}
+
+.pvp-deck-editor-body .v3-drawer-grid {
+  min-height: 0 !important;
+  overflow: hidden !important;
+}
+
+.pvp-deck-editor-body .v3-drawer-actions {
+  position: static !important;
+  align-self: end !important;
+}

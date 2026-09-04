@@ -1,0 +1,15 @@
+[
+  {"item_id":80,"item_name":"洗练石·品质","item_img":80,"desc":"选择一张需要洗练的卡牌，重新洗练其制作品质。","function":20,"max_num":99,"item_type":1,"show_type":"功能道具","effect_value":1,"quality":3,"sell_price":2500},
+  {"item_id":81,"item_name":"洗练石·属性","item_img":81,"desc":"选择一张需要洗练的卡牌，重新洗练其强化属性。","function":21,"max_num":99,"item_type":1,"show_type":"功能道具","effect_value":1,"quality":3,"sell_price":1800},
+  {"item_id":82,"item_name":"品质升阶石","item_img":82,"desc":"选择一张卡牌，将其制作品质提升一级，最高传说品质。","function":22,"max_num":99,"item_type":1,"show_type":"功能道具","effect_value":1,"quality":4,"sell_price":5000},
+  {"item_id":83,"item_name":"逆天觉醒符","item_img":83,"desc":"选择一张卡牌，将其制作品质直接提升为传说品质。","function":23,"max_num":99,"item_type":1,"show_type":"功能道具","effect_value":5,"quality":5,"sell_price":15000},
+  {"item_id":84,"item_name":"技能书·攻击","item_img":84,"desc":"获得1点攻击系技能点，可用于攻击系天赋。","function":24,"max_num":99,"item_type":1,"show_type":"技能书","effect_value":1,"quality":4,"sell_price":1200},
+  {"item_id":85,"item_name":"技能书·防御","item_img":85,"desc":"获得1点防御系技能点，可用于防御系天赋。","function":25,"max_num":99,"item_type":1,"show_type":"技能书","effect_value":1,"quality":4,"sell_price":1200},
+  {"item_id":86,"item_name":"技能书·辅助","item_img":86,"desc":"获得1点辅助系技能点，可用于辅助系天赋。","function":26,"max_num":99,"item_type":1,"show_type":"技能书","effect_value":1,"quality":4,"sell_price":1200},
+  {"item_id":87,"item_name":"技能遗忘卷轴","item_img":87,"desc":"重置已经学习的英雄技能，并返还可重新分配的技能点。","function":27,"max_num":99,"item_type":1,"show_type":"功能道具","effect_value":1,"quality":4,"sell_price":8000},
+  {"item_id":88,"item_name":"卡牌重置石","item_img":88,"desc":"选择一张卡牌，将强化星级重置并返还已消耗的强化粉。","function":28,"max_num":99,"item_type":1,"show_type":"功能道具","effect_value":1,"quality":4,"sell_price":3000},
+  {"item_id":89,"item_name":"经验转移符","item_img":89,"desc":"选择两张卡牌，将第一张卡牌已积累的卡牌经验转移到第二张。","function":29,"max_num":99,"item_type":1,"show_type":"功能道具","effect_value":1,"quality":4,"sell_price":1500},
+  {"item_id":90,"item_name":"星辰命名笔","item_img":90,"desc":"选择一张卡牌，为该卡牌实例设置自定义名称。","function":30,"max_num":99,"item_type":1,"show_type":"功能道具","effect_value":1,"quality":4,"sell_price":500},
+  {"item_id":91,"item_name":"羁绊觉醒石","item_img":91,"desc":"激活下一场PVE战斗的生命护盾，护盾值为基地最大生命的20%。","function":31,"max_num":99,"item_type":1,"show_type":"战斗道具","effect_value":20,"quality":4,"sell_price":3500},
+  {"item_id":92,"item_name":"背包扩容符","item_img":92,"desc":"永久增加10个道具背包格，不能超过背包最大容量。","function":32,"max_num":99,"item_type":1,"show_type":"功能道具","effect_value":10,"quality":4,"sell_price":2000}
+]

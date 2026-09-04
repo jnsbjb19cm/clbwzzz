@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with TexturePacker http://texturepacker.com-->
+<!-- $TexturePacker:SmartUpdate:42c2921f8779146f1d7400575b4863af$ -->
+<TextureAtlas imagePath="battle.png">
+    <SubTexture name="HeroHP_big_bg" x="2" y="549" width="854" height="76"/>
+    <SubTexture name="HeroHP_left_bg" x="640" y="672" width="197" height="43"/>
+    <SubTexture name="HeroHP_right_bg" x="640" y="627" width="197" height="43"/>
+    <SubTexture name="account_panel_bg" x="2" y="207" width="893" height="340"/>
+    <SubTexture name="battle_auto" x="640" y="717" width="167" height="56"/>
+    <SubTexture name="battle_blue_bg" x="897" y="484" width="79" height="34"/>
+    <SubTexture name="battle_card_bg" x="2" y="2" width="923" height="203"/>
+    <SubTexture name="battle_card_mask" x="897" y="268" width="106" height="113" frameX="-3" frameY="-3" frameWidth="112" frameHeight="121"/>
+    <SubTexture name="battle_hero_hp_0" x="858" y="615" width="23" height="31"/>
+    <SubTexture name="battle_hero_hp_1" x="809" y="750" width="21" height="31"/>
+    <SubTexture name="battle_hero_hp_2" x="839" y="679" width="22" height="31"/>
+    <SubTexture name="battle_hero_hp_3" x="809" y="717" width="21" height="31"/>
+    <SubTexture name="battle_hero_hp_4" x="978" y="475" width="24" height="29" frameX="0" frameY="-1" frameWidth="24" frameHeight="31"/>
+    <SubTexture name="battle_hero_hp_5" x="839" y="712" width="21" height="31"/>
+    <SubTexture name="battle_hero_hp_6" x="858" y="582" width="23" height="31"/>
+    <SubTexture name="battle_hero_hp_7" x="839" y="648" width="23" height="29" frameX="0" frameY="-1" frameWidth="23" frameHeight="31"/>
+    <SubTexture name="battle_hero_hp_8" x="858" y="549" width="23" height="31"/>
+    <SubTexture name="battle_hero_hp_9" x="978" y="506" width="23" height="31"/>
+    <SubTexture name="battle_setting_btn" x="808" y="791" width="54" height="54"/>
+    <SubTexture name="battle_skil_bg" x="2" y="843" width="565" height="73"/>
+    <SubTexture name="battle_skill_cell_bg" x="927" y="2" width="80" height="62"/>
+    <SubTexture name="battle_talk_arrow" x="897" y="207" width="26" height="26"/>
+    <SubTexture name="battle_talk_dialog_bg" x="978" y="398" width="43" height="43"/>
+    <SubTexture name="cell_able" x="897" y="383" width="79" height="99"/>
+    <SubTexture name="cell_default" x="927" y="167" width="79" height="99"/>
+    <SubTexture name="cell_skill_range" x="927" y="66" width="79" height="99"/>
+    <SubTexture name="escape-icon" x="752" y="775" width="54" height="54"/>
+    <SubTexture name="hero_bg_100" x="883" y="590" width="61" height="443"/>
+    <SubTexture name="hero_bg_20" x="946" y="598" width="61" height="443"/>
+    <SubTexture name="lose_icon" x="2" y="918" width="477" height="227"/>
+    <SubTexture name="number_g_0" x="1005" y="358" width="13" height="18"/>
+    <SubTexture name="number_g_1" x="1010" y="443" width="12" height="18"/>
+    <SubTexture name="number_g_2" x="1008" y="202" width="14" height="18"/>
+    <SubTexture name="number_g_3" x="1008" y="182" width="14" height="18"/>
+    <SubTexture name="number_g_4" x="1008" y="162" width="14" height="18"/>
+    <SubTexture name="number_g_5" x="1005" y="338" width="13" height="18"/>
+    <SubTexture name="number_g_6" x="1005" y="318" width="13" height="18"/>
+    <SubTexture name="number_g_7" x="1005" y="298" width="13" height="18"/>
+    <SubTexture name="number_g_8" x="1008" y="262" width="13" height="18"/>
+    <SubTexture name="number_g_9" x="1008" y="242" width="13" height="18"/>
+    <SubTexture name="number_g_add" x="1005" y="282" width="15" height="14" frameX="0" frameY="-2" frameWidth="15" frameHeight="18"/>
+    <SubTexture name="number_g_d" x="1010" y="463" width="8" height="8" frameX="0" frameY="-10" frameWidth="8" frameHeight="18"/>
+    <SubTexture name="number_g_r" x="978" y="443" width="30" height="30"/>
+    <SubTexture name="number_r_0" x="1008" y="222" width="13" height="18"/>
+    <SubTexture name="number_r_1" x="1005" y="378" width="12" height="18"/>
+    <SubTexture name="number_r_2" x="1008" y="142" width="14" height="18"/>
+    <SubTexture name="number_r_3" x="1009" y="62" width="13" height="18"/>
+    <SubTexture name="number_r_4" x="1008" y="122" width="14" height="18"/>
+    <SubTexture name="number_r_5" x="1009" y="42" width="13" height="18"/>
+    <SubTexture name="number_r_6" x="1009" y="22" width="13" height="18"/>
+    <SubTexture name="number_r_7" x="1008" y="102" width="14" height="18"/>
+    <SubTexture name="number_r_8" x="1008" y="82" width="14" height="18"/>
+    <SubTexture name="number_r_9" x="1009" y="2" width="13" height="18"/>
+    <SubTexture name="number_r_d" x="991" y="383" width="8" height="8" frameX="0" frameY="-10" frameWidth="8" frameHeight="18"/>
+    <SubTexture name="number_r_r" x="978" y="443" width="30" height="30"/>
+    <SubTexture name="number_r_sub" x="978" y="383" width="11" height="8" frameX="0" frameY="-5" frameWidth="11" frameHeight="18"/>
+    <SubTexture name="other" x="897" y="520" width="66" height="33"/>
+    <SubTexture name="own" x="883" y="555" width="65" height="33"/>
+    <SubTexture name="pause-icon" x="696" y="775" width="54" height="54"/>
+    <SubTexture name="resourceIcon" x="965" y="539" width="57" height="57"/>
+    <SubTexture name="select_flag" x="897" y="235" width="26" height="25"/>
+    <SubTexture name="stage_get_star" x="640" y="831" width="46" height="44"/>
+    <SubTexture name="stage_get_star_bg" x="832" y="745" width="46" height="44"/>
+    <SubTexture name="star-icon" x="640" y="775" width="54" height="54"/>
+    <SubTexture name="win_icon" x="2" y="627" width="636" height="214"/>
+</TextureAtlas>

@@ -1,0 +1,21 @@
+{
+  "rank_rongyu": "荣誉点",
+  "rank_rongyuTip": "购买商品会扣除相应的荣誉点",
+  "rank_rongyushangdian": "荣誉商店",
+  "rank_tiaozhanTip": "挑战排名越前荣誉点奖励越高",
+  "rank_huoderongyu": "每次挑战成功可得到排行相应的荣誉点\\n每隔10分钟得到荣誉点 :",
+  "rank_cishu": "今日剩余挑战次数：",
+  "rank_paiming": "排名",
+  "rank_xingming": "姓名",
+  "rank_sex": "性别",
+  "rank_shenglv": "胜率",
+  "rank_zhandouli": "战斗力",
+  "rank_nowrongyu": "当前荣誉点：",
+  "rank_wodepaiming": "我的当前排名：",
+  "rank_jijinru": "级开放",
+  "rank_tiaozhan": "挑战",
+  "rank_close": "{0}还有  {1}{2}  关闭{3}",
+  "rank_open": "{0}还有  {1}{2}  开放{3}",
+  "rank_closing": "关闭中",
+  "rank_opening": "开放中"
+}

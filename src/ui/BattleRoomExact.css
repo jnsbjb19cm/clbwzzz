@@ -1,0 +1,972 @@
+/*
+ * Battle room skin measured from the uploaded reference video.
+ * Reference frame: 640 × 406. All primary placements use percentages so the
+ * room keeps the original composition at any desktop resolution.
+ */
+
+body:has(.game-room.room-exact) {
+  overflow: hidden;
+  background: #c5f4f5;
+}
+
+body:has(.game-room.room-exact) .bottom-nav,
+body:has(.game-room.room-exact) > .bottom-nav {
+  display: none !important;
+}
+
+body:has(.game-room.room-exact) .view-root,
+body:has(.game-room.room-exact) #view-root,
+body:has(.game-room.room-exact) .app-shell {
+  min-height: 100vh;
+  overflow: hidden;
+}
+
+.deck-select-page:has(.game-room.room-exact) {
+  width: 100vw;
+  max-width: none;
+  min-height: 100vh;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  background:
+    linear-gradient(180deg, #c6f5f4 0%, #e8ffff 52%, #b8e8e8 100%);
+}
+
+.game-room.room-exact {
+  --gold-dark: #82540b;
+  --gold: #d69a1d;
+  --gold-light: #ffdc65;
+  --green-dark: #315d12;
+  --green: #669b27;
+  --green-light: #b9e86f;
+  --blue-dark: #03779f;
+  --blue-light: #61d8ef;
+  --red-dark: #9d3134;
+  --red-light: #f59a91;
+  --cream: #fff9c7;
+  position: relative;
+  width: min(100vw, calc(100vh * 1.57635468));
+  aspect-ratio: 640 / 406;
+  overflow: hidden;
+  isolation: isolate;
+  color: #2c3d12;
+  font-family: "Microsoft YaHei", "SimHei", Arial, sans-serif;
+  font-size: clamp(9px, 1.55vmin, 15px);
+  background:
+    url('/battle/background/gameroom.png') center / 100% 100% no-repeat,
+    linear-gradient(180deg, #80bc43 0%, #477c24 69%, #345c1f 100%);
+  border-radius: 2.4% / 3.7%;
+  box-shadow:
+    0 0 0 2px #5c3908,
+    0 0 0 5px #d99e27,
+    0 0 0 7px #7f500a,
+    0 12px 35px rgba(47, 45, 12, .52);
+}
+
+.game-room.room-exact::before {
+  content: '';
+  position: absolute;
+  inset: .65%;
+  z-index: 100;
+  pointer-events: none;
+  border: max(1px, .23vmin) solid rgba(255, 230, 96, .93);
+  border-radius: 2% / 3%;
+  box-shadow:
+    inset 0 0 0 max(1px, .22vmin) rgba(103, 63, 8, .95),
+    inset 0 0 12px rgba(255, 217, 70, .72);
+}
+
+.game-room.room-exact::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 99;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 1.8% 2.6%, #ffdc56 0 1.1%, #8f5a0c 1.25% 1.85%, transparent 2%),
+    radial-gradient(circle at 98.2% 2.6%, #ffdc56 0 1.1%, #8f5a0c 1.25% 1.85%, transparent 2%),
+    radial-gradient(circle at 1.8% 97.4%, #ffdc56 0 1.1%, #8f5a0c 1.25% 1.85%, transparent 2%),
+    radial-gradient(circle at 98.2% 97.4%, #ffdc56 0 1.1%, #8f5a0c 1.25% 1.85%, transparent 2%);
+}
+
+.game-room.room-exact .room-top-bar {
+  position: absolute;
+  z-index: 20;
+  left: 21.1%;
+  top: 2.8%;
+  width: 58.4%;
+  height: 8.9%;
+  display: flex;
+  align-items: center;
+  gap: 1.6%;
+  padding: 0 2.2%;
+  border: .22em solid var(--gold-dark);
+  border-radius: .65em;
+  background: linear-gradient(180deg, rgba(229, 250, 174, .98), rgba(130, 184, 62, .98) 48%, rgba(76, 128, 31, .98));
+  box-shadow: inset 0 .12em 0 rgba(255, 255, 255, .72), inset 0 -.16em 0 rgba(47, 83, 17, .62), 0 .12em .28em rgba(47, 42, 8, .42);
+}
+
+.game-room.room-exact .room-title-group { display: contents; }
+.game-room.room-exact .room-title-text {
+  min-width: 24%;
+  color: #3e5a0c;
+  font-size: 1.34em;
+  font-weight: 900;
+  letter-spacing: .03em;
+  line-height: 1;
+  text-shadow: 0 .08em 0 #eaff9c;
+}
+.game-room.room-exact .room-id-tag { display: none; }
+.game-room.room-exact .room-stage-display {
+  flex: 1;
+  overflow: hidden;
+  color: #3d4519;
+  font-size: .86em;
+  font-weight: 700;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  text-align: left;
+  text-shadow: 0 .07em 0 rgba(255, 255, 255, .75);
+}
+
+.game-room.room-exact .room-left-side,
+.game-room.room-exact .room-right-side {
+  position: absolute;
+  z-index: 12;
+  top: 3.1%;
+  height: 64.7%;
+}
+.game-room.room-exact .room-left-side { left: 2.25%; width: 36.9%; }
+.game-room.room-exact .room-right-side { left: 80.25%; width: 17.35%; }
+
+.game-room.room-exact .member-slot,
+.game-room.room-exact .enemy-slot {
+  position: relative;
+  overflow: hidden;
+  min-width: 0;
+  min-height: 0;
+  border: .22em solid var(--gold-dark);
+  border-radius: .6em;
+  box-shadow: inset 0 0 0 .1em rgba(255, 239, 132, .82), inset 0 -.5em 1.2em rgba(0, 67, 107, .26), 0 .13em .28em rgba(45, 33, 9, .44);
+}
+.game-room.room-exact .member-slot {
+  background: radial-gradient(circle at 50% 75%, rgba(255,255,255,.45), transparent 42%), linear-gradient(180deg, #67dff5, #18aad4 58%, #0782b1);
+}
+.game-room.room-exact .owner-slot,
+.game-room.room-exact #owner-slot {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 48.4%;
+  height: 58.6%;
+}
+.game-room.room-exact .member-slots-row {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  height: 40.1%;
+  display: grid;
+  grid-template-columns: 48.4% 48.4%;
+  gap: 3.2%;
+}
+.game-room.room-exact .member-avatar,
+.game-room.room-exact .enemy-slot .member-avatar {
+  position: absolute;
+  inset: 15% 7% 5%;
+  display: grid;
+  place-items: center;
+}
+.game-room.room-exact .member-avatar img,
+.game-room.room-exact .enemy-slot .member-avatar img {
+  width: 82%;
+  height: 82%;
+  object-fit: contain;
+  filter: drop-shadow(0 .18em .12em rgba(9, 48, 71, .42));
+}
+.game-room.room-exact .member-info,
+.game-room.room-exact .enemy-slot .member-info {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+.game-room.room-exact .member-name {
+  position: absolute;
+  top: 4%;
+  left: 5%;
+  max-width: 72%;
+  overflow: hidden;
+  color: #19506d;
+  font-size: .68em;
+  font-weight: 900;
+  line-height: 1.15;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  text-shadow: 0 .08em 0 rgba(255, 255, 255, .78);
+}
+.game-room.room-exact .member-lv {
+  position: absolute;
+  top: -13%;
+  right: -4%;
+  min-width: 2.3em;
+  padding: .16em .25em;
+  border-radius: 45%;
+  color: #362307;
+  background: #ffe04e;
+  border: .15em solid #6f4509;
+  font-size: .66em;
+  font-weight: 900;
+  text-align: center;
+  box-shadow: inset 0 .1em rgba(255,255,255,.72);
+}
+.game-room.room-exact .member-tag.owner-tag {
+  position: absolute;
+  right: -11%;
+  bottom: 8%;
+  width: 54%;
+  padding: .16em 0;
+  transform: rotate(-38deg);
+  color: #7c2707;
+  background: linear-gradient(180deg, #ffd04b, #ee7c22);
+  border-block: .1em solid #8f3909;
+  font-size: .69em;
+  font-weight: 900;
+  text-align: center;
+}
+.game-room.room-exact .ready-mark,
+.game-room.room-exact .not-ready {
+  position: absolute;
+  left: 5%;
+  bottom: 4%;
+  padding: .12em .35em;
+  border-radius: .38em;
+  font-size: .56em;
+  font-weight: 900;
+  line-height: 1.2;
+}
+.game-room.room-exact .ready-mark { color: #faffd8; background: rgba(40, 132, 18, .85); }
+.game-room.room-exact .not-ready { color: #fff3cf; background: rgba(117, 57, 13, .82); }
+.game-room.room-exact .member-slot.empty {
+  background: radial-gradient(circle at 50% 47%, rgba(255,255,255,.2), transparent 35%), linear-gradient(180deg, #4bc7e4, #128eb8);
+}
+.game-room.room-exact .member-slot.empty .empty-text {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  color: rgba(244, 255, 255, .84);
+  font-size: .67em;
+  font-weight: 800;
+  text-shadow: 0 .09em .1em #046081;
+}
+.game-room.room-exact .kick-btn {
+  position: absolute;
+  z-index: 4;
+  right: 3%;
+  top: 4%;
+  width: 1.3em;
+  height: 1.3em;
+  padding: 0;
+  border: .1em solid #7b1c13;
+  border-radius: 50%;
+  color: #fff4cf;
+  background: linear-gradient(#f56b49, #b52d20);
+  font-size: .72em;
+  font-weight: 900;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.game-room.room-exact .room-right-side .top-enemy {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 58.6%;
+}
+.game-room.room-exact .enemy-slots-row {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  height: 40.1%;
+  display: grid;
+  grid-template-columns: 48.4% 48.4%;
+  gap: 3.2%;
+}
+.game-room.room-exact .enemy-slot {
+  background: radial-gradient(circle at 45% 34%, rgba(255,255,255,.35), transparent 28%), linear-gradient(180deg, var(--red-light), #df6969 54%, var(--red-dark));
+}
+.game-room.room-exact .enemy-slot.question-mark,
+.game-room.room-exact .enemy-slot.empty-slot { display: grid; place-items: center; }
+.game-room.room-exact .qmark,
+.game-room.room-exact .enemy-slot.empty-slot > .empty-text {
+  color: rgba(153, 45, 48, .58);
+  font-family: Georgia, serif;
+  font-size: 5.6em;
+  font-weight: 900;
+  line-height: .9;
+  text-shadow: .035em .035em 0 rgba(255, 194, 186, .82), -.025em -.025em 0 rgba(112, 32, 36, .45);
+}
+.game-room.room-exact .enemy-slots-row .qmark,
+.game-room.room-exact .enemy-slots-row .empty-text { font-size: 3.75em; }
+.game-room.room-exact .qmark-label { display: none; }
+
+.game-room.room-exact .room-center-area {
+  position: absolute;
+  z-index: 14;
+  left: 21.25%;
+  top: 12.35%;
+  width: 58.25%;
+  height: 23.8%;
+  padding: .55% .8% .65%;
+  border: .22em solid var(--gold-dark);
+  border-radius: .72em;
+  background: linear-gradient(180deg, rgba(160, 216, 80, .98), rgba(75, 130, 30, .98));
+  box-shadow: inset 0 .16em 0 rgba(240, 255, 180, .75), inset 0 -.16em 0 rgba(39, 78, 16, .72), 0 .13em .28em rgba(45, 33, 9, .42);
+}
+.game-room.room-exact .deck-header {
+  height: 34%;
+  display: flex;
+  align-items: center;
+  gap: 1.8%;
+  padding: 0 1.2%;
+  border: .15em solid rgba(72, 107, 21, .88);
+  border-radius: .55em;
+  background: linear-gradient(180deg, #efffbc, #b9df68 54%, #8ab842);
+  box-shadow: inset 0 .12em rgba(255,255,255,.75);
+}
+.game-room.room-exact .deck-title {
+  flex: 0 0 auto;
+  color: #6c6500;
+  font-size: .94em;
+  font-weight: 900;
+  text-shadow: 0 .08em 0 #fffbc2;
+}
+.game-room.room-exact .deck-tabs {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 2.1%;
+}
+.game-room.room-exact .deck-tab {
+  position: relative;
+  min-width: 4.7em;
+  padding: 0 0 0 1.35em;
+  border: 0;
+  color: #526411;
+  background: transparent;
+  font-family: inherit;
+  font-size: .69em;
+  font-weight: 800;
+  white-space: nowrap;
+  cursor: pointer;
+}
+.game-room.room-exact .deck-tab::before {
+  content: '';
+  position: absolute;
+  left: .08em;
+  top: 50%;
+  width: .88em;
+  height: .88em;
+  transform: translateY(-50%);
+  border: .13em solid #6d791e;
+  border-radius: .16em;
+  background: #edf7bd;
+  box-shadow: inset 0 .07em rgba(255,255,255,.85);
+}
+.game-room.room-exact .deck-tab.active::after {
+  content: '✓';
+  position: absolute;
+  left: .1em;
+  top: 46%;
+  transform: translateY(-50%) rotate(-7deg);
+  color: #11973d;
+  font-size: 1.18em;
+  font-weight: 1000;
+  text-shadow: 0 .06em #fff;
+}
+.game-room.room-exact .swap-card-btn {
+  flex: 0 0 auto;
+  min-width: 5.5em;
+  padding: .28em .72em;
+  border: .15em solid #96500b;
+  border-radius: 1.2em;
+  color: #763308;
+  background: linear-gradient(180deg, #fff477, #ffc63f 48%, #ef7f24);
+  font-family: inherit;
+  font-size: .72em;
+  font-weight: 900;
+  line-height: 1.15;
+  text-shadow: 0 .07em 0 #fff3a4;
+  box-shadow: inset 0 .12em rgba(255,255,255,.72), 0 .1em .18em rgba(75,47,8,.35);
+  cursor: pointer;
+}
+.game-room.room-exact .swap-icon {
+  display: inline-block;
+  margin-right: .18em;
+  transform: rotate(90deg);
+  color: #a23b08;
+}
+.game-room.room-exact .deck-slots-row {
+  height: 64%;
+  display: grid;
+  grid-template-columns: repeat(10, minmax(0, 1fr));
+  gap: .55%;
+  padding: .8% .65% .6%;
+}
+.game-room.room-exact .deck-slot-item {
+  position: relative;
+  min-width: 0;
+  overflow: hidden;
+  border: .15em solid #436d13;
+  border-radius: .28em;
+  background: linear-gradient(180deg, rgba(118, 174, 53, .95), rgba(66, 113, 27, .98));
+  box-shadow: inset 0 0 0 .08em rgba(190, 235, 115, .52);
+  cursor: pointer;
+}
+.game-room.room-exact .deck-slot-item.filled {
+  border-color: #334d0c;
+  background: linear-gradient(180deg, #93c34f, #5b8f2b);
+}
+.game-room.room-exact .slot-card-img {
+  position: absolute;
+  inset: 3% 3% 4%;
+  display: grid;
+  place-items: center;
+}
+.game-room.room-exact .slot-card-img img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  filter: drop-shadow(0 .1em .08em rgba(23, 47, 11, .45));
+}
+.game-room.room-exact .slot-card-name,
+.game-room.room-exact .slot-card-stats { display: none; }
+.game-room.room-exact .slot-star {
+  position: absolute;
+  left: 1%;
+  bottom: 0;
+  padding: .02em .18em;
+  color: #fff4a3;
+  background: rgba(65, 54, 3, .75);
+  border-radius: .22em;
+  font-size: .58em;
+  font-weight: 900;
+}
+.game-room.room-exact .deck-slot-item.empty {
+  display: grid;
+  place-items: center;
+  color: rgba(232, 255, 179, .42);
+  border-color: rgba(57, 94, 21, .8);
+}
+.game-room.room-exact .slot-empty-num { font-size: .65em; font-weight: 900; }
+.game-room.room-exact .slot-empty-label { display: none; }
+
+.game-room.room-exact .room-vs {
+  position: absolute;
+  z-index: 13;
+  left: 38.3%;
+  top: 39.6%;
+  width: 41.2%;
+  height: 25.2%;
+  display: grid;
+  place-items: center;
+  color: #ffad00;
+  font-family: Impact, "Arial Black", sans-serif;
+  font-size: 5.6em;
+  font-style: italic;
+  font-weight: 1000;
+  letter-spacing: -.08em;
+  line-height: 1;
+  transform: skewX(-8deg);
+  text-shadow: .035em .035em 0 #fff468, -.025em -.025em 0 #fff9ad, .075em .085em 0 #b14d05, 0 .12em .18em rgba(111, 65, 2, .42);
+  pointer-events: none;
+}
+
+.game-room.room-exact .exact-room-chat {
+  position: absolute;
+  z-index: 18;
+  left: 2.35%;
+  bottom: 7.2%;
+  width: 45.4%;
+  height: 24.5%;
+  overflow: hidden;
+  border: .2em solid var(--gold-dark);
+  border-radius: .28em;
+  background: rgba(35, 74, 20, .88);
+  box-shadow: inset 0 0 0 .1em rgba(178, 216, 85, .5);
+}
+.game-room.room-exact .exact-room-chat-tabs {
+  position: absolute;
+  right: .3%;
+  top: 2%;
+  bottom: 22%;
+  width: 9%;
+  display: flex;
+  flex-direction: column;
+  gap: 2%;
+}
+.game-room.room-exact .exact-room-chat-tabs button {
+  flex: 1;
+  min-height: 0;
+  padding: 0;
+  border: .11em solid #5b6d18;
+  border-radius: .25em;
+  color: #e9f5a7;
+  background: linear-gradient(180deg, #7fae38, #4d7826);
+  font-family: inherit;
+  font-size: .51em;
+  font-weight: 800;
+  cursor: pointer;
+  writing-mode: vertical-rl;
+}
+.game-room.room-exact .exact-room-chat-tabs button.active {
+  color: #fff5aa;
+  border-color: #9b6512;
+  background: linear-gradient(180deg, #e4ad30, #a76817);
+}
+.game-room.room-exact .exact-room-chat-log {
+  position: absolute;
+  left: 1.5%;
+  top: 3%;
+  right: 10.5%;
+  bottom: 22.5%;
+  overflow: auto;
+  padding: .25em .45em;
+  color: #f2f4c0;
+  background: rgba(29, 57, 19, .58);
+  font-size: .55em;
+  line-height: 1.48;
+  scrollbar-width: thin;
+  scrollbar-color: #93b34b #294c1e;
+}
+.game-room.room-exact .exact-room-chat-message {
+  display: block;
+  min-height: 1.25em;
+  word-break: break-word;
+  text-shadow: 0 .08em .08em rgba(0,0,0,.85);
+}
+.game-room.room-exact .exact-room-chat-message .chat-channel { color: #e7da56; }
+.game-room.room-exact .exact-room-chat-message b { color: #cfe77f; }
+.game-room.room-exact .exact-room-chat-message.system b,
+.game-room.room-exact .exact-room-chat-message.system > span:last-child { color: #ffe66c; }
+.game-room.room-exact .exact-room-chat-form {
+  position: absolute;
+  left: .7%;
+  right: .7%;
+  bottom: 1.8%;
+  height: 17.5%;
+  display: grid;
+  grid-template-columns: 11% 1fr 13%;
+  gap: .55%;
+  align-items: stretch;
+}
+.game-room.room-exact .exact-room-chat-current,
+.game-room.room-exact .exact-room-chat-form input,
+.game-room.room-exact .exact-room-chat-form button {
+  border: .11em solid #5a6a17;
+  border-radius: .22em;
+  font-family: inherit;
+  font-size: .54em;
+}
+.game-room.room-exact .exact-room-chat-current {
+  display: grid;
+  place-items: center;
+  color: #eaf5ae;
+  background: #4c7127;
+  font-weight: 800;
+}
+.game-room.room-exact .exact-room-chat-form input {
+  min-width: 0;
+  padding: 0 .5em;
+  outline: none;
+  color: #f8ffd7;
+  background: rgba(17, 45, 15, .88);
+  user-select: text;
+}
+.game-room.room-exact .exact-room-chat-form input:focus { border-color: #dbbd42; }
+.game-room.room-exact .exact-room-chat-form button {
+  color: #4b3a08;
+  background: linear-gradient(180deg, #f1dc64, #b58b27);
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.game-room.room-exact .room-mid-actions {
+  position: absolute;
+  z-index: 18;
+  left: 50.2%;
+  bottom: 10.4%;
+  width: 27.9%;
+  height: 20.3%;
+  display: grid;
+  grid-template-columns: 1.08fr 1fr 1fr;
+  gap: 1.6%;
+  align-items: stretch;
+}
+.game-room.room-exact .mid-btn {
+  position: relative;
+  min-width: 0;
+  overflow: hidden;
+  padding: 40% 3% 7%;
+  border: .19em solid var(--gold-dark);
+  border-radius: .55em;
+  color: #513808;
+  background: radial-gradient(circle at 50% 30%, rgba(255,255,255,.75), transparent 29%), linear-gradient(180deg, #d4ef8b, #88bd49 55%, #557f27);
+  box-shadow: inset 0 .15em rgba(255,255,255,.72), 0 .12em .25em rgba(61,42,7,.4);
+  font-family: inherit;
+  font-size: .67em;
+  font-weight: 900;
+  cursor: pointer;
+}
+.game-room.room-exact .mid-btn:hover { filter: brightness(1.08); transform: translateY(-1%); }
+.game-room.room-exact .mid-btn > span:first-child {
+  position: absolute;
+  left: 50%;
+  top: 6%;
+  transform: translateX(-50%);
+  display: grid;
+  place-items: center;
+  width: 68%;
+  height: 55%;
+  font-size: 2.45em;
+  line-height: 1;
+  filter: drop-shadow(0 .08em .05em rgba(57, 48, 9, .32));
+}
+.game-room.room-exact .dice-btn {
+  background: radial-gradient(circle at 50% 30%, rgba(255,255,255,.72), transparent 29%), linear-gradient(180deg, #fff0a3, #e9bd46 56%, #ad7620);
+}
+.game-room.room-exact .room-ready-btn {
+  position: absolute;
+  z-index: 18;
+  left: 80.45%;
+  bottom: 10.4%;
+  width: 17.1%;
+  height: 20.3%;
+  border: .22em solid #994014;
+  border-radius: .64em;
+  color: #7b2609;
+  background: linear-gradient(180deg, #ffd6a1, #ef7e53 52%, #c44335) !important;
+  box-shadow: inset 0 .17em 0 rgba(255,255,255,.72), inset 0 -.22em 0 rgba(134, 42, 29, .38), 0 .14em .28em rgba(61, 35, 9, .45);
+  font-family: inherit;
+  font-size: 1.55em;
+  font-weight: 1000;
+  letter-spacing: .08em;
+  text-shadow: 0 .08em 0 #ffd7a4;
+  cursor: pointer;
+}
+.game-room.room-exact .room-ready-btn.is-owner { color: #7b2609; }
+.game-room.room-exact .room-ready-btn:hover { filter: brightness(1.08); }
+
+.game-room.room-exact .room-bottom-bar {
+  position: absolute;
+  z-index: 19;
+  left: 49.8%;
+  right: 1.9%;
+  bottom: 1.05%;
+  height: 7.4%;
+  display: flex;
+  align-items: stretch;
+  gap: .25%;
+}
+.game-room.room-exact .bottom-btn {
+  flex: 1 1 0;
+  min-width: 0;
+  padding: 0 .12em;
+  border: 0;
+  border-left: .08em solid rgba(88, 62, 12, .5);
+  border-right: .08em solid rgba(255, 233, 118, .4);
+  color: #fff4ae;
+  background: linear-gradient(180deg, rgba(117, 151, 50, .9), rgba(55, 88, 28, .96));
+  font-family: inherit;
+  font-size: .57em;
+  font-weight: 800;
+  white-space: nowrap;
+  text-shadow: 0 .1em .08em #31410d;
+  cursor: pointer;
+}
+.game-room.room-exact .bottom-btn:hover { color: #fffbd9; background: linear-gradient(180deg, #d5b64a, #8c671b); }
+.game-room.room-exact .back-btn { color: #fff1a5; }
+
+.game-room.room-exact .card-drawer {
+  position: absolute;
+  z-index: 70;
+  left: 20.7%;
+  top: 24.7%;
+  width: 62.1%;
+  height: 61.2%;
+  display: none;
+  padding: 7.8% 3% 8.6% 12.4%;
+  overflow: hidden;
+  border: .23em solid #6e480d;
+  border-radius: .72em;
+  background: linear-gradient(180deg, #a8d75d 0 10%, #699f32 10% 100%);
+  box-shadow: inset 0 0 0 .14em #d9ed8d, inset 0 0 0 .28em #4e7a22, 0 .45em 1.2em rgba(29, 35, 9, .64);
+}
+.game-room.room-exact .card-drawer.open { display: block; animation: exact-room-popup .13s ease-out; }
+@keyframes exact-room-popup { from { opacity: 0; transform: scale(.96); } to { opacity: 1; transform: scale(1); } }
+.game-room.room-exact .drawer-header {
+  position: absolute;
+  left: 0;
+  top: 0;
+  right: 0;
+  height: 15%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #f4ffd5;
+  font-size: 1.05em;
+  font-weight: 900;
+  text-shadow: 0 .09em .08em #355a13;
+}
+.game-room.room-exact .drawer-header > span::before { content: '请单击选择您要上场的卡片'; }
+.game-room.room-exact .drawer-header > span { font-size: 0; }
+.game-room.room-exact .drawer-header > span::before { font-size: 1rem; }
+.game-room.room-exact .drawer-close {
+  position: absolute;
+  right: 1.3%;
+  top: 10%;
+  width: 1.7em;
+  height: 1.7em;
+  padding: 0;
+  border: .12em solid #68400b;
+  border-radius: 50%;
+  color: #7b2708;
+  background: linear-gradient(#ffe774, #e8862d);
+  font-size: .82em;
+  font-weight: 900;
+  line-height: 1;
+  cursor: pointer;
+}
+.game-room.room-exact .exact-drawer-category {
+  position: absolute;
+  left: 2.5%;
+  top: 20%;
+  bottom: 15%;
+  width: 12.5%;
+  display: flex;
+  flex-direction: column;
+  gap: 2%;
+}
+.game-room.room-exact .exact-drawer-category button {
+  flex: 0 0 31%;
+  border: .15em solid #557916;
+  border-radius: .32em;
+  color: #28490b;
+  background: linear-gradient(180deg, #cde98b, #8bbb48);
+  font-family: inherit;
+  font-size: .76em;
+  font-weight: 900;
+  cursor: pointer;
+}
+.game-room.room-exact .exact-drawer-category button.active {
+  color: #72420a;
+  border-color: #8f5d0d;
+  background: linear-gradient(180deg, #ffe879, #e4a52e);
+}
+.game-room.room-exact .drawer-cards {
+  height: 100%;
+  overflow: hidden;
+  display: grid;
+  grid-template-columns: repeat(8, minmax(0, 1fr));
+  grid-template-rows: repeat(3, minmax(0, 1fr));
+  gap: 2.2% 1.1%;
+  padding: .8%;
+  border: .16em solid #4e751c;
+  border-radius: .35em;
+  background: rgba(219, 239, 155, .42);
+}
+.game-room.room-exact .drawer-card {
+  position: relative;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+  padding: 3%;
+  border: .15em solid var(--quality, #587c1c);
+  border-radius: .24em;
+  color: #eff9cf;
+  background: linear-gradient(180deg, #83b84e, #497b28);
+  cursor: pointer;
+}
+.game-room.room-exact .drawer-card:hover,
+.game-room.room-exact .drawer-card.selected {
+  filter: brightness(1.12);
+  box-shadow: 0 0 0 .12em #ffe45c, 0 0 .45em rgba(255, 223, 67, .7);
+}
+.game-room.room-exact .drawer-card img {
+  width: 100%;
+  height: 78%;
+  object-fit: contain;
+  filter: drop-shadow(0 .08em .06em rgba(34, 52, 12, .45));
+}
+.game-room.room-exact .drawer-card strong {
+  display: block;
+  overflow: hidden;
+  font-size: .48em;
+  line-height: 1.08;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  text-align: center;
+  text-shadow: 0 .08em .06em rgba(0,0,0,.82);
+}
+.game-room.room-exact .drawer-card > span {
+  position: absolute;
+  left: 2%;
+  right: 2%;
+  bottom: 1%;
+  overflow: hidden;
+  color: #fff2a0;
+  font-size: .42em;
+  font-weight: 800;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  text-align: center;
+}
+.game-room.room-exact .drawer-card em { display: none; }
+.game-room.room-exact .drawer-card[hidden] { display: none !important; }
+.game-room.room-exact .exact-drawer-pager {
+  position: absolute;
+  right: 1.5%;
+  top: 30%;
+  bottom: 25%;
+  width: 7.1%;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: space-between;
+}
+.game-room.room-exact .exact-drawer-pager button {
+  flex: 0 0 37%;
+  padding: 0;
+  border: .13em solid #537418;
+  border-radius: .3em;
+  color: #34520c;
+  background: linear-gradient(180deg, #d6ed91, #91bd4b);
+  font-family: inherit;
+  font-size: .58em;
+  font-weight: 900;
+  cursor: pointer;
+  writing-mode: vertical-rl;
+}
+.game-room.room-exact .exact-drawer-pager button:disabled { opacity: .45; cursor: default; }
+.game-room.room-exact .exact-drawer-pager span { color: #f6ffd5; font-size: .48em; text-align: center; }
+.game-room.room-exact .exact-drawer-pager em { font-style: normal; }
+.game-room.room-exact .exact-drawer-footer {
+  position: absolute;
+  left: 36%;
+  right: 12%;
+  bottom: 2.8%;
+  height: 10%;
+  display: flex;
+  justify-content: center;
+  gap: 4%;
+}
+.game-room.room-exact .exact-drawer-footer button {
+  min-width: 5.4em;
+  padding: 0 .9em;
+  border: .14em solid #8a520c;
+  border-radius: 1em;
+  color: #6a3508;
+  background: linear-gradient(180deg, #fff07f, #e9a531);
+  font-family: inherit;
+  font-size: .65em;
+  font-weight: 900;
+  cursor: pointer;
+}
+.game-room.room-exact .exact-drawer-footer .drawer-confirm {
+  color: #5c3507;
+  background: linear-gradient(180deg, #ffe967, #e99820);
+}
+.game-room.room-exact .drawer-empty {
+  grid-column: 1 / -1;
+  align-self: center;
+  color: #eefbc9;
+  font-size: .7em;
+  text-align: center;
+}
+
+.game-room.room-exact .room-setting-modal,
+.game-room.room-exact .kick-modal {
+  position: absolute;
+  z-index: 90;
+  inset: 0;
+  align-items: center;
+  justify-content: center;
+  background: rgba(21, 38, 10, .55);
+}
+.game-room.room-exact .setting-panel,
+.game-room.room-exact .kick-panel {
+  width: 48%;
+  padding: 3%;
+  border: .22em solid var(--gold-dark);
+  border-radius: .7em;
+  color: #365312;
+  background: linear-gradient(180deg, #dff1a2, #91bc50);
+  box-shadow: inset 0 0 0 .12em #f4ffd0, 0 .4em 1.2em rgba(24,35,8,.55);
+}
+.game-room.room-exact .setting-header { display: flex; align-items: center; justify-content: space-between; }
+.game-room.room-exact .setting-header h3 { margin: 0; }
+.game-room.room-exact .setting-close {
+  border: 0;
+  color: #7c2c0a;
+  background: transparent;
+  font-size: 1.2em;
+  cursor: pointer;
+}
+.game-room.room-exact .setting-row {
+  display: grid;
+  grid-template-columns: 28% 1fr 10%;
+  gap: 3%;
+  align-items: center;
+  margin-top: 4%;
+  font-size: .76em;
+}
+.game-room.room-exact .checkbox-row { display: block; }
+.game-room.room-exact .more-dropdown {
+  position: absolute;
+  z-index: 50;
+  right: 8%;
+  bottom: 9%;
+  padding: .4%;
+  border: .14em solid #78510c;
+  border-radius: .35em;
+  background: #8cae45;
+}
+.game-room.room-exact .more-dropdown button {
+  border: 0;
+  color: #3d4d10;
+  background: transparent;
+  font-family: inherit;
+  font-size: .65em;
+  font-weight: 800;
+  cursor: pointer;
+}
+.game-room.room-exact .room-toast {
+  position: absolute;
+  z-index: 120;
+  left: 50%;
+  top: 44%;
+  transform: translate(-50%, -50%) scale(.94);
+  opacity: 0;
+  padding: .7em 1.25em;
+  border: .15em solid #87530b;
+  border-radius: .6em;
+  color: #4d3908;
+  background: linear-gradient(180deg, #fff0a0, #dcb342);
+  font-size: .74em;
+  font-weight: 900;
+  pointer-events: none;
+  transition: opacity .14s, transform .14s;
+}
+.game-room.room-exact .room-toast.show { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+
+@media (max-aspect-ratio: 640 / 406) {
+  .game-room.room-exact { width: 100vw; height: auto; }
+}
+@media (min-aspect-ratio: 640 / 406) {
+  .game-room.room-exact { width: auto; height: 100vh; }
+}

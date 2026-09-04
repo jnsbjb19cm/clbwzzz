@@ -1,0 +1,116 @@
+{
+  "generatedAt": "2026-06-26T12:14:35Z",
+  "purpose": "战斗格布局交接：标定数据已导出，运行时四问题未解决",
+  "projectRoot": "D:\\clbwz\\battle",
+  "referenceImages": {
+    "userDesired": "D:\\clbwz\\battle\\resources\\ck\\我想要的.png",
+    "ckAnnotated": "D:\\clbwz\\battle\\resources\\ck\\ck.png",
+    "cardSlotRef": "D:\\clbwz\\battle\\resources\\ck\\卡槽参考.png"
+  },
+  "userGoals": [
+    "12×5 战斗格(5+2+5 列)，仅选卡时显示格线",
+    "第 0 列左缘、第 11 列右缘贴齐左右柱台内缘(末列贴柱，右侧不留白)",
+    "横向贴台子，纵向参考 ck 黄格区或走廊(绿线 Y=87 ~ 橙线 Y=645)",
+    "左柱根与右柱底对齐(左柱 top:-25px，高度 +25px)",
+    "整体观感对标参考游戏：侧栏与棋盘同一布局坐标系，非宽屏空草地"
+  ],
+  "fourUnfixedProblems": [
+    {
+      "id": 1,
+      "title": "末列贴柱",
+      "previewStatus": "脚本合成图 col0/col11 偏差≈0(见 grid-pillar-snap-proposal.json)",
+      "runtimeStatus": "宽屏下柱子贴视口左右缘，战场在中间 scale 盒里，肉眼不贴柱",
+      "rootCause": "标定在固定 1248×832 合成图完成；immersive 模式 battle-scene 全视口 + game-container 居中 scale，两套坐标系"
+    },
+    {
+      "id": 2,
+      "title": "横向贴台子",
+      "previewStatus": "FIELD_LEFT=102、FIELD_W=1135 在脚本里与柱图 alpha 内缘一致",
+      "runtimeStatus": "FIELD_LEFT 只改了 battlefield-wrap inset；外层 battle-scene 仍 grassbg cover 铺满视口",
+      "rootCause": "可玩区与柱台不在同一视觉层；左柱 width:auto 宽约 1286px 超出 1248 画布，field 未与柱内缘同步缩放"
+    },
+    {
+      "id": 3,
+      "title": "坐标系统一",
+      "previewStatus": "预览在单张 1248×832 画布合成",
+      "runtimeStatus": "scene-hp 在 battle-scene(视口层)；柱子在 game-container；顶栏在 container 内 — 宽屏时错位",
+      "rootCause": "fitBattleScale 只缩放 game-container；HP 球、scene 草地、逻辑战场分属不同父节点"
+    },
+    {
+      "id": 4,
+      "title": "背景/走廊裁剪",
+      "previewStatus": "grass-corridor.jpg 按 field 裁剪生成",
+      "runtimeStatus": "走廊草地只铺在 battlefield-wrap；battle-scene 仍用 grassbg.jpg cover",
+      "rootCause": "双层背景：外层 cover 与内层 100%100% 走廊不同步，宽屏下柱台与草地关系错误"
+    }
+  ],
+  "whyPreviewVsRuntimeDiffer": {
+    "preview": "在 1248×832 固定画布合成柱+草地+格线，数学贴柱正确",
+    "runtime": "body.battle-immersive → battle-game-wrap 全屏 flex 居中 → battle-scale-host → game-container transform:scale(--battle-scale)；用户宽屏(如 2559×1267)时柱贴视口边、场地在中间",
+    "twoAnchorSystems": {
+      "grassColorDetect": "ck 草地色检测 playableW=977(旧 FIELD_LEFT=135)",
+      "pillarAlphaInset": "柱图 alpha 内缘 gameX 102~1237，playableW=1135(当前 BattleConfig)"
+    }
+  },
+  "currentBattleConfig": {
+    "file": "D:\\clbwz\\battle\\src\\battle\\BattleConfig.js",
+    "GAME_W": 1248,
+    "GAME_H": 832,
+    "FIELD_LEFT": 102,
+    "FIELD_RIGHT_INSET": 11,
+    "FIELD_W": 1135,
+    "FIELD_TOP": 105,
+    "FIELD_BOTTOM": 25,
+    "GRID_ORIGIN_X": 0,
+    "GRID_ORIGIN_Y": 163,
+    "GRID_GAP": 3,
+    "CELL_W": 91.8333,
+    "CELL_H": 76.4,
+    "BOTTOM_ROOT_TOP_FIELD_Y": 645,
+    "PLAYER_TREE_BEARD_BOTTOM_GAME_Y": 192
+  },
+  "keyLayoutFiles": [
+    "D:\\clbwz\\battle\\src\\battle\\BattleConfig.js",
+    "D:\\clbwz\\battle\\src\\ui\\BattleView.js",
+    "D:\\clbwz\\battle\\src\\style.css",
+    "D:\\clbwz\\battle\\src\\battle\\BattleBackground.js"
+  ],
+  "exportFiles": {
+    "handoff": "D:\\clbwz\\battle\\scripts\\output\\HANDOFF-battle-grid.json",
+    "columnInsets": "D:\\clbwz\\battle\\scripts\\output\\column-insets.json",
+    "pillarSnapProposal": "D:\\clbwz\\battle\\scripts\\output\\grid-pillar-snap-proposal.json",
+    "ckRedCalibration": "D:\\clbwz\\battle\\scripts\\output\\grid-calibration-ck-red.json",
+    "userDesiredCalibration": "D:\\clbwz\\battle\\scripts\\output\\grid-calibration-user-desired.json",
+    "grassCorridor": "D:\\clbwz\\battle\\resources\\background\\grass-corridor.jpg"
+  },
+  "previewPngs": {
+    "pillarSnapRecommended": "D:\\clbwz\\battle\\scripts\\output\\格子预览-末列贴柱-ck.png",
+    "yellowFill": "D:\\clbwz\\battle\\scripts\\output\\格子预览-贴台黄格-铺满-ck.png",
+    "yellowNearSquare": "D:\\clbwz\\battle\\scripts\\output\\格子预览-贴台黄格-近似正方-ck.png",
+    "corridorFill": "D:\\clbwz\\battle\\scripts\\output\\格子预览-贴台走廊-铺满-ck.png",
+    "corridorNearSquare": "D:\\clbwz\\battle\\scripts\\output\\格子预览-贴台走廊-近似正方-ck.png",
+    "userYellow": "D:\\clbwz\\battle\\scripts\\output\\格子预览-按黄格-我想要的.png",
+    "userBlue": "D:\\clbwz\\battle\\scripts\\output\\格子预览-按蓝框-我想要的.png"
+  },
+  "rerunCommands": [
+    "node scripts/measure-column-insets.mjs",
+    "node scripts/render-pillar-snap-preview.mjs",
+    "node scripts/calibrate-from-ck-red.mjs",
+    "node scripts/calibrate-from-user-grid.mjs",
+    "node scripts/capture-battle-ui.mjs"
+  ],
+  "nextConversationActions": [
+    "用 capture-battle-ui.mjs 或选卡态截图，在实际 scale/视口下测 col0/col11 与柱内缘偏差",
+    "统一坐标系：柱、field、顶栏、HP 全部进 game-container 1248 盒，或柱也随 --battle-scale",
+    "immersive 去掉 battle-scene 级草地 cover，只保留 container 内背景",
+    "按 fitBattleScale 后的实际渲染高度重测柱图内缘",
+    "勿再只改 BattleConfig 数值而不改布局 DOM/CSS 链"
+  ],
+  "lineLegend": {
+    "green": "Y=87 胡须底",
+    "orange": "Y=645 树根顶",
+    "magenta": "柱台内缘",
+    "yellow": "12×5 战斗格(选卡时)",
+    "lightBlue": "5+2+5 列界"
+  }
+}

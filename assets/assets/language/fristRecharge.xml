@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<language name="fristRecharge">
+	<language key="fristRecharge_shoucichongzhi" value="首次充值"/>
+	<language key="fristRecharge_renyijine" value="任意金额"/>
+	<language key="fristRecharge_jikehuode" value="即可获得"/>
+	<language key="fristRecharge_shuangbeihongzuan" value="双倍红钻"/>
+	<language key="fristRecharge_he" value="和"/>
+	<language key="fristRecharge_chaojidalibao" value="超级大礼包"/>
+	<language key="fristRecharge_lingqujiangli" value="领取奖励"/>
+	<language key="fristRecharge_lijichongzhi" value="立即充值"/>
+</language>

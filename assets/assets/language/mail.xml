@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<language name="mail">
+	<language key="mail_name" value="邮件"/>
+	<language key="mail_theme" value="邮件主题："/>
+	<language key="mail_receiveName" value="收 件 人 ："/>
+	<language key="mail_send" value="发送信件"/>
+	<language key="mail_sendAlert1" value="请填写邮件主题"/>
+	<language key="mail_sendAlert2" value="请重新输入收件人"/>
+	<language key="mail_sendAlert3" value="请填写邮件内容"/>
+	<language key="mail_write" value="写邮件"/>
+	<language key="mail_state" value="邮件超过100封时将不能再接收到新的邮件。"/>
+	<language key="mail_themeInfo" value="主题内容"/>
+	<language key="mail_sendName" value="寄  信  人："/>
+	<language key="mail_nameInfo" value="名字内容"/>
+	<language key="mail_delete" value="删除"/>
+	<language key="mail_charge" value="收取附件"/>
+	<language key="mail_num1" value="/100"/>
+	<language key="mail_num2" value="0/100"/>
+	<language key="mail_:" value=":"/>
+	<language key="mail_reply" value="回复邮件"/>
+	<language key="mailcontentHaveIllegalityChar" value="邮件中包含非法字符，请检测后发送！"/>
+</language>

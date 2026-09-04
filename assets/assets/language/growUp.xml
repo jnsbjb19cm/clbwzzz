@@ -1,0 +1,26 @@
+
+<?xml version="1.0" encoding="UTF-8"?>
+<language name="growUp">
+	<language key="growUp_chengzhangjihua" value="成长计划"/>
+	<language key="growUp_chengzhangjihuapt1" value="将伴您踏上丛林最强勇者巅峰之路！从现在开始，只要购买"/>
+	<language key="growUp_chengzhangjihuapt2" value="，总计可返还"/>
+	<language key="growUp_fanhuanhongzuan" value="4888红钻"/>
+	
+	<language key="growUp_buyPreconditionpt1" value="VIP{1}"/>
+	<language key="growUp_buyPreconditionpt2" value="玩家及以上可购买"/>
+	
+	<language key="growUp_chongzhi" value="充值"/>
+	<language key="growUp_goumai" value="购买"/>
+	<language key="growUp_yigoumai" value="已购买"/>
+	<language key="growUp_costRedd" value="1000"/>
+	
+	<language key="growUp_chengzhangjijin" value="级成长基金"/>
+	<language key="growUp_dadao" value="达到"/>
+	<language key="growUp_jikelingqu" value="级即可领取"/>
+	<language key="growUp_hongzuan" value="红钻"/>
+	<language key="growUp_lingqujiangli" value="领取"/>
+	<language key="growUp_yilingqujiangli" value="已领取"/>
+	<language key="growUp_weidadao" value="未达到"/>
+	<language key="growUp_goumaichegnzhangjihuavipdengji" value="VIP{1}及以上才可购买。"/>
+	
+</language>

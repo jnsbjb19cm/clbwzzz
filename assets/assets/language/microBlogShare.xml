@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<language name="composeCard">
+	<language key="account" value="新浪微博账号："/>
+	<language key="password" value="新浪微博密码："/>
+</language>

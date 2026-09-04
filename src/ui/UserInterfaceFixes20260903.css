@@ -1,0 +1,97 @@
+/*
+ * Final reported-UI authority for 2026-09-03.
+ * This file is intentionally imported after every legacy room/city stylesheet.
+ */
+
+@font-face {
+  font-family: "AlibabaPuHuiTi-3-55-Regular";
+  src:
+    local("Alibaba PuHuiTi 3.0 55 Regular"),
+    local("AlibabaPuHuiTi-3-55-Regular"),
+    url("/fonts/AlibabaPuHuiTi-3-55-Regular.woff2") format("woff2"),
+    url("https://cdn.jsdelivr.net/npm/alibabapuhuiti-3-55-regular@1.0.0/AlibabaPuHuiTi-3-55-Regular.woff2") format("woff2");
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+}
+
+html,
+body,
+button,
+input,
+select,
+textarea,
+.city-root,
+.classic-game-hall,
+.room-root,
+.battle-root {
+  font-family: "AlibabaPuHuiTi-3-55-Regular", "Microsoft YaHei", "PingFang SC", sans-serif !important;
+}
+
+/* Room header: legacy layers hide room-id-tag with display:none !important. */
+.room-root .room-top-bar {
+  grid-template-columns: auto minmax(0, 1fr) auto !important;
+  column-gap: 8px !important;
+}
+
+.room-root .room-title-group {
+  justify-self: start !important;
+  transform: none !important;
+  gap: 4px !important;
+  min-width: max-content !important;
+}
+
+.room-root .room-id-tag {
+  display: inline-flex !important;
+  align-items: center !important;
+  white-space: nowrap !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+}
+
+.room-root .room-stage-display {
+  justify-self: stretch !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+}
+
+.room-root .room-stage-display::before {
+  content: "房间名：";
+}
+
+.room-root .room-rule-btn {
+  justify-self: end !important;
+  transform: none !important;
+  white-space: nowrap !important;
+}
+
+/* Smithy: final legacy city CSS hid this panel completely at top:325px. */
+.classic-game-hall .smithy-intro-panel {
+  display: block !important;
+  top: 435px !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+
+/* Lobby dock: eight 82px controls require 656px; the old 646px box overflowed. */
+.classic-game-hall .lobby-menu {
+  left: auto !important;
+  right: 9px !important;
+  width: 656px !important;
+  min-width: 656px !important;
+  overflow: visible !important;
+}
+
+.classic-game-hall .lobby-menu-settings {
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+
+/* scene.png is 8 contiguous 55px frames; exit/back is frame 8. */
+.classic-game-hall .lobby-menu-exit::before {
+  background-position-x: -385px !important;
+}

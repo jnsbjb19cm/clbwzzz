@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<data name="slot">
+    <slot id="1" cardId="34"/>
+    <slot id="2"  cardId="171"/>
+    <slot id="3"  cardId="136"/>
+    <slot id="4"  cardId="241"/>
+    <slot id="5"  cardId="413"/>
+    <slot id="6"  cardId="343"/>
+    <slot id="7"  cardId="483"/>
+    <slot id="8"  cardId="206"/>
+    <slot id="9"  cardId="448"/>
+    <slot id="10"  cardId="378"/>
+    <slot id="11"  cardId="104"/>
+	<slot id="12"  cardId="311"/>
+	<slot id="13"  cardId="550"/>
+	<slot id="14"  cardId="655"/>
+	<slot id="15"  cardId="877"/>
+	<slot id="16"  cardId="934"/>
+	<slot id="17"  cardId="1021"/>
+	<slot id="18"  cardId="276"/>    
+</data>

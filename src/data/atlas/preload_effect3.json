@@ -1,0 +1,757 @@
+{
+  "image": "effect3.png",
+  "path": "preload/effect3.xml",
+  "sprites": [
+    {
+      "name": "compose-元件 2",
+      "x": 1044,
+      "y": 671,
+      "width": 285,
+      "height": 71
+    },
+    {
+      "name": "compose-元件 3",
+      "x": 2,
+      "y": 813,
+      "width": 434,
+      "height": 142
+    },
+    {
+      "name": "compose-元件 4",
+      "x": 419,
+      "y": 984,
+      "width": 372,
+      "height": 51
+    },
+    {
+      "name": "compose-元件 5",
+      "x": 419,
+      "y": 1037,
+      "width": 368,
+      "height": 45
+    },
+    {
+      "name": "compose-元件 6",
+      "x": 419,
+      "y": 1084,
+      "width": 367,
+      "height": 34
+    },
+    {
+      "name": "compose-元件 7",
+      "x": 1763,
+      "y": 916,
+      "width": 251,
+      "height": 29
+    },
+    {
+      "name": "crit-元件 2",
+      "x": 1052,
+      "y": 452,
+      "width": 290,
+      "height": 71
+    },
+    {
+      "name": "crit-元件 3",
+      "x": 2,
+      "y": 813,
+      "width": 434,
+      "height": 142
+    },
+    {
+      "name": "crit-元件 4",
+      "x": 419,
+      "y": 984,
+      "width": 372,
+      "height": 51
+    },
+    {
+      "name": "crit-元件 5",
+      "x": 419,
+      "y": 1037,
+      "width": 368,
+      "height": 45
+    },
+    {
+      "name": "crit-元件 6",
+      "x": 419,
+      "y": 1084,
+      "width": 367,
+      "height": 34
+    },
+    {
+      "name": "crit-元件 7",
+      "x": 1763,
+      "y": 916,
+      "width": 251,
+      "height": 29
+    },
+    {
+      "name": "dragcard-元件 3",
+      "x": 861,
+      "y": 1215,
+      "width": 167,
+      "height": 192
+    },
+    {
+      "name": "evolution-元件 2",
+      "x": 1050,
+      "y": 525,
+      "width": 290,
+      "height": 71
+    },
+    {
+      "name": "evolution-元件 3",
+      "x": 2,
+      "y": 813,
+      "width": 434,
+      "height": 142
+    },
+    {
+      "name": "evolution-元件 4",
+      "x": 419,
+      "y": 984,
+      "width": 372,
+      "height": 51
+    },
+    {
+      "name": "evolution-元件 5",
+      "x": 419,
+      "y": 1037,
+      "width": 368,
+      "height": 45
+    },
+    {
+      "name": "evolution-元件 6",
+      "x": 419,
+      "y": 1084,
+      "width": 367,
+      "height": 34
+    },
+    {
+      "name": "evolution-元件 7",
+      "x": 1763,
+      "y": 916,
+      "width": 251,
+      "height": 29
+    },
+    {
+      "name": "jinhuaPart-0.png--jinhua",
+      "x": 892,
+      "y": 781,
+      "width": 144,
+      "height": 144
+    },
+    {
+      "name": "jinhuaPart-001.png--jinhua",
+      "x": 955,
+      "y": 686,
+      "width": 84,
+      "height": 91
+    },
+    {
+      "name": "jinhuaPart-002.png--jinhua",
+      "x": 749,
+      "y": 1138,
+      "width": 110,
+      "height": 131
+    },
+    {
+      "name": "jinhuaPart-003.png--jinhua",
+      "x": 717,
+      "y": 1863,
+      "width": 152,
+      "height": 154
+    },
+    {
+      "name": "jinhuaPart-004.png--jinhua",
+      "x": 640,
+      "y": 1544,
+      "width": 188,
+      "height": 159
+    },
+    {
+      "name": "jinhuaPart-005.png--jinhua",
+      "x": 408,
+      "y": 1650,
+      "width": 220,
+      "height": 164
+    },
+    {
+      "name": "jinhuaPart-006.png--jinhua",
+      "x": 2,
+      "y": 1437,
+      "width": 229,
+      "height": 168
+    },
+    {
+      "name": "jinhuaPart-007.png--jinhua",
+      "x": 413,
+      "y": 1258,
+      "width": 231,
+      "height": 190
+    },
+    {
+      "name": "jinhuaPart-008.png--jinhua",
+      "x": 411,
+      "y": 1450,
+      "width": 227,
+      "height": 198
+    },
+    {
+      "name": "jinhuaPart-009.png--jinhua",
+      "x": 2,
+      "y": 1607,
+      "width": 221,
+      "height": 221
+    },
+    {
+      "name": "jinhuaPart-01.png--jinhua",
+      "x": 789,
+      "y": 1037,
+      "width": 98,
+      "height": 99
+    },
+    {
+      "name": "jinhuaPart-010.png--jinhua",
+      "x": 1030,
+      "y": 1225,
+      "width": 232,
+      "height": 228
+    },
+    {
+      "name": "jinhuaPart-011.png--jinhua",
+      "x": 1041,
+      "y": 744,
+      "width": 276,
+      "height": 233
+    },
+    {
+      "name": "jinhuaPart-012.png--jinhua",
+      "x": 1688,
+      "y": 1195,
+      "width": 347,
+      "height": 243
+    },
+    {
+      "name": "jinhuaPart-013.png--jinhua",
+      "x": 2,
+      "y": 957,
+      "width": 415,
+      "height": 254
+    },
+    {
+      "name": "jinhuaPart-014.png--jinhua",
+      "x": 507,
+      "y": 382,
+      "width": 483,
+      "height": 253
+    },
+    {
+      "name": "jinhuaPart-015.png--jinhua",
+      "x": 546,
+      "y": 128,
+      "width": 512,
+      "height": 252
+    },
+    {
+      "name": "jinhuaPart-016.png--jinhua",
+      "x": 2,
+      "y": 128,
+      "width": 542,
+      "height": 245
+    },
+    {
+      "name": "jinhuaPart-017.png--jinhua",
+      "x": 1365,
+      "y": 2,
+      "width": 544,
+      "height": 236
+    },
+    {
+      "name": "jinhuaPart-018.png--jinhua",
+      "x": 2,
+      "y": 375,
+      "width": 503,
+      "height": 229
+    },
+    {
+      "name": "jinhuaPart-019.png--jinhua",
+      "x": 1360,
+      "y": 347,
+      "width": 498,
+      "height": 218
+    },
+    {
+      "name": "jinhuaPart-02.png--jinhua",
+      "x": 2,
+      "y": 1910,
+      "width": 110,
+      "height": 110
+    },
+    {
+      "name": "jinhuaPart-020.png--jinhua",
+      "x": 2,
+      "y": 606,
+      "width": 448,
+      "height": 205
+    },
+    {
+      "name": "jinhuaPart-021.png--jinhua",
+      "x": 1342,
+      "y": 567,
+      "width": 444,
+      "height": 206
+    },
+    {
+      "name": "jinhuaPart-022.png--jinhua",
+      "x": 1319,
+      "y": 918,
+      "width": 439,
+      "height": 203
+    },
+    {
+      "name": "jinhuaPart-023.png--jinhua",
+      "x": 452,
+      "y": 781,
+      "width": 438,
+      "height": 201
+    },
+    {
+      "name": "jinhuaPart-024.png--jinhua",
+      "x": 506,
+      "y": 637,
+      "width": 447,
+      "height": 142
+    },
+    {
+      "name": "jinhuaPart-025.png--jinhua",
+      "x": 1319,
+      "y": 775,
+      "width": 442,
+      "height": 141
+    },
+    {
+      "name": "jinhuaPart-026.png--jinhua",
+      "x": 1287,
+      "y": 1123,
+      "width": 399,
+      "height": 138
+    },
+    {
+      "name": "jinhuaPart-027.png--jinhua",
+      "x": 419,
+      "y": 1120,
+      "width": 328,
+      "height": 136
+    },
+    {
+      "name": "jinhuaPart-028.png--jinhua",
+      "x": 640,
+      "y": 1469,
+      "width": 192,
+      "height": 73
+    },
+    {
+      "name": "jinhuaPart-029.png--jinhua",
+      "x": 2,
+      "y": 1830,
+      "width": 102,
+      "height": 72
+    },
+    {
+      "name": "jinhuaPart-03.png--jinhua",
+      "x": 114,
+      "y": 1830,
+      "width": 107,
+      "height": 109
+    },
+    {
+      "name": "jinhuaPart-04.png--jinhua",
+      "x": 889,
+      "y": 1072,
+      "width": 139,
+      "height": 141
+    },
+    {
+      "name": "jinhuaPart-05.png--jinhua",
+      "x": 1911,
+      "y": 2,
+      "width": 125,
+      "height": 129
+    },
+    {
+      "name": "jinhuaPart-06.png--jinhua",
+      "x": 892,
+      "y": 927,
+      "width": 141,
+      "height": 143
+    },
+    {
+      "name": "jinhuaPart-07.png--jinhua",
+      "x": 717,
+      "y": 1705,
+      "width": 156,
+      "height": 156
+    },
+    {
+      "name": "jinhuaPart-08.png--jinhua",
+      "x": 1860,
+      "y": 423,
+      "width": 176,
+      "height": 176
+    },
+    {
+      "name": "jinhuaPart-09.png--jinhua",
+      "x": 1861,
+      "y": 245,
+      "width": 177,
+      "height": 176
+    },
+    {
+      "name": "jinhuaPart-1.png 副本--jinhua",
+      "x": 2,
+      "y": 1213,
+      "width": 232,
+      "height": 222,
+      "frameX": -52,
+      "frameY": -8,
+      "frameWidth": 290,
+      "frameHeight": 246
+    },
+    {
+      "name": "jinhuaPart-1.png--jinhua",
+      "x": 233,
+      "y": 1565,
+      "width": 173,
+      "height": 173
+    },
+    {
+      "name": "jinhuaPart-10.png--jinhua",
+      "x": 236,
+      "y": 1213,
+      "width": 175,
+      "height": 175
+    },
+    {
+      "name": "jinhuaPart-2.png 副本--jinhua",
+      "x": 1035,
+      "y": 979,
+      "width": 250,
+      "height": 244,
+      "frameX": -40,
+      "frameY": 0,
+      "frameWidth": 290,
+      "frameHeight": 246
+    },
+    {
+      "name": "jinhuaPart-2.png--jinhua",
+      "x": 236,
+      "y": 1390,
+      "width": 173,
+      "height": 173
+    },
+    {
+      "name": "jinhuaPart-3.png 副本--jinhua",
+      "x": 1760,
+      "y": 947,
+      "width": 250,
+      "height": 246,
+      "frameX": -40,
+      "frameY": 0,
+      "frameWidth": 290,
+      "frameHeight": 246
+    },
+    {
+      "name": "jinhuaPart-3.png--jinhua",
+      "x": 565,
+      "y": 1816,
+      "width": 150,
+      "height": 157
+    },
+    {
+      "name": "jinhuaPart-4.png 副本--jinhua",
+      "x": 1788,
+      "y": 682,
+      "width": 254,
+      "height": 232,
+      "frameX": -36,
+      "frameY": -3,
+      "frameWidth": 290,
+      "frameHeight": 246
+    },
+    {
+      "name": "jinhuaPart-4.png--jinhua",
+      "x": 858,
+      "y": 1409,
+      "width": 164,
+      "height": 162
+    },
+    {
+      "name": "jinhuaPart-5.png 副本--jinhua",
+      "x": 646,
+      "y": 1271,
+      "width": 210,
+      "height": 196,
+      "frameX": -64,
+      "frameY": -21,
+      "frameWidth": 290,
+      "frameHeight": 246
+    },
+    {
+      "name": "jinhuaPart-5.png--jinhua",
+      "x": 225,
+      "y": 1740,
+      "width": 173,
+      "height": 168
+    },
+    {
+      "name": "jinhuaPart-6.png--jinhua",
+      "x": 400,
+      "y": 1816,
+      "width": 163,
+      "height": 166
+    },
+    {
+      "name": "jinhuaPart-元件 1--jinhua",
+      "x": 1060,
+      "y": 128,
+      "width": 298,
+      "height": 322
+    },
+    {
+      "name": "sceneAnimFile-UI主城设计裁剪08.png--zhucheng",
+      "x": 452,
+      "y": 660,
+      "width": 51,
+      "height": 24
+    },
+    {
+      "name": "sceneAnimFile-元件 5--zhucheng",
+      "x": 955,
+      "y": 640,
+      "width": 87,
+      "height": 44
+    },
+    {
+      "name": "sceneAnimFile-小精灵001.png--zhucheng",
+      "x": 992,
+      "y": 382,
+      "width": 58,
+      "height": 50,
+      "frameX": -1,
+      "frameY": -6,
+      "frameWidth": 60,
+      "frameHeight": 60
+    },
+    {
+      "name": "sceneAnimFile-小精灵002.png--zhucheng",
+      "x": 992,
+      "y": 434,
+      "width": 58,
+      "height": 48,
+      "frameX": -1,
+      "frameY": -7,
+      "frameWidth": 60,
+      "frameHeight": 60
+    },
+    {
+      "name": "sceneAnimFile-小精灵003.png--zhucheng",
+      "x": 452,
+      "y": 606,
+      "width": 52,
+      "height": 52,
+      "frameX": -1,
+      "frameY": -2,
+      "frameWidth": 60,
+      "frameHeight": 60
+    },
+    {
+      "name": "sceneAnimFile-小精灵004.png--zhucheng",
+      "x": 992,
+      "y": 536,
+      "width": 56,
+      "height": 48,
+      "frameX": -1,
+      "frameY": -6,
+      "frameWidth": 60,
+      "frameHeight": 60
+    },
+    {
+      "name": "sceneAnimFile-小精灵005.png--zhucheng",
+      "x": 992,
+      "y": 484,
+      "width": 56,
+      "height": 50,
+      "frameX": -3,
+      "frameY": -4,
+      "frameWidth": 60,
+      "frameHeight": 60
+    },
+    {
+      "name": "sceneAnimFile-小精灵006.png--zhucheng",
+      "x": 992,
+      "y": 586,
+      "width": 52,
+      "height": 52,
+      "frameX": -3,
+      "frameY": -3,
+      "frameWidth": 60,
+      "frameHeight": 60
+    },
+    {
+      "name": "sceneAnimFile-白云--zhucheng",
+      "x": 1788,
+      "y": 601,
+      "width": 256,
+      "height": 79
+    },
+    {
+      "name": "sceneAnimFile-蓝天大图--zhucheng",
+      "x": 2,
+      "y": 2,
+      "width": 1361,
+      "height": 124
+    },
+    {
+      "name": "sceneAnimFile-补间 11--zhucheng",
+      "x": 2026,
+      "y": 133,
+      "width": 13,
+      "height": 13
+    },
+    {
+      "name": "sceneAnimFile-补间 12--zhucheng",
+      "x": 2026,
+      "y": 133,
+      "width": 13,
+      "height": 13
+    },
+    {
+      "name": "sceneAnimFile-补间 13--zhucheng",
+      "x": 2026,
+      "y": 133,
+      "width": 13,
+      "height": 13
+    },
+    {
+      "name": "sceneAnimFile-补间 14--zhucheng",
+      "x": 2026,
+      "y": 133,
+      "width": 13,
+      "height": 13
+    },
+    {
+      "name": "sceneAnimFile-补间 15--zhucheng",
+      "x": 2026,
+      "y": 133,
+      "width": 13,
+      "height": 13
+    },
+    {
+      "name": "sceneAnimFile-补间 16--zhucheng",
+      "x": 2026,
+      "y": 133,
+      "width": 13,
+      "height": 13
+    },
+    {
+      "name": "sceneAnimFile-补间 17--zhucheng",
+      "x": 2026,
+      "y": 148,
+      "width": 12,
+      "height": 12
+    },
+    {
+      "name": "sceneAnimFile-补间 18--zhucheng",
+      "x": 2026,
+      "y": 148,
+      "width": 12,
+      "height": 12
+    },
+    {
+      "name": "sceneAnimFile-补间 19--zhucheng",
+      "x": 2026,
+      "y": 148,
+      "width": 12,
+      "height": 12
+    },
+    {
+      "name": "sceneAnimFile-补间 20--zhucheng",
+      "x": 2026,
+      "y": 148,
+      "width": 12,
+      "height": 12
+    },
+    {
+      "name": "sceneAnimFile-补间 21--zhucheng",
+      "x": 2026,
+      "y": 148,
+      "width": 12,
+      "height": 12
+    },
+    {
+      "name": "sceneAnimFile-补间 22--zhucheng",
+      "x": 2026,
+      "y": 148,
+      "width": 12,
+      "height": 12
+    },
+    {
+      "name": "sceneAnimFile-补间 7--zhucheng",
+      "x": 1911,
+      "y": 133,
+      "width": 113,
+      "height": 110
+    },
+    {
+      "name": "strengthen-元件 2",
+      "x": 1046,
+      "y": 598,
+      "width": 289,
+      "height": 71
+    },
+    {
+      "name": "strengthen-元件 3",
+      "x": 2,
+      "y": 813,
+      "width": 434,
+      "height": 142
+    },
+    {
+      "name": "strengthen-元件 4",
+      "x": 419,
+      "y": 984,
+      "width": 372,
+      "height": 51
+    },
+    {
+      "name": "strengthen-元件 5",
+      "x": 419,
+      "y": 1037,
+      "width": 368,
+      "height": 45
+    },
+    {
+      "name": "strengthen-元件 6",
+      "x": 419,
+      "y": 1084,
+      "width": 367,
+      "height": 34
+    },
+    {
+      "name": "strengthen-元件 7",
+      "x": 1763,
+      "y": 916,
+      "width": 251,
+      "height": 29
+    },
+    {
+      "name": "公用背景",
+      "x": 1360,
+      "y": 240,
+      "width": 499,
+      "height": 105
+    }
+  ]
+}

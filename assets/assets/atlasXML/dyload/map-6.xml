@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with TexturePacker http://texturepacker.com-->
+<!-- $TexturePacker:SmartUpdate:50874c4455345875e0f165fe972b01c8$ -->
+<TextureAtlas imagePath="map-6.png">
+    <SubTexture name="map6" x="2" y="2" width="1363" height="768"/>
+</TextureAtlas>

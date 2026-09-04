@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>丛林保卫战 - 单人对战核心</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <!-- 选卡主界面 - 参考图风格 -->
+    <div id="selection-screen">
+        <div class="selection-container">
+            <!-- 顶部标题 -->
+            <div class="selection-header">
+                <h1>我的战团</h1>
+                <div class="team-count">已选 <span id="team-count">0</span> / 6</div>
+            </div>
+
+            <!-- 战团预览区域 -->
+            <div class="team-preview-section">
+                <div class="team-cards" id="team-preview">
+                    <!-- JS 渲染已选卡牌 -->
+                </div>
+                <button id="edit-team-btn" class="edit-btn">编辑战团</button>
+            </div>
+
+            <!-- 开始战斗按钮 -->
+            <button id="start-battle-btn" class="start-btn" disabled>开始战斗</button>
+        </div>
+    </div>
+
+    <!-- 编辑弹窗 -->
+    <div id="edit-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>选择卡牌</h2>
+                <button class="close-btn" id="close-modal-btn">&times;</button>
+            </div>
+
+            <!-- 分类Tab -->
+            <div class="tabs">
+                <button class="tab active" data-filter="all">全部</button>
+                <button class="tab" data-filter="plant">植物</button>
+                <button class="tab" data-filter="monster">怪物</button>
+            </div>
+
+            <div class="card-grid" id="modal-card-grid">
+                <!-- JS 渲染 -->
+            </div>
+
+            <div class="modal-footer">
+                <div class="modal-info">已选 <span id="modal-count">0</span> / 6</div>
+                <button id="confirm-btn" class="confirm-btn">确定</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 游戏主界面 -->
+    <div id="game-container" style="display: none;">
+        <!-- 顶部资源 + 基地HP -->
+        <div class="top-bar">
+            <div class="resources">
+                <div class="resource sunlight">
+                    <span class="icon">🌞</span>
+                    <span id="sunlight">8</span>
+                    <span class="max">/20</span>
+                    <span class="generation-rate">+1/s</span>
+                </div>
+                <div class="resource food">
+                    <span class="icon">🍖</span>
+                    <span id="food">8</span>
+                    <span class="max">/20</span>
+                    <span class="generation-rate">+1/s</span>
+                </div>
+            </div>
+
+            <div class="base-hp">
+                <div class="hp-item player">
+                    <span>我方</span>
+                    <span id="player-base-hp">1000</span>
+                </div>
+                <div class="hp-item enemy">
+                    <span>敌方</span>
+                    <span id="enemy-base-hp">1000</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="main-container">
+            <div class="side left-side">
+                <div class="side-decoration">
+                    <div class="side-label">我方<br/>基地</div>
+                </div>
+            </div>
+
+            <!-- 战场区域 -->
+            <div class="battlefield-container">
+                <div class="battlefield-wrapper">
+                    <!-- 区域标签 -->
+                    <div class="battlefield-regions">
+                        <div class="region-label left-zone-label">己方基地(0-2列)</div>
+                        <div class="region-label middle-zone-label">空地(3-9列)</div>
+                        <div class="region-label right-zone-label">敌方基地(10-11列)</div>
+                    </div>
+                    <!-- 战场网格 -->
+                    <div class="battlefield" id="battlefield"></div>
+                </div>
+            </div>
+
+            <div class="side right-side">
+                <div class="log-container">
+                    <div class="log-header">战斗日志</div>
+                    <div class="log" id="log">
+                        <div id="log-content"></div>
+                    </div>
+                </div>
+
+                <div class="controls">
+                    <button id="start-wave-btn">触发波次</button>
+                    <button id="reset-btn" class="danger">重置</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 下方卡槽系统 -->
+        <div class="card-slots-container">
+            <div class="slots-header">战团卡槽 (按1-6或点击选择)</div>
+            <div class="card-slots" id="card-slots"></div>
+        </div>
+    </div>
+
+    <script src="cards.js"></script>
+    <script src="battlefield-system.js"></script>
+    <script src="battle-integration.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>

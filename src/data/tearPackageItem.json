@@ -1,0 +1,33 @@
+[
+  {
+    "item_id": 11,
+    "item_name": "标准包",
+    "gold": 5000,
+    "redDiamond": 40,
+    "redDiamond10": -1,
+    "firstQuality": 2,
+    "secondQuality": 3,
+    "thirdQuality": 4,
+    "freeTimeLimit": 3
+  },
+  {
+    "item_id": 12,
+    "item_name": "精英包",
+    "gold": 15000,
+    "redDiamond": 75,
+    "redDiamond10": -1,
+    "firstQuality": 2,
+    "secondQuality": 3,
+    "thirdQuality": 4
+  },
+  {
+    "item_id": 13,
+    "item_name": "领主包",
+    "gold": -1,
+    "redDiamond": 150,
+    "redDiamond10": 1350,
+    "firstQuality": 4,
+    "secondQuality": 5,
+    "thirdQuality": 6
+  }
+]

@@ -1,0 +1,20 @@
+{
+  "image": "map-9.png",
+  "path": "dyload/map-9.xml",
+  "sprites": [
+    {
+      "name": "map8",
+      "x": 2,
+      "y": 772,
+      "width": 1363,
+      "height": 768
+    },
+    {
+      "name": "map9",
+      "x": 2,
+      "y": 2,
+      "width": 1363,
+      "height": 768
+    }
+  ]
+}

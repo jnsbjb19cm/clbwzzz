@@ -1,0 +1,38 @@
+{
+  "userBlueBox": {
+    "originX": 0,
+    "originY": 81,
+    "innerW": 977,
+    "innerH": 574,
+    "boxBottom": 655,
+    "source": "detected"
+  },
+  "userGridCenter": {
+    "CELL_W": 78.67,
+    "CELL_H": 78.67,
+    "GRID_ORIGIN_X": 0,
+    "GRID_BOX_ORIGIN_Y": 81,
+    "GRID_BOX_INNER_W": 977,
+    "GRID_BOX_INNER_H": 574,
+    "GRID_V_PAD": 84.33,
+    "GRID_H_PAD": 0,
+    "row0Y": 165.33,
+    "row4Bottom": 570.67,
+    "columns": "5+2+5",
+    "rows": 5
+  },
+  "userGridTopAligned": {
+    "CELL_W": 78.67,
+    "row0Y": 81,
+    "row4Bottom": 486.33,
+    "GRID_V_PAD": 0,
+    "note": "首行贴蓝框顶(对应「这里的一行也是格子」)"
+  },
+  "current": {
+    "CELL_W": 73.33333333333333,
+    "CELL_H": 73.33333333333333,
+    "originX": 1,
+    "row0Y": 176.66666666666669,
+    "GRID_V_PAD": 89.66666666666669
+  }
+}

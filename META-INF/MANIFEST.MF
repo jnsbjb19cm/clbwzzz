@@ -1,0 +1,1694 @@
+Manifest-Version: 1.0
+Created-By: 1.6.0_31 (Sun Microsystems Inc.)
+
+Name: assets/assets/atlasXML/preload/effect1.xml
+SHA1-Digest: TV2NyxlhU0phcfsB7j6sris9Bw0=
+
+Name: assets/ucgamesdk/ui/AHorizontal333/conf/giftBottomSelected.png
+SHA1-Digest: fNaLQ20KpGYKy9Y1X6gqBqJhZzM=
+
+Name: assets/assets/atlasXML/dyload/login.xml
+SHA1-Digest: m2xpfg4jT83ebBsrdBU6Fu9mzIc=
+
+Name: assets/ucgamesdk/ui/AHorizontal333/common/js/common.js
+SHA1-Digest: Cwtd9kUpo9LQLJtKG3dyzm/8zmM=
+
+Name: assets/ucgamesdk/ui/AHorizontal333/pay/images/ico.png
+SHA1-Digest: frnLuruJMUCch8n3Efbu0F8VDIE=
+
+Name: assets/assets/language/mail.xml
+SHA1-Digest: w/R7lLHwo9qoyuFUjEHDUD07vn4=
+
+Name: assets/sound/effect/fire/skill_501.mp3
+SHA1-Digest: oSSFwIK1tMAKJkqGejaRQ4l0BUk=
+
+Name: assets/ucgamesdk/ui/AHorizontal333/pay/js/sdkBase.min.js
+SHA1-Digest: hNCq+aveIQfJmf42DBHcYstD9Qo=
+
+Name: assets/assets/atlasXML/dyload/map-4.xml
+SHA1-Digest: AYHb9moeCNbJ82ZH/NFKKnRqeaM=
+
+Name: assets/sound/effect/smith/fail.mp3
+SHA1-Digest: krNgRqEUX/oJQ659IN4+lJkPO0Q=
+
+Name: assets/sound/effect/fire/move_43.mp3
+SHA1-Digest: PG7v58pgvCJIwmqQ4yHTcCRb+Wk=
+
+Name: assets/ucgamesdk/ui/AHorizontal333/pay/start.js
+SHA1-Digest: LXO7h2pzqRaJJdzGkcktBvnIYpY=
+
+Name: assets/ucgamesdk/ui/AHorizontal333/widget/images/btn_orange.9.pn
+ g
+SHA1-Digest: bSnz/BKe8ADBRjhqah5pPkGiSTk=
+
+Name: assets/xml/block.txt
+SHA1-Digest: qPr66mgaCsa+pDYjJXXMbnGUoC8=
+
+Name: assets/assets/atlasXML/preload/avatar.xml
+SHA1-Digest: abMUXP0CctyWreN0FvC/1joLSLA=
+
+Name: assets/ucgamesdk/ui/AHorizontal333/widget/images/input_icon_Arro
+ w.9.png
+SHA1-Digest: 6z/jC87ZJJvDwhzbQzSbIu510AM=
+
+Name: assets/META-INF/AIR/extensions/cn.uc.gamesdk.ane.android/library
+ .swf
+SHA1-Digest: vt6+gA1NvJ1OAMWX6K3vqJD5vco=
+
+Name: assets/assets/atlasXML/dyload/map-2.xml
+SHA1-Digest: 1b3kRnvSvA90w7imlj8urkSNP9w=
+
+Name: assets/assets/atlasATF/preload/card1.atf
+SHA1-Digest: 8CR98wkaSjxxGBvx8cnJFsSolcE=
+
+Name: assets/sound/effect/fire/skill_507.mp3
+SHA1-Digest: wq5EqxyddCAtmi9wCHWqrdQhu0E=
+
+Name: assets/ucgamesdk/ui/AHorizontal333/widget/images/tips_bg.9.png
+SHA1-Digest: Dbxis3hYqN0tpBGsZEzNxcPBJBI=
+
+Name: assets/assets/atlasATF/preload/worldMap.atf
+SHA1-Digest: EI5XKnaSMY018ef3lLUHeX5nlyo=
+
+Name: assets/ucgamesdk/ui/AHorizontal333/user/user.html
+SHA1-Digest: RJj/3bAhty2vEyDk8ESaOgnh7FI=
+
+Name: assets/assets/atlasATF/preload/avatar.atf
+SHA1-Digest: HwyTNE9OaaibVboe5OxQCXjuGOM=
+
+Name: assets/assets/atlasATF/dyload/soldier.atf
+SHA1-Digest: RTBc9GWU3CPbbWyCU7yd/SG1xfg=
+
+Name: assets/ucgamesdk/ui/AHorizontal333/common/sdk_images/safe.png
+SHA1-Digest: R9cbkJhfLkOnVHinNoCEUISLAak=
+
+Name: assets/sound/effect/fire/n41.mp3
+SHA1-Digest: bFla6vEmI5N7XAkmuLfD0YR2ryk=
+
+Name: assets/assets/language/amining.xml
+SHA1-Digest: DpLLkkcWBVLaoB/MWaXiFewrROQ=
+
+Name: assets/sound/effect/fire/n40.mp3
+SHA1-Digest: wNAN0es8rirKNQ2eJPbm8BQD8sQ=
+
+Name: assets/ucgamesdk/ui/AHorizontal333/common/sdk_images/ceab.png
+SHA1-Digest: aTEm9kv1ZBgp8MKQk+zgD5Gpi7M=
+
+Name: assets/ucgamesdk/ui/AHorizontal333/common/css/base.css
+SHA1-Digest: UHRHazIfynewtJO9P2hRzTprk8M=
+
+Name: assets/sound/effect/fire/13.mp3
+SHA1-Digest: 7b3mWq/AoiPanLtXE0HCswCl/1Q=
+
+Name: assets/ucgamesdk/ui/AHorizontal333/common/sdk_images/ico_error.p
+ ng
+SHA1-Digest: HIZkLTGAMhMnbjqfEy5hSpIXtdo=
+
+Name: assets/ucgamesdk/images/loadrefresh.png
+SHA1-Digest: H1iXjufcg0D5e5ej0CNUfX7DbfY=
+
+Name: assets/ucgamesdk/ui/AHorizontal333/pay/images/pay.png
+SHA1-Digest: hdbS5jL0w3hVDBtxJzymfEBmzoA=
+
+Name: assets/sound/effect/fire/vertigo.mp3
+SHA1-Digest: YmnsilJS9cq054t+ZQlV88a0V0o=
+
+Name: assets/ucgamesdk/loginwidget/images/btn_global_search_normal.9.p
+ ng
+SHA1-Digest: shRCcSUrM38B0sILMWaOHxbz66s=
+
+Name: assets/ucgamesdk/ui/AHorizontal333/common/sdk_images/back.png
+SHA1-Digest: nVWklqhAArp6PCmTjhr0k6dPsv0=
+
+Name: assets/ucgamesdk/ui/AHorizontal333/common/js/sdkBase.js
+SHA1-Digest: aPYUhgrxpXe7G1qFF1SLGwlCIhg=
+
+Name: assets/assets/dataXML/specialMeltingCard.xml
+SHA1-Digest: iAX8BNdIyXXtL4rI2Bjz1o8xqNk=
+
+Name: assets/sound/effect/fire/n5.mp3
+SHA1-Digest: lJwSFfkKzMkwu0yvjxPgm8ENw0g=
+
+Name: assets/ucgamesdk/ui/AHorizontal333/common/sdk_images/ceyj.png
+SHA1-Digest: NNdKAFwnAofARVKHSHeoYFA2plU=
+
+Name: assets/assets/language/task.xml
+SHA1-Digest: LM0Vaf0uSbvKBpJ+w0p8ni8SRA0=
+
+Name: assets/META-INF/AIR/extensions/org.zengrong.ane.ANEToolkit/catal
+ og.xml
+SHA1-Digest: JL2EOZkEG+V2yValbqVM+M1NFXM=
+
+Name: assets/ucgamesdk/loginwidget/images/qq.png
+SHA1-Digest: xUHu3dIkoPwEx53BNTsMMrw97yI=
+
+Name: assets/assets/language/setting.xml
+SHA1-Digest: HtNErxE95jv8oFIOeQ39u4Dj2Z4=
+
+Name: assets/sound/effect/fire/n3.mp3
+SHA1-Digest: lJwSFfkKzMkwu0yvjxPgm8ENw0g=
+
+Name: assets/assets/atlasATF/preload/advStage.atf
+SHA1-Digest: OnZlrO6+dG4050Ie1gTsEIfaXZ8=
+
+Name: assets/ucgamesdk/ui/AHorizontal333/common/sdk_images/vip-icon.pn
+ g
+SHA1-Digest: i+o6cjXrvFJrA7YX2wlGZeodqv0=
+
+Name: assets/ucgamesdk/ui/AHorizontal333/common/sdk_images/float_head_
+ icon_close_press.png
+SHA1-Digest: bbRucBrei6dgIFN7wRsTyorty98=
+
+Name: assets/sound/button/normalButton.mp3
+SHA1-Digest: JMXVi0SgqEcRn9fAKecYhQLzUT8=
+
+Name: assets/sound/effect/smith/win.mp3
+SHA1-Digest: 5Kv9KqWF6/8jmfkOQ1ZNfWdVXWU=
+
+Name: assets/ucgamesdk/ui/AHorizontal333/conf/accountBottomSelected.pn
+ g
+SHA1-Digest: 2twsn27/tP+Imhc8njDRNyFmE+A=
+
+Name: assets/ucgamesdk/ui/AHorizontal333/common/sdk_images/dkl.png
+SHA1-Digest: 8oVV+XcmpHRCI1lQa5Sb2Ej6LtE=
+
+Name: assets/assets/atlasXML/dyload/map-1.xml
+SHA1-Digest: q8+pm9Dl9TpMFzv2DVQWiqm/jHM=
+
+Name: assets/assets/language/copy.xml
+SHA1-Digest: sk3x5VvRohoROpHdZR3b0bhSOKM=
+
+Name: assets/ucgamesdk/loginwidget/images/9g_logo_2.png
+SHA1-Digest: w1unJa4R4/2bgrgoWvDc8+/oaUI=
+
+Name: assets/ucgamesdk/images/exdialog_banner.png
+SHA1-Digest: 2vqj7FqeJN/9j8u++tHFJDC7Qys=
+
+Name: assets/ucgamesdk/loginwidget/images/background.9.png
+SHA1-Digest: Ihlo9C2JKJ6uY1LO+qvvIBzQz7w=
+
+Name: assets/sound/effect/fire/10.mp3
+SHA1-Digest: HmQKdFmUmjh103O7pjLFUwrSD4Y=
+
+Name: assets/xml/cn_cn.txt
+SHA1-Digest: SJohvO0fXfXt5ndbimt0ZaSkFTw=
+
+Name: assets/sound/effect/fire/skill_506.mp3
+SHA1-Digest: JI4IqVG3rbUyqhKp9FyaFQauxZs=
+
+Name: assets/sound/effect/fire/n55.mp3
+SHA1-Digest: bwzYiNmO2MyrV1LfSFDjyJMkVxQ=
+
+Name: assets/assets/atlasATF/preload/battle.atf
+SHA1-Digest: MQzUrsEFPk8078dVvkLump48p7Y=
+
+Name: assets/assets/dySkeletonXML/soldier_skeleton.xml
+SHA1-Digest: dZSxV1cBybiJtNJJ8kWIZJ5RYPo=
+
+Name: assets/ucgamesdk/config/uc_key.txt
+SHA1-Digest: RH67SH/t2vbIAhiSMDeSlIWjcaA=
+
+Name: assets/META-INF/AIR/application.xml
+SHA1-Digest: jHewaAeUnqdcGMtUG6QW0wksgTA=
+
+Name: assets/assets/atlasATF/preload/scene.atf
+SHA1-Digest: rmH1YhOs8BDFudoUGpQsuozXlo8=
+
+Name: assets/ucgamesdk/loginwidget/images/btn_black.9.png
+SHA1-Digest: cMA+Z3zTZM2Uccrw+qL+0gG7TtY=
+
+Name: assets/ucgamesdk/ui/AHorizontal333/pay/js/util.js
+SHA1-Digest: yK75OYQCc5IfEvqVexhn/Eb08LU=
+
+Name: assets/sound/effect/fire/0.mp3
+SHA1-Digest: Mh0JAmwNvTeFQKMG680fl7K1qrg=
+
+Name: assets/ucgamesdk/ui/AHorizontal333/common/sdk_images/9game.png
+SHA1-Digest: vJh5zif3g81IyftOwfcB4NTWO1k=
+
+Name: assets/ucgamesdk/ui/AHorizontal333/conf/tipsBackgroundSelected.9
+ .png
+SHA1-Digest: n8iqL0kiXB1LkBmYFq3vTFRWX4w=
+
+Name: assets/assets/atlasXML/dyload/map-7.xml
+SHA1-Digest: hm5flwIdGwPYUBXUWApp5nXReIw=
+
+Name: assets/sound/effect/fire/17.mp3
+SHA1-Digest: Vyn6odWIdb4RTnIgVT93yNAMp7I=
+
+Name: assets/ucgamesdk/ui/AHorizontal333/common/sdk_images/check_sprit
+ es.png
+SHA1-Digest: cytEpi/6KntfbBw7idLTnIxAL+8=
+
+Name: assets/ucgamesdk/ui/AHorizontal333/common/sdk_images/float_btn_o
+ range.9.png
+SHA1-Digest: JVyeBbvVZBAPGmP739s186ywrLs=
+
+Name: res/raw/rgba8888
+SHA1-Digest: 2jmj7l5rSw0yVb/vlWAYkK/YBwk=
+
+Name: assets/ucgamesdk/ui/AHorizontal333/conf/toast_btnpress.9.png
+SHA1-Digest: fgPwAuPu8M/F1+xil6L4IYl02xc=
+
+Name: assets/assets/dataXML/tearPackageItem.xml
+SHA1-Digest: UPp9rUai78ZcOuXlTmVzfjpIr+o=
+
+Name: assets/assets/language/cardSchool.xml
+SHA1-Digest: T+Ur4AxAlbaS4aK4eBGGOjt0h1U=
+
+Name: assets/META-INF/AIR/extensions/org.zengrong.ane.ANEToolkit/libra
+ ry.swf
+SHA1-Digest: 4eNuImUXbLaFnec0a573Y6PRcng=
+
+Name: assets/sound/effect/global/lose.mp3
+SHA1-Digest: txAYF7sqf5as8kmhExcSXEmF90s=
+
+Name: assets/META-INF/AIR/extensions/org.zengrong.ane.ANEToolkit/META-
+ INF/ANE/Android-ARM/library.swf
+SHA1-Digest: 2KGxytUz7i4xc+0W2hO4/w8WoQ8=
+
+Name: res/layout/expandable_multiple_chooser_row.xml
+SHA1-Digest: LRPZQQZmRruYruLcftmz6t18g0U=
+
+Name: assets/ucgamesdk/ui/AHorizontal333/common/sdk_images/stgy.png
+SHA1-Digest: CuxEbJOvWQ6ikFMSxA8vkG5yxjM=
+
+Name: assets/xml/vip.xml
+SHA1-Digest: qlthVwQHAJ9OZYIiWMF5SIilMPA=
+
+Name: assets/sound/effect/fire/n7.mp3
+SHA1-Digest: AAc4APb3z/OwO7TBSwqRcSJ5p8c=
+
+Name: assets/ucgamesdk/ui/AHorizontal333/common/sdk_images/chv.png
+SHA1-Digest: zzPlHLn+NR8m+8+94p1mMyQgA5g=
+
+Name: assets/ucgamesdk/config/tb_ui_config.json
+SHA1-Digest: FzW19/t6CGa/IAR/Kybyi+8+Z0M=
+
+Name: assets/ucgamesdk/ui/AHorizontal333/common/sdk_images/btn_succ.pn
+ g
+SHA1-Digest: qXyO89qdJnIQlGEAFycQXijzLns=
+
+Name: assets/assets/skeletonXML/effect3_skeleton.xml
+SHA1-Digest: squJ5UnNT2VMnkcMxXyUXSSDfqg=
+
+Name: assets/ucgamesdk/loginwidget/images/cur_user.png
+SHA1-Digest: ZJxQ+RYx5mNIcrf3H8e4vXCgL28=
+
+Name: assets/ucgamesdk/config/float_button.json
+SHA1-Digest: cRnMW9+LkP6AjTjoZiVn61CQNdU=
+
+Name: assets/sound/effect/fire/11.mp3
+SHA1-Digest: eMhGvb0isnyT5nGUFLWHBGbCdt8=
+
+Name: assets/ucgamesdk/ui/AHorizontal333/common/sdk_images/btn_error.p
+ ng
+SHA1-Digest: peVlejLKyqiS7e6AmSP/1yiuh4U=
+
+Name: assets/ucgamesdk/ui/AHorizontal333/common/sdk_images/ico_mobile.
+ png
+SHA1-Digest: fRkhxTY9I52yBOJVzQgAE41Z9OU=
+
+Name: assets/assets/language/role.xml
+SHA1-Digest: bWM9mogDL6PsCEaZmYPcsQ/ltlY=
+
+Name: assets/assets/atlasATF/dyload/login.atf
+SHA1-Digest: hyE3YjWkRpe7Eun6p1dyjeSbenw=
+
+Name: res/drawable-xhdpi/ouya_icon.png
+SHA1-Digest: j4zxqMMpYOm3lUhX+rdXqG1vXIo=
+
+Name: assets/ucgamesdk/config/bottom_menu.json
+SHA1-Digest: lOQs3OZT/7S4IEJkR0zSlGCL+Tw=
+
+Name: assets/ucgamesdk/ui/AHorizontal333/common/sdk_images/ceedit.png
+SHA1-Digest: eD/epoq/JtHrH+UexYmwkBZaCGU=
+
+Name: assets/sound/button/functionBackButton.mp3
+SHA1-Digest: vyZXWwAP8t0b8H5uk35OVapAs8k=
+
+Name: assets/assets/atlasXML/dyload/createCharacter.xml
+SHA1-Digest: TbmlY5ghlbnzLccha7TfwUxkD1U=
+
+Name: assets/ucgamesdk/ui/AHorizontal333/conf/bottomSelectedIcon.9.png
+SHA1-Digest: Z5ZWjZqpxCDO2SntiAblrZQVCAE=
+
+Name: assets/ucgamesdk/config/uc_systemConfig.json
+SHA1-Digest: nlSmOv5BwPg8MBqlPLNwmr7KVpQ=
+
+Name: res/drawable-ldpi/ic_launcher.png
+SHA1-Digest: i7vxaosoiS+9HzKB7ZgIsXMYRLY=
+
+Name: assets/assets/language/activity.xml
+SHA1-Digest: nHe/TAgEWpCuPT+mpHdoiTFJgbg=
+
+Name: assets/ucgamesdk/ui/AHorizontal333/widget/images/logo.png
+SHA1-Digest: M/jlHQ0gm6xU8RPXM7dbOWohg20=
+
+Name: assets/assets/dataXML/cardEvo.xml
+SHA1-Digest: Z+XHjfqFbB1rsUQRGAHp6FfA6V0=
+
+Name: assets/ucgamesdk/ui/AHorizontal333/widget/images/scroll.9.png
+SHA1-Digest: rAfLGvUTu2BEsEeY8R0Cuy8opWU=
+
+Name: assets/assets/atlasXML/dyload/map-6.xml
+SHA1-Digest: f+DCylxrSpBfjLSWhjCYQtGYUac=
+
+Name: assets/ucgamesdk/ui/AHorizontal333/conf/strategyBottom.png
+SHA1-Digest: 60rplPi118W1UIMXNZd5Ip5b6uE=
+
+Name: assets/ucgamesdk/ui/AHorizontal333/conf/loading_circle.png
+SHA1-Digest: hIF1KrPKO3yUexaAbXzoGcMSaXM=
+
+Name: assets/ucgamesdk/ui/AHorizontal333/conf/tipsClose.png
+SHA1-Digest: 7rD2u5inhBrzlNWG4uHdzLARphw=
+
+Name: assets/assets/dataXML/setStar.xml
+SHA1-Digest: Qwtdm2xHQYIxl/ubOAmOpUWxWU0=
+
+Name: assets/ucgamesdk/ui/AHorizontal333/common/sdk_images/ar_l_2.png
+SHA1-Digest: IyJpEC6CTFN4BCu0JS5/5ys4Nho=
+
+Name: assets/assets/atlasATF/dyload/skill1.atf
+SHA1-Digest: cP1Ou9A0zne6JK3k015e9QihrkU=
+
+Name: assets/sound/effect/fire/ready.mp3
+SHA1-Digest: 3v7voLwo0FiGaemfvwXIkfAmvX4=
+
+Name: assets/UCGameConfig.ini
+SHA1-Digest: o0W0mspQ5xwie30JLwprD3Q+o2k=
+
+Name: assets/assets/dataXML/vipLimit.xml
+SHA1-Digest: LQWKpIvassOkj+31EZHBaLj3qAc=
+
+Name: assets/ucgamesdk/ui/AHorizontal333/common/sdk_images/exp.png
+SHA1-Digest: Zghcrkc+Yv/0qQ4ddIkeUwQ5pBU=
+
+Name: assets/ucgamesdk/ui/AHorizontal333/common/sdk_images/icon_passwo
+ rd.png
+SHA1-Digest: rYgTF+5qBCniVYGvKsNLaU7mQPY=
+
+Name: assets/assets/atlasXML/preload/worldMap.xml
+SHA1-Digest: rQqaa+OzppWJdi0ouRnuYtyvXuE=
+
+Name: assets/ucgamesdk/ui/AHorizontal333/common/sdk_images/at.png
+SHA1-Digest: c9if4hJzmThXpbEaCttfVtQoA8Q=
+
+Name: res/drawable/air_72px_mobile_eula.png
+SHA1-Digest: 6eX1WzhcZDSgS30DdiYKnHz0h1w=
+
+Name: assets/sound/button/invite.mp3
+SHA1-Digest: YTnCIWNJyVwdZMPsF77MiPdPAgA=
+
+Name: assets/sound/effect/fire/3.mp3
+SHA1-Digest: lP/rswbb+YrU6RA8uwwwb70o2QI=
+
+Name: assets/ucgamesdk/ui/AHorizontal333/widget/images/btn_white.9.png
+SHA1-Digest: HRR4j0SsG9bun1C5urRqo9ftrAU=
+
+Name: assets/ucgamesdk/ui/AHorizontal333/pay/js/underscore.min.js
+SHA1-Digest: CAkjc7+9t5JN0BeVd54XHmbwOM0=
+
+Name: assets/ucgamesdk/loginwidget/images/btn_exdialog_close.png
+SHA1-Digest: /cwS6EloHg6YLZXMaFDyi/2GdjY=
+
+Name: assets/ucgamesdk/ui/AHorizontal333/common/css/ln_login.css
+SHA1-Digest: SNx85k692e0ILxRkW3PFx2lSsBk=
+
+Name: lib/armeabi-v7a/libstagefright_froyo.so
+SHA1-Digest: EUXLvjWSqWdOtEeNogZ6B3XXEO0=
+
+Name: assets/ucgamesdk/ui/AHorizontal333/widget/images/refreshing.png
+SHA1-Digest: Wo83VYSgZVh9lDSnnhQFlUfe02A=
+
+Name: assets/sound/effect/fire/o45.mp3
+SHA1-Digest: pIO9JQ5RE/PhA4Fy7dPJQ+zXPh8=
+
+Name: assets/ucgamesdk/ui/AHorizontal333/conf/gift.png
+SHA1-Digest: eq8zdOnTJ0e5nL9PdIajUXIB4jU=
+
+Name: assets/ucgamesdk/ui/AHorizontal333/conf/fourmBottomSelected.png
+SHA1-Digest: GvJSe7rVVHZ4PbzZDIAkTP3J8sI=
+
+Name: assets/sound/effect/fire/2.mp3
+SHA1-Digest: llJQlEKKA7AY2mZlhP9BSLJdFUc=
+
+Name: assets/assets/dataXML/prestigeExp.xml
+SHA1-Digest: iJC69GjZ698jD4+ihysGLkk2u7w=
+
+Name: res/drawable-hdpi/icon.png
+SHA1-Digest: uICGQfA42XsAxHpkdSJSf6zC0lI=
+
+Name: assets/assets/atlasATF/dyload/map-2.atf
+SHA1-Digest: zS+9KrM1GAALUqr1sKkeFNaJ350=
+
+Name: lib/armeabi-v7a/libstagefright_honeycomb.so
+SHA1-Digest: qPns6HP60VRhSzOQHoV2FXg2q/A=
+
+Name: assets/ucgamesdk/ui/AHorizontal333/common/sdk_images/dk.png
+SHA1-Digest: mjSylQcbyQ11cUvMGNYVfvz7SRw=
+
+Name: assets/sound/effect/fire/o12.mp3
+SHA1-Digest: +iVeTt5y3t4nm6MmbfIzNLI4iDM=
+
+Name: assets/ucgamesdk/ui/AHorizontal333/common/sdk_images/mo.png
+SHA1-Digest: dYkj2S7ZgvhO3FqUDjO2QI+QaGU=
+
+Name: assets/assets/atlasATF/dyload/map-4.atf
+SHA1-Digest: TWATmdYJCgxL5jqcdmq3Qp8eaiw=
+
+Name: lib/armeabi-v7a/libCore.so
+SHA1-Digest: Ec4Iezg6YxZk+omNN81k0vveFK0=
+
+Name: assets/sound/button/close.mp3
+SHA1-Digest: TXB5VH2fo1Zxd4oxADIK7SpObIo=
+
+Name: assets/sound/effect/fire/8.mp3
+SHA1-Digest: SmwUKbTut83L8pKlWkkPj5Q58pY=
+
+Name: assets/ucgamesdk/ui/AHorizontal333/secrecy/secrecy.html
+SHA1-Digest: 0aWRUL4Espr6JVsVco+w/A9y5vA=
+
+Name: assets/sound/effect/fire/n38.mp3
+SHA1-Digest: 7vR87AiMTk/KlxG8/wOw04myvEw=
+
+Name: assets/sound/effect/fire/n6.mp3
+SHA1-Digest: eMhGvb0isnyT5nGUFLWHBGbCdt8=
+
+Name: assets/ucgamesdk/ui/AHorizontal333/conf/forum.png
+SHA1-Digest: 5TQn42Xcglq46OQu5dLfR4FiG3U=
+
+Name: assets/sound/effect/fire/n12.mp3
+SHA1-Digest: bkUROs+hX4V02+xicuWnEQ00l18=
+
+Name: assets/assets/atlasXML/preload/advStage.xml
+SHA1-Digest: 8WzCkdTu/4OsysWuNSR5E6i6OME=
+
+Name: assets/assets/language/rank.xml
+SHA1-Digest: Xi7Yu3fI/h0FnBMiG018MDtLmIg=
+
+Name: assets/ucgamesdk/ui/AHorizontal333/jars/entry.xml
+SHA1-Digest: TxFycg1DIT+B0IiDQbXyy0ZzN2A=
+
+Name: assets/ucgamesdk/ui/AHorizontal333/common/sdk_images/ico_mobile_
+ q.png
+SHA1-Digest: HeW2i7qYrqG28u6gIEZ2mKMmyX4=
+
+Name: assets/assets/language/battle.xml
+SHA1-Digest: XRiQjZsnTxaRL82Gqb4pSFdcElo=
+
+Name: assets/ucgamesdk/loginwidget/images/icon_check.png
+SHA1-Digest: 0HkKJlWl95co32IjAa0Aj97kPNk=
+
+Name: assets/ucgamesdk/ui/AHorizontal333/pay/images/select.png
+SHA1-Digest: k0fgRVZaZsypFhIPEhBSQE4BUoM=
+
+Name: assets/ucgamesdk/ui/AHorizontal333/codecenter/codecenter.html
+SHA1-Digest: XnBSphGgiHX5tf3HyOpsZP1UPQ4=
+
+Name: assets/assets/language/rankArena.xml
+SHA1-Digest: 1O/msT1P0Unv7OiAHIUuvJbp24s=
+
+Name: assets/assets/language/payReward.xml
+SHA1-Digest: CrSCdUEijToSCcWSdZqrHotj57A=
+
+Name: assets/sound/effect/fire/15.mp3
+SHA1-Digest: 4g/9Q8nRF5P4mSA+26LmppCYnD0=
+
+Name: assets/sound/effect/global/clickCard.mp3
+SHA1-Digest: pz7DQSkFWuYMMokVxI7rW4dRss4=
+
+Name: assets/ucgamesdk/ui/AHorizontal333/conf/strategy.png
+SHA1-Digest: 93ZZFNfs4W7KQ6agDfPyY8lCfZs=
+
+Name: assets/assets/resources/nickname.xml
+SHA1-Digest: 4R18wbZd3+54Wjretqg/PihktPo=
+
+Name: res/drawable-hdpi/ic_launcher.png
+SHA1-Digest: RQ09RDJf3yWYEKYOavo2ED4Yaz0=
+
+Name: assets/ucgamesdk/ui/AHorizontal333/pay/images/state-ico.png
+SHA1-Digest: 3I0cnafcwDRmsC5iG3TNfa2RWME=
+
+Name: assets/sound/effect/fire/start.mp3
+SHA1-Digest: Qs3xChlpHLSATW2/wRgMwO2o+ms=
+
+Name: assets/xml/sysButtonData.xml
+SHA1-Digest: ScSeHzM+P54i+VdYtdnFeyZ7LVw=
+
+Name: assets/ucgamesdk/images/loadline.png
+SHA1-Digest: XzCkgmrIBE/GV3JB344jRZyUXGM=
+
+Name: assets/assets/dataXML/skillPosition.xml
+SHA1-Digest: KNlwhD6JnmtjhiPxEBK8nfWax0w=
+
+Name: assets/ucgamesdk/ui/AHorizontal333/conf/tipsBackground.9.png
+SHA1-Digest: JN3IgSg9p0oJ/UJfzK2GM5XPBW8=
+
+Name: assets/assets/atlasATF/dyload/map-3.atf
+SHA1-Digest: bUjayM+74Xpav55xXk6pbEt1b2s=
+
+Name: assets/ucgamesdk/ui/AHorizontal333/conf/loading_logo.png
+SHA1-Digest: iLmdl7nvYKbMAVMOyXyUDwnMKe8=
+
+Name: assets/ucgamesdk/ui/AHorizontal333/common/sdk_images/tx-998.jpg
+SHA1-Digest: O/JOoozwEHKMds+lp6egsv8F3GA=
+
+Name: assets/sound/effect/smith/start.mp3
+SHA1-Digest: h/RDlpXubiwc28ZUTwm1PdOUK3Q=
+
+Name: assets/ucgamesdk/ui/AHorizontal333/pay/images/guide_btn.png
+SHA1-Digest: FEhpRQkaubzQXzZkqFe2BioLYtI=
+
+Name: AndroidManifest.xml
+SHA1-Digest: PtGn8f7VerBIS0Nn+6H0YdXB6NU=
+
+Name: assets/assets/atlasATF/preload/items.atf
+SHA1-Digest: hvRFUMftDQpxhHGNHCEDLRivdLo=
+
+Name: assets/ucgamesdk/ui/AHorizontal333/user/user_landscape.html
+SHA1-Digest: jJ1N3CqTGlvbkG+BiLhNpQyDZ2A=
+
+Name: assets/ucgamesdk/ui/AHorizontal333/pay/images/guide_3.png
+SHA1-Digest: K1+PD2yqWUQ/xAJ8FdbGD8MbnII=
+
+Name: assets/ucgamesdk/ui/AHorizontal333/common/sdk_images/float_btn_o
+ range_press.9.png
+SHA1-Digest: 9x9rz2iSBfg16YZqDEgFzx8Kzz0=
+
+Name: assets/ucgamesdk/ui/AHorizontal333/bbs/bbs.html
+SHA1-Digest: 4cUIZbU2WwZZKXLkuTPdy21ISEU=
+
+Name: assets/ucgamesdk/ui/AHorizontal333/pay/js/security.js
+SHA1-Digest: r2eyY1o7KDzNPE7x+A85Nq0jUtg=
+
+Name: assets/xml/sound.xml
+SHA1-Digest: qhxeNJYcbjH2qLnjzZ0SbcUeHdk=
+
+Name: assets/assets/atlasXML/preload/windows2.xml
+SHA1-Digest: +LXROdwzZLoy7lpFcSHK0ze3Bjk=
+
+Name: assets/META-INF/AIR/extensions/com.jcsg.gameupdateane/library.sw
+ f
+SHA1-Digest: YVzkiDVZ74039kQoTbj7u54jU0s=
+
+Name: res/raw/adobelogo.gif
+SHA1-Digest: cp6EzjLDVdzLOD69uttcA3OnzH8=
+
+Name: assets/assets/language/trade.xml
+SHA1-Digest: RvdsTS7MH17eaN3vpm48o6ApreA=
+
+Name: classes.dex
+SHA1-Digest: HkXySs1yD00mAyU6oZsjLHOT8wI=
+
+Name: assets/ucgamesdk/ui/AHorizontal333/pay/images/9game.png
+SHA1-Digest: 2u+24ss5zLzQMiDeBTeTy1BbAN0=
+
+Name: assets/assets/atlasATF/preload/effect1.atf
+SHA1-Digest: jVdXyRixpmAWWhOuf2w8GdHL3WE=
+
+Name: assets/assets/language/wishingWell.xml
+SHA1-Digest: QfPxLTfQFhdN3J0zJ7GxH8cMLes=
+
+Name: res/layout/expandable_chooser_row.xml
+SHA1-Digest: Gi+VjPO58Z7lGPR0jLnwNWDXw84=
+
+Name: assets/sound/button/mainCityButton.mp3
+SHA1-Digest: JRDr0G9TA17uR8cJhf0ECY9E8i4=
+
+Name: assets/ucgamesdk/loginwidget/images/9g_logo.png
+SHA1-Digest: neF7K+JD/iAhlAhbFIhzPnvly7I=
+
+Name: assets/ucgamesdk/ui/AHorizontal333/common/sdk_images/vip-gray.pn
+ g
+SHA1-Digest: hBM3qd2AqxoygPhkekCS+GnYTSY=
+
+Name: assets/ucgamesdk/ui/AHorizontal333/conf/floatMenuBackground.png
+SHA1-Digest: WGucE9mz0ZUymzFyOzIUkQyM2I8=
+
+Name: assets/sound/effect/fire/skill_505.mp3
+SHA1-Digest: jLJa+6V+mvxbINePqNHXWSD5XdM=
+
+Name: res/drawable-xhdpi/ic_launcher.png
+SHA1-Digest: UCzYT6RE8m1+z99KNVBkhnl38jY=
+
+Name: assets/ucgamesdk/ui/AHorizontal333/common/sdk_images/vip.png
+SHA1-Digest: NAyXj0PftfoNtwC6QIE56IbWIdY=
+
+Name: assets/sound/effect/fire/jump_31.mp3
+SHA1-Digest: dYJuTKy7z01GkaE1qk8KhuvIj9c=
+
+Name: assets/ucgamesdk/loginwidget/images/input_icon_posenal.9.png
+SHA1-Digest: veMyxSXExFwuoWaKcbfFzyQCZtA=
+
+Name: assets/assets/language/login.xml
+SHA1-Digest: vslymOgfjOjoAyd2xDJohcbUMkw=
+
+Name: assets/assets/dataXML/sound.xml
+SHA1-Digest: 5nOaq/mEBCL/XlA4w7ijkw9qTOY=
+
+Name: assets/assets/atlasATF/dyload/createCharacter.atf
+SHA1-Digest: u3VsTx0vMGce2Ze9dPbGoFDZvHk=
+
+Name: assets/assets/language/arena.xml
+SHA1-Digest: ivHmLNmIT7Ft4Se5lIE3ry19tGk=
+
+Name: assets/ucgamesdk/ui/AHorizontal333/widget/images/btn_orange_pres
+ s.9.png
+SHA1-Digest: aEfAt2k46wMM00iICVBtRu00Z3Y=
+
+Name: assets/ucgamesdk/ui/AHorizontal333/general/js/general.js
+SHA1-Digest: 9tIPt/ICOe2VwkGndMzIdK6VH0U=
+
+Name: assets/ucgamesdk/ui/AHorizontal333/common/sdk_images/bt_icon.png
+SHA1-Digest: uaoXfKXB7tNN/sK7R2G1ucTE2g4=
+
+Name: assets/sound/effect/fire/9.mp3
+SHA1-Digest: Vyn6odWIdb4RTnIgVT93yNAMp7I=
+
+Name: res/drawable-ldpi/icon.png
+SHA1-Digest: uICGQfA42XsAxHpkdSJSf6zC0lI=
+
+Name: assets/ucgamesdk/ui/AHorizontal333/pay/images/loading.png
+SHA1-Digest: JhPlt3TqdSsxM70iZf/kJQuzMxo=
+
+Name: assets/ucgamesdk/loginwidget/images/background_selected.9.png
+SHA1-Digest: 4CFyBasP+AcojyAGaHlFkwArc6A=
+
+Name: assets/ucgamesdk/ui/AHorizontal333/common/sdk_images/u_ico.png
+SHA1-Digest: FeJulrssUH6VmYys4iUaa5yKk1s=
+
+Name: assets/assets/language/silverMin.xml
+SHA1-Digest: Ko9Jk74RDfu8sN5AvKWauMlH79c=
+
+Name: assets/assets/dataXML/advReward.xml
+SHA1-Digest: 8sH3QG/HcjTdU7C+Vtrpe4NoANU=
+
+Name: assets/ucgamesdk/ui/AHorizontal333/widget/images/btn_black_press
+ .9.png
+SHA1-Digest: AGXawNCY5/cGHbM69U9fpSqyZGc=
+
+Name: assets/assets/resources/loginTips.xml
+SHA1-Digest: +prJ3KWrLHTAugzXqHLfuh2MemM=
+
+Name: assets/assets/language/hang.xml
+SHA1-Digest: 4mTQ5I4gdOc47rkt8qFka4dnPvo=
+
+Name: assets/sound/effect/fire/n8.mp3
+SHA1-Digest: DagUyWazrU2gNbS/05lcrFzQsK8=
+
+Name: assets/assets/atlasXML/preload/windows.xml
+SHA1-Digest: 52vwbIHNnSBbZPEPD/Nz9zemWi8=
+
+Name: assets/ucgamesdk/ui/AHorizontal333/common/sdk_images/captcha.png
+SHA1-Digest: Wo83VYSgZVh9lDSnnhQFlUfe02A=
+
+Name: assets/sound/button/otherFunctionButton.mp3
+SHA1-Digest: NYHd8oUcd/nEfyOxw5MUyu6emt8=
+
+Name: assets/assets/atlasATF/preload/effect3.atf
+SHA1-Digest: Jvm3ZUHH6viReJPBTYcGdgtBo+s=
+
+Name: assets/sound/effect/fire/n57.mp3
+SHA1-Digest: uEfHTq+mTVhTTgpTNMdW6Ae9hyg=
+
+Name: assets/assets/resources/loading-girl.png
+SHA1-Digest: ETuVz6RlrcPKcpU1i/mF5OIW74k=
+
+Name: assets/ucgamesdk/loginwidget/images/scroll.9.png
+SHA1-Digest: rAfLGvUTu2BEsEeY8R0Cuy8opWU=
+
+Name: assets/assets/atlasXML/dyload/map-9.xml
+SHA1-Digest: F3Bqwl2qojgwcbLhroMYQw9Z+vk=
+
+Name: assets/ucgamesdk/loginwidget/images/input_bg.9.png
+SHA1-Digest: SD1q1lxubYw6UzMS3JVC9zjzu9s=
+
+Name: assets/ucgamesdk/ui/AHorizontal333/widget/images/phone.png
+SHA1-Digest: WXd25ra4ZR/5PZOMBCFttgs6ktg=
+
+Name: assets/xml/config.xml
+SHA1-Digest: kkT3WpwewCM61QG03+cxdHRdWfY=
+
+Name: assets/ucgamesdk/ui/AHorizontal333/pay/images/guide_2_w.png
+SHA1-Digest: PX0btDSI3x9BbHHJYxhYS/ubNAY=
+
+Name: assets/evmpc.swf
+SHA1-Digest: cI92gL9RH+duPMdDR+mstgyRJxM=
+
+Name: assets/ucgamesdk/ui/AHorizontal333/pay/images/bank_none.png
+SHA1-Digest: sgvbhUGna7NvPWLPigK21Od3OYs=
+
+Name: assets/ucgamesdk/ui/AHorizontal333/user/js/userRoute.js
+SHA1-Digest: j5Ridx07txjsai3IjD+YwtO9hLY=
+
+Name: assets/ucgamesdk/ui/AHorizontal333/widget/images/phone_none.png
+SHA1-Digest: VFpMYIvUq52O2r4KRN0CFyvHx9s=
+
+Name: assets/assets/atlasATF/preload/role.atf
+SHA1-Digest: HVt+Ofa6TINvm2583tVwxYLKc8o=
+
+Name: assets/ucgamesdk/ui/AHorizontal333/widget/images/input_btn_bg.9.
+ png
+SHA1-Digest: o4rq0x9QqFnxXqTFYq23VyxNwTM=
+
+Name: assets/assets/dataXML/smithy.xml
+SHA1-Digest: aYRL/ZzD1HUF049ggRp+t8Kz2YA=
+
+Name: assets/assets/atlasXML/preload/effect2.xml
+SHA1-Digest: pC9c17CfQ8BnSiHLM4fgQnImMvM=
+
+Name: assets/ucgamesdk/ui/AHorizontal333/conf/floatMenuRightBackground
+ .9.png
+SHA1-Digest: tKY4AnxGa7TkfpsDMZDqIkYAorI=
+
+Name: assets/assets/language/vipDailyWelfare.xml
+SHA1-Digest: QfbIUrB2CUiUwVr8aLXtpmIUBFg=
+
+Name: assets/ucgamesdk/ui/AHorizontal333/widget/images/loginup_icon_ar
+ row.png
+SHA1-Digest: qe6U+ZCZM7uamdRNtI8JqYAEKXU=
+
+Name: assets/ucgamesdk/ui/AHorizontal333/common/sdk_images/scroll.9.pn
+ g
+SHA1-Digest: rAfLGvUTu2BEsEeY8R0Cuy8opWU=
+
+Name: assets/assets/dataXML/levelConfig.xml
+SHA1-Digest: F4g5tA3yaVR2PxfckwxTpO73CNo=
+
+Name: assets/xml/soldier.xml
+SHA1-Digest: GG3pjKTcjtmUWR9OmP0ARVgNDVs=
+
+Name: assets/ucgamesdk/ui/AHorizontal333/common/sdk_images/captcha_pre
+ ss.png
+SHA1-Digest: dI5aEs3214zTXA+xMZRuwfA4uBE=
+
+Name: assets/ucgamesdk/config/float_menu.json
+SHA1-Digest: 1ZPKnL72llHHGTjPI36e19yGsfo=
+
+Name: res/layout/multiple_file_selection_panel.xml
+SHA1-Digest: Hp+weCCxgHOq1FUNz06yOzPMBps=
+
+Name: assets/assets/dataXML/fictitiousPlayer.xml
+SHA1-Digest: /Oe4OuO82ogBI4eaemM6iM7MTPU=
+
+Name: assets/assets/language/arenaHornor.xml
+SHA1-Digest: ZEbZgIrDKaqbJbSVgSFwtF9bm2Y=
+
+Name: assets/ucgamesdk/ui/AHorizontal333/conf/tips_button.9.png
+SHA1-Digest: bV3ZE+kqgpLaaNJN2YPsYh70y24=
+
+Name: res/drawable-xhdpi/icon.png
+SHA1-Digest: lR5hdfV5T+QoKz7OhFPwcjbndtw=
+
+Name: assets/ucgamesdk/ui/AHorizontal333/pay/images/pay-angle.png
+SHA1-Digest: UxW2NpZARqCKWGNLJXAYvyKtK2A=
+
+Name: assets/xml/reLoadItem.xml
+SHA1-Digest: 2kEk6XGkvd2VyyJEASwABVxk3nI=
+
+Name: assets/xml/config_cn.xml
+SHA1-Digest: pYoi5OtcNn/4cYaNu5ZQP/nJxyE=
+
+Name: assets/assets/atlasATF/dyload/map-7.atf
+SHA1-Digest: haliNAJb5QaNpAnb5ajGwIohs+M=
+
+Name: assets/ucgamesdk/ui/AHorizontal333/common/sdk_images/ud.png
+SHA1-Digest: V19qX2rJ8/tLjBo9QoLl3FhGdpQ=
+
+Name: assets/ucgamesdk/ui/AHorizontal333/common/css/style_sdk.css
+SHA1-Digest: 6fiZ0ARuxlUHbJrtTD4CqiVreAE=
+
+Name: assets/ucgamesdk/ui/AHorizontal333/common/sdk_images/vip-default
+ .png
+SHA1-Digest: xFm0xDOoG5IA0l91dRDK980IdL8=
+
+Name: assets/assets/language/tower.xml
+SHA1-Digest: PtyDadFDQXv7m79mSF/qnOLVDO8=
+
+Name: assets/ucgamesdk/config/orient_change.ini
+SHA1-Digest: 9eei4XIRR4jyln/Tf5MIhzRJiw4=
+
+Name: assets/sound/effect/fire/41.mp3
+SHA1-Digest: bFla6vEmI5N7XAkmuLfD0YR2ryk=
+
+Name: assets/ucgamesdk/loginwidget/images/input_icon_Arrow.9.png
+SHA1-Digest: 6z/jC87ZJJvDwhzbQzSbIu510AM=
+
+Name: assets/sound/effect/fire/5.mp3
+SHA1-Digest: /6A4RW98o2iOvERHzf7zuT/1haM=
+
+Name: assets/sound/effect/fire/b58.mp3
+SHA1-Digest: O+Q9/nKN0rMert4tMxGO+gEvRL4=
+
+Name: assets/sound/effect/fire/b1.mp3
+SHA1-Digest: 0lqNhOntaoJRkEa3N27KWIBPehk=
+
+Name: assets/sound/effect/fire/dash.mp3
+SHA1-Digest: YmnsilJS9cq054t+ZQlV88a0V0o=
+
+Name: assets/ucgamesdk/ui/AHorizontal333/common/sdk_images/heart.png
+SHA1-Digest: nm3DzK0Ij27MAtgVWVH0fZpQZeQ=
+
+Name: assets/assets/language/chat.xml
+SHA1-Digest: F7REuhRBIEOLn7+CPIf+oz83Gl4=
+
+Name: assets/ucgamesdk/ui/AHorizontal333/common/sdk_images/ico.png
+SHA1-Digest: 7R5Mwop/jTiHFjtUvWCRPtB1N7s=
+
+Name: assets/assets/atlasATF/preload/windows2.atf
+SHA1-Digest: GFcZVbXs27GxoaJ329NGULA8418=
+
+Name: assets/ucgamesdk/ui/AHorizontal333/common/sdk_images/vip-grade-1
+ .png
+SHA1-Digest: xFm0xDOoG5IA0l91dRDK980IdL8=
+
+Name: assets/assets/icons/uc/96.png
+SHA1-Digest: VlAtai4w7vOMELomtNmQ61C2/EE=
+
+Name: assets/sound/effect/fire/7.mp3
+SHA1-Digest: axxhcAexhEPbXWURMm4m4wbXNDc=
+
+Name: res/layout/updateprogress.xml
+SHA1-Digest: uYsgUOF/IhetzZ9rU1r60MrTTow=
+
+Name: assets/ucgamesdk/images/loadcancel.png
+SHA1-Digest: hh2wFK19HzJeqnHmEUs+xpRxUXc=
+
+Name: assets/assets/dataXML/pay.xml
+SHA1-Digest: FMEPvvcPoSFOYWsNibVIfK5ZlvA=
+
+Name: assets/sound/effect/fire/n45.mp3
+SHA1-Digest: DUE3UwKAZfzbb6e8IimfgNAqI2Y=
+
+Name: assets/ucgamesdk/loginwidget/images/btn_white.9.png
+SHA1-Digest: HRR4j0SsG9bun1C5urRqo9ftrAU=
+
+Name: assets/ucgamesdk/ui/AHorizontal333/common/sdk_images/icon_phone_
+ dis.png
+SHA1-Digest: w086l5TyPqcKrCaUpl4rtuHux7I=
+
+Name: assets/ucgamesdk/ui/AHorizontal333/widget/images/loginup_bg.9.pn
+ g
+SHA1-Digest: nsEZq8yKRm3tqJBTLe1zqyn09fA=
+
+Name: assets/ucgamesdk/ui/AHorizontal333/common/sdk_images/my_account.
+ png
+SHA1-Digest: 4I9Pz0ON+xMxLpUizLGDdzihNCs=
+
+Name: assets/sound/effect/fire/n35.mp3
+SHA1-Digest: GHzGPs9ozUG76tDRKSE2q6HRt9Q=
+
+Name: assets/ucgamesdk/ui/AHorizontal333/common/sdk_images/icon_passwo
+ rd_dis.png
+SHA1-Digest: nMm8KGBRd5rSjPBNs1Fssd8u+WE=
+
+Name: assets/ucgamesdk/config/business_setting.json
+SHA1-Digest: Q1fRiyCqslJJwLTwCgiHhCWJ47M=
+
+Name: assets/assets/dataXML/mail.xml
+SHA1-Digest: wIMosWQSzgXFMvTiP8yej1qjS5M=
+
+Name: res/raw/icon.jpg
+SHA1-Digest: 7g9A72BHtvf1hEWBNZiKzoe56gw=
+
+Name: assets/ucgamesdk/ui/AHorizontal333/conf/accountBottom.png
+SHA1-Digest: gTQlEDaeM3V3xtf9Opde/vhOzds=
+
+Name: assets/assets/atlasXML/preload/role.xml
+SHA1-Digest: SB6+Uqt4HYKW5GbFSOISWfzBjRA=
+
+Name: assets/ucgamesdk/ui/AHorizontal333/pay/images/guide_2.png
+SHA1-Digest: gGdafOSTc4B0JS3IsMZbNeQ7Ies=
+
+Name: assets/assets/atlasATF/preload/editCard.atf
+SHA1-Digest: b/VTDzkTcnu0KxUjp0/4ps8Xolw=
+
+Name: assets/assets/language/smelt.xml
+SHA1-Digest: O171qF97guHPWxuSljsoYmrOVAc=
+
+Name: assets/sound/effect/fire/stunning.mp3
+SHA1-Digest: /WAnDIzJnc3ajwODUSpbFMfmSSc=
+
+Name: assets/ucgamesdk/ui/AHorizontal333/pay/images/guide_3_w.png
+SHA1-Digest: c38YK/bvhYoPeCP5GvcfDOqLF9w=
+
+Name: assets/assets/sound/music/scene.mp3
+SHA1-Digest: 6mvc6gYzVR4GsTE4ck9Kgltgqww=
+
+Name: assets/ucgamesdk/ui/AHorizontal333/common/sdk_images/float_bg.9.
+ png
+SHA1-Digest: VpyIaPmopIQgxx4lZS1cg4caSpM=
+
+Name: assets/ucgamesdk/ui/AHorizontal333/common/sdk_images/float_btn_w
+ hite_press.9.png
+SHA1-Digest: R/sdNpKNOvNasWF/enYYZRxuYS0=
+
+Name: lib/armeabi-v7a/libstlport_shared.so
+SHA1-Digest: Hn8JAWcqVq0cTbkvFmVt2JLFmlw=
+
+Name: assets/ucgamesdk/ui/AHorizontal333/conf/bottom_menu.json
+SHA1-Digest: lOQs3OZT/7S4IEJkR0zSlGCL+Tw=
+
+Name: assets/ucgamesdk/ui/AHorizontal333/pay/js/rsa.min.js
+SHA1-Digest: yJjGXOEbWAbuZmhJ3Q2QvTzyRks=
+
+Name: assets/assets/language/microBlogShare.xml
+SHA1-Digest: vmTUTjtZnBffjeXs543D80ulB8Y=
+
+Name: assets/sound/effect/fire/skill_502.mp3
+SHA1-Digest: 4SNfEPzynsCSKS3qVUsS7/SNQYo=
+
+Name: assets/assets/language/composeCard.xml
+SHA1-Digest: KiaowZj505oXwcM/+gSinTlIvdc=
+
+Name: assets/ucgamesdk/ui/AHorizontal333/widget/images/safe_2.png
+SHA1-Digest: mnoYjaPhdf1Ka69xRuFjYaLIQVE=
+
+Name: assets/sound/effect/fire/1.mp3
+SHA1-Digest: G28axmeZF47hjkpSCn0JrGSjrvM=
+
+Name: assets/assets/language/growUp.xml
+SHA1-Digest: PTC1RVFpAS+sMx5pQRgTEBcwGts=
+
+Name: assets/assets/dataXML/pieceReward.xml
+SHA1-Digest: xihCfNAsTaEkpV5SeNf1HXF0aS8=
+
+Name: assets/sound/effect/fire/skill_503.mp3
+SHA1-Digest: Ic7qbPU5ZZxZi3z3GjMUDyWejVE=
+
+Name: assets/assets/atlasATF/preload/cardParts.atf
+SHA1-Digest: JbSHACGz0vh8yFN6a3fvw4Z7F4c=
+
+Name: assets/assets/atlasXML/preload/items.xml
+SHA1-Digest: +pTek7wJSspoodDcQrDk2Y1yW3U=
+
+Name: assets/ucgamesdk/ui/AHorizontal333/widget/images/uc.png
+SHA1-Digest: 7imqcj074fw+P2vPXFAaexJ8WGY=
+
+Name: assets/META-INF/AIR/extensions/com.jcsg.gameupdateane/META-INF/A
+ NE/extension.xml
+SHA1-Digest: 1aaFScbzSjH8DqX4II6P30ijuX8=
+
+Name: assets/ucgamesdk/loginwidget/images/btn_black_press.9.png
+SHA1-Digest: AGXawNCY5/cGHbM69U9fpSqyZGc=
+
+Name: assets/sound/effect/fire/summon.mp3
+SHA1-Digest: dHWLwwk6B9kDLsFxJsFk8qXAE7w=
+
+Name: assets/assets/atlasXML/preload/card1.xml
+SHA1-Digest: 5mnN8/4A65FOlw8MikE07I5op3U=
+
+Name: assets/sound/effect/fire/skill_504.mp3
+SHA1-Digest: y4GBLH6alzV/itsyY+oMesfqGCA=
+
+Name: assets/sound/button/sure.mp3
+SHA1-Digest: YTnCIWNJyVwdZMPsF77MiPdPAgA=
+
+Name: assets/assets/language/downloadRes.xml
+SHA1-Digest: PMQLNPB781DbrF7OWGBpkhk3gSk=
+
+Name: assets/ucgamesdk/ui/AHorizontal333/widget/images/sina.png
+SHA1-Digest: Yglz6RGddgJRvU4Xe4BlbN9Mjqw=
+
+Name: assets/assets/atlasXML/preload/effect.xml
+SHA1-Digest: lRYgeuPE7H6si9n4FSnmEiIaK6s=
+
+Name: assets/ucgamesdk/ui/AHorizontal333/widget/images/qq.png
+SHA1-Digest: xUHu3dIkoPwEx53BNTsMMrw97yI=
+
+Name: assets/sound/button/cancle.mp3
+SHA1-Digest: YTnCIWNJyVwdZMPsF77MiPdPAgA=
+
+Name: assets/sound/button/smallBtn.mp3
+SHA1-Digest: DkIGK9e7nh4yOTS9y3nKWGOXB5M=
+
+Name: assets/ucgamesdk/loginwidget/images/bg.9.png
+SHA1-Digest: yYEKvu2uXi8PL+uCOgz2IAlUUto=
+
+Name: assets/assets/dataXML/planReward.xml
+SHA1-Digest: xS/btNKmyOsSn/zn+vQ8R38UWe4=
+
+Name: assets/ucgamesdk/ui/AHorizontal333/game/js/gameRoute.js
+SHA1-Digest: Y8reQSfO6IBgMolduUPGpnHp8+E=
+
+Name: assets/sound/effect/fire/n49.mp3
+SHA1-Digest: jX/OHnFgE/qp5/P14QPYMYB/APQ=
+
+Name: assets/ucgamesdk/ui/AHorizontal333/conf/tipsCloseActive.png
+SHA1-Digest: 9213qifa3dtaDE4betINsc05j+g=
+
+Name: assets/ucgamesdk/loginwidget/images/input_icon_password.9.png
+SHA1-Digest: KyJ3Mp0AqFb5L95tZspwIOcCeoc=
+
+Name: assets/META-INF/AIR/extensions/com.jcsg.gameupdateane/catalog.xm
+ l
+SHA1-Digest: nWs+qyh3E//BWPu7fV4eM74W4JU=
+
+Name: assets/ucgamesdk/ui/AHorizontal333/widget/images/dialog_bg.9.png
+SHA1-Digest: yYEKvu2uXi8PL+uCOgz2IAlUUto=
+
+Name: assets/ucgamesdk/ui/AHorizontal333/jars/update.jar
+SHA1-Digest: y7l5UdaG6ECATQM30DJU1MswJxU=
+
+Name: assets/assets/dySkeletonXML/skill1_skeleton.xml
+SHA1-Digest: o3g9nbCJA2diVClAf1xoF/RtuBc=
+
+Name: assets/ucgamesdk/ui/AHorizontal333/common/sdk_images/tx-999.jpg
+SHA1-Digest: RVnidexZJK4UF9ATyqrNmiSWa+0=
+
+Name: assets/assets/language/fristRecharge.xml
+SHA1-Digest: EO2RWLdiiAZjjJRcy/nEh4SKldk=
+
+Name: assets/ucgamesdk/config/sdk_info.txt
+SHA1-Digest: dJxY8U+EcjXPHXGuFMRaODC8aY4=
+
+Name: assets/ucgamesdk/ui/AHorizontal333/conf/helpBottomSelected.png
+SHA1-Digest: 4/kKlyC5zGvtgJdneEkbWNoZ9Dg=
+
+Name: assets/ucgamesdk/ui/AHorizontal333/pay/css/style.css
+SHA1-Digest: f5+Rq87BI0SYSJDabBFw+uZaoO8=
+
+Name: assets/ucgamesdk/ui/AHorizontal333/feedback/feedback.html
+SHA1-Digest: oy/h147+rZfNosm4hJMNZfe2E8c=
+
+Name: assets/assets/language/vipReward.xml
+SHA1-Digest: cf00lMnN/CMF9Z+LgMQdJeyPrLs=
+
+Name: assets/ucgamesdk/ui/AHorizontal333/common/sdk_images/onico.png
+SHA1-Digest: jIN2xi+7NbDElbdB0HYbP8o3U+E=
+
+Name: assets/assets/language/item.xml
+SHA1-Digest: 7YjD8pVb3JUHb3EH5CR6WcSA4iU=
+
+Name: assets/ucgamesdk/ui/AHorizontal333/conf/ucExpanded.png
+SHA1-Digest: +puR43hujhLSVdPxnS8WJmyhWXE=
+
+Name: assets/ucgamesdk/ui/AHorizontal333/widget/images/gift.png
+SHA1-Digest: eq8zdOnTJ0e5nL9PdIajUXIB4jU=
+
+Name: assets/assets/icons/uc/512.png
+SHA1-Digest: 06N0XwsWYoy1YSjStLkBFeSnnYs=
+
+Name: res/drawable-mdpi/icon.png
+SHA1-Digest: uICGQfA42XsAxHpkdSJSf6zC0lI=
+
+Name: assets/sound/effect/fire/58.mp3
+SHA1-Digest: PdQewCl8R8EAi4itEZs2xGRnKtU=
+
+Name: assets/ucgamesdk/ui/AHorizontal333/conf/ucIcon.png
+SHA1-Digest: AraGGF6ooMDccmc2L0IWFN9abEE=
+
+Name: assets/ucgamesdk/ui/AHorizontal333/common/sdk_images/icon.png
+SHA1-Digest: gGuluywtqrUj/VFWAVROAdPQ6TA=
+
+Name: assets/ucgamesdk/config/services.xml
+SHA1-Digest: tOMg+Jci6gWOlxOjqwM55RWkPSs=
+
+Name: assets/ucgamesdk/ui/AHorizontal333/common/sdk_images/auto_login.
+ png
+SHA1-Digest: opt++LNLGwzVxfQkBAORq+ruJyo=
+
+Name: assets/ucgamesdk/ui/AHorizontal333/widget/images/safe_3.png
+SHA1-Digest: UORhopGxy0+YPyRzfadZHK9Jp8U=
+
+Name: assets/ucgamesdk/ui/AHorizontal333/conf/fourmBottom.png
+SHA1-Digest: 4eHRaHTAqpgGbpypV0z+drp+gpQ=
+
+Name: assets/sound/effect/fire/b2.mp3
+SHA1-Digest: bEPmDuqtKz+1rlS1ocP/0bJcBuQ=
+
+Name: assets/sound/effect/global/win.mp3
+SHA1-Digest: 1YG3XtMGM/fCMjoZ4VqYLtO2h1U=
+
+Name: assets/ucgamesdk/ui/AHorizontal333/pay/start.html
+SHA1-Digest: 0wktu2ItPyw6VPCkMils9O8atOY=
+
+Name: assets/adobeair.vch
+SHA1-Digest: uadJ6rP/+vd5WorK7iytkccZfNI=
+
+Name: assets/ucgamesdk/ui/AHorizontal333/common/css/sui.css
+SHA1-Digest: HMMCfS6PSKIexQtaeEOzHjAyDZ8=
+
+Name: assets/assets/language/vip.xml
+SHA1-Digest: KaS1MAUgzYnP+cYWva0yYtVmOZs=
+
+Name: assets/sound/effect/fire/n56.mp3
+SHA1-Digest: EtGhZzztlmqjaZurK3Volr4ywII=
+
+Name: assets/ucgamesdk/ui/AHorizontal333/widget/images/forum.png
+SHA1-Digest: 5TQn42Xcglq46OQu5dLfR4FiG3U=
+
+Name: assets/assets/dataXML/meltingCard.xml
+SHA1-Digest: GTiC423cAkkIaN/1R0uuRZBENXU=
+
+Name: assets/ucgamesdk/ui/AHorizontal333/conf/toast_bg.9.png
+SHA1-Digest: WQFsbBRocnnqhfPeWV/NH1IDJAg=
+
+Name: assets/sound/effect/fire/addHP.mp3
+SHA1-Digest: TRQ1KMC8NUH117HSizf590keEPY=
+
+Name: assets/ucgamesdk/ui/AHorizontal333/common/sdk_images/bbsico.png
+SHA1-Digest: 6EHpQAnKKXCaYQTuoNi6iRGASIE=
+
+Name: assets/ucgamesdk/ui/AHorizontal333/conf/hidden.png
+SHA1-Digest: PvNedfterqHQNu+M2zXkIc0GkMI=
+
+Name: assets/assets/language/smithy.xml
+SHA1-Digest: RVXGZt5cOPARZC7M64mB9lXDgt4=
+
+Name: assets/assets/icons/uc/72.png
+SHA1-Digest: ncptaBCwUDhrggkQpO9+JEi1Aac=
+
+Name: assets/ucgamesdk/images/uc_delete.png
+SHA1-Digest: Y9jB0XWrZRRovi00MX6ZPUpMo0I=
+
+Name: assets/ucgamesdk/ui/AHorizontal333/pay/js/localstore.js
+SHA1-Digest: jX7bxE3I/gyBZpbll/OqV+yU72M=
+
+Name: assets/ucgamesdk/loginwidget/images/btn_white_press.9.png
+SHA1-Digest: Yda7ovsr3Xgw+l2T94kPnt9udTg=
+
+Name: assets/ucgamesdk/images/uc_agreetick.png
+SHA1-Digest: 9YH0fODYVqtxoerg4Sb2OdV5VUk=
+
+Name: assets/assets/language/onlineActivity.xml
+SHA1-Digest: sw22VR914KaUVgW1XBDwDNjB3MA=
+
+Name: assets/ucgamesdk/ui/AHorizontal333/common/sdk_images/bbs.png
+SHA1-Digest: ggRZcOee0FMUifmB123Kfv3Cnv8=
+
+Name: assets/assets/sound/music/fireBoss.mp3
+SHA1-Digest: 59dm7Y1vsCIEJOlI9DJOF896cKY=
+
+Name: assets/ucgamesdk/ui/AHorizontal333/conf/account.png
+SHA1-Digest: 1foeUYsnRzwoXsK50qZPdHed1xc=
+
+Name: assets/assets/sound/music/battle.mp3
+SHA1-Digest: fPcICDPe+orcwaLBiGuGgPvVuhQ=
+
+Name: assets/ucgamesdk/ui/AHorizontal333/common/sdk_images/zf.png
+SHA1-Digest: 1Cb0I3OJ1ie2QsjGnBGNf/wgD34=
+
+Name: assets/sound/background/gameRoom.mp3
+SHA1-Digest: lvZVHHigN3dmwxzQLT/1kh5O1qE=
+
+Name: assets/xml/veresion.xml
+SHA1-Digest: qUollez/l8IJmReu8zT/lsZ/5OM=
+
+Name: assets/assets/atlasXML/dyload/map-5.xml
+SHA1-Digest: RDRmUKeLtk73T9NnDpl3OT7BegM=
+
+Name: assets/ucgamesdk/loginwidget/images/u2_normal.9.png
+SHA1-Digest: /Sr8GVPNwrBTG789834GFN6dT3I=
+
+Name: assets/sound/effect/global/ready.mp3
+SHA1-Digest: ZK85Etx7SBfgMFJKuyH/0pRSdjY=
+
+Name: assets/assets/swf/titles.swf
+SHA1-Digest: 9gDJh+F5PS6ccaiDV4M/YIvsYbg=
+
+Name: assets/assets/language/friendShip.xml
+SHA1-Digest: kee/cqKamYUBzL98q4oTewB3p1c=
+
+Name: assets/assets/atlasXML/preload/cardParts.xml
+SHA1-Digest: SGasYtBETDhOCvc4sohINfA/0xU=
+
+Name: res/drawable/mp_warning_32x32_n.png
+SHA1-Digest: eCFwTk+zmvIeM+w4WQEnsknkfNI=
+
+Name: assets/assets/dataXML/advStage.xml
+SHA1-Digest: 10iErQ/MLyoTMLFMu1zz14CtWP0=
+
+Name: assets/ucgamesdk/ui/AHorizontal333/widget/images/icon_check_pres
+ s.png
+SHA1-Digest: zFaC4pZwAQOVJt8UGkgTKTC9Ieg=
+
+Name: assets/ucgamesdk/ui/AHorizontal333/common/sdk_images/icon_email_
+ dis.png
+SHA1-Digest: TxkbVGkpjsY5q8aYkjNlNZuFi7I=
+
+Name: assets/assets/atlasATF/dyload/map-5.atf
+SHA1-Digest: B9B7yR9/pHzYEKNXQWn8De1H1HA=
+
+Name: assets/ucgamesdk/ui/AHorizontal333/widget/images/btn_white_press
+ .9.png
+SHA1-Digest: Yda7ovsr3Xgw+l2T94kPnt9udTg=
+
+Name: assets/ucgamesdk/loginwidget/images/input_icon_password.png
+SHA1-Digest: S0fLnznNCRWJkbnSHtkIizJKTDs=
+
+Name: assets/assets/atlasATF/dyload/map-8.atf
+SHA1-Digest: dQMK5Ge6mPdsvYizNjM0BNHJm/I=
+
+Name: res/layout/updatemain.xml
+SHA1-Digest: xYqkaczunZoBqdb8HCQjzPwFJJE=
+
+Name: assets/ucgamesdk/ui/AHorizontal333/game/game.html
+SHA1-Digest: nm79k0kOZ8hj+mLOF8tHOQa5aSM=
+
+Name: assets/assets/language/cardTip.xml
+SHA1-Digest: f44Q9wkmgRlrUbRNOr5M9bSsZCE=
+
+Name: assets/sound/effect/global/readyAlert.mp3
+SHA1-Digest: H2+gO+js65OdCFYygEOCcuw5dEU=
+
+Name: assets/assets/language/map.xml
+SHA1-Digest: GedfqTa2El0SwLWJBaKTKIqTb3A=
+
+Name: assets/ucgamesdk/ui/AHorizontal333/widget/images/cur_user.png
+SHA1-Digest: ZJxQ+RYx5mNIcrf3H8e4vXCgL28=
+
+Name: assets/ucgamesdk/ui/AHorizontal333/widget/images/refresh.png
+SHA1-Digest: dI5aEs3214zTXA+xMZRuwfA4uBE=
+
+Name: assets/ucgamesdk/ui/AHorizontal333/conf/t_bg.9.png
+SHA1-Digest: M+PL4+ZhC9mlvoTLabwu/teoJt0=
+
+Name: assets/ucgamesdk/loginwidget/images/del_user.9.png
+SHA1-Digest: +wjLi3zr9aNZrMpRtIwJjBOerTw=
+
+Name: assets/ucgamesdk/ui/AHorizontal333/conf/strategyBottomSelected.p
+ ng
+SHA1-Digest: ts+TAcYbHNyan2f6XNGS57uxwqw=
+
+Name: assets/ucgamesdk/ui/AHorizontal333/common/sdk_images/jc_logo.png
+SHA1-Digest: MEHBJEmGMjfhUbE8iki4xCkDCf8=
+
+Name: assets/META-INF/AIR/extensions/com.jcsg.gameupdateane/META-INF/A
+ NE/Android-ARM/library.swf
+SHA1-Digest: YVzkiDVZ74039kQoTbj7u54jU0s=
+
+Name: assets/META-INF/AIR/extensions/org.zengrong.ane.ANEToolkit/META-
+ INF/ANE/extension.xml
+SHA1-Digest: c2kQ957tQ2U7zG0ERq6WrJPTlE4=
+
+Name: assets/sound/effect/sound.xml
+SHA1-Digest: 7lFCDJTDVnjtmh5FvxuiMC/cDlM=
+
+Name: assets/ucgamesdk/loginwidget/images/btn_orange_press.9.png
+SHA1-Digest: aEfAt2k46wMM00iICVBtRu00Z3Y=
+
+Name: assets/assets/dataXML/expandBag.xml
+SHA1-Digest: YnMwtMRRLAcHEXbhcy8CTZ41/So=
+
+Name: assets/sound/effect/fire/14.mp3
+SHA1-Digest: bkUROs+hX4V02+xicuWnEQ00l18=
+
+Name: assets/ucgamesdk/ui/AHorizontal333/conf/selectedBackgroundIcon.9
+ .png
+SHA1-Digest: 87l8nMVoyFsq7o7EjF3oreYuNzY=
+
+Name: assets/assets/atlasATF/preload/windows.atf
+SHA1-Digest: 4GasIURmfHS2FWDsv/lo1NGRIew=
+
+Name: assets/ucgamesdk/ui/AHorizontal333/conf/tips_button_press.9.png
+SHA1-Digest: +v1FPr05XAB3LI9eI7JttfwXZzQ=
+
+Name: assets/ucgamesdk/ui/AHorizontal333/common/sdk_images/float_head_
+ icon_close.png
+SHA1-Digest: XBAfKKJLXourc1jhYDGUhkqx0j8=
+
+Name: assets/ucgamesdk/ui/AHorizontal333/conf/helpBottom.png
+SHA1-Digest: Y4fqEAu32iNxuHKbG4XNtyKR1A0=
+
+Name: assets/ucgamesdk/loginwidget/images/input_icon_posenal.png
+SHA1-Digest: +Q/F7qzV83ai2EfHStQPFOV7tFg=
+
+Name: assets/ucgamesdk/ui/AHorizontal333/common/sdk_images/icon_email.
+ png
+SHA1-Digest: oPVdC5ncf+Nn6yp27AWf4slPF68=
+
+Name: assets/ucgamesdk/loginwidget/images/btn_orange.9.png
+SHA1-Digest: bSnz/BKe8ADBRjhqah5pPkGiSTk=
+
+Name: assets/ucgamesdk/ui/AHorizontal333/common/js/ucf.js
+SHA1-Digest: ZUthXhk1jinp3k9bAfmMxK+e2EI=
+
+Name: assets/ucgamesdk/ui/AHorizontal333/conf/help.png
+SHA1-Digest: kpnH6oiuhJYwfcH4hGUhlxgYfpk=
+
+Name: assets/assets/language/goddessRock.xml
+SHA1-Digest: ggNsxWs2wypqVxv5pb+T193eBsc=
+
+Name: assets/ucgamesdk/ui/AHorizontal333/conf/loading_bg.9.png
+SHA1-Digest: hSlj7YjYb76BBj1kv3v4dG9bIEo=
+
+Name: assets/META-INF/AIR/extensions/cn.uc.gamesdk.ane.android/META-IN
+ F/ANE/extension.xml
+SHA1-Digest: 7Rvo74s4yT4VvfGmZLS8k2DpY3s=
+
+Name: lib/armeabi-v7a/libysshared.so
+SHA1-Digest: TB891nh0tUUz+nsrHzpoSik8nMA=
+
+Name: res/raw/startga.html
+SHA1-Digest: 0Gq1U1c1hFbPzb+UHZ8RaIpUnts=
+
+Name: assets/ucgamesdk/loginwidget/images/input_icon_Arrow.png
+SHA1-Digest: gPIt2DnRovI6tf6uf8Cg69E9qKg=
+
+Name: assets/ucgamesdk/ui/AHorizontal333/common/js/environment.js
+SHA1-Digest: MYN+s/WbIxbCssqH9HEvdyJXWCY=
+
+Name: assets/ucgamesdk/ui/AHorizontal333/pay/js/aes.min.js
+SHA1-Digest: d+RRmWLi9qn8kzQhN9uzHDO3awQ=
+
+Name: assets/assets/language/decomposeCard.xml
+SHA1-Digest: O4gT7adKcDWMpNmUjWvira2cpLc=
+
+Name: resources.arsc
+SHA1-Digest: 2ulMmRgZMyzlSGbMVxJfy3wavmM=
+
+Name: assets/sound/effect/fire/bounce.mp3
+SHA1-Digest: Rqwc6nLJJ5uFEMq9N6Ywh6EjeBQ=
+
+Name: assets/ucgamesdk/config/statcost_filter.ini
+SHA1-Digest: 2jmj7l5rSw0yVb/vlWAYkK/YBwk=
+
+Name: assets/assets/atlasXML/dyload/soldier.xml
+SHA1-Digest: oQGBoLD9IJsH1HkXStkLRNq85T0=
+
+Name: res/drawable-xxhdpi/icon.png
+SHA1-Digest: j4zxqMMpYOm3lUhX+rdXqG1vXIo=
+
+Name: assets/ucgamesdk/loginwidget/images/del_user.png
+SHA1-Digest: 1nLRYraSLlVANkohwsDiDJToECo=
+
+Name: assets/ucgamesdk/ui/AHorizontal333/common/sdk_images/cenh.png
+SHA1-Digest: At5/KSsAdsaF7KGhRC7NgJo1tZ0=
+
+Name: assets/ucgamesdk/ui/AHorizontal333/conf/float_menu.json
+SHA1-Digest: 1ZPKnL72llHHGTjPI36e19yGsfo=
+
+Name: assets/ucgamesdk/ui/AHorizontal333/common/sdk_images/tx-grey-mal
+ e.jpg
+SHA1-Digest: i1N2TascOUBCajbPDnZ+GAGBiwk=
+
+Name: assets/assets/dataXML/worldMap.xml
+SHA1-Digest: 7dxLF0fJhYKZ6AUQsDxLp1tJaYU=
+
+Name: assets/assets/atlasATF/dyload/map-6.atf
+SHA1-Digest: +V5EUTT60OJd1U216tGaAA4+Za4=
+
+Name: assets/ucgamesdk/ui/AHorizontal333/common/sdk_images/btn-states.
+ png
+SHA1-Digest: t7pU9SdZACQ1QvzSaM5x+4Mhs/U=
+
+Name: assets/sound/background/owl.mp3
+SHA1-Digest: CZd0MC/YC2zlEhP4iF/Xynb5sv0=
+
+Name: assets/sound/effect/fire/s34.mp3
+SHA1-Digest: +muvN3qcBxfVH5Qw9+hZE8oitFQ=
+
+Name: assets/ucgamesdk/ui/AHorizontal333/pay/js/zepto.min.js
+SHA1-Digest: dZSbfixc9ACq05gXr3vTLSQUHu8=
+
+Name: assets/assets/atlasXML/preload/scene.xml
+SHA1-Digest: HPhiBbXqldgazytjEQNiBE7Q6Xk=
+
+Name: assets/META-INF/AIR/extensions/cn.uc.gamesdk.ane.android/META-IN
+ F/ANE/Android-ARM/library.swf
+SHA1-Digest: vt6+gA1NvJ1OAMWX6K3vqJD5vco=
+
+Name: assets/assets/dataXML/item.xml
+SHA1-Digest: keyinu1i+/rCPFWqzI4LLt2UrqA=
+
+Name: assets/ucgamesdk/ui/AHorizontal333/conf/orient_change.ini
+SHA1-Digest: 9eei4XIRR4jyln/Tf5MIhzRJiw4=
+
+Name: assets/assets/dataXML/stageInfo.xml
+SHA1-Digest: Eo2d9qbdv3WWEq1IhPyKzddjJxM=
+
+Name: assets/ucgamesdk/ui/AHorizontal333/conf/toast_btn.9.png
+SHA1-Digest: P1/pPMBZo9O9L/L8s0pBmAFjp/A=
+
+Name: assets/ucgamesdk/images/uc_arrowbottom.png
+SHA1-Digest: LJkByrio+0rw3WYqrfPr/v8va8M=
+
+Name: assets/ucgamesdk/ui/AHorizontal333/common/sdk_images/logo.png
+SHA1-Digest: rw5gtAGZKUH40Rr2BsUyoMy2WMA=
+
+Name: assets/assets/icons/uc/114.png
+SHA1-Digest: sL8tydgfvw6tV/caka408JOzy/U=
+
+Name: assets/ucgamesdk/config/service_config.json
+SHA1-Digest: hfVSUupmnUtcW/0HuQDaypu9lNw=
+
+Name: assets/assets/atlasATF/preload/effect.atf
+SHA1-Digest: kiMabP8yboHG9k6rrY0hq13U+KA=
+
+Name: assets/ucgamesdk/ui/AHorizontal333/widget/images/btn_black.9.png
+SHA1-Digest: cMA+Z3zTZM2Uccrw+qL+0gG7TtY=
+
+Name: assets/ucgamesdk/ui/AHorizontal333/widget/images/input_bg.9.png
+SHA1-Digest: l4x1ruCRns/i+b9MhvP2T5iXgVY=
+
+Name: assets/ucgamesdk/ui/AHorizontal333/common/sdk_images/bg.gif
+SHA1-Digest: KQ3aVwDXI1rHJ8A2GQsmHN+OraI=
+
+Name: assets/ucgamesdk/ui/AHorizontal333/widget/images/del_user.9.png
+SHA1-Digest: +wjLi3zr9aNZrMpRtIwJjBOerTw=
+
+Name: assets/assets/dataXML/vipReward.xml
+SHA1-Digest: P5dnQM+EYNjmh2GLOtgBLPeZCso=
+
+Name: assets/ucgamesdk/ui/AHorizontal333/conf/floatMenuLeftBackground.
+ 9.png
+SHA1-Digest: Ro+PFJE3i3IDeMRBCEb09hIRj9Y=
+
+Name: assets/assets/language/levy.xml
+SHA1-Digest: Gh/+QNO4kA9Ocp9aTOdBYABp5Hc=
+
+Name: assets/sound/effect/fire/n33.mp3
+SHA1-Digest: IVEqthYqS/ySuaQBe3JOz8YyFZU=
+
+Name: res/layout/ssl_certificate_warning.xml
+SHA1-Digest: 3Aqm7ic5B7ZBYgI5WmO6IchtB5k=
+
+Name: assets/assets/dataXML/combine_card.xml
+SHA1-Digest: kesQ7xPKug7GDGBzRIOeNA1eP6Y=
+
+Name: assets/ucgamesdk/loginwidget/images/icon_check_press.png
+SHA1-Digest: zFaC4pZwAQOVJt8UGkgTKTC9Ieg=
+
+Name: assets/assets/atlasXML/preload/editCard.xml
+SHA1-Digest: ryionmRbOX1HBU1L5ukX0oA5PR8=
+
+Name: assets/ucgamesdk/ui/AHorizontal333/common/sdk_images/ar_l.png
+SHA1-Digest: DA2wjVXR0ca37HhGcGu/cVFKRhU=
+
+Name: assets/assets/language/liveness.xml
+SHA1-Digest: vdKyikUPSPBFo8XqblqcZbOvs7w=
+
+Name: assets/assets/dataXML/equipAppend.xml
+SHA1-Digest: xGoG3OnqdA5TLZEVM4ceQLTGqz0=
+
+Name: assets/ucgamesdk/ui/AHorizontal333/common/js/ucRoute.js
+SHA1-Digest: vo4DMQTojq6p36R8JfEHDyojppQ=
+
+Name: assets/ucgamesdk/ui/AHorizontal333/common/sdk_images/float_btn_w
+ hite.9.png
+SHA1-Digest: 8Ai92LFMyJ2WsvQnBD9HPeJ0ia0=
+
+Name: assets/ucgamesdk/ui/AHorizontal333/common/sdk_images/cecz.png
+SHA1-Digest: 6UB5JuNh7xWWVCk0ZXTic5ODcKM=
+
+Name: res/raw/debuginfo
+SHA1-Digest: 2jmj7l5rSw0yVb/vlWAYkK/YBwk=
+
+Name: assets/ucgamesdk/ui/AHorizontal333/pay/images/trumpet.png
+SHA1-Digest: AFCvN4KVwqV3jooueB6xbD7td9U=
+
+Name: assets/ucgamesdk/ui/AHorizontal333/common/js/template.js
+SHA1-Digest: CT9eFCI4fFWC+chyUFxFWq7gAaI=
+
+Name: assets/META-INF/AIR/extensions/com.jcsg.gameupdateane/META-INF/A
+ NE/Android-ARM/catalog.xml
+SHA1-Digest: nWs+qyh3E//BWPu7fV4eM74W4JU=
+
+Name: assets/assets/language/arenaInfo.xml
+SHA1-Digest: mwJ/RLzQHnjds3UlTSUVTR5PAj4=
+
+Name: assets/assets/language/cardSet.xml
+SHA1-Digest: pMHCVNz+iKL9+pj1askCy+XqNF0=
+
+Name: assets/META-INF/AIR/extensions/cn.uc.gamesdk.ane.android/catalog
+ .xml
+SHA1-Digest: qSJ9YsIJggLdA5K/6CUo8hdw+RE=
+
+Name: assets/ucgamesdk/ui/AHorizontal333/user/js/user.js
+SHA1-Digest: 5HCz+WXm803xPp52lKemXZb5N2U=
+
+Name: assets/assets/atlasXML/dyload/map-3.xml
+SHA1-Digest: czNfu2qGBKDX9NOK0FdryslnhjE=
+
+Name: assets/ucgamesdk/loginwidget/images/sina.png
+SHA1-Digest: Yglz6RGddgJRvU4Xe4BlbN9Mjqw=
+
+Name: assets/sound/effect/fire/4.mp3
+SHA1-Digest: YjpskxhCUCj5eqbfFBtD8Dneq/I=
+
+Name: assets/assets/language/smeltGuess.xml
+SHA1-Digest: ZbdB6fyMe/WEQCUhXMeklr4A8TA=
+
+Name: assets/ucgamesdk/ui/AHorizontal333/pay/images/loading.gif
+SHA1-Digest: 4K7m9r22NaiBvIMWjnuQSyKAfEg=
+
+Name: assets/assets/language/loginRaward.xml
+SHA1-Digest: mbvk09+Bud/cuSH9Pjp9H7lUKFE=
+
+Name: res/layout/main.xml
+SHA1-Digest: IMclOgyD8NXgr5aqVeXeSTMiXPw=
+
+Name: assets/assets/language/shop.xml
+SHA1-Digest: mcOzpTFA8nNd1TjC1XGWWx6mLxk=
+
+Name: assets/assets/dataXML/card.xml
+SHA1-Digest: XSijvJRJmTKmejEja/KF33KVbjo=
+
+Name: assets/ucgamesdk/config/sdkServer_service_config.json
+SHA1-Digest: S3amuk+T+Nt4eLZAFy7fkMHmDkk=
+
+Name: assets/ucgamesdk/ui/AHorizontal333/pay/js/backbone.min.js
+SHA1-Digest: wyNI0upG+R9z/ca+mJP4NdUhMpQ=
+
+Name: assets/assets/atlasXML/dyload/map-8.xml
+SHA1-Digest: vks/rkfnx8OdR82OAsi2AsUtdDk=
+
+Name: assets/assets/atlasXML/preload/effect3.xml
+SHA1-Digest: FjmwXBSK3rZBeQMFk/3uz7nV1Yw=
+
+Name: assets/assets/dataXML/slot.xml
+SHA1-Digest: vKaZIGOcp9CzvA8j/x3Z5FGaOPY=
+
+Name: assets/sound/effect/fire/n11.mp3
+SHA1-Digest: UYDKf30L4YN8pW4aNX7foIIwNFc=
+
+Name: assets/ucgamesdk/ui/AHorizontal333/widget/images/btn_exdialog_cl
+ ose.png
+SHA1-Digest: /cwS6EloHg6YLZXMaFDyi/2GdjY=
+
+Name: assets/ucgamesdk/ui/AHorizontal333/widget/images/bg.9.png
+SHA1-Digest: GtiTFbPDggBxIEYLElFuGDliWWM=
+
+Name: assets/ucgamesdk/ui/AHorizontal333/conf/giftBottom.png
+SHA1-Digest: rGv0SEOMpjFNRZQ3rFM/CTbb5eU=
+
+Name: assets/assets/language/pieceComPosite.xml
+SHA1-Digest: 2l6mwM/k70N63YoW1Uhn/OpUKxg=
+
+Name: assets/sound/effect/fire/skill_500.mp3
+SHA1-Digest: tNFSkgkh+bvmbY4O4UfYhp/kVVo=
+
+Name: assets/assets/language/commom.xml
+SHA1-Digest: 5A3Cgj63Pd3Y/9Gm06rhj1pbzRI=
+
+Name: assets/ucgamesdk/ui/AHorizontal333/conf/tb_ui_config.json
+SHA1-Digest: FzW19/t6CGa/IAR/Kybyi+8+Z0M=
+
+Name: assets/sound/background/water.mp3
+SHA1-Digest: ouGYYGY+G7xDw33FDkLnSnKGiYk=
+
+Name: assets/assets/atlasATF/preload/effect2.atf
+SHA1-Digest: VXp7/I4WQI+sfMDhiCQIz0CyW6M=
+
+Name: assets/assets/atlasXML/preload/battle.xml
+SHA1-Digest: uy4DlSQQ3QbvRHkb/UM/QOfGRHw=
+
+Name: assets/ucgamesdk/ui/AHorizontal333/widget/images/safe_1.png
+SHA1-Digest: P5JR8vaw285dORnSu3VSGI92YSo=
+
+Name: assets/ucgamesdk/ui/AHorizontal333/common/sdk_images/yes.png
+SHA1-Digest: jAM9td1v/to/cmVeo6WkeNTu9aU=
+
+Name: assets/assets/language/newGuide.xml
+SHA1-Digest: yeaSNvsStXvdWWjAps/R9tav2lk=
+
+Name: assets/sound/effect/fire/6.mp3
+SHA1-Digest: ymu4r9J8qsSD3K9qMsXoIaJdA78=
+
+Name: assets/assets/atlasATF/dyload/map-9.atf
+SHA1-Digest: Z35VJv9tV6XfrUa+aTDOSfWfMvY=
+
+Name: assets/ucgamesdk/config/init_rexproj.xml
+SHA1-Digest: Sq6evN5mm6GKCloOmggjtxArcEA=
+
+Name: assets/assets/language/luckyDraw.xml
+SHA1-Digest: sYjhe5SsR/+kGaOYlHRmpjH4tIE=
+
+Name: assets/assets/atlasXML/preload/modulesUI.xml
+SHA1-Digest: P2ZuJvFJVuvKm1N3Avo6aGHTU1g=
+
+Name: assets/ucgamesdk/config/init_rexproj_landscape.xml
+SHA1-Digest: c+KNXiVeLBEvjVnJwnibNw2ouWM=
+
+Name: assets/assets/language/pay.xml
+SHA1-Digest: vOFvdKrExlH4MjGB63eoPhB/u88=
+
+Name: assets/sound/button/page.mp3
+SHA1-Digest: YTnCIWNJyVwdZMPsF77MiPdPAgA=
+
+Name: assets/assets/language/monthToDate.xml
+SHA1-Digest: 7KSoS4pcUC6GSAe+fuhNU8mKWu4=
+
+Name: assets/sound/effect/fire/12.mp3
+SHA1-Digest: kWXb7fBnfwGe/e3wFBUDKg8GdeY=
+
+Name: assets/assets/language/assignSmelting.xml
+SHA1-Digest: dw9Sux+wyRl6riOZPApppTb0FS4=
+
+Name: assets/assets/atlasXML/dyload/skill1.xml
+SHA1-Digest: fK81B1Sc1u9FMJi32+BKKMMS3Cs=
+
+Name: assets/sound/effect/fire/c53.mp3
+SHA1-Digest: SFApQ9qoQCZc42tAAzcHZpN1q8A=
+
+Name: assets/ucgamesdk/ui/AHorizontal333/common/sdk_images/icon_phone.
+ png
+SHA1-Digest: Ne1LkYpV9IDEECRWPL9Zp9VY3zA=
+
+Name: assets/assets/skeletonXML/avatar_skeleton.xml
+SHA1-Digest: 0QRZGdtKeza2DLXr5lBlN8FxnVk=
+
+Name: assets/assets/dataXML/soldierConfig.xml
+SHA1-Digest: ApbYRvW/zj87VIWy7BgGDCKgEjo=
+
+Name: assets/ucgamesdk/ui/AHorizontal333/conf/tipsGameIcon.png
+SHA1-Digest: E8pbe+Lbg/PTXXU3IP6zHJKfS90=
+
+Name: assets/assets/language/skyCity.xml
+SHA1-Digest: QOI6QhKDWJxNP5sjNci7sGcYWqI=
+
+Name: assets/xml/rightList.xml
+SHA1-Digest: EznEvkiMxlkOQI2MMEWb3fv7dj8=
+
+Name: assets/ucgamesdk/ui/AHorizontal333/pay/images/guide_1.png
+SHA1-Digest: VlIaLoCMEMInrMbyXgG44KfQvnc=
+
+Name: assets/ucgamesdk/ui/AHorizontal333/jars/core.jar
+SHA1-Digest: yvqbqfA4D3+40WKi3RDz/hLqT4I=
+
+Name: assets/assets/atlasATF/preload/modulesUI.atf
+SHA1-Digest: X0EkmajhjKzfPDGfqOesQqSsPAk=
+
+Name: assets/ucgamesdk/ui/AHorizontal333/game/js/game.js
+SHA1-Digest: xVYy8FDUE9b6sTuIESwH91yR090=
+
+Name: assets/ucgamesdk/ui/AHorizontal333/conf/screenshot.png
+SHA1-Digest: nCwlkkwjSNE8Oty2xDXVrz64Wgw=
+
+Name: res/drawable-mdpi/ic_launcher.png
+SHA1-Digest: I3MP0NXnINH3Gb4a/IxI+nMF2mw=
+
+Name: assets/ucgamesdk/ui/AHorizontal333/pay/images/wait.gif
+SHA1-Digest: pJ12a8ioOZtv5R62Xsl8wzu2hyE=
+
+Name: assets/ucgamesdk/ui/AHorizontal333/widget/images/icon_check.png
+SHA1-Digest: 0HkKJlWl95co32IjAa0Aj97kPNk=
+
+Name: assets/sound/effect/fire/d7.mp3
+SHA1-Digest: 7b3mWq/AoiPanLtXE0HCswCl/1Q=
+
+Name: assets/assets/atlasATF/dyload/map-1.atf
+SHA1-Digest: pjIqbE5beE/rRQs53oszOyNbAPY=
+

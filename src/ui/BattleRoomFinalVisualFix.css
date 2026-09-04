@@ -1,0 +1,225 @@
+/* 最终房间视觉修正：红方列、卡牌底栏、抽屉筛选。最后加载。 */
+
+/* PVE/BOSS 红方镜像蓝方容器，三个槽位不再相互覆盖。 */
+.game-room.room-state-guard.room-pve-like .room-right-side {
+  position: absolute !important;
+  left: auto !important;
+  right: 2.2% !important;
+  top: 3.45% !important;
+  width: 36.8% !important;
+  height: 64.5% !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  overflow: visible !important;
+  border: 0 !important;
+  background: none !important;
+  transform: none !important;
+  z-index: 42 !important;
+  pointer-events: none !important;
+}
+.game-room.room-state-guard.room-pve-like .room-right-side::before,
+.game-room.room-state-guard.room-pve-like .room-right-side::after {
+  content: none !important;
+  display: none !important;
+}
+.game-room.room-state-guard.room-pve-like .room-right-side .top-enemy {
+  position: absolute !important;
+  left: auto !important;
+  right: 0 !important;
+  top: 0 !important;
+  bottom: auto !important;
+  width: 48.5% !important;
+  height: 58.5% !important;
+  margin: 0 !important;
+  transform: none !important;
+  z-index: 2 !important;
+  pointer-events: auto !important;
+}
+.game-room.room-state-guard.room-pve-like .room-right-side .enemy-slots-row {
+  position: absolute !important;
+  left: 0 !important;
+  right: 0 !important;
+  top: 59.8% !important;
+  bottom: auto !important;
+  width: 100% !important;
+  height: 40.2% !important;
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  gap: 3.1% !important;
+  margin: 0 !important;
+  transform: none !important;
+  z-index: 3 !important;
+}
+.game-room.room-state-guard.room-pve-like .room-right-side .enemy-slots-row > .enemy-slot {
+  position: relative !important;
+  inset: auto !important;
+  width: 100% !important;
+  height: 100% !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+  margin: 0 !important;
+  transform: none !important;
+  overflow: hidden !important;
+  pointer-events: auto !important;
+}
+.game-room.room-state-guard.room-pve-like .room-right-side .top-enemy .qmark {
+  font-size: 4.65em !important;
+}
+.game-room.room-state-guard.room-pve-like .room-right-side .enemy-slots-row .qmark {
+  font-size: 2.45em !important;
+}
+
+/* 抽屉筛选键只服务逻辑，不参与显示。 */
+.game-room .room-card-filter-key {
+  display: none !important;
+}
+.game-room .drawer-card[hidden] {
+  display: none !important;
+}
+
+/* 卡牌常态左下仅显示资源图标和消耗数字，右下仅显示功能图标。 */
+.game-room .deck-slot-item.filled,
+.game-room .drawer-card {
+  overflow: hidden !important;
+}
+.game-room.room-rebuild .room-card-cost {
+  position: absolute !important;
+  left: 2.4% !important;
+  right: auto !important;
+  bottom: 1.7% !important;
+  width: 31% !important;
+  min-width: 0 !important;
+  height: 20% !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+  gap: .06em !important;
+  font-family: "Arial Black", "Microsoft YaHei UI", sans-serif !important;
+  font-size: .78em !important;
+  font-weight: 1000 !important;
+  line-height: 1 !important;
+  color: #fff8bb !important;
+  text-shadow: 0 1px 0 #12170b, 1px 0 0 #12170b, -1px 0 0 #12170b !important;
+  z-index: 12 !important;
+}
+.game-room.room-rebuild .room-card-cost i {
+  position: relative !important;
+  display: block !important;
+  width: 1.08em !important;
+  height: 1.08em !important;
+  flex: 0 0 1.08em !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  overflow: visible !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  color: transparent !important;
+  background: none !important;
+  box-shadow: none !important;
+  font-size: 1em !important;
+}
+.game-room.room-rebuild .room-card-cost i::before,
+.game-room.room-rebuild .room-card-cost i::after {
+  content: "" !important;
+  position: absolute !important;
+  pointer-events: none !important;
+}
+.game-room.room-rebuild .room-card-cost--sun i::before {
+  inset: 19% !important;
+  border-radius: 50% !important;
+  background: radial-gradient(circle at 34% 30%, #fffbd1 0 18%, #ffe544 26% 62%, #df9f12 100%) !important;
+  box-shadow: 0 0 0 .08em #71570c, 0 0 .1em #fff8a2 !important;
+}
+.game-room.room-rebuild .room-card-cost--sun i::after {
+  inset: 1% !important;
+  background: repeating-conic-gradient(from 0deg, #d99d16 0 7deg, transparent 7deg 29deg) !important;
+  -webkit-mask: radial-gradient(circle, transparent 0 43%, #000 45%) !important;
+  mask: radial-gradient(circle, transparent 0 43%, #000 45%) !important;
+}
+.game-room.room-rebuild .room-card-cost--food i::before {
+  left: 22% !important;
+  top: 18% !important;
+  width: 61% !important;
+  height: 68% !important;
+  border-radius: 58% 45% 56% 42% !important;
+  transform: rotate(-27deg) !important;
+  background: linear-gradient(145deg, #ffb07b, #df5d3c 58%, #8e2a24) !important;
+  box-shadow: 0 0 0 .08em #5a221b !important;
+}
+.game-room.room-rebuild .room-card-cost--food i::after {
+  left: 4% !important;
+  top: 4% !important;
+  width: 38% !important;
+  height: 38% !important;
+  border-radius: 50% !important;
+  background: #f3e7c4 !important;
+  box-shadow: 0 0 0 .07em #5a221b !important;
+}
+.game-room.room-rebuild .room-card-cost b {
+  display: inline-block !important;
+  min-width: 1em !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  font: inherit !important;
+  color: inherit !important;
+}
+.game-room.room-rebuild .room-card-type {
+  position: absolute !important;
+  left: auto !important;
+  right: 2.3% !important;
+  top: auto !important;
+  bottom: 1.7% !important;
+  width: 20% !important;
+  height: 20% !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+  margin: 0 !important;
+  z-index: 12 !important;
+}
+.game-room.room-rebuild .drawer-card > .room-card-cost,
+.game-room.room-rebuild .deck-slot-item > .room-card-cost {
+  left: 2.4% !important;
+  right: auto !important;
+}
+.game-room.room-rebuild .drawer-card > .room-card-type,
+.game-room.room-rebuild .deck-slot-item > .room-card-type {
+  left: auto !important;
+  right: 2.3% !important;
+}
+.game-room .room-card-level-label,
+.game-room .drawer-card .room-card-level-label {
+  display: none !important;
+}
+
+/* 星级轨道固定在卡牌顶部，不压住边框与立绘。 */
+.game-room .room-card-stars-wrap {
+  position: absolute !important;
+  left: 5.5% !important;
+  right: 5.5% !important;
+  top: 2.6% !important;
+  width: auto !important;
+  height: 10.8% !important;
+  display: flex !important;
+  align-items: center !important;
+  overflow: hidden !important;
+  z-index: 13 !important;
+}
+.game-room .room-card-stars-track {
+  display: grid !important;
+  grid-template-columns: repeat(6, minmax(0, 1fr)) !important;
+  gap: 0 !important;
+  width: 72% !important;
+  height: 100% !important;
+  overflow: hidden !important;
+}
+.game-room .room-card-star-slot {
+  width: 100% !important;
+  height: 100% !important;
+  min-width: 0 !important;
+  background-repeat: no-repeat !important;
+}
+.game-room .room-card-art,
+.game-room .drawer-card .room-card-art {
+  top: 14.5% !important;
+  height: 65.5% !important;
+}

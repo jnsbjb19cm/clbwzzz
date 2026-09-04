@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<language name="cardSchool">
+	<language key="cardSchool_chakan" value="查看详细"/>
+	<language key="cardSchool_piandi" value="温馨提示：{0}收集率偏低，严重影响组合的正常发挥"/>
+	<language key="cardSchool_buzu" value="温馨提示：{0}收集率不足，可能影响组合的正常发挥"/>
+	<language key="cardSchool_baofa" value="爆发力"/>
+	<language key="cardSchool_shengming" value="生命力"/>
+	<language key="cardSchool_sudu" value="速度"/>
+	<language key="cardSchool_fuben" value="副本适用"/>
+	<language key="cardSchool_jingji" value="竞技适用"/>
+	<language key="cardSchool_youdian" value="优点："/>
+	<language key="cardSchool_quedian" value="缺点："/>
+	<language key="cardSchool_peihe" value="配合："/>
+	<language key="cardSchool_jichu" value="集卡(1)"/>
+	<language key="cardSchool_gaojie" value="集卡(2)"/>
+	<language key="cardSchool_shizhan" value="组牌教学"/>
+	<language key="cardSchool_jikajiangli" value="集卡奖励"/>
+	<language key="cardSchool_linqujiangli" value="领取奖励"/>
+	<language key="cardSchool_jiangli" value="奖励"/>
+	<language key="cardSchool_yilingqu" value="已领取"/>
+	<language key="cardSchool_lingquchenggong" value="领取成功"/>
+	<language key="cardSchool_jixu" value="继续"/>
+	<language key="cardSchool_xuqiu" value="需求数量："/>
+	<language key="cardSchool_yongyou" value="已拥有量："/>
+	<language key="cardSchool_fangru" value="放入卡组"/>
+	<language key="cardSchool_checkDesc" value="可立即将以上卡牌中我已拥有的放入到当前卡组中"/>
+	<language key="cardSchool_bianji" value="前往编辑"/>
+	<language key="cardSchool_shangcheng" value="前往商城收集"/>
+	<language key="cardSchool_chuangjian" value="创建卡组"/>
+</language>

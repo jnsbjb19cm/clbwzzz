@@ -1,0 +1,22 @@
+[
+  {
+    "fighter": [
+      {
+        "id": 1,
+        "url": "sound/effect/fire/1.mp3"
+      },
+      {
+        "id": 9,
+        "url": "sound/effect/fire/9.mp3"
+      },
+      {
+        "id": 17,
+        "url": "sound/effect/fire/17.mp3"
+      },
+      {
+        "id": 58,
+        "url": "sound/effect/fire/58.mp3"
+      }
+    ]
+  }
+]

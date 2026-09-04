@@ -1,0 +1,10 @@
+{
+  "canvas": { "w": 1248, "h": 832 },
+  "topUi": { "left": 320, "right": 320, "top": 10 },
+  "barSource": { "w": 1566, "h": 197 },
+  "slotsSource": { "left": 248, "top": 70, "w": 88, "h": 58, "gap": 4 },
+  "resourcesSource": {
+    "sun": { "x": 162, "y": 48, "icon": 0 },
+    "food": { "x": 162, "y": 118, "icon": 0 }
+  }
+}

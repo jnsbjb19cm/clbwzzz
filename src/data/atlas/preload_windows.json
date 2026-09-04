@@ -1,0 +1,62 @@
+{
+  "image": "windows.png",
+  "path": "preload/windows.xml",
+  "sprites": [
+    {
+      "name": "alchemy_card_bg",
+      "x": 2,
+      "y": 644,
+      "width": 334,
+      "height": 329
+    },
+    {
+      "name": "alchemy_material_card_bg",
+      "x": 338,
+      "y": 644,
+      "width": 134,
+      "height": 145
+    },
+    {
+      "name": "evolution_aotu_put_material_btn",
+      "x": 182,
+      "y": 975,
+      "width": 178,
+      "height": 45
+    },
+    {
+      "name": "evolution_select_card",
+      "x": 338,
+      "y": 791,
+      "width": 124,
+      "height": 35
+    },
+    {
+      "name": "jinhua_background",
+      "x": 464,
+      "y": 791,
+      "width": 232,
+      "height": 25
+    },
+    {
+      "name": "jinhua_green_progress",
+      "x": 338,
+      "y": 828,
+      "width": 232,
+      "height": 25
+    },
+    {
+      "name": "jinhua_jinhua_btn",
+      "x": 2,
+      "y": 975,
+      "width": 178,
+      "height": 45
+    },
+    {
+      "name": "window-bg",
+      "x": 2,
+      "y": 2,
+      "width": 960,
+      "height": 640
+    }
+  ]
+}

@@ -1,0 +1,6 @@
+/*
+ * Compatibility entry kept because src/main.js imports this path.
+ * The room is real DOM/CSS. Full-room screenshot/background images are forbidden.
+ */
+@import './BattleRoomReference1536Final.css';
+@import './BattleRoomReference1536Stabilized.css';

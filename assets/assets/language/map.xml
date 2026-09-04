@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<language name="map">
+	<language key="map_buyOrder0" value="购买体力,恢复30体力"/>
+	<language key="map_buyOrder1" value="体力不足,恢复30体力"/>
+	<language key="map_confirmBuy" value="确定要购买吗？"/>
+	<language key="map_buy" value="购买"/>
+	<language key="map_close" value="关闭"/>
+	<language key="map_cost" value="花费"/>
+	<language key="map_X" value="×"/>
+	<language key="map_starCost" value="消耗"/>
+	<language key="map_see" value="查 看"/>
+	<language key="map_lv" value="级"/>
+	<language key="map_leveldesign" value="关卡描述：\n"/>
+	<language key="map_passlevelfirst" value="首次必出奖励"/>
+	<language key="map_type1" value="简单"/>
+	<language key="map_type2" value="精英"/>
+	<language key="map_type3" value="英雄"/>
+	<language key="map_typeAlert" value="功能即将开放，敬请期待"/>
+	<language key="map_quickFight" value="扫荡"/>
+	<language key="map_fight" value="开始挑战"/>
+	<language key="map_strategyAlert" value="暂无攻略"/>
+	<language key="map_start" value="开始"/>
+	<language key="map_fightNum" value="请选择自动次数："/>
+	<language key="map_predictAward" value="预计可得奖励"/>
+	<language key="map_nowStarNum" value="当前星数："/>
+	<language key="map_setStarInfo" value="首次通关可集得星星，全章通关时兑换开放"/>
+	<language key="map_setStarAlert" value="确定要兑换了吗"/>
+	<language key="map_orderNum1" value="体力值：{0}/{1}"/>
+	<language key="map_orderTime" value=" 每5分钟恢复1点"/>
+	<language key="map_worldAlert0" value="新世界在通过第15章后开放"/>
+	<language key="map_worldAlert1" value="地底世界在通过第30章后开放"/>
+	<language key="map_zhengzhanjiazai" value="正在加载征战素材 ..."/>
+	<language key="map_wancheng" value="完 成"/>
+	<language key="alertEditCard" value="您还有可上场的卡牌未携带，是否马上编辑？"/>
+	<language key="alertEditCardSoltNull" value="您的卡组中未携带任何卡牌，请编辑后再挑战！"/>
+	<language key="mapStageType_normal" value="普通"/>
+	<language key="mapStageType_elite" value="精英"/>
+	<language key="map_setStarGetRwd" value="领取奖励"/>
+	<language key="map_setStarRwded" value="已领取"/>
+	<language key="map_setStar_Dadao" value="达到"/>
+	<language key="map_setStar_Xingkelingqu" value="可领取"/>
+	<language key="map_setStar_TongguanShengyu" value="通关剩余血量越多，评级越高"/>
+	<language key="cardsManual_tujian" value="收集不同种类的卡牌可以点亮更多卡牌图鉴哦！"/>
+	<language key="map_normal_reward_dec" value="首次通关必得"/>
+	<language key="map_elite_reward_dec" value="通过可能获得"/>
+	<language key="map_atk_cost_power_dec" value="消耗体力：{1}"/>
+	<language key="map_atk_remain_dec" value="今日剩余次数："/>
+	<language key="map_checkOne1" value="{0}1次{1}(消耗{2}体力){3}"/>
+	<language key="map_checkFive1" value="{0}5次{1}(消耗{2}体力){3}"/>
+	<language key="map_checkthree1" value="{0}3次{1}(消耗{2}体力){3}"/>
+	<language key="map_elite_time_no_enough" value="今日剩余次数不足{1}次"/>
+	<language key="map_elite_open_condition_tips" value="完成第{1}章后开启"/>
+	<language key="map.battle.record.loadIoerror" value="资源加载失败！"/>
+	<language key="map.battle.record.parseDataError" value="数据解析失败！"/>
+
+</language>

@@ -1,0 +1,77 @@
+﻿# 环境变量和密钥
+.env
+.env.*
+!.env.example
+.npmrc
+.git-credentials
+credentials/
+secrets/
+*.pem
+*.key
+*.p12
+*.pfx
+
+# Node依赖
+node_modules/
+coverage/
+.nyc_output/
+*.tsbuildinfo
+
+# 构建文件
+dist/
+
+# 后端数据库
+server/data/
+*.sqlite
+*.sqlite-shm
+*.sqlite-wal
+*.db
+
+# 临时工具文件
+artifacts/
+对话导出-*/
+
+# 缓存
+.vite/
+.cache/
+.tmp-edge-cdp/
+
+# 系统/编辑器本地文件
+.DS_Store
+Thumbs.db
+desktop.ini
+*.swp
+*.swo
+*.swn
+
+# 日志
+*.log
+*.tmp
+*.temp
+
+# 编辑器
+.vscode/
+.idea/
+
+# 备份文件
+*.bak
+
+# 测试/验证脚本（服务器部署不需要）
+tests/
+scripts/verify-*.mjs
+*.spec.mjs
+*.test.mjs
+*.spec.js
+*.test.js
+
+# 文档与文本（业务文档不入库）
+*.md
+*.txt
+
+# 浏览器自动化配置(不入库)
+.codex-browser-profile/
+playwright-report/
+test-results/
+
+# 本地技能安装产物
+.agents/skills/

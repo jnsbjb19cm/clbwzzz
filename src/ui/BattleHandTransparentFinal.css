@@ -1,0 +1,185 @@
+/* 最终战斗卡槽：透明底板 + 动态卡牌 + 左下资源 + 右下功能。 */
+body.battle-immersive .top-ui {
+  background:
+    linear-gradient(180deg, rgba(245, 251, 255, .46), rgba(124, 153, 169, .22)),
+    linear-gradient(90deg, rgba(214, 139, 57, .92) 0 12.8%, rgba(50, 73, 84, .48) 12.8% 100%) !important;
+  backdrop-filter: blur(2px);
+}
+
+body.battle-immersive .top-ui-bg {
+  opacity: .62 !important;
+}
+
+body.battle-immersive .top-ui .slots-container {
+  background:
+    linear-gradient(180deg, rgba(240, 249, 255, .50), rgba(117, 148, 164, .18)),
+    rgba(36, 58, 69, .26) !important;
+  border-left: 2px solid rgba(102, 70, 39, .72) !important;
+  box-shadow:
+    inset 0 1px rgba(255, 255, 255, .72),
+    inset 0 -4px 8px rgba(5, 20, 28, .28) !important;
+}
+
+body.battle-immersive #hand.transparent-battle-hand {
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+}
+
+body.battle-immersive #hand.transparent-battle-hand .deck-slot {
+  border: 1px solid rgba(185, 207, 218, .70) !important;
+  border-right-color: rgba(70, 94, 106, .72) !important;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, .22), rgba(154, 183, 198, .06)),
+    rgba(48, 75, 88, .20) !important;
+  box-shadow:
+    inset 1px 0 rgba(255, 255, 255, .30),
+    inset -1px 0 rgba(8, 24, 32, .34),
+    inset 0 1px rgba(255, 255, 255, .36),
+    inset 0 -3px 5px rgba(5, 18, 25, .26) !important;
+  backdrop-filter: blur(1.5px);
+}
+
+body.battle-immersive #hand.transparent-battle-hand .deck-slot::before {
+  content: '';
+  position: absolute;
+  inset: 0 0 48% 0;
+  z-index: 7;
+  pointer-events: none;
+  background: linear-gradient(180deg, rgba(255,255,255,.26), rgba(255,255,255,.02));
+}
+
+body.battle-immersive #hand.transparent-battle-hand .slot-face {
+  inset: 1px 1px 17px !important;
+  background: rgba(164, 190, 202, .10) !important;
+}
+
+body.battle-immersive #hand.transparent-battle-hand .slot-bg {
+  opacity: 1 !important;
+  filter: none !important;
+}
+
+body.battle-immersive #hand.transparent-battle-hand .slot-portrait {
+  left: 1% !important;
+  top: 4% !important;
+  width: 98% !important;
+  height: 95% !important;
+  z-index: 5;
+}
+
+body.battle-immersive #hand.transparent-battle-hand .slot-stars {
+  left: 3px !important;
+  top: 2px !important;
+  width: auto !important;
+  height: 10px !important;
+  max-width: calc(100% - 6px) !important;
+  object-fit: contain !important;
+  object-position: left top !important;
+  z-index: 9 !important;
+}
+
+body.battle-immersive #hand.transparent-battle-hand .slot-cd-mask {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  top: auto;
+  z-index: 12;
+  border-top: 1px solid rgba(175, 229, 255, .7);
+  background: linear-gradient(180deg, rgba(50, 145, 196, .54), rgba(5, 20, 31, .9));
+  transition: height .06s linear;
+  pointer-events: none;
+}
+
+body.battle-immersive #hand.transparent-battle-hand .slot-cd {
+  position: absolute;
+  inset: 0;
+  z-index: 13;
+  display: grid;
+  place-items: center;
+  color: #fff4a7;
+  font-size: 21px;
+  font-weight: 900;
+  text-shadow: 0 2px 2px #000, 0 0 4px #000;
+  pointer-events: none;
+}
+
+body.battle-immersive #hand.transparent-battle-hand .slot-meta {
+  left: 2px !important;
+  right: 2px !important;
+  bottom: 1px !important;
+  height: 16px !important;
+}
+
+body.battle-immersive #hand.transparent-battle-hand .slot-cost {
+  min-width: 25px !important;
+  height: 15px !important;
+  padding: 0 3px 0 0 !important;
+  gap: 0 !important;
+  border-radius: 8px !important;
+  color: #fff7a7 !important;
+  background: rgba(13, 19, 22, .76) !important;
+  font-size: 12px !important;
+  line-height: 15px !important;
+}
+
+body.battle-immersive #hand.transparent-battle-hand .slot-cost img {
+  width: 14px !important;
+  height: 14px !important;
+  margin-right: 0 !important;
+}
+
+body.battle-immersive #hand.transparent-battle-hand .slot-function {
+  width: 16px;
+  height: 16px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: rgba(10, 18, 22, .72);
+  box-shadow: 0 0 0 1px rgba(255, 228, 92, .84), inset 0 0 2px rgba(255,255,255,.38);
+}
+
+body.battle-immersive #hand.transparent-battle-hand .slot-function img {
+  width: 15px;
+  height: 15px;
+  object-fit: contain;
+  display: block;
+}
+
+body.battle-immersive #hand.transparent-battle-hand .slot-level {
+  display: none !important;
+}
+
+body.battle-immersive #hand.transparent-battle-hand .card-grade-1 { --card-grade-color: #7a7a7a; }
+body.battle-immersive #hand.transparent-battle-hand .card-grade-2 { --card-grade-color: #42a85a; }
+body.battle-immersive #hand.transparent-battle-hand .card-grade-3 { --card-grade-color: #328bd1; }
+body.battle-immersive #hand.transparent-battle-hand .card-grade-4 { --card-grade-color: #9b4dcc; }
+body.battle-immersive #hand.transparent-battle-hand .card-grade-5 { --card-grade-color: #e4b232; }
+body.battle-immersive #hand.transparent-battle-hand .card-grade-6 { --card-grade-color: #d54a3d; }
+
+body.battle-immersive #hand.transparent-battle-hand .deck-slot.filled {
+  border-color: color-mix(in srgb, var(--card-grade-color) 78%, #e9f7ff) !important;
+}
+
+body.battle-immersive #hand.transparent-battle-hand .deck-slot.selected {
+  background:
+    linear-gradient(180deg, rgba(111, 219, 255, .46), rgba(28, 146, 212, .30)),
+    rgba(42, 88, 109, .30) !important;
+  box-shadow:
+    inset 0 0 0 2px rgba(221, 251, 255, .55),
+    0 0 0 2px #45c9ff,
+    0 0 12px rgba(42, 191, 255, .82) !important;
+}
+
+body.battle-immersive #hand.transparent-battle-hand .deck-slot.locked {
+  background:
+    linear-gradient(180deg, rgba(226, 235, 239, .32), rgba(103, 121, 127, .18)),
+    rgba(45, 55, 58, .48) !important;
+  border-color: rgba(188, 202, 207, .58) !important;
+}
+
+body.battle-immersive #hand.transparent-battle-hand .battle-slot-lock {
+  opacity: .86;
+  transform: translate(-50%, -50%) scale(.72) !important;
+  filter: grayscale(.34) brightness(.82);
+}

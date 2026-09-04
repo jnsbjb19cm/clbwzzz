@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<language name="goddessRock">
+	<language key="goddessRock_rule" value="活动规则"/>
+	<language key="goddessRock_ranking" value="查看排名"/>
+	<language key="goddessRock_ruleRank" value="排名"/>
+	<language key="goddessRock_ruleAward" value="奖励"/>
+	<language key="goddessRock_rankUpdate" value="榜单每30分钟更新"/>
+	<language key="goddessRock_rankName" value="角色名"/>
+	<language key="goddessRock_rankNum" value="女神石数量"/>
+	<language key="goddessRock_myRank" value="我的排名"/>
+	<language key="goddessRock_myrankNum" value="我的女神石数量"/>
+	<language key="goddessRock_dian" value=":00"/>
+	<language key="goddessRock_lingqu0" value="领取"/>
+	<language key="goddessRock_lingqu1" value="已领取"/>
+	<language key="goddessRock_lingqu2" value="未达到"/>
+	<language key="goddessRock_di" value="第"/>
+	<language key="goddessRock_ming" value="名"/>
+	<language key="goddessRock_fanhai" value="返还"/>
+	<language key="goddessRock_rule14" value="1.每花费1红钻可以获得一个女神石\n女神石数量排名前10可以获得大量珍贵奖励\n在服务器时间14点整进行统计，第一名可以获得特别奖励"/>
+	<language key="goddessRock_rule21" value="1.每花费1红钻可以获得一个女神石\n2.女神石数量排名前10可以获得大量珍贵奖励\n3.在服务器时间21点整进行统计，第一名可以获得特别奖励"/>
+	<language key="goddessRock_rule24" value="1.每花费1红钻可以获得一个女神石\n2.女神石数量排名前10可以获得大量珍贵奖励\n3.在服务器时间24点整进行统计，第一名可以获得特别奖励"/>
+</language>

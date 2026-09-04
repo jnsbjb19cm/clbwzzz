@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with TexturePacker http://texturepacker.com-->
+<!-- $TexturePacker:SmartUpdate:c8ad69962c95aa7e68a380e167b52828$ -->
+<TextureAtlas imagePath="scene.png">
+    <SubTexture name="activities_default" x="765" y="736" width="143" height="89" frameX="-11" frameY="-11" frameWidth="165" frameHeight="111"/>
+    <SubTexture name="activity_icon" x="1984" y="394" width="53" height="67" frameX="-17" frameY="-9" frameWidth="87" frameHeight="87"/>
+    <SubTexture name="activity_title" x="1081" y="736" width="63" height="30"/>
+    <SubTexture name="activties_icon_1" x="505" y="958" width="135" height="82"/>
+    <SubTexture name="activties_icon_2" x="482" y="1262" width="135" height="81"/>
+    <SubTexture name="activties_icon_3" x="474" y="1345" width="135" height="81"/>
+    <SubTexture name="activties_icon_4" x="472" y="1438" width="135" height="81"/>
+    <SubTexture name="activties_icon_5" x="353" y="1601" width="135" height="81"/>
+    <SubTexture name="activties_icon_6" x="345" y="1262" width="135" height="81"/>
+    <SubTexture name="activties_icon_7" x="337" y="1355" width="135" height="81"/>
+    <SubTexture name="activties_icon_8" x="335" y="1446" width="135" height="81"/>
+    <SubTexture name="activties_selected" x="289" y="866" width="165" height="111"/>
+    <SubTexture name="alchemy_arrow" x="265" y="980" width="82" height="61"/>
+    <SubTexture name="arrow-left" x="1774" y="800" width="38" height="61"/>
+    <SubTexture name="arrow-right" x="1821" y="536" width="38" height="61"/>
+    <SubTexture name="blue-diamond" x="2003" y="1017" width="32" height="32"/>
+    <SubTexture name="bule_title" x="1821" y="600" width="146" height="34"/>
+    <SubTexture name="buy-spirit" x="1774" y="759" width="39" height="39"/>
+    <SubTexture name="card-navition-down-skin" x="396" y="1043" width="97" height="91"/>
+    <SubTexture name="card-navition-up-skin" x="246" y="1262" width="97" height="91"/>
+    <SubTexture name="cardset-navition-down-skin" x="344" y="1810" width="97" height="93"/>
+    <SubTexture name="cardset-navition-up-skin" x="344" y="1715" width="97" height="93"/>
+    <SubTexture name="chat-button-up-skin" x="175" y="980" width="88" height="61"/>
+    <SubTexture name="chat-icon" x="448" y="1529" width="63" height="55" frameX="-12" frameY="-16" frameWidth="87" frameHeight="87"/>
+    <SubTexture name="circle-bg" x="246" y="1446" width="87" height="87"/>
+    <SubTexture name="circle_bg_light" x="175" y="866" width="112" height="112"/>
+    <SubTexture name="coin-badge" x="2003" y="1165" width="26" height="32" frameX="-3" frameY="0" frameWidth="32" frameHeight="32"/>
+    <SubTexture name="coin-exp" x="1984" y="463" width="53" height="25"/>
+    <SubTexture name="coin-power" x="2003" y="1051" width="32" height="30" frameX="0" frameY="-1" frameWidth="32" frameHeight="32"/>
+    <SubTexture name="divanoBlessi_icon" x="746" y="956" width="101" height="77"/>
+    <SubTexture name="experience_icon" x="830" y="864" width="75" height="73" frameX="-8" frameY="-5" frameWidth="87" frameHeight="87"/>
+    <SubTexture name="experience_title" x="907" y="896" width="63" height="31"/>
+    <SubTexture name="female-head" x="96" y="1948" width="90" height="96" frameX="-20" frameY="-20" frameWidth="110" frameHeight="128"/>
+    <SubTexture name="firstRecharge_icon" x="766" y="1043" width="75" height="77" frameX="-6" frameY="-3" frameWidth="87" frameHeight="87"/>
+    <SubTexture name="firstRecharge_title" x="907" y="863" width="101" height="31"/>
+    <SubTexture name="first_pay_bg" x="1367" y="2" width="615" height="481"/>
+    <SubTexture name="friend-navition-down-skin" x="654" y="864" width="97" height="90"/>
+    <SubTexture name="friend-navition-up-skin" x="666" y="736" width="97" height="90"/>
+    <SubTexture name="fuben_light" x="1367" y="728" width="405" height="303"/>
+    <SubTexture name="fuben_name" x="468" y="828" width="128" height="34"/>
+    <SubTexture name="fuben_navition" x="2045" y="65" width="0" height="0" frameX="0" frameY="0" frameWidth="263" frameHeight="242"/>
+    <SubTexture name="gold" x="1774" y="1009" width="32" height="32"/>
+    <SubTexture name="invite_btn" x="396" y="1136" width="75" height="67" frameX="-7" frameY="-8" frameWidth="87" frameHeight="87"/>
+    <SubTexture name="invite_title" x="1016" y="769" width="64" height="30"/>
+    <SubTexture name="item_num_max_title" x="1984" y="540" width="48" height="27"/>
+    <SubTexture name="jingji_light" x="2" y="1043" width="392" height="161"/>
+    <SubTexture name="jingji_name" x="757" y="1126" width="98" height="34"/>
+    <SubTexture name="jingji_navition" x="2045" y="65" width="0" height="0" frameX="0" frameY="0" frameWidth="301" frameHeight="107"/>
+    <SubTexture name="jinhua_txt_ing" x="1774" y="863" width="36" height="36"/>
+    <SubTexture name="kapaiduihuan_light" x="1821" y="636" width="223" height="303"/>
+    <SubTexture name="kapaiduihuan_name" x="727" y="828" width="124" height="34"/>
+    <SubTexture name="kapaiduihuan_navition" x="2045" y="65" width="0" height="0" frameX="0" frameY="0" frameWidth="157" frameHeight="212"/>
+    <SubTexture name="lanzuan_img_title" x="1367" y="536" width="452" height="190"/>
+    <SubTexture name="lanzuan_lanzuan_icon" x="2" y="1206" width="64" height="51"/>
+    <SubTexture name="lanzuan_txt_bang" x="1808" y="979" width="216" height="36"/>
+    <SubTexture name="lanzuan_txt_num_128" x="68" y="1206" width="83" height="48"/>
+    <SubTexture name="lanzuan_txt_num_16" x="1984" y="275" width="55" height="48"/>
+    <SubTexture name="lanzuan_txt_num_32" x="1984" y="115" width="59" height="48"/>
+    <SubTexture name="lanzuan_txt_num_64" x="1984" y="65" width="59" height="48"/>
+    <SubTexture name="lanzuan_txt_num_8" x="2003" y="1083" width="31" height="48"/>
+    <SubTexture name="lanzuan_txt_num_x" x="1984" y="490" width="48" height="48"/>
+    <SubTexture name="lanzuan_txt_zhankuang" x="1811" y="941" width="216" height="36"/>
+    <SubTexture name="leaf" x="2003" y="1133" width="30" height="30" frameX="0" frameY="0" frameWidth="32" frameHeight="32"/>
+    <SubTexture name="leaf1" x="1774" y="728" width="40" height="29"/>
+    <SubTexture name="leaf2" x="2029" y="978" width="14" height="25"/>
+    <SubTexture name="leaf3" x="2029" y="941" width="16" height="35"/>
+    <SubTexture name="leaf4" x="1984" y="569" width="40" height="29"/>
+    <SubTexture name="leaf5" x="2026" y="599" width="16" height="35"/>
+    <SubTexture name="leaf6" x="2007" y="600" width="14" height="25"/>
+    <SubTexture name="levelReward_icon" x="1984" y="325" width="53" height="67" frameX="-17" frameY="-13" frameWidth="87" frameHeight="87"/>
+    <SubTexture name="levelReward_title" x="849" y="1005" width="102" height="31"/>
+    <SubTexture name="lianjin_light" x="1808" y="1017" width="193" height="243"/>
+    <SubTexture name="lianjin_name" x="598" y="828" width="127" height="34"/>
+    <SubTexture name="lianjin_navition" x="2045" y="65" width="0" height="0" frameX="0" frameY="0" frameWidth="146" frameHeight="133"/>
+    <SubTexture name="liveness_icon" x="642" y="956" width="102" height="85"/>
+    <SubTexture name="loginRaward_icon" x="843" y="1043" width="101" height="76"/>
+    <SubTexture name="mail-navition-down-skin" x="555" y="864" width="97" height="90"/>
+    <SubTexture name="mail-navition-up-skin" x="567" y="736" width="97" height="90"/>
+    <SubTexture name="male-head" x="2" y="1948" width="92" height="98" frameX="-16" frameY="-19" frameWidth="110" frameHeight="128"/>
+    <SubTexture name="map-navition-down-skin" x="468" y="736" width="97" height="90"/>
+    <SubTexture name="map-navition-up-skin" x="456" y="866" width="97" height="90"/>
+    <SubTexture name="navition_background" x="246" y="1355" width="89" height="89"/>
+    <SubTexture name="navtion_chain" x="2026" y="569" width="17" height="28"/>
+    <SubTexture name="noticeBoard_icon" x="313" y="1535" width="64" height="64"/>
+    <SubTexture name="olRwdTime_Bg" x="353" y="1684" width="90" height="28"/>
+    <SubTexture name="onlineActiveDes_title" x="278" y="1206" width="328" height="43"/>
+    <SubTexture name="onlineActive_icon" x="349" y="979" width="79" height="59" frameX="-4" frameY="-8" frameWidth="87" frameHeight="87"/>
+    <SubTexture name="onlineActive_title" x="849" y="939" width="104" height="31"/>
+    <SubTexture name="onlineTreasure_icon" x="753" y="864" width="75" height="75" frameX="-6" frameY="-5" frameWidth="87" frameHeight="87"/>
+    <SubTexture name="onlineTreasure_title" x="910" y="769" width="104" height="31"/>
+    <SubTexture name="pay-button-skin" x="246" y="1535" width="65" height="65"/>
+    <SubTexture name="rank-navition-down-skin" x="594" y="1043" width="97" height="90"/>
+    <SubTexture name="rank-navition-up-skin" x="495" y="1043" width="97" height="90"/>
+    <SubTexture name="red-diamond" x="1774" y="975" width="32" height="32"/>
+    <SubTexture name="role-navition-down-skin" x="245" y="1822" width="97" height="105"/>
+    <SubTexture name="role-navition-up-skin" x="245" y="1715" width="97" height="105"/>
+    <SubTexture name="routine_icon" x="693" y="1043" width="71" height="81" frameX="-8" frameY="-1" frameWidth="87" frameHeight="87"/>
+    <SubTexture name="routine_title" x="849" y="972" width="103" height="31"/>
+    <SubTexture name="scene" x="2" y="2" width="1363" height="732" frameX="0" frameY="-36" frameWidth="1363" frameHeight="768"/>
+    <SubTexture name="setting-navition-down-skin" x="485" y="1929" width="97" height="92"/>
+    <SubTexture name="setting-navition-up-skin" x="386" y="1929" width="97" height="92"/>
+    <SubTexture name="shop-navition-bg" x="2" y="887" width="171" height="149"/>
+    <SubTexture name="shop_navition" x="245" y="1607" width="106" height="106"/>
+    <SubTexture name="sound-button-default-skin" x="1774" y="938" width="35" height="35"/>
+    <SubTexture name="sound-button-selected-skin" x="1774" y="901" width="35" height="35"/>
+    <SubTexture name="spirit-bg" x="608" y="1202" width="178" height="38"/>
+    <SubTexture name="submit_bug" x="473" y="1136" width="103" height="65"/>
+    <SubTexture name="task-navition-down-skin" x="287" y="1929" width="97" height="93"/>
+    <SubTexture name="task-navition-up-skin" x="188" y="1948" width="97" height="93"/>
+    <SubTexture name="tiejiangpu_light" x="2" y="1607" width="241" height="339"/>
+    <SubTexture name="tiejiangpu_name" x="853" y="827" width="97" height="34"/>
+    <SubTexture name="tiejiangpu_navition" x="2045" y="65" width="0" height="0" frameX="0" frameY="0" frameWidth="187" frameHeight="220"/>
+    <SubTexture name="time-icon" x="657" y="1171" width="77" height="28"/>
+    <SubTexture name="tip_editCard" x="1984" y="165" width="59" height="47" frameX="-2" frameY="-7" frameWidth="61" frameHeight="61"/>
+    <SubTexture name="tip_evolution" x="1984" y="2" width="61" height="61"/>
+    <SubTexture name="tip_tear-package" x="1984" y="214" width="55" height="59" frameX="0" frameY="0" frameWidth="61" frameHeight="61"/>
+    <SubTexture name="tongtianta_light" x="2" y="1262" width="242" height="343"/>
+    <SubTexture name="tongtianta_name" x="657" y="1135" width="98" height="34"/>
+    <SubTexture name="tongtianta_navition" x="2045" y="65" width="0" height="0" frameX="0" frameY="0" frameWidth="176" frameHeight="295"/>
+    <SubTexture name="userinfo_background" x="175" y="736" width="291" height="128"/>
+    <SubTexture name="vip-bg" x="153" y="1206" width="123" height="44"/>
+    <SubTexture name="vip0" x="382" y="2024" width="76" height="22"/>
+    <SubTexture name="vip1" x="1146" y="736" width="74" height="22"/>
+    <SubTexture name="vip10" x="287" y="2024" width="93" height="22"/>
+    <SubTexture name="vip2" x="460" y="2023" width="76" height="23"/>
+    <SubTexture name="vip3" x="986" y="802" width="74" height="22"/>
+    <SubTexture name="vip4" x="538" y="2023" width="74" height="23"/>
+    <SubTexture name="vip5" x="910" y="802" width="74" height="22"/>
+    <SubTexture name="vip6" x="1222" y="736" width="73" height="22"/>
+    <SubTexture name="vip7" x="736" y="1171" width="74" height="22"/>
+    <SubTexture name="vip8" x="344" y="1905" width="75" height="22"/>
+    <SubTexture name="vip9" x="421" y="1905" width="74" height="22"/>
+    <SubTexture name="vipReward_icon" x="578" y="1135" width="77" height="65" frameX="-5" frameY="-8" frameWidth="87" frameHeight="87"/>
+    <SubTexture name="vipReward_title" x="952" y="826" width="91" height="31"/>
+    <SubTexture name="war-navition-bg" x="2" y="736" width="171" height="149"/>
+    <SubTexture name="war_navition" x="1876" y="485" width="106" height="106"/>
+    <SubTexture name="zhengshou_bantouBg" x="1367" y="485" width="507" height="49"/>
+    <SubTexture name="zhengshou_kaicai_icon" x="430" y="979" width="73" height="57" frameX="-7" frameY="-12" frameWidth="87" frameHeight="87"/>
+    <SubTexture name="zhengshou_kaicai_title" x="910" y="736" width="104" height="31"/>
+    <SubTexture name="zhengshou_star_icon" x="1969" y="600" width="36" height="34"/>
+    <SubTexture name="zhengshou_zhengshou_icon" x="379" y="1529" width="67" height="57" frameX="-9" frameY="-11" frameWidth="87" frameHeight="87"/>
+    <SubTexture name="zhengshou_zhengshou_title" x="1016" y="736" width="63" height="31"/>
+</TextureAtlas>

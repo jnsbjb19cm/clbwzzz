@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<language name="rank">
+    <language key="rank_rongyu" value="荣誉点"/>
+    <language key="rank_rongyuTip" value="购买商品会扣除相应的荣誉点"/>
+    <language key="rank_rongyushangdian" value="荣誉商店"/>
+    <language key="rank_tiaozhanTip" value="挑战排名越前荣誉点奖励越高"/>
+    <language key="rank_huoderongyu" value="每次挑战成功可得到排行相应的荣誉点\n每隔10分钟得到荣誉点 : "/>
+    <language key="rank_cishu" value="今日剩余挑战次数："/>
+    <language key="rank_paiming" value="排名"/>
+    <language key="rank_xingming" value="姓名"/>
+    <language key="rank_sex" value="性别"/>
+    <language key="rank_shenglv" value="胜率"/>
+    <language key="rank_zhandouli" value="战斗力"/>
+    <language key="rank_nowrongyu" value="当前荣誉点："/>
+    <language key="rank_wodepaiming" value="我的当前排名："/>
+    <language key="rank_jijinru" value="级开放"/>
+    <language key="rank_tiaozhan" value="挑战"/>
+    <language key="rank_close" value="{0}还有  {1}{2}  关闭{3}"/>
+    <language key="rank_open" value="{0}还有  {1}{2}  开放{3}"/>
+    <language key="rank_closing" value="关闭中"/>
+    <language key="rank_opening" value="开放中"/>
+ </language>

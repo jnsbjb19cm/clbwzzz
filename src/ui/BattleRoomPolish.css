@@ -1,0 +1,247 @@
+/*
+ * 准备房第三轮精修：字体、左右阵营、VS、功能区、设置菜单和房内背包。
+ * 该文件最后加载，只覆盖准备房，不修改战斗拖拽实现。
+ */
+
+.game-room.room-rebuild.room-polish {
+  container-type: inline-size;
+  font-size: clamp(14px, 1.8vmin, 20px) !important;
+}
+
+/* 文本按房间整体尺寸放大，避免大分辨率下仍使用 8~10px 小字。 */
+.game-room.room-polish .room-stage-display { font-size: .96em !important; }
+.game-room.room-polish .deck-title { font-size: 1em !important; }
+.game-room.room-polish .deck-tab { font-size: .76em !important; padding-left: 1.45em !important; }
+.game-room.room-polish .swap-card-btn { font-size: .8em !important; }
+.game-room.room-polish .member-name { font-size: .76em !important; }
+.game-room.room-polish .member-lv { font-size: .7em !important; }
+.game-room.room-polish .member-tag.owner-tag { font-size: .68em !important; }
+.game-room.room-polish .ready-mark,
+.game-room.room-polish .not-ready { font-size: .64em !important; }
+.game-room.room-polish .empty-text { font-size: .72em !important; }
+.game-room.room-polish .exact-room-chat-log { font-size: .64em !important; line-height: 1.5 !important; }
+.game-room.room-polish .exact-room-chat-tabs button { font-size: .6em !important; }
+.game-room.room-polish .exact-room-chat-current,
+.game-room.room-polish .exact-room-chat-form input,
+.game-room.room-polish .exact-room-chat-form button { font-size: .6em !important; }
+.game-room.room-polish .room-mid-actions .room-vector-label { font-size: .82em !important; }
+.game-room.room-polish .bottom-btn .room-vector-label { font-size: .58em !important; }
+.game-room.room-polish .room-ready-btn { font-size: 1.58em !important; }
+.game-room.room-polish .room-drawer-track,
+.game-room.room-polish .drawer-slide-grip { font-size: .68em !important; }
+.game-room.room-polish .exact-drawer-category button { font-size: .72em !important; }
+.game-room.room-polish .drawer-card strong { font-size: .68em !important; }
+
+/* 红方按蓝方结构镜像：顶槽尺寸一致，底部两槽尺寸一致。 */
+.game-room.room-polish .room-right-side {
+  left: auto !important;
+  right: 2.2% !important;
+  width: 36.8% !important;
+}
+.game-room.room-polish .room-right-side .top-enemy {
+  left: auto !important;
+  right: 0 !important;
+  width: 48.5% !important;
+  height: 58.5% !important;
+}
+.game-room.room-polish .room-right-side .enemy-slots-row {
+  left: 0 !important;
+  right: auto !important;
+  width: 100% !important;
+  height: 40.2% !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  gap: 3.1% !important;
+}
+.game-room.room-polish .room-right-side .enemy-slot {
+  width: 100% !important;
+  height: 100% !important;
+}
+
+/* VS 固定到左右阵营之间的真正中线。 */
+.game-room.room-polish .room-vs {
+  left: 39% !important;
+  top: 38.3% !important;
+  width: 22% !important;
+  height: 24.5% !important;
+  font-size: 6.15em !important;
+  transform: skewX(-8deg) translateX(-.03em) !important;
+}
+
+/* 聊天框与底部功能区分开，避免边框合在一起。 */
+.game-room.room-polish .exact-room-chat {
+  left: 2.2% !important;
+  width: 46.2% !important;
+  bottom: 7.8% !important;
+  height: 23.7% !important;
+}
+.game-room.room-polish .exact-room-chat-log {
+  right: 10.8% !important;
+  bottom: 23.5% !important;
+}
+.game-room.room-polish .exact-room-chat-tabs { bottom: 23.5% !important; }
+.game-room.room-polish .exact-room-chat-form { height: 18.5% !important; }
+
+/* PVE/BOSS 只显示随机地图和技能；开始按钮独立占右侧，不再互相覆盖。 */
+.game-room.room-polish.room-pve-like .team-btn { display: flex !important; }
+.game-room.room-polish.room-pve-like .room-mid-actions {
+  left: 48.6% !important;
+  width: 38% !important;
+  grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  gap: 2% !important;
+}
+.game-room.room-polish.room-pve-like .room-ready-btn {
+  left: 71.6% !important;
+  width: 26.1% !important;
+}
+
+/* PVP 保留换队并使用三列。 */
+.game-room.room-polish.room-pvp-like .room-mid-actions {
+  left: 49.7% !important;
+  width: 29.4% !important;
+  grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+}
+.game-room.room-polish.room-pvp-like .room-ready-btn {
+  left: 80.45% !important;
+  width: 17.25% !important;
+}
+
+.game-room.room-polish .room-mid-actions,
+.game-room.room-polish .room-ready-btn {
+  bottom: 10.35% !important;
+  height: 20.15% !important;
+}
+.game-room.room-polish .room-bottom-bar {
+  left: 49.7% !important;
+  right: 1.7% !important;
+  bottom: 1.1% !important;
+  height: 7.45% !important;
+}
+.game-room.room-polish .bottom-btn .room-vector-icon { width: 32% !important; }
+
+/* “更多”只弹出一块正常高度的设置菜单，禁止继承旧版纵向整栏。 */
+.game-room.room-polish .more-dropdown {
+  position: absolute !important;
+  z-index: 170 !important;
+  left: auto !important;
+  right: 7.65% !important;
+  top: auto !important;
+  bottom: 8.75% !important;
+  width: 8.3% !important;
+  height: auto !important;
+  min-height: 0 !important;
+  max-height: none !important;
+  margin: 0 !important;
+  padding: .28% !important;
+  overflow: visible !important;
+  border: .13em solid #684208 !important;
+  border-radius: .36em !important;
+  background: linear-gradient(180deg, #cce77f, #75a63b) !important;
+  box-shadow: 0 .18em .38em rgba(38, 35, 8, .45) !important;
+}
+.game-room.room-polish .more-dropdown button,
+.game-room.room-polish #setting-btn {
+  position: static !important;
+  width: 100% !important;
+  height: 2.55em !important;
+  min-height: 0 !important;
+  margin: 0 !important;
+  padding: 0 .35em !important;
+  border: .1em solid #5d791b !important;
+  border-radius: .28em !important;
+  color: #314d0e !important;
+  background: linear-gradient(180deg, #e3f6a6, #93be4d) !important;
+  font: inherit !important;
+  font-size: .68em !important;
+  font-weight: 900 !important;
+  white-space: nowrap !important;
+}
+
+/* 设置面板固定为居中的小窗口。 */
+.game-room.room-polish .room-setting-modal {
+  position: absolute !important;
+  z-index: 190 !important;
+  inset: 0 !important;
+  align-items: center !important;
+  justify-content: center !important;
+  background: rgba(19, 39, 11, .46) !important;
+}
+.game-room.room-polish .setting-panel {
+  position: relative !important;
+  width: 37% !important;
+  height: auto !important;
+  min-height: 0 !important;
+  max-height: 52% !important;
+  margin: 0 !important;
+  overflow: auto !important;
+  border: .2em solid #70470a !important;
+  border-radius: .65em !important;
+  background: linear-gradient(180deg, #e9ffb5, #91bd4e) !important;
+  box-shadow: inset 0 .16em rgba(255,255,255,.7), 0 .5em 1.2em rgba(28,31,8,.5) !important;
+}
+.game-room.room-polish .setting-header h3 { font-size: 1em !important; }
+.game-room.room-polish .setting-row { font-size: .76em !important; }
+
+/* 房间内工具覆盖层：打开背包时保留准备房，不跳回主城。 */
+.game-room.room-polish .room-tool-overlay {
+  position: absolute !important;
+  z-index: 240 !important;
+  inset: 1.65% !important;
+  display: grid !important;
+  place-items: center !important;
+  background: rgba(20, 44, 13, .62) !important;
+  backdrop-filter: blur(1.5px) !important;
+}
+.game-room.room-polish .room-tool-window {
+  position: relative !important;
+  width: 88% !important;
+  height: 84% !important;
+  overflow: hidden !important;
+  border: .22em solid #694207 !important;
+  border-radius: .72em !important;
+  background: linear-gradient(180deg, #dff5a0, #76a93d) !important;
+  box-shadow: inset 0 .16em rgba(255,255,255,.72), 0 .7em 1.6em rgba(23,31,7,.58) !important;
+}
+.game-room.room-polish .room-tool-close {
+  position: absolute !important;
+  z-index: 5 !important;
+  right: 1% !important;
+  top: 1.2% !important;
+  width: 2.1em !important;
+  height: 2.1em !important;
+  padding: 0 !important;
+  border: .13em solid #704008 !important;
+  border-radius: 50% !important;
+  color: #792508 !important;
+  background: linear-gradient(180deg, #ffe87a, #e9852c) !important;
+  font: inherit !important;
+  font-size: .8em !important;
+  font-weight: 1000 !important;
+  cursor: pointer !important;
+}
+.game-room.room-polish .room-tool-content {
+  position: absolute !important;
+  inset: 3.5% 2.2% 2.2% !important;
+  overflow: auto !important;
+  font-size: .72em !important;
+}
+.game-room.room-polish .room-tool-content .bag-page {
+  width: 100% !important;
+  max-width: none !important;
+  min-height: 100% !important;
+  margin: 0 !important;
+  padding: 1.2% !important;
+  box-sizing: border-box !important;
+  background: transparent !important;
+}
+.game-room.room-polish .room-tool-content .bag-header h1 { font-size: 1.45em !important; }
+.game-room.room-polish .room-tool-content #bag-debug-btn,
+.game-room.room-polish .room-tool-content #bag-test-gem,
+.game-room.room-polish .room-tool-content #bag-grant-mat,
+.game-room.room-polish .room-tool-content #bag-grant-powder,
+.game-room.room-polish .room-tool-content #bag-grant-all,
+.game-room.room-polish .room-tool-content #bag-reset { display: none !important; }
+
+@media (max-width: 1000px), (max-height: 700px) {
+  .game-room.room-rebuild.room-polish { font-size: clamp(12px, 1.65vmin, 17px) !important; }
+  .game-room.room-polish .room-tool-window { width: 94% !important; height: 90% !important; }
+}

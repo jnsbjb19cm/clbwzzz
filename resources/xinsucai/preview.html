@@ -1,0 +1,1037 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+
+<meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+>
+
+<title>丛林保卫战 - 原版透明卡槽复刻</title>
+
+<style>
+
+/* =========================================================
+   0. 全局
+   ========================================================= */
+
+* {
+    box-sizing: border-box;
+}
+
+html,
+body {
+    width: 100%;
+    height: 100%;
+    margin: 0;
+}
+
+body {
+    overflow: hidden;
+    background: #17251b;
+}
+
+
+/* =========================================================
+   1. 游戏画面
+   ========================================================= */
+
+.game {
+    position: relative;
+
+    width: 100vw;
+    height: 100vh;
+
+    overflow: hidden;
+
+    /*
+     *这里只是演示背景。
+     *
+     * 实际项目直接换成：
+     *
+     * background-image:
+     *     url("./你的战斗背景.png");
+     */
+
+    background:
+        radial-gradient(
+            circle at 26% 16%,
+            rgba(255,255,255,.75),
+            transparent 17%
+        ),
+
+        linear-gradient(
+            160deg,
+            #87d7f1 0%,
+            #99dff2 31%,
+            #8bcf8e 55%,
+            #4e843e 100%
+        );
+
+    background-size: cover;
+    background-position: center;
+}
+
+
+/* =========================================================
+   2. HUD缩放容器
+   ========================================================= */
+
+/*
+ * 原始参考图尺寸：
+ *
+ * 1566 × 197
+ *
+ * 所有内部元素严格按这个坐标系布局。
+ */
+
+.hud-anchor {
+    position: absolute;
+
+    left: 0;
+    top: 0;
+
+    width: 100%;
+
+    height: 197px;
+
+    pointer-events: none;
+}
+
+
+/*
+ * JS只控制 --hud-scale
+ */
+
+.hud-design {
+    --hud-scale: 1;
+
+    position: absolute;
+
+    left: 0;
+    top: 0;
+
+    width: 1566px;
+    height: 197px;
+
+    transform:
+        scale(var(--hud-scale));
+
+    transform-origin:
+        left top;
+
+    pointer-events: none;
+}
+
+
+/* =========================================================
+   3. 卡槽总区域
+   ========================================================= */
+
+/*
+ * 参考图：
+ *
+ * x = 217
+ * y ≈ 4
+ *
+ * right ≈ 1555
+ */
+
+.card-bar {
+    position: absolute;
+
+    left: 217px;
+    top: 4px;
+
+    width: 1338px;
+    height: 190px;
+
+    pointer-events: auto;
+
+    /*
+     * 重点：
+     *
+     * 不使用 opacity。
+     *
+     * 不使用实色背景。
+     *
+     * 下层游戏背景直接透出来。
+     */
+
+    background:
+        linear-gradient(
+            to bottom,
+
+            rgba(255,255,255,.105) 0%,
+
+            rgba(243,251,252,.055) 18%,
+
+            rgba(230,244,246,.018) 45%,
+
+            rgba(100,130,126,.016) 73%,
+
+            rgba(235,245,244,.045) 100%
+        );
+
+    overflow: hidden;
+
+    isolation: isolate;
+
+
+    /*
+     * 老 Flash UI 外框
+     */
+
+    border-top:
+        3px solid rgba(242,248,247,.88);
+
+    border-left:
+        3px solid rgba(189,207,207,.78);
+
+    border-right:
+        4px solid rgba(52,66,65,.77);
+
+    border-bottom:
+        5px solid rgba(64,80,78,.78);
+
+
+    box-shadow:
+
+        /*
+         * 最外围深色轮廓
+         */
+
+        0 0 0 2px
+        rgba(30,42,41,.55),
+
+
+        /*
+         * 外投影
+         */
+
+        0 2px 3px
+        rgba(0,0,0,.34),
+
+
+        /*
+         * 顶部内部白光
+         */
+
+        inset 0 2px 0
+        rgba(255,255,255,.75),
+
+
+        inset 0 5px 2px
+        rgba(255,255,255,.13),
+
+
+        /*
+         * 左亮
+         */
+
+        inset 3px 0 0
+        rgba(247,253,252,.46),
+
+
+        /*
+         * 右暗
+         */
+
+        inset -3px 0 0
+        rgba(40,58,56,.32),
+
+
+        /*
+         * 底部阴影
+         */
+
+        inset 0 -4px 0
+        rgba(42,59,56,.36),
+
+
+        /*
+         * 底部反射
+         */
+
+        inset 0 -7px 2px
+        rgba(222,236,233,.25);
+}
+
+
+/* =========================================================
+   4. 整体顶部玻璃反射
+   ========================================================= */
+
+.card-bar::before {
+    content: "";
+
+    position: absolute;
+
+    left: 4px;
+    right: 4px;
+
+    top: 4px;
+    bottom: 5px;
+
+    z-index: 100;
+
+    pointer-events: none;
+
+    background:
+
+        /*
+         * 顶部玻璃亮
+         */
+
+        linear-gradient(
+            180deg,
+
+            rgba(255,255,255,.11) 0%,
+
+            rgba(255,255,255,.055) 15%,
+
+            rgba(255,255,255,.013) 31%,
+
+            transparent 52%,
+
+            rgba(34,62,58,.017) 76%,
+
+            rgba(255,255,255,.04) 100%
+        );
+}
+
+
+/* =========================================================
+   5. 第二层内边框
+   ========================================================= */
+
+.card-bar::after {
+    content: "";
+
+    position: absolute;
+
+    inset:
+        5px
+        4px
+        5px
+        4px;
+
+    z-index: 101;
+
+    pointer-events: none;
+
+    border-top:
+        1px solid rgba(255,255,255,.38);
+
+    border-left:
+        1px solid rgba(255,255,255,.20);
+
+    border-right:
+        1px solid rgba(34,55,52,.15);
+
+    border-bottom:
+        1px solid rgba(27,44,42,.22);
+}
+
+
+/* =========================================================
+   6. 左边大透明区
+   ========================================================= */
+
+/*
+ * 217 → 751
+ *
+ * 在card-bar内部：
+ *
+ * 751 - 217 = 534
+ */
+
+.card-empty {
+    position: absolute;
+
+    left: 0;
+    top: 0;
+
+    width: 534px;
+    height: 100%;
+
+    /*
+     * 几乎完全透明。
+     */
+
+    background:
+        linear-gradient(
+            180deg,
+
+            rgba(245,253,255,.035),
+
+            rgba(190,225,230,.012) 60%,
+
+            rgba(120,165,170,.018)
+        );
+}
+
+
+/* =========================================================
+   7. 通用slot
+   ========================================================= */
+
+.slot {
+    position: absolute;
+
+    top: 0;
+
+    height: 100%;
+
+    background:
+        linear-gradient(
+            180deg,
+
+            rgba(245,253,255,.055) 0%,
+
+            rgba(230,247,248,.025) 36%,
+
+            rgba(165,205,205,.012) 67%,
+
+            rgba(110,150,150,.023) 100%
+        );
+
+    overflow: hidden;
+}
+
+
+/* =========================================================
+   8. 精确卡槽坐标
+   ========================================================= */
+
+/*
+ * 原图：
+ *
+ * 卡槽整体从217开始。
+ *
+ * 因此减217得到局部坐标。
+ */
+
+
+/*
+ * 751 → 880
+ */
+
+.slot-1 {
+    left: 534px;
+    width: 129px;
+}
+
+
+/*
+ * 880 → 1015
+ */
+
+.slot-2 {
+    left: 663px;
+    width: 135px;
+}
+
+
+/*
+ * 1015 → 1147
+ */
+
+.slot-3 {
+    left: 798px;
+    width: 132px;
+}
+
+
+/*
+ * 1147 → 1282
+ */
+
+.slot-4 {
+    left: 930px;
+    width: 135px;
+}
+
+
+/*
+ * 1282 → 1417
+ */
+
+.slot-5 {
+    left: 1065px;
+    width: 135px;
+}
+
+
+/*
+ * 1417 → 1553
+ */
+
+.slot-6 {
+    left: 1200px;
+    width: 136px;
+}
+
+
+/* =========================================================
+   9. 每个卡槽左分隔条
+   ========================================================= */
+
+.slot-divider {
+    position: absolute;
+
+    left: -4px;
+    top: 0;
+
+    width: 9px;
+    height: 100%;
+
+    z-index: 20;
+
+    pointer-events: none;
+
+    background:
+
+        linear-gradient(
+            90deg,
+
+            /*
+             * 左暗
+             */
+
+            rgba(44,58,57,.44) 0%,
+
+            rgba(75,92,91,.50) 15%,
+
+            /*
+             * 灰
+             */
+
+            rgba(173,192,191,.53) 29%,
+
+            /*
+             * 白高光
+             */
+
+            rgba(249,255,255,.81) 45%,
+
+            rgba(222,238,237,.68) 57%,
+
+            /*
+             * 右灰
+             */
+
+            rgba(123,143,141,.49) 73%,
+
+            rgba(51,68,66,.36) 100%
+        );
+
+
+    box-shadow:
+
+        -1px 0 1px
+        rgba(0,0,0,.18),
+
+        1px 0 1px
+        rgba(255,255,255,.33);
+}
+
+
+/* =========================================================
+   10. 卡槽内部边缘
+   ========================================================= */
+
+.slot-inner-frame {
+    position: absolute;
+
+    left: 4px;
+    right: 3px;
+
+    top: 4px;
+    bottom: 5px;
+
+    z-index: 8;
+
+    pointer-events: none;
+
+    border-top:
+        1px solid rgba(255,255,255,.22);
+
+    border-right:
+        1px solid rgba(51,71,69,.12);
+
+    border-bottom:
+        2px solid rgba(45,63,61,.18);
+
+    box-shadow:
+
+        inset 0 3px 5px
+        rgba(255,255,255,.035),
+
+        inset 0 -5px 7px
+        rgba(0,0,0,.024);
+}
+
+
+/* =========================================================
+   11. 锁裁剪窗口
+   ========================================================= */
+
+/*
+ * 上传的 lock.png：
+ *
+ * 图片：
+ * 1536 × 1024
+ *
+ * 主锁约：
+ *
+ * x = 546 → 989
+ * y = 193 → 716
+ *
+ * 主体：
+ *
+ * 443 × 523
+ *
+ * 所以这里不用预裁图片，
+ * CSS直接裁出来。
+ */
+
+.lock-crop {
+    position: absolute;
+
+    left: 50%;
+    top: 50%;
+
+    /*
+     * 最终真正看见的锁尺寸。
+     *
+     * 和原截图比例接近。
+     */
+
+    width: 84px;
+    height: 99px;
+
+    transform:
+        translate(-50%, -49%);
+
+    overflow: hidden;
+
+    z-index: 40;
+
+    pointer-events: none;
+}
+
+
+/* =========================================================
+   12. 原始 lock.png
+   ========================================================= */
+
+.lock-crop img {
+    position: absolute;
+
+    /*
+     * 1536 / 443
+     */
+
+    width: 346.73%;
+
+    height: auto;
+
+
+    /*
+     * -546 / 443
+     */
+
+    left: -123.25%;
+
+
+    /*
+     * -193 / 523
+     */
+
+    top: -36.90%;
+
+    max-width: none;
+
+    user-select: none;
+
+    pointer-events: none;
+
+    /*
+     * 不使用 blur。
+     *
+     * 只增加一点原游戏UI阴影。
+     */
+
+    filter:
+        drop-shadow(
+            1px
+            2px
+            1px
+            rgba(0,0,0,.27)
+        );
+}
+
+
+/* =========================================================
+   13. 最后一个卡槽右边框
+   ========================================================= */
+
+.slot-6 .slot-right-edge {
+    position: absolute;
+
+    right: 0;
+    top: 0;
+
+    width: 7px;
+    height: 100%;
+
+    z-index: 20;
+
+    pointer-events: none;
+
+    background:
+        linear-gradient(
+            90deg,
+
+            rgba(231,242,240,.32),
+
+            rgba(109,127,124,.46),
+
+            rgba(42,57,54,.66)
+        );
+}
+
+
+/* =========================================================
+   14. hover
+   ========================================================= */
+
+/*
+ * 纯演示。
+ *
+ * 如果要严格保持原版，
+ * 可以把这一段直接删除。
+ */
+
+.slot:hover {
+    background:
+
+        linear-gradient(
+            180deg,
+
+            rgba(255,255,255,.085),
+
+            rgba(228,248,250,.035),
+
+            rgba(160,205,205,.018)
+        );
+}
+
+
+/* =========================================================
+   15. 调试边框
+   ========================================================= */
+
+/*
+ * 开发时可以给 .hud-design 添加 debug 类。
+ */
+
+.hud-design.debug .card-bar {
+    outline:
+        1px solid red;
+}
+
+.hud-design.debug .slot {
+    outline:
+        1px solid rgba(255,0,0,.6);
+}
+
+</style>
+</head>
+
+
+<body>
+
+
+<div class="game">
+
+
+    <!-- ===================================================
+         HUD
+         =================================================== -->
+
+    <div class="hud-anchor">
+
+        <div
+            class="hud-design"
+            id="hudDesign"
+        >
+
+
+            <!-- =============================================
+                 卡槽
+                 ============================================= -->
+
+            <div class="card-bar">
+
+
+                <!--
+                    217 → 751
+                    原图左侧大透明区域
+                -->
+
+                <div class="card-empty"></div>
+
+
+
+                <!-- =========================================
+                     SLOT 1
+                     ========================================= -->
+
+                <div class="slot slot-1">
+
+                    <div class="slot-divider"></div>
+
+                    <div class="slot-inner-frame"></div>
+
+                    <div class="lock-crop">
+
+                        <img
+                            src="./lock.png"
+                            alt=""
+                            draggable="false"
+                        >
+
+                    </div>
+
+                </div>
+
+
+
+                <!-- =========================================
+                     SLOT 2
+                     ========================================= -->
+
+                <div class="slot slot-2">
+
+                    <div class="slot-divider"></div>
+
+                    <div class="slot-inner-frame"></div>
+
+                    <div class="lock-crop">
+
+                        <img
+                            src="./lock.png"
+                            alt=""
+                            draggable="false"
+                        >
+
+                    </div>
+
+                </div>
+
+
+
+                <!-- =========================================
+                     SLOT 3
+                     ========================================= -->
+
+                <div class="slot slot-3">
+
+                    <div class="slot-divider"></div>
+
+                    <div class="slot-inner-frame"></div>
+
+                    <div class="lock-crop">
+
+                        <img
+                            src="./lock.png"
+                            alt=""
+                            draggable="false"
+                        >
+
+                    </div>
+
+                </div>
+
+
+
+                <!-- =========================================
+                     SLOT 4
+                     ========================================= -->
+
+                <div class="slot slot-4">
+
+                    <div class="slot-divider"></div>
+
+                    <div class="slot-inner-frame"></div>
+
+                    <div class="lock-crop">
+
+                        <img
+                            src="./lock.png"
+                            alt=""
+                            draggable="false"
+                        >
+
+                    </div>
+
+                </div>
+
+
+
+                <!-- =========================================
+                     SLOT 5
+                     ========================================= -->
+
+                <div class="slot slot-5">
+
+                    <div class="slot-divider"></div>
+
+                    <div class="slot-inner-frame"></div>
+
+                    <div class="lock-crop">
+
+                        <img
+                            src="./lock.png"
+                            alt=""
+                            draggable="false"
+                        >
+
+                    </div>
+
+                </div>
+
+
+
+                <!-- =========================================
+                     SLOT 6
+                     ========================================= -->
+
+                <div class="slot slot-6">
+
+                    <div class="slot-divider"></div>
+
+                    <div class="slot-inner-frame"></div>
+
+                    <div class="lock-crop">
+
+                        <img
+                            src="./lock.png"
+                            alt=""
+                            draggable="false"
+                        >
+
+                    </div>
+
+
+                    <div class="slot-right-edge"></div>
+
+                </div>
+
+
+            </div>
+
+
+        </div>
+
+    </div>
+
+
+</div>
+
+
+<script>
+
+/* =========================================================
+   HUD等比缩放
+   ========================================================= */
+
+/*
+ * 原始设计宽：
+ *
+ * 1566px
+ *
+ * 无论窗口：
+ *
+ * 1920
+ * 1600
+ * 1366
+ * 1280
+ *
+ * 都保持原图比例。
+ */
+
+const DESIGN_WIDTH = 1566;
+
+const hudDesign =
+    document.getElementById(
+        "hudDesign"
+    );
+
+
+function resizeHUD() {
+
+    const viewportWidth =
+        window.innerWidth;
+
+
+    const scale =
+        viewportWidth /
+        DESIGN_WIDTH;
+
+
+    hudDesign.style.setProperty(
+        "--hud-scale",
+        scale
+    );
+
+}
+
+
+resizeHUD();
+
+
+window.addEventListener(
+    "resize",
+    resizeHUD
+);
+
+
+/* =========================================================
+   可选调试
+   ========================================================= */
+
+/*
+ * 按D显示坐标框。
+ *
+ * 正式项目可以全部删除。
+ */
+
+window.addEventListener(
+    "keydown",
+    event => {
+
+        if (
+            event.key.toLowerCase()
+            !==
+            "d"
+        ) {
+            return;
+        }
+
+
+        hudDesign.classList.toggle(
+            "debug"
+        );
+
+    }
+);
+
+</script>
+
+
+</body>
+</html>

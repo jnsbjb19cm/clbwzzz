@@ -1,0 +1,99 @@
+/* 房间选卡最终交互层：禁用旧分类控件，使用稳定的全部/植物/怪物/重置工具栏。 */
+
+.game-room.room-deck-rules-final .exact-drawer-filter,
+.game-room.room-deck-rules-final .exact-drawer-pager,
+.game-room.room-deck-rules-final [data-filter-group]:not(.room-card-filter-toolbar *) {
+  display: none !important;
+}
+
+.game-room.room-deck-rules-final .card-drawer {
+  overflow: hidden !important;
+}
+
+.game-room.room-deck-rules-final .room-card-filter-toolbar {
+  position: absolute !important;
+  left: 2.2% !important;
+  right: 2.2% !important;
+  top: 14.5% !important;
+  z-index: 90 !important;
+  height: 11.5% !important;
+  display: grid !important;
+  grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+  gap: .5em !important;
+  align-items: stretch !important;
+  padding: 0 !important;
+  pointer-events: auto !important;
+}
+
+.game-room.room-deck-rules-final .room-card-filter-toolbar button {
+  min-width: 0 !important;
+  height: 100% !important;
+  padding: 0 .45em !important;
+  border: .11em solid rgba(99, 79, 34, .88) !important;
+  border-radius: .34em !important;
+  color: #303510 !important;
+  background: linear-gradient(180deg, #f3ef9f, #a9c55d) !important;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.66), 0 .1em .18em rgba(0,0,0,.28) !important;
+  font-size: .65em !important;
+  font-weight: 1000 !important;
+  line-height: 1 !important;
+  cursor: pointer !important;
+}
+
+.game-room.room-deck-rules-final .room-card-filter-toolbar button.active {
+  color: #fff9b5 !important;
+  border-color: #f4d456 !important;
+  background: linear-gradient(180deg, #418a4f, #1e5b35) !important;
+  box-shadow:
+    inset 0 0 0 .1em rgba(231,255,189,.35),
+    0 0 .45em rgba(109,230,112,.64) !important;
+}
+
+.game-room.room-deck-rules-final .room-card-filter-toolbar [data-room-filter-reset] {
+  color: #fff3dc !important;
+  border-color: #6e3924 !important;
+  background: linear-gradient(180deg, #b86b43, #6e3727) !important;
+}
+
+.game-room.room-deck-rules-final .drawer-cards {
+  left: 2.2% !important;
+  right: 2.2% !important;
+  top: 28% !important;
+  bottom: 3% !important;
+  width: auto !important;
+  height: auto !important;
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+  align-content: start !important;
+  scrollbar-width: thin !important;
+}
+
+.game-room.room-deck-rules-final .drawer-card.same-name-disabled {
+  pointer-events: auto !important;
+  cursor: not-allowed !important;
+}
+
+.game-room.room-deck-rules-final .drawer-card.replacement-mode:not(.same-name-disabled):hover,
+.game-room.room-deck-rules-final .deck-slot-item:not(.locked):hover {
+  transform: translateY(-1px) !important;
+}
+
+.game-room.room-deck-rules-final .deck-tab.active {
+  color: #fff9bc !important;
+  border-color: #ead75b !important;
+  background: linear-gradient(180deg, #438f4d, #1f5c31) !important;
+  box-shadow: inset 0 0 0 .08em rgba(238,255,204,.35), 0 0 .38em rgba(91,219,102,.54) !important;
+}
+
+.game-room.room-deck-rules-final .deck-slot-item.filled {
+  touch-action: manipulation !important;
+  user-select: none !important;
+}
+
+.game-room.room-deck-rules-final .drawer-empty {
+  grid-column: 1 / -1 !important;
+  align-self: center !important;
+  color: #f5f5d4 !important;
+  font-size: .8em !important;
+  text-align: center !important;
+}

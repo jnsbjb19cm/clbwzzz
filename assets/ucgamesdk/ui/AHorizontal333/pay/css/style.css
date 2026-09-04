@@ -1,0 +1,1405 @@
+html, body, span, applet, object, iframe, h1, h2, h3, h4, h5, h6, p, blockquote, pre, a, abbr, acronym, address, big, cite, code, del, dfn, em, img, ins, kbd, q, s, samp, small, strike, strong, sub, sup, tt, var, b, u, i, center, dl, dt, dd, ol, ul, li, form, label, table, caption, tbody, tfoot, thead, tr, th, td, article, aside, canvas, details, embed, figure, figcaption, footer, header, menu, nav, output, ruby, section, summary, time, mark, audio, video {
+    margin: 0;
+    padding: 0
+}
+
+body {
+    font-size: 14px;
+    font-family: "\5FAE\8F6F\96C5\9ED1";
+    background-color: #ffffff;
+}
+
+ol, ul {
+    list-style: none
+}
+
+a {
+    color: #333333;
+    text-decoration: none
+}
+
+img {
+    border: none
+}
+
+.orange {
+    color: #f60;
+}
+
+.gray {
+    color: #999;
+}
+
+.fs18 {
+    font-size: 18px;
+}
+
+.div-line {
+    border-top: 1px solid #e5e5e5;
+    height: 1px;
+    line-height: 1px;
+    margin: 7px 0 8px 0;
+}
+
+@-webkit-keyframes load {
+    0% {
+        -webkit-transform: rotate(0deg);
+    }
+    100% {
+        -webkit-transform: rotate(360deg);
+    }
+}
+
+.loading-page {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 30%;
+    z-index: 30;
+    display: -webkit-box;
+    -webkit-box-align: center;
+    -webkit-box-pack: center;
+}
+
+.loading-img {
+    display: block;
+    background-image: url('../images/loading.gif');
+    -webkit-background-size: 36px auto;
+    background-size: 36px auto;
+    background-repeat: no-repeat;
+    width: 36px;
+    height: 36px;
+}
+
+.main-tip-text {
+    color: #ff8800;
+}
+
+.main-ico-up-down-arrow, .main-ico-exclamation, .main-ico-exclamation-color, .trumpet, .main-manage-ico, .main-tip-box-arrow, .main-close {
+    background-image: url(../images/ico.png);
+    background-repeat: no-repeat;
+    -webkit-background-size: 25px auto
+}
+
+.main-tip-box-arrow {
+    width: 6px;
+    height: 4px;
+    background-position: 0px -80px
+}
+
+.main-close {
+    width: 12px;
+    height: 12px;
+    background-position: 0 -65px
+}
+
+.main-manage-ico {
+    width: 17px;
+    height: 17px;
+    background-position: 0 -46px
+}
+
+.main-ico-up-down-arrow {
+    width: 11px;
+    height: 7px;
+    background-position: 0 0
+}
+
+.trumpet {
+    width: 13px;
+    height: 12px;
+    background-position: 0 -10px
+}
+
+.main-ico-exclamation {
+    width: 23px;
+    height: 23px;
+    background-position: 0 -23px
+}
+
+.main-ico-exclamation-color {
+    width: 23px;
+    height: 23px;
+    background-position: 0 -87px;
+}
+
+.main-state-ico-info, .main-state-ico-yes, .main-state-ico-no {
+    width: 33px;
+    height: 34px;
+    background-image: url(../images/state-ico.png);
+    background-repeat: no-repeat;
+    -webkit-background-size: 33px auto
+}
+
+.main-state-ico-yes {
+    background-position: 0 0
+}
+
+.main-state-ico-no {
+    background-position: 0 -68px
+}
+
+.main-state-ico-info {
+    background-position: 0 -34px
+}
+
+.main-pay {
+    width: 61px;
+    height: 62px;
+    background-image: url(../images/pay.png);
+    background-repeat: no-repeat;
+    -webkit-background-size: 61px auto
+}
+
+.main-pay-alipay {
+    background-position: 0 -744px
+}
+
+.main-pay-upay {
+    background-position: 0 -62px
+}
+
+.main-pay-ypokpay {
+    background-position: 0 -124px
+}
+
+.main-pay-phoneCard {
+    background-position: 0 -186px
+}
+
+.main-pay-gameCard {
+    background-position: 0 -248px
+}
+
+.main-pay-tenpay {
+    background-position: 0 -310px
+}
+
+.main-pay-debitCard {
+    background-position: 0 -372px
+}
+
+.main-pay-creditCard {
+    background-position: 0 -434px
+}
+
+.main-pay-mo9pay {
+    background-position: 0 -496px
+}
+
+.main-pay-sms {
+    background-position: 0 -558px
+}
+
+.main-pay-dnapay {
+    background-position: 0 -682px
+}
+
+.main-wanp {
+    padding: 10px 13px
+}
+
+.ad-space {
+    display: block;
+    margin: 8px 0 0 0;
+    line-height: 16px;
+    position: relative;
+    font-size: 14px;
+    text-indent: 20px;
+    text-overflow: ellipsis;
+}
+
+.ad-space > div {
+    background-image: url(../images/trumpet.png);
+    background-repeat: no-repeat;
+    -webkit-background-size: 16px auto;
+    width: 100%;
+    margin: 3px 0;
+    color: #666666;
+}
+
+.ad-space a {
+    color: #666666
+}
+
+.ads-top .ad-space{
+    margin-top: -8px;
+}
+
+.main-unfold-order {
+    border: 1px solid #eaeaea;
+    border-radius: 3px;
+    background-color: #f5f5f5
+}
+
+.main-unfold-order .bar {
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    overflow: hidden;
+    padding: 0 11px 0 11px;
+    height: 35px;
+    line-height: 35px;
+    position: relative;
+    color: #333333;
+}
+
+.main-unfold-order .bar.up::after {
+    content: ' ';
+    position: absolute;
+    top: 13px;
+    right: 11px;
+    width: 6px;
+    height: 6px;
+    border: #959595 solid;
+    border-width: 2px 2px 0 0;
+    -webkit-transform-origin: center center;
+    -webkit-transform: rotate(135deg)
+}
+
+.main-unfold-order .bar.down::after {
+    content: ' ';
+    position: absolute;
+    top: 13px;
+    right: 11px;
+    width: 6px;
+    height: 6px;
+    border: #959595 solid;
+    border-width: 2px 2px 0 0;
+    -webkit-transform-origin: center center;
+    -webkit-transform: rotate(-45deg)
+}
+
+.main-unfold-order .unfold {
+    margin: 0 11px 2px 11px;
+    padding: 7px 0 2px 0;
+    border-top: 1px dashed #dcdcdc;
+    line-height: 17px;
+    font-size: 12px;
+    color: #666666
+}
+
+.main-unfold-order .unfold span {
+    width: 60px;
+    display: block;
+    float: left;
+    color: #898989;
+}
+
+.main-btn-general {
+    display: block;
+    height: 37px;
+    line-height: 37px;
+    text-align: center;
+    font-size: 16px;
+    border: 1px solid;
+    -webkit-border-radius: 3px;
+    -webkit-box-shadow: 0 1px 1px rgba(0, 0, 0, 0.05);
+    color: #313131;
+    border-color: #b5b5b6;
+    background: #f7f7f7 -webkit-gradient(linear, left top, left bottom, from(#fcfcfc), to(#f3f3f3))
+}
+
+.main-btn-prominent {
+    display: block;
+    height: 37px;
+    line-height: 37px;
+    text-align: center;
+    font-size: 16px;
+    border: 1px solid;
+    -webkit-border-radius: 3px;
+    -webkit-box-shadow: 0 1px 1px rgba(0, 0, 0, 0.05);
+    color: #ffffff;
+    border-color: #ff8400;
+    background: #ffae1a -webkit-gradient(linear, left top, left bottom, from(#ffb621), to(#ffa614))
+}
+
+.main-btn-prominent-no {
+    display: block;
+    height: 37px;
+    line-height: 37px;
+    text-align: center;
+    font-size: 16px;
+    border: 1px solid;
+    -webkit-border-radius: 3px;
+    -webkit-box-shadow: 0 1px 1px rgba(0, 0, 0, 0.05);
+    color: #b5b5b5;
+    border-color: #b5b5b6;
+    background: #ffae1a -webkit-gradient(linear, left top, left bottom, from(#e8e8e8), to(#f9f9f9));
+}
+
+.main-btn-cz, .main-btn-look, .main-btn-hb {
+    padding: 0 15px;
+    height: 20px;
+    line-height: 20px;
+    border-radius: 3px;
+    color: #ffffff;
+    display: inline-block;
+    text-align: center;
+    font-size: 12px;
+    margin-left: 26px
+}
+
+.main-btn-look {
+    background-color: #ff8800
+}
+
+.main-btn-cz {
+    background-color: #1bc269
+}
+
+.main-btn-hb {
+    background-color: #f14821
+}
+
+.main-tab {
+    border: 1px solid #d5d5d5;
+    border-radius: 3px
+}
+
+.main-tab .bar {
+    height: 34px;
+    display: -webkit-box
+}
+
+.main-tab .bar div {
+    -webkit-box-flex: 1;
+    -webkit-box-sizing: border-box;
+    text-align: center;
+    color: #666666;
+    line-height: 33px;
+    background-color: #f5f5f5;
+    border-bottom: 1px solid #d5d5d5
+}
+
+.main-tab .bar div.on {
+    background-color: #ffffff;
+    border: 1px solid #d5d5d5;
+    border-bottom: none;
+    border-top: none;
+    -webkit-box-sizing: border-box;
+    color: #313131
+}
+
+.main-tab .bar div.on:first-child {
+    border-left: none
+}
+
+.main-tab .bar div.on:last-child {
+    border-right: none
+}
+
+.main-manage {
+    font-size: 14px;
+    color: #333333;
+    height: 28px;
+    line-height: 28px;
+    padding-left: 5px
+}
+
+.main-manage::after {
+    content: ' ';
+    position: absolute;
+    right: 25px;
+    width: 6px;
+    height: 6px;
+    margin-top: 11px;
+    border: #959595 solid;
+    border-width: 2px 2px 0 0;
+    -webkit-transform-origin: center center;
+    -webkit-transform: rotate(45deg);
+}
+
+.main-manage .main-manage-ico {
+    vertical-align: middle;
+    display: inline-block;
+    margin-top: -5px;
+    margin-right: 5px
+}
+
+.main-manage .small {
+    font-size: 12px;
+    color: #666666;
+    margin-left: 5px
+}
+
+.main-other-methods {
+    font-size: 14px;
+    color: #333333;
+    position: relative;
+    line-height: 28px;
+    height: 28px;
+    text-indent: 5px;
+    margin: 12px 0;
+}
+
+.main-other-methods::after {
+    content: ' ';
+    position: absolute;
+    top: 12px;
+    right: 11px;
+    width: 6px;
+    height: 6px;
+    border: #959595 solid;
+    border-width: 2px 2px 0 0;
+    -webkit-transform-origin: center center;
+    -webkit-transform: rotate(135deg)
+}
+
+.right {
+    font-size: 14px;
+    color: #333333;
+    position: relative;
+    line-height: 28px;
+    height: 28px;
+    text-indent: 5px;
+    margin: 8px 0;
+}
+
+.right::after {
+    content: ' ';
+    position: absolute;
+    top: 11px;
+    right: 11px;
+    width: 6px;
+    height: 6px;
+    border: #959595 solid;
+    border-width: 2px 2px 0 0;
+    -webkit-transform-origin: center center;
+    -webkit-transform: rotate(45deg)
+}
+
+.main-other-methods.up::after {
+    top: 10px;
+    -webkit-transform: rotate(135deg)
+}
+
+.main-other-methods.down::after {
+    -webkit-transform: rotate(-45deg)
+}
+
+.main-pay-methods {
+    margin: 10px 4px 4px 4px;
+    overflow: hidden
+}
+
+.main-pay-methods li {
+    width: 80px;
+    display: block;
+    float: left;
+    text-align: center;
+    margin-bottom: 15px;
+    cursor: pointer;
+}
+
+.main-pay-methods li .main-pay {
+    display: block;
+    margin: auto
+}
+
+.main-pay-methods li p {
+    margin-top: 6px;
+    font-size: 12px;
+    color: #333333
+}
+
+.main-pay .pay-angle {
+    font-size: 12px;
+    line-height: 18px;
+    color: #ffffff;
+    text-align: center;
+    position: relative;
+    left: 35px;
+    top: 1px;
+    width: 19px;
+    height: 21px;
+    background-image: url(../images/pay-angle.png);
+    background-repeat: no-repeat;
+    -webkit-background-size: 19px auto;
+}
+
+.main-pay .pay-angle-1 {
+    background-position: 0 0;
+}
+
+.main-pay .pay-angle-2 {
+    background-position: 0 -63px;
+}
+
+.main-pay .pay-angle-3 {
+    background-position: 0 -21px;
+}
+
+.main-pay .pay-angle-4 {
+    background-position: 0 -42px;
+}
+
+.main-btn-tip {
+    position: relative
+}
+
+.tip-box .tip-wanp {
+    display: none;
+    position: absolute;
+    max-width: 66%;
+    margin-top: 8px;
+    right: 10px;
+    z-index: 1;
+}
+
+.tip-box .tip-wanp::after {
+    content: ' ';
+    position: absolute;
+    top: -4px;
+    right: 18px;
+    width: 6px;
+    height: 6px;
+    border: #d5d5d5 solid;
+    border-width: 1px 1px 0 0;
+    -webkit-transform-origin: center center;
+    -webkit-transform: rotate(-45deg);
+    background-color: #f5f5f5
+}
+
+.tip-box .tip {
+    padding: 10px;
+    background-color: #f5f5f5;
+    border: 1px solid #d5d5d5;
+    color: #666666;
+    text-align: left;
+    font-size: 12px;
+    line-height: 20px;
+    border-radius: 3px margin-bottom : 10 px;
+}
+
+.main-select-num {
+    margin-top: 10px;
+}
+
+.main-select-num li {
+    width: 75px;
+    margin: 0 0 6px 0;
+    display: inline-block;
+    text-align: center;
+    cursor: pointer;
+}
+
+.main-select-num li:last-child {
+    margin-right: 0
+}
+
+.main-select-num li div {
+    color: #333333;
+    height: 33px;
+    border-radius: 3px;
+    border: 1px solid #a0a0a0;
+    line-height: 33px
+}
+
+.main-select-num li div.selected {
+    color: #ffffff;
+    background-color: #48ce87;
+    border-color: #1ac269
+}
+
+.main-link-arrow {
+    font-size: 12px;
+    color: #666666;
+    display: block;
+    float: right;
+    position: relative;
+    margin-top: 11px;
+    margin-right: 5px;
+    margin-bottom: 11px;
+    padding-right: 15px
+}
+
+.main-link-arrow::after {
+    content: ' ';
+    position: absolute;
+    width: 6px;
+    height: 6px;
+    border: #959595 solid;
+    border-width: 2px 2px 0 0;
+    -webkit-transform-origin: center center;
+    top: 3px;
+    right: 1px;
+    -webkit-transform: rotate(45deg)
+}
+
+.main-pop {
+    background-color: #333333;
+    background: rgba(0, 0, 0, 0.3);
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: 0;
+    width: 100%;
+    height: 100%;
+    position: fixed;
+    display: -webkit-box;
+    -webkit-box-pack: center;
+    -webkit-box-align: center;
+    z-index: 60;
+}
+
+.main-pop .content {
+    -webkit-box-shadow: rgba(0, 0, 0, 0.3) 2px 0 10px;
+    width: 261px;
+    background-color: #ffffff;
+    border-radius: 8px
+}
+
+.main-pop .content .head {
+    height: 40px;
+    line-height: 40px;
+    border-bottom: 1px solid #ffa613;
+    text-indent: 15px;
+    color: #313131
+}
+
+.main-pop .content .head .close-wanp {
+    float: right;
+    padding: 15px
+}
+
+.main-pop .content .body {
+    padding: 10px 15px 13px 15px
+}
+
+.main-pop .content .body .main-btn {
+    margin-top: 17px;
+    text-align: center;
+}
+
+.main-pop .content .body .main-btn a {
+    display: inline-block;
+    padding: 0 26px;
+    margin: 6px 8px;
+    height: 28px;
+    line-height: 28px;
+    font-size: 14px;
+}
+
+.main-pop .content .body .text {
+    line-height: 130%
+}
+
+.main-pop .content .body .btn-two {
+    margin-top: 6px
+}
+
+.main-pop .content .select-list li {
+    text-align: center;
+    height: 36px;
+    line-height: 36px;
+    border-bottom: 1px solid #d5d5d5;
+    color: #333333
+}
+
+.main-input-border {
+    height: 32px;
+    border: 1px solid #a0a0a0;
+    border-radius: 3px;
+    position: relative;
+    display: -webkit-box
+}
+
+.main-input-border span {
+    color: #666666;
+    width: 70px;
+    height: 32px;
+    line-height: 34px;
+    text-indent: 14px;
+    display: block
+}
+
+.main-input-border input {
+    width: 100%;
+    height: 25px;
+    -webkit-box-sizing: border-box;
+    -webkit-box-flex: 1;
+    display: block;
+    margin-top: 4px;
+    border: none;
+    font-size: 14px
+}
+
+.results {
+    color: #666666
+}
+
+.results .big-tip {
+    margin-top: 20px;
+    margin-bottom: 20px;
+    text-align: center
+}
+
+.results .big-tip .main-state-ico-info, .results .big-tip .main-state-ico-no, .results .big-tip .main-state-ico-yes {
+    vertical-align: middle;
+    display: inline-block;
+    margin-right: 3px
+}
+
+.results .big-tip .tip-text {
+    vertical-align: middle;
+    display: inline-block;
+    color: #313131;
+    font-size: 18px;
+    text-align: left;
+}
+
+.results .small-tip {
+    text-align: center;
+    font-size: 14px;
+    margin-top: 8px
+}
+
+.results .main-btn-general {
+    margin-top: 20px
+}
+
+.results .error-tip {
+    text-align: center;
+    margin: auto 13px;
+    font-size: 14px
+}
+
+.results .error-tip p {
+    margin-bottom: 5px
+}
+
+.dot-tip {
+    color: #666666;
+    position: relative;
+    text-indent: 20px;
+    margin-top: 8px
+}
+
+.dot-tip::after {
+    content: ' ';
+    position: absolute;
+    top: 7px;
+    left: 12px;
+    width: 4px;
+    height: 4px;
+    border-radius: 4px;
+    background-color: #ff8800;
+    -webkit-transform-origin: center center
+}
+
+.main-tab {
+    margin-top: 10px
+}
+
+.main-tab .main {
+    padding: 0 10px 0 10px;
+    overflow: hidden
+}
+
+.main-tab select {
+    margin: 10px 0 3px 0;
+    display: block;
+    font-size: 16px;
+    height: 25px;
+    -webkit-box-flex: 1;
+    -webkit-border-radius: 3px;
+    border-width: 0 21px 0 5px;
+    -webkit-border-image: url("../images/select.png") 0 21 0 5;
+}
+
+.main-tab .main .input-wanp {
+    float: left;
+    width: 100%;
+    display: -webkit-box;
+    height: 43px;
+    line-height: 43px;
+    border-bottom: 1px solid #d5d5d5;
+}
+
+.main-tab .main .input-wanp:last-child {
+    border-bottom: none
+}
+
+.main-tab .main .input-wanp .title {
+    width: 67px;
+    color: #666666;
+    text-indent: 10px;
+    margin-top: 0;
+}
+
+.main-tab .main .main-link-arrow {
+    float: left;
+    height: 16px;
+    line-height: 16px;
+    margin: 0;
+    margin-left: 10px;
+    margin-top: 11px;
+    font-size: 14px
+}
+
+.main-tab .main .input-wanp input {
+    border: none;
+    padding: 10px 5px;
+    font-size: 16px;
+    display: block;
+    -webkit-box-flex: 1
+}
+
+.main-tab .main .middle-text {
+    text-align: center;
+    font-size: 12px;
+    color: #666666;
+    margin-top: 20px;
+    margin-bottom: 10px;
+}
+
+.main-tab .main .main-btn-general {
+    width: 117px;
+    height: 29px;
+    line-height: 29px;
+    margin: 0 auto 6px auto;
+}
+
+.main-tab .main .main-btn-prominent {
+    width: 117px;
+    height: 29px;
+    line-height: 29px;
+    margin: 0 auto 20px auto;
+}
+
+.btn-wanp {
+    display: -webkit-box;
+    margin-top: 10px
+}
+
+.btn-pay {
+    -webkit-box-flex: 1;
+    -webkit-box-sizing: border-box
+}
+
+.btn-pay-safe {
+    -webkit-box-flex: 1;
+    -webkit-box-sizing: border-box
+}
+
+.btn-tips {
+    width: 38px;
+    -webkit-box-flex: 0;
+    margin-left: 6px;
+}
+
+.btn-tips .main-btn-prominent .main-ico-exclamation {
+    margin: 7px 0 0 6px
+}
+
+.btn-tips .main-ico-exclamation-color {
+    margin: 7px 0 0 6px;
+}
+
+.title {
+    color: #666666;
+    font-size: 13px;
+    margin-top: 8px;
+    text-indent: 5px
+}
+
+.mt {
+    margin-top: 20px
+}
+
+.remaining {
+    color: #666666;
+    overflow: hidden;
+    margin-top: 15px
+}
+
+.remaining .right-wanp {
+    float: right
+}
+
+.remaining .left {
+    float: left;
+    text-indent: 5px
+}
+
+.main-tip-box {
+    position: absolute;
+    display: none;
+    background: rgba(228, 84, 50, 0.8);
+    padding: 6px 10px;
+    color: #ffffff;
+    font-size: 12px;
+    border-radius: 3px;
+    border: 1px solid #e45432;
+    z-index: 3;
+    left: 0
+}
+
+.main-tip-box .main-tip-box-arrow {
+    position: absolute;
+    top: -4px;
+    left: 30px
+}
+
+.main-tip-box-arrow {
+    width: 6px;
+    height: 4px;
+    background-position: 0 -80px;
+}
+
+.pay-bank .two-btn .main-btn-prominent {
+    margin-top: 10px;
+}
+
+.main-pop .main-btn-prominent {
+    margin-top: 10px;
+}
+
+.pay-bank .border-text {
+    text-indent: 5px;
+    height: 44px;
+    line-height: 44px;
+    border-bottom: 1px solid #e5e5e5;
+    margin: 5px 0px;
+}
+
+.pay-bank .title {
+    color: #666666;
+    font-size: 14px;
+    margin-bottom: 10px;
+    text-indent: 5px;
+}
+
+.pay-bank .main-input-border {
+    margin-bottom: 5px;
+}
+
+.pay-bank .pl-input {
+    padding-left: 10px;
+}
+
+.wanp {
+    border: 1px solid #a0a0a0;
+    border-radius: 3px;
+    display: block;
+    margin-bottom: 10px;
+}
+
+.wanp .arrow::after {
+    content: ' ';
+    position: absolute;
+    top: 13px;
+    right: 11px;
+    width: 6px;
+    height: 6px;
+    border: #959595 solid;
+    border-width: 2px 2px 0 0;
+    -webkit-transform-origin: center center;
+    -webkit-transform: rotate(45deg);
+}
+
+.wanp .arrow span {
+    float: right;
+    margin-right: 26px;
+}
+
+.wanp li {
+    display: block;
+    position: relative;
+    height: 35px;
+    line-height: 35px;
+    text-indent: 10px;
+    color: #333333;
+    border-bottom: 1px solid #d5d5d5;
+}
+
+.wanp li:last-child {
+    border: none;
+}
+
+.wanp li span {
+    float: right;
+    margin-right: 9px;
+    color: #666;
+}
+
+.pay-management .textarea-wanp {
+    border: 1px solid #d5d5d5;
+    border-radius: 3px;
+    margin-bottom: 10px;
+    padding: 5px
+}
+
+.pay-management .textarea-wanp textarea {
+    border: none;
+    width: 100%;
+    -webkit-box-sizing: border-box;
+    height: 50px;
+    display: block
+}
+
+.pay-management input, .pay-management textarea {
+    font-size: 14px
+}
+
+.pay-management .wanp {
+    border: 1px solid #a0a0a0;
+    border-radius: 3px;
+    display: block;
+    margin-bottom: 10px
+}
+
+.pay-management .wanp li {
+    display: block;
+    position: relative;
+    height: 35px;
+    line-height: 35px;
+    text-indent: 10px;
+    color: #333333;
+    border-bottom: 1px solid #d5d5d5
+}
+
+.pay-management .wanp li:last-child {
+    border: none
+}
+
+.pay-management .wanp li a {
+    color: #333333
+}
+
+.pay-management .wanp li span {
+    float: right;
+    margin-right: 9px;
+    color: #666
+}
+
+.pay-management .wanp .arrow::after {
+    content: ' ';
+    position: absolute;
+    top: 13px;
+    right: 11px;
+    width: 6px;
+    height: 6px;
+    border: #959595 solid;
+    border-width: 2px 2px 0 0;
+    -webkit-transform-origin: center center;
+    top: 13px;
+    right: 11px;
+    -webkit-transform: rotate(45deg)
+}
+
+.pay-management .wanp .arrow span {
+    float: right;
+    margin-right: 26px
+}
+
+.pay-management .wanp .input-wanp {
+    text-indent: 0
+}
+
+.pay-management .wanp .input-wanp input {
+    width: 100%;
+    padding: 7px 8px;
+    border: none;
+    -webkit-box-sizing: border-box
+}
+
+.pay-management .wanp-border {
+    margin-bottom: 10px
+}
+
+.pay-management .wanp-border li {
+    display: block;
+    height: 36px;
+    line-height: 36px;
+    text-indent: 10px;
+    color: #333333;
+    border-bottom: 1px solid #d5d5d5
+}
+
+.pay-management .wanp-border-high li {
+    display: block;
+    height: 50px;
+    font-size: 14px;
+    -webkit-box-sizing: border-box;
+    padding-top: 9px;
+    color: #333333;
+    border-bottom: 1px solid #b5b5b5
+}
+
+.pay-management .wanp-border-high li .line {
+    height: 16px;
+    line-height: 16px
+}
+
+.pay-management .wanp-border-high li .line .time, .pay-management .wanp-border-high li .line .name {
+    float: left;
+    margin-left: 10px
+}
+
+.pay-management .wanp-border-high li .line .state, .pay-management .wanp-border-high li .line .num {
+    width: 77px;
+    float: right
+}
+
+.pay-management .wanp-border-high li .line .state, .pay-management .wanp-border-high li .line .time {
+    font-size: 12px;
+    color: #898989
+}
+
+.pay-management .wanp-border-high li:last-child {
+    border: none
+}
+
+.pay-management .wanp-main-radio {
+    overflow: hidden;
+    color: #313131;
+    height: 34px
+}
+
+.pay-management .wanp-main-radio .select-item {
+    margin-right: 14px;
+    margin-left: 5px;
+    overflow: hidden;
+    float: left
+}
+
+.pay-management .wanp-main-radio .main-radio {
+    float: left;
+    margin-top: 4px;
+    margin-right: 5px
+}
+
+.pay-management .wanp-main-radio p {
+    float: left;
+    line-height: 20px
+}
+
+.bank-unbind {
+    margin: 0px 0px 10px 0px;
+}
+
+.mod-con {
+    padding: 0 10px;
+    height: 44px;
+    position: relative;
+    line-height: 44px;
+    background: #FFF;
+    border: 1px #c5ced4 solid;
+    -webkit-border-radius: 3px;
+    -webkit-box-shadow: 0 1px 1px #fff;
+}
+
+.bank-unbind .pic {
+    padding-top: 7px;
+}
+
+.bank-unbind .name {
+    position: absolute;
+    left: 48px;
+    top: -2px;
+    font-size: 14px;
+}
+
+.bank-unbind img {
+    border: none;
+    width: 26px;
+    height: 26px;
+}
+
+.bank-unbind span {
+    float: right;
+    margin-top: -40px;
+    font-size: 12px;
+    margin-right: 10px;
+    color: #fff;
+}
+
+.main-manage-back {
+    font-size: 14px;
+    color: #333333;
+    height: 28px;
+    line-height: 28px;
+    padding-left: 26px;
+}
+
+.main-manage-back::before {
+    content: ' ';
+    position: absolute;
+    left: 25px;
+    width: 6px;
+    height: 6px;
+    margin-top: 11px;
+    border: #959595 solid;
+    border-width: 2px 2px 0 0;
+    -webkit-transform-origin: center center;
+    -webkit-transform: rotate(225deg);
+}
+
+.password {
+    -webkit-text-security: disc;
+}
+
+.wanp .arrowSpan::after {
+    content: ' ';
+    position: absolute;
+    top: 13px;
+    right: 11px;
+    width: 6px;
+    height: 6px;
+    border: #959595 solid;
+    border-width: 2px 2px 0 0;
+    -webkit-transform-origin: center center;
+    top: 13px;
+    right: 11px;
+    -webkit-transform: rotate(135deg);
+}
+
+.wanp .arrowUp::after {
+    content: ' ';
+    position: absolute;
+    top: 13px;
+    right: 11px;
+    width: 6px;
+    height: 6px;
+    border: #959595 solid;
+    border-width: 2px 2px 0 0;
+    -webkit-transform-origin: center center;
+    top: 13px;
+    right: 11px;
+    -webkit-transform: rotate(-45deg);
+}
+
+/* 新手引导的内容 */
+.pay-guide {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+}
+
+.pay-guide .btn-wanp {
+    display: -webkit-box;
+    margin-top: 21px
+}
+
+.pay-guide .btn-big {
+    padding-right: 6px;
+    -webkit-box-flex: 1;
+    -webkit-box-sizing: border-box
+}
+
+.pay-guide .btn-small {
+    width: 38px;
+    -webkit-box-flex: 0
+}
+
+.pay-guide .btn-small .main-btn-prominent .main-ico-exclamation {
+    margin: 7px 0px 0px 6px
+}
+
+.pay-guide .main-tip-text {
+    font-size: 17px
+}
+
+.pay-guide .main-other-pay-methods.up::after {
+    left: inherit;
+    right: 12px
+}
+
+.pay-guide .pop-mask {
+    background: rgba(0, 0, 0, 0.75);
+    position: fixed;
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 1
+}
+
+.pay-guide .pop-guide-1 {
+    width: 157px;
+    height: 57px;
+    background: url(../images/guide_1.png);
+    -webkit-background-size: 157px auto;
+    z-index: 2;
+    position: absolute;
+    left: 50%;
+    top: 0;
+    margin-left: -108px
+}
+
+.pay-guide .pop-guide-2 {
+    width: 263px;
+    height: 49px;
+    background: url(../images/guide_2.png);
+    -webkit-background-size: 263px auto;
+    z-index: 2;
+    position: absolute;
+    left: 10px;
+    top: 117px
+}
+
+.pay-guide .pop-guide-2-w {
+    width: 282px;
+    height: 33px;
+    background: url(../images/guide_2_w.png);
+    -webkit-background-size: 282px auto;
+    z-index: 2;
+    position: absolute;
+    left: 10px;
+    top: 117px
+}
+
+.pay-guide .pop-guide-3 {
+    width: 218px;
+    height: 78px;
+    background: url(../images/guide_3.png);
+    -webkit-background-size: 218px auto;
+    z-index: 2;
+    position: absolute;
+    left: 10px;
+    top: 157px
+}
+
+.pay-guide .pop-guide-3-w {
+    width: 365px;
+    height: 34px;
+    background: url(../images/guide_3_w.png);
+    -webkit-background-size: 365px auto;
+    z-index: 2;
+    position: absolute;
+    left: 10px;
+    top: 157px
+}
+
+.pay-guide .pop-guide-btn {
+    width: 130px;
+    height: 33px;
+    background: url(../images/guide_btn.png);
+    -webkit-background-size: 130px auto;
+    z-index: 2;
+    position: absolute;
+    left: 50%;
+    bottom: 40px;
+    margin-left: -65px
+}
+
+
+.bt_p {
+    background-color: rgba(209, 209, 209, 0.23);
+    line-height: 21px;
+    padding: 5px 22px 5px 10px;
+}
+
+.non-support {
+    display: block;
+    margin: 0px 0px 10px 0px;
+    line-height: 16px;
+    position: relative;
+    font-size: 12px;
+    text-overflow: ellipsis;
+    color : red;
+}

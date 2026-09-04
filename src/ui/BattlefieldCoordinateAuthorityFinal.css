@@ -1,0 +1,46 @@
+/*
+ * 最终坐标权威层：
+ * - 冰柱固定到浏览器视口，不再贴 battle-game-wrap 的内部边缘；
+ * - 拖拽幽灵的 left/top 直接使用 Pointer/DragEvent.clientX/Y；
+ * - 不在这里改变战场画面比例，只消除额外 CSS 位移。
+ */
+body.battle-immersive .bg-layer-left-column,
+body.battle-immersive .bg-layer-right-column {
+  position: fixed !important;
+  top: 0 !important;
+  bottom: auto !important;
+  height: 100vh !important;
+  height: 100dvh !important;
+  margin: 0 !important;
+  transform: none !important;
+  background-position: center top !important;
+  background-size: 100% 100% !important;
+  background-repeat: no-repeat !important;
+  pointer-events: none !important;
+}
+
+body.battle-immersive .bg-layer-left-column {
+  left: 0 !important;
+  right: auto !important;
+}
+
+body.battle-immersive .bg-layer-right-column {
+  right: 0 !important;
+  left: auto !important;
+}
+
+body.battle-immersive .battle-game-wrap > .game-container {
+  position: relative !important;
+  z-index: 20 !important;
+}
+
+body.battle-immersive #drag-ghost {
+  position: fixed !important;
+  right: auto !important;
+  bottom: auto !important;
+  margin: 0 !important;
+  transform: translate(-50%, -50%) !important;
+  transform-origin: center center !important;
+  pointer-events: none !important;
+  z-index: 400 !important;
+}

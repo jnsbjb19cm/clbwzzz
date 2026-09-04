@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<language name="copy">
+	<language key="mima" value="密码"/>
+	<language key="moshi" value="模式"/>
+	<language key="duizhan" value="对战"/>
+	<language key="renshu" value="人数"/>
+	<language key="queding" value="确定"/>
+	<language key="quxiao" value="取消"/>
+	<language key="guanbi" value="关闭"/>
+	<language key="fangjian" value="房间ID："/>
+	<language key="kaizhan" value="开始挑战"/>
+	<language key="zhunbei" value="准备"/>
+	<language key="fangjianID" value="请输入房间ID"/>
+	<language key="guanbi" value="关闭"/>
+	<language key="chuangjian" value="创建"/>
+	<language key="chazhao" value="查找"/>
+	<language key="kuaisujiaru" value="快速加入"/>
+	<language key="fubencishu" value="剩余免费翻奖次数："/>
+	<language key="fanpaicishu" value="每次免费翻奖次数：2"/>
+	<language key="huanfuben" value="更换副本"/>
+	<language key="diaoluo" value="副本掉落"/>
+	<language key="huanyipi" value="换一批"/>
+	<language key="mianfeifanpai" value="免费翻牌次数"/>
+	<language key="jinbifanpai" value="红钻翻牌次数"/>
+	<language key="fanhui" value="返回"/>
+	<language key="copy_yaoqiudengji" value="要求等级："/>
+	<language key="copy_jianyirenshu" value="建议人数："/>
+	<language key="copy_wufagenghuan" value="你的等级不够，无法创建！ "/>
+	<language key="copy_jinrifubencishuyiyongwan" value="今日免费翻奖次数已用完 "/>
+	<language key="copy_chakancard" value="查看卡组需要消耗10红钻 "/>
+	<language key="copy_zhunbeizhuangtai" value="你已处于准备状态中！ "/>
+	<language key="copy_genghuan" value="更换 "/>
+	<language key="copy_fubenchenggong" value="副本成功！ "/>
+	<language key="copy_dangqianfuben" value="当前就是该副本！ "/>
+	<language key="copy_fubengenghuanchenggong" value="副本更换成功！ "/>
+	<language key="copy_invitelable" value="您等级已是本服最高，所以没有助手有能力协助你战斗。 "/>
+	<language key="copy_countclear" value="每天00:00点恢复次数 "/>
+	<language key="copy_jinrixunbaocishuyiyongwan" value="今日寻宝次数已用完 "/>
+	<language key="copy_room_state_waiting" value="等待中"/>
+	<language key="copy_room_state_fight" value="战斗中"/>
+	<language key="copy_room_gameing" value="该房间已开始游戏!"/>
+	<language key="copy_room_renshuyiman" value="该房间人数已满!"/>
+	<language key="copy_room_lv_dengjidadao" value="等级到达{1}才能进入该房间!"/>
+	<language key="copy_other_player_lv_bugou" value="房间中其他玩家暂时未开启该副本"/>
+	<language key="copy_room_not_find" value="该房间不存在"/>
+</language>

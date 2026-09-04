@@ -1,0 +1,143 @@
+/* PVP 战斗离开房间大厅的 1632×918 transform 缩放体系，直接占满当前浏览器视口。 */
+body.pvp-battle-active {
+  overflow: hidden !important;
+  background: #061b0d !important;
+}
+
+body.pvp-battle-active .lobby-fullscreen,
+body.pvp-battle-active .lobby-stage,
+body.pvp-battle-active #lobby-battle,
+body.pvp-battle-active .pvp-wilderness-battle,
+body.pvp-battle-active .battle-page,
+body.pvp-battle-active .battle-game-wrap {
+  position: fixed !important;
+  inset: 0 !important;
+  width: 100vw !important;
+  min-width: 100vw !important;
+  max-width: 100vw !important;
+  height: 100vh !important;
+  min-height: 100vh !important;
+  max-height: 100vh !important;
+  margin: 0 !important;
+  transform: none !important;
+  transform-origin: 0 0 !important;
+  overflow: hidden !important;
+}
+
+body.pvp-battle-active .lobby-stage {
+  left: 0 !important;
+  top: 0 !important;
+}
+
+body.pvp-battle-active #lobby-battle {
+  display: block !important;
+  z-index: 300 !important;
+}
+
+body.pvp-battle-active .battle-stage-bar {
+  display: none !important;
+}
+
+body.pvp-battle-active .battle-game-wrap,
+body.pvp-battle-active .game-container,
+body.pvp-battle-active .battlefield-wrap {
+  box-sizing: border-box !important;
+}
+
+body.pvp-battle-active .game-container {
+  position: absolute !important;
+  inset: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  transform: none !important;
+  z-index: 10 !important;
+}
+
+body.pvp-battle-active .battlefield-wrap {
+  position: absolute !important;
+  inset: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  z-index: 24 !important;
+}
+
+body.pvp-battle-active .battle-canvas,
+body.pvp-battle-active .place-grid-overlay {
+  z-index: 25 !important;
+}
+
+body.pvp-battle-active .top-ui,
+body.pvp-battle-active .base-hp-slot,
+body.pvp-battle-active .battle-immersive-dock,
+body.pvp-battle-active .battle-fab,
+body.pvp-battle-active .skill-panel,
+body.pvp-battle-active .deploy-tip {
+  z-index: 40 !important;
+}
+
+/* 旧 portal 在 PVP 下容易被 transform/observer 反复搬运；PVP 使用下面的独立柱层。 */
+body.pvp-battle-active [data-battle-viewport-portal] {
+  display: none !important;
+}
+
+/* 保留 pvp-authority-column 作为唯一侧柱层，隐藏经典战场 bg-layer 两侧柱，
+   避免每侧出现两根基地柱。BOSS 只创建左侧 pvp-authority-column，右侧自然为 0。 */
+body.pvp-battle-active .bg-layer-left-column,
+body.pvp-battle-active .bg-layer-right-column {
+  display: none !important;
+}
+
+body.pvp-battle-active .pvp-authority-column {
+  position: absolute !important;
+  top: 0 !important;
+  bottom: 0 !important;
+  width: clamp(280px, 26vw, 480px) !important;
+  height: 100% !important;
+  display: block !important;
+  background-repeat: no-repeat !important;
+  background-position: center top !important;
+  background-size: 100% 100% !important;
+  pointer-events: none !important;
+  user-select: none !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+  z-index: 18 !important;
+}
+
+body.pvp-battle-active .pvp-authority-column.left {
+  left: 0 !important;
+  right: auto !important;
+}
+
+body.pvp-battle-active .pvp-authority-column.right {
+  right: 0 !important;
+  left: auto !important;
+}
+
+body.pvp-battle-active .pvp-authority-status {
+  position: fixed !important;
+  left: 50% !important;
+  top: 10px !important;
+  transform: translateX(-50%) !important;
+  z-index: 90 !important;
+  min-width: 280px !important;
+  padding: 6px 14px !important;
+  border: 1px solid rgba(181, 255, 203, 0.7) !important;
+  border-radius: 999px !important;
+  background: rgba(3, 42, 20, 0.82) !important;
+  color: #d9ffe5 !important;
+  font: 600 13px/1.2 system-ui, sans-serif !important;
+  text-align: center !important;
+  pointer-events: none !important;
+}
+
+body.pvp-battle-active .pvp-authority-status.synced {
+  opacity: 0 !important;
+  transition: opacity 0.35s ease 1.2s !important;
+}
+
+@media (max-width: 900px), (max-height: 620px) {
+  body.pvp-battle-active .pvp-authority-column {
+    width: clamp(280px, 26vw, 480px) !important;
+  }
+}

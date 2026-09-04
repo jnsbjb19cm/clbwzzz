@@ -1,0 +1,90 @@
+/*
+ * 战斗场景 V3：格子布局保持不变，单位、子弹和技能 Canvas 延展到整个视口；
+ * 冰柱按完整参考背景的真实比例贴齐左右边缘。
+ */
+
+body.battle-immersive .battle-scene-v3-final,
+body.battle-immersive .battle-scene-v3-final .battlefield-wrap,
+body.battle-immersive .battle-scene-v3-final .battle-unit-health-layer {
+  overflow: visible !important;
+  contain: none !important;
+  clip-path: none !important;
+  mask-image: none !important;
+}
+
+body.battle-immersive #battle-canvas.battle-canvas-viewport-v3 {
+  position: absolute !important;
+  max-width: none !important;
+  max-height: none !important;
+  transform: none !important;
+  transform-origin: 0 0 !important;
+  overflow: visible !important;
+  clip-path: none !important;
+  mask-image: none !important;
+  image-rendering: auto !important;
+  filter: none !important;
+  pointer-events: auto !important;
+}
+
+/* 格子仍然只占原本的 12×5 逻辑区域，不随全视口 Canvas 扩张。 */
+body.battle-immersive .battle-scene-v3-final #place-grid-overlay,
+body.battle-immersive .battle-scene-v3-final .battle-placement-layer {
+  overflow: visible !important;
+  clip-path: none !important;
+  transform: none !important;
+}
+
+/*
+ * 参考合成背景中冰柱约为视口高度的 0.31 倍宽。
+ * 旧版使用 21vw 并额外放大到 105vh，宽屏下会明显过宽、上下错位。
+ */
+body.battle-immersive .battle-fullscreen-final > .bg-layer-left-column,
+body.battle-immersive .battle-fullscreen-final > .bg-layer-right-column {
+  top: 0 !important;
+  bottom: auto !important;
+  width: clamp(205px, 31.5dvh, 335px) !important;
+  height: 100dvh !important;
+  opacity: 1 !important;
+  z-index: 34 !important;
+  background-repeat: no-repeat !important;
+  background-size: auto 100dvh !important;
+  background-position-y: top !important;
+  transform: none !important;
+  filter: drop-shadow(0 .2em .28em rgba(12,55,91,.17)) !important;
+  clip-path: none !important;
+  overflow: visible !important;
+  pointer-events: none !important;
+}
+
+body.battle-immersive .battle-fullscreen-final > .bg-layer-left-column {
+  left: -0.45dvw !important;
+  right: auto !important;
+  background-position-x: left !important;
+}
+
+body.battle-immersive .battle-fullscreen-final > .bg-layer-right-column {
+  right: -0.45dvw !important;
+  left: auto !important;
+  background-position-x: right !important;
+}
+
+/* 血槽继续固定在顶部卡牌栏两边，不跟随逻辑棋盘缩放。 */
+body.battle-immersive .battle-game-wrap > .base-hp-slot.base-hp-reference-final,
+body.battle-immersive .battle-game-wrap > .base-hp-slot {
+  top: 0 !important;
+  z-index: 230 !important;
+}
+
+/* 第一行高单位允许向顶部延伸；底行单位也不被底部 HUD 裁掉。 */
+body.battle-immersive .battle-scene-v3-final .battlefield-wrap,
+body.battle-immersive .battle-scene-v3-final .battle-canvas,
+body.battle-immersive .battle-scene-v3-final .bg-stack {
+  overflow: visible !important;
+}
+
+@media (max-height: 700px) {
+  body.battle-immersive .battle-fullscreen-final > .bg-layer-left-column,
+  body.battle-immersive .battle-fullscreen-final > .bg-layer-right-column {
+    width: clamp(180px, 31.5dvh, 270px) !important;
+  }
+}

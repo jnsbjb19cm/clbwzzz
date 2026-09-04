@@ -1,0 +1,10 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<language name="pieceComPosite">
+	<language key="pieceComPosite_progress" value="进度："/>
+	<language key="pieceComPosite_keyongwannengsuipian" value="可用万能碎片："/>
+	<language key="pieceComPosite_duihuan" value="可兑换"/>
+	<language key="pieceComPosite_weidadao" value="未达到"/>
+	<language key="pieceComPosite_shiyongwannengtishi" value="您确定要使用万能碎片兑换该卡牌吗？"/>
+	<language key="pieceComPosite_success" value="兑换成功"/>
+	<language key="pieceComPosite_fail" value="兑换失败"/>
+</language>

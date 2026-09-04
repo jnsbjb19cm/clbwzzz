@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<language name="wishingWell">
+	<language key="wishingWell_miaoshu" value="虔诚地许愿,女神将会显灵,你付出多少,必然还给你更多!"/> 
+	<language key="wishingWell_cishu" value="剩余许愿次数:"/>   
+	<language key="wishingWell_fuchu" value="付出"/>
+	<language key="wishingWell_shengyushijian" value="剩余时间:"/>
+	<language key="wishingWell_tian" value="天"/>
+	<language key="wishingWell_shi" value="小时"/>
+	<language key="wishingWell_fen" value="分"/>
+	<language key="wishingWell_miao" value="秒"/>
+	<language key="wishing_jieshu" value="活动已结束"/>
+	<language key="wishing_meicishu" value="请期待女神再次降临"/>
+</language>

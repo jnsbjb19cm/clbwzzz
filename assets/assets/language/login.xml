@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<language name="login">
+	<language key="dianjixuanqu" value="点击选区"/>
+	<language key="otherAccount" value="其他账户"/>
+	<language key="guestAccount" value="游客用户"/>
+	<language key="fabushijian" value="发布时间"/>
+	<language key="cannotNothing" value="账户名或密码不能为空！"/>
+	<language key="comfirm" value="确 定"/>
+	<language key="cancel" value="取 消"/>
+	<language key="zhidao" value="我知道了"/>
+	<language key="loadServersList" value="正在加载服务器列表，请稍等..."/>
+	<language key="xinfu" value="新区"/>
+	<language key="huobao" value="火爆"/>
+	<language key="huanying" value="欢迎您"/>
+	<language key="mimaDifferent" value="密码和重复密码不一致！"/>
+	<language key="registerSuccess" value="注册成功！"/>
+	<language key="serversFaile" value="注册失败，无法连接到服务器！"/>
+	<language key="account" value="账号："/>
+	<language key="password" value="密码："/>
+	<language key="okPassword" value="确认密码："/>
+	<language key="newAccount" value="注册新账户"/>
+	<language key="zhuce" value="注 册"/>
+	<language key="banbenguodi" value="由于您版本过低，无法进行游戏，请及时更新！"/>
+	<language key="gengxin" value="更新"/>
+	<language key="youqingtishi" value="友情提示"/>
+	<language key="shiwanDesc" value="您当前的是试玩账号，点击“确定”进行&#xa;新账号注册，注册成功的账号将继承现在&#xa;的账号使用。"/>
+	<language key="dengluzhong" value="正在登陆游戏，请稍后……"/>
+	<language key="connectserver" value="正在连接服务器，请稍后……"/>
+	<language key="noAccount" value="请输入您的账号和密码！"/>
+	<language key="netError" value="网络故障，请重新登陆！"/>
+	<language key="chaoshangxian" value="名字过长，请限制在6个字以内"/>
+	<language key="disconnected" value="您的网络异常，请重新进入游戏……"/>
+	<language key="quitGame" value="亲! 陪小萌再玩一会嘛 {1}"/>
+	<language key="querentuichu" value="残忍退出"/>
+	<language key="zaipeixiaomeng" value="再陪小萌"/>
+	<language key="zhuxiao" value="注销"/>
+	<language key="networkNotGood" value="您的网络状态不好，请检查您的网络！"/>
+	<language key="forceUpdateTIps" value="您的版本过低，请及时更新游戏！"/>
+	<language key="loginVerificationing" value="正在验证信息,请稍后..."/>
+	<language key="loginPlatformIniting" value="初始化中，请稍后..."/>
+	<language key="loginPlatformLogining" value="平台登录中，请稍后..."/>
+	<language key="versionUpdateing" value="版本检查中，请稍后..."/>
+	<language key="login_regist_registed" value="账号已经被注册"/>
+	<language key="login_regist_userOrPasswordWrong" value="用户名或密码错误"/>
+	<language key="login_login_successed" value="登陆成功"/>
+</language>

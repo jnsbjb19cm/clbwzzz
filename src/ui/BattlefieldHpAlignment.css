@@ -1,0 +1,43 @@
+/* 基地血槽固定在棋盘上方，与参考战场左右对称。 */
+body.battle-immersive .game-container.battlefield-grid-system .base-hp-slot {
+  position: absolute !important;
+  top: 15.1% !important;
+  width: 15.6% !important;
+  height: 5.25% !important;
+  min-width: 0 !important;
+  min-height: 34px !important;
+  transform: none !important;
+  z-index: 55 !important;
+}
+
+body.battle-immersive .game-container.battlefield-grid-system .base-hp-slot.player {
+  left: 2.1% !important;
+  right: auto !important;
+}
+
+body.battle-immersive .game-container.battlefield-grid-system .base-hp-slot.enemy {
+  left: auto !important;
+  right: 2.1% !important;
+}
+
+body.battle-immersive .game-container.battlefield-grid-system .base-hp-slot .base-hp-bg {
+  position: absolute !important;
+  inset: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  background-size: 100% 100% !important;
+}
+
+body.battle-immersive .game-container.battlefield-grid-system .base-hp-slot .hp {
+  position: relative !important;
+  z-index: 2 !important;
+  font-size: clamp(11px, 1.1vw, 17px) !important;
+  line-height: 1 !important;
+}
+
+body.battle-immersive .game-container.battlefield-grid-system .base-hp-slot .label {
+  position: relative !important;
+  z-index: 2 !important;
+  font-size: clamp(8px, .75vw, 12px) !important;
+  line-height: 1 !important;
+}

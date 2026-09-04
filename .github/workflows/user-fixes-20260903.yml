@@ -1,0 +1,43 @@
+name: User Fixes 20260903
+
+on:
+  push:
+    branches:
+      - '202691最新版'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: user-fixes-20260903-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify-user-fixes:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 20
+
+      - name: Check changed JavaScript syntax
+        run: |
+          node --check src/battle/BattleUserRules20260903.js
+          node --check src/ui/BattleUserPresentation20260903.js
+          node --check server/battle/PvpNeutralDamageOwnership20260903.js
+          node --check scripts/verify-user-fixes-20260903.mjs
+          node --check scripts/verify-ui-fixes-20260903.mjs
+          node --check src/main.js
+          node --check server/index.js
+
+      - name: Verify reported battle rules and card slots
+        run: node scripts/verify-user-fixes-20260903.mjs
+
+      - name: Verify reported room and lobby UI fixes
+        run: node scripts/verify-ui-fixes-20260903.mjs

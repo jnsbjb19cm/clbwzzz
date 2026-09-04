@@ -1,0 +1,11 @@
+/* BattleRoomExact 每页输出 24 张卡，因此抽屉保持 8×3。 */
+.game-room.room-exact .drawer-cards {
+  grid-template-columns: repeat(8, minmax(0, 1fr)) !important;
+  grid-template-rows: repeat(3, minmax(0, 1fr)) !important;
+}
+
+@media (max-width: 900px), (max-height: 700px) {
+  .game-room.room-exact .drawer-cards {
+    grid-template-columns: repeat(8, minmax(0, 1fr)) !important;
+  }
+}

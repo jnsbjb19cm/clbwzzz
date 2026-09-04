@@ -1,0 +1,317 @@
+/*
+ * 准备房最终对齐与卡牌底栏修复。
+ * 该文件位于房间样式链末端，只覆盖准备房。
+ */
+
+.game-room.room-rebuild.room-polish {
+  overflow: clip !important;
+  contain: layout paint !important;
+}
+.game-room.room-rebuild.room-polish *,
+.game-room.room-rebuild.room-polish *::before,
+.game-room.room-rebuild.room-polish *::after {
+  box-sizing: border-box !important;
+}
+
+/* 左侧保持三人布局。 */
+.game-room.room-rebuild.room-polish .room-left-side {
+  left: 2.2% !important;
+  right: auto !important;
+  top: 3.45% !important;
+  width: 36.8% !important;
+  height: 64.5% !important;
+}
+
+/* PVE/BOSS：红方容器镜像蓝方，上方主槽靠右、下方两个槽位平铺。 */
+.game-room.room-rebuild.room-polish.room-pve-like .room-right-side {
+  left: auto !important;
+  right: 2.2% !important;
+  top: 3.45% !important;
+  width: 36.8% !important;
+  height: 64.5% !important;
+}
+.game-room.room-rebuild.room-polish.room-pve-like .room-right-side .top-enemy {
+  position: absolute !important;
+  left: auto !important;
+  right: 0 !important;
+  top: 0 !important;
+  width: 48.5% !important;
+  height: 58.5% !important;
+}
+.game-room.room-rebuild.room-polish.room-pve-like .room-right-side .enemy-slots-row {
+  position: absolute !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  width: 100% !important;
+  height: 40.2% !important;
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  gap: 3.1% !important;
+}
+
+/* PVP：红方三名玩家镜像蓝方。 */
+.game-room.room-rebuild.room-polish.room-pvp-like .room-right-side {
+  left: auto !important;
+  right: 2.2% !important;
+  top: 3.45% !important;
+  width: 36.8% !important;
+  height: 64.5% !important;
+}
+.game-room.room-rebuild.room-polish.room-pvp-like .room-right-side .top-enemy {
+  position: absolute !important;
+  left: auto !important;
+  right: 0 !important;
+  top: 0 !important;
+  width: 48.5% !important;
+  height: 58.5% !important;
+}
+.game-room.room-rebuild.room-polish.room-pvp-like .room-right-side .enemy-slots-row {
+  position: absolute !important;
+  left: 0 !important;
+  right: auto !important;
+  bottom: 0 !important;
+  width: 100% !important;
+  height: 40.2% !important;
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  gap: 3.1% !important;
+}
+.game-room.room-rebuild.room-polish .room-right-side .enemy-slots-row > .enemy-slot {
+  width: 100% !important;
+  height: 100% !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+}
+.game-room.room-rebuild.room-polish.room-pve-like .room-right-side .top-enemy .qmark {
+  font-size: 4.55em !important;
+}
+.game-room.room-rebuild.room-polish.room-pve-like .room-right-side .enemy-slots-row .qmark {
+  font-size: 2.5em !important;
+}
+
+/* VS 对齐中部空白区域。 */
+.game-room.room-rebuild.room-polish .room-vs {
+  left: 39.4% !important;
+  top: 40.8% !important;
+  width: 21.2% !important;
+  height: 22.8% !important;
+  font-size: 5em !important;
+}
+
+/* 功能卡必须在自己的网格中，禁止继承旧版绝对坐标。 */
+.game-room.room-rebuild.room-polish .room-mid-actions {
+  position: absolute !important;
+  overflow: visible !important;
+}
+.game-room.room-rebuild.room-polish .room-mid-actions > .mid-btn,
+.game-room.room-rebuild.room-polish .room-mid-actions > button {
+  position: relative !important;
+  inset: auto !important;
+  left: auto !important;
+  right: auto !important;
+  top: auto !important;
+  bottom: auto !important;
+  width: 100% !important;
+  height: 100% !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+  margin: 0 !important;
+  transform: none !important;
+}
+
+/* PVE/BOSS：随机地图、技能、开始三个区域留出实体间隔。 */
+.game-room.room-rebuild.room-polish.room-pve-like .room-mid-actions {
+  left: 48.6% !important;
+  bottom: 10.5% !important;
+  width: 38% !important;
+  height: 19.2% !important;
+  display: grid !important;
+  grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  gap: 2% !important;
+}
+.game-room.room-rebuild.room-polish.room-pve-like .room-mid-actions .team-btn {
+  display: flex !important;
+}
+.game-room.room-rebuild.room-polish.room-pve-like .room-ready-btn {
+  position: absolute !important;
+  left: 88.2% !important;
+  bottom: 10.5% !important;
+  width: 9.6% !important;
+  height: 19.2% !important;
+  margin: 0 !important;
+  transform: none !important;
+}
+
+/* PVP：三项功能和开始按钮同样分离。 */
+.game-room.room-rebuild.room-polish.room-pvp-like .room-mid-actions {
+  left: 48.6% !important;
+  bottom: 10.5% !important;
+  width: 38% !important;
+  height: 19.2% !important;
+  display: grid !important;
+  grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  gap: 2% !important;
+}
+.game-room.room-rebuild.room-polish.room-pvp-like .room-ready-btn {
+  position: absolute !important;
+  left: 88.2% !important;
+  bottom: 10.5% !important;
+  width: 9.6% !important;
+  height: 19.2% !important;
+  margin: 0 !important;
+  transform: none !important;
+}
+
+/* 底部工具栏不参与中部按钮宽度计算。 */
+.game-room.room-rebuild.room-polish .room-bottom-bar {
+  left: 48.6% !important;
+  right: 1.7% !important;
+  bottom: 1.05% !important;
+  height: 7.45% !important;
+  z-index: 84 !important;
+}
+.game-room.room-rebuild.room-polish .room-mid-actions,
+.game-room.room-rebuild.room-polish .room-ready-btn {
+  z-index: 76 !important;
+}
+
+/* 抽屉关闭时彻底退出布局，避免 scrollHeight 虚高。 */
+.game-room.room-rebuild .card-drawer:not(.open),
+.game-room.room-rebuild #card-drawer:not(.open) {
+  display: none !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+}
+.game-room.room-rebuild .card-drawer.open,
+.game-room.room-rebuild #card-drawer.open {
+  display: block !important;
+  visibility: visible !important;
+  pointer-events: auto !important;
+}
+
+/* 卡牌常态不显示等级文字，仅显示左下消耗数字和右下功能图标。 */
+.game-room.room-rebuild .room-card-level-label,
+.game-room.room-rebuild .drawer-card .room-card-level-label {
+  display: none !important;
+}
+.game-room.room-rebuild .room-card-cost {
+  left: 3.2% !important;
+  bottom: 2.3% !important;
+  min-width: 34% !important;
+  height: 18.5% !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: .08em !important;
+  color: #fff8c5 !important;
+  font-family: "Arial Black", "Microsoft YaHei UI", sans-serif !important;
+  font-size: .76em !important;
+  font-weight: 1000 !important;
+  line-height: 1 !important;
+  text-shadow: 0 1px 0 #151a0c, 1px 0 0 #151a0c, -1px 0 0 #151a0c !important;
+}
+.game-room.room-rebuild .room-card-cost i {
+  position: relative !important;
+  width: 1.18em !important;
+  height: 1.18em !important;
+  flex: 0 0 1.18em !important;
+  overflow: hidden !important;
+  color: transparent !important;
+  font-size: 0 !important;
+}
+.game-room.room-rebuild .room-card-cost i::before,
+.game-room.room-rebuild .room-card-cost i::after {
+  content: '' !important;
+  position: absolute !important;
+  pointer-events: none !important;
+}
+.game-room.room-rebuild .room-card-cost--sun i::before {
+  inset: 22% !important;
+  border-radius: 50% !important;
+  background: #ffe64f !important;
+  box-shadow: 0 0 0 .08em #8d7410, 0 0 .16em #fff49b !important;
+}
+.game-room.room-rebuild .room-card-cost--sun i::after {
+  inset: 7% !important;
+  background: repeating-conic-gradient(from 0deg, #d39e14 0 7deg, transparent 7deg 28deg) !important;
+  -webkit-mask: radial-gradient(circle, transparent 0 42%, #000 44%) !important;
+  mask: radial-gradient(circle, transparent 0 42%, #000 44%) !important;
+}
+.game-room.room-rebuild .room-card-cost--food i::before {
+  inset: 21% 18% 22% 23% !important;
+  border-radius: 60% 48% 58% 42% !important;
+  transform: rotate(-24deg) !important;
+  background: #f08a57 !important;
+  box-shadow: 0 0 0 .08em #6f2c1e !important;
+}
+.game-room.room-rebuild .room-card-cost--food i::after {
+  width: 35% !important;
+  height: 35% !important;
+  left: 6% !important;
+  top: 4% !important;
+  border-radius: 50% !important;
+  background: #f5e6bd !important;
+  box-shadow: 0 0 0 .07em #6f2c1e !important;
+}
+.game-room.room-rebuild .room-card-cost b {
+  color: #fff8c5 !important;
+  font: inherit !important;
+  line-height: 1 !important;
+}
+.game-room.room-rebuild .room-card-type {
+  right: 2.8% !important;
+  bottom: 2.3% !important;
+  width: 18.5% !important;
+  height: 18.5% !important;
+}
+
+/* 六格星轨：顶部只显示星图，不显示等级。 */
+.game-room.room-rebuild .room-card-stars-wrap {
+  position: absolute !important;
+  z-index: 5 !important;
+  left: 5.5% !important;
+  right: 5.5% !important;
+  top: 3.2% !important;
+  width: auto !important;
+  height: 9.2% !important;
+  display: grid !important;
+  grid-template-columns: repeat(6, minmax(0, 1fr)) !important;
+  align-items: center !important;
+  gap: .4% !important;
+  overflow: hidden !important;
+}
+.game-room.room-rebuild .room-card-star-atlas {
+  width: 100% !important;
+  height: 100% !important;
+  aspect-ratio: 1 !important;
+}
+.game-room.room-rebuild .room-card-star-extra {
+  position: absolute !important;
+  right: 0 !important;
+  top: 0 !important;
+  color: #fff3a8 !important;
+  font-size: .42em !important;
+}
+.game-room.room-rebuild .room-card-art,
+.game-room.room-rebuild .drawer-card .room-card-art {
+  left: 8% !important;
+  right: 8% !important;
+  top: 13.8% !important;
+  width: 84% !important;
+  height: 67.2% !important;
+}
+
+/* 中文翻页完整显示。 */
+.game-room.room-rebuild .exact-drawer-pager {
+  width: 8.4% !important;
+  right: .55% !important;
+}
+.game-room.room-rebuild .drawer-cards {
+  right: 9.7% !important;
+}
+.game-room.room-rebuild .exact-drawer-pager button {
+  font-size: .72em !important;
+  line-height: 1.15 !important;
+  writing-mode: horizontal-tb !important;
+  white-space: normal !important;
+}

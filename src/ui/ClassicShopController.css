@@ -1,0 +1,103 @@
+/* Scoped classic shop controls. Nothing here is allowed to restyle other views. */
+.classic-shop-screen .classic-shop-product-action,
+.classic-shop-screen .classic-shop-cart-quantity {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  min-width: 104px;
+  min-height: 34px;
+}
+
+.classic-shop-screen .classic-shop-product-action > button,
+.classic-shop-screen .classic-shop-cart-quantity > button {
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  border: 2px solid #7d441b;
+  border-radius: 7px;
+  color: #fff3ae;
+  font: 900 20px/24px Arial, sans-serif;
+  background: linear-gradient(#d97832, #9d3e1f);
+  box-shadow: inset 0 1px #ffc96f, 0 1px 2px rgba(65, 31, 13, .38);
+  cursor: pointer;
+}
+
+.classic-shop-screen .classic-shop-product-action > button:hover,
+.classic-shop-screen .classic-shop-cart-quantity > button:hover {
+  filter: brightness(1.08);
+}
+
+.classic-shop-screen .classic-shop-product-action > b,
+.classic-shop-screen .classic-shop-cart-quantity > b {
+  min-width: 30px;
+  padding: 4px 5px;
+  border: 1px solid #9d6a2d;
+  border-radius: 6px;
+  color: #5d3619;
+  font-size: 15px;
+  text-align: center;
+  background: rgba(255, 239, 174, .92);
+  box-shadow: inset 0 1px rgba(255,255,255,.72);
+}
+
+.classic-shop-screen [data-cart-list] li {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 8px;
+}
+
+.classic-shop-screen [data-cart-list] li > span:first-child {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Make the lower checkout area speak the same visual language as the upper cart tab. */
+.classic-shop-screen .classic-shop-cart {
+  border-color: #8b5a22 !important;
+  background: linear-gradient(180deg, rgba(255, 239, 177, .96), rgba(218, 169, 80, .94)) !important;
+  box-shadow: inset 0 0 0 2px rgba(255, 249, 202, .72), 0 2px 5px rgba(75, 42, 15, .34) !important;
+}
+
+.classic-shop-screen .classic-shop-checkout {
+  border: 3px solid #7c4519 !important;
+  border-radius: 8px !important;
+  color: #fff4ae !important;
+  font-weight: 900 !important;
+  background: linear-gradient(#dc7b31, #9f401e) !important;
+  text-shadow: 0 1px #5e2d16;
+  box-shadow: inset 0 2px #ffc86f, 0 2px 3px rgba(74, 37, 15, .35) !important;
+}
+
+.classic-shop-screen .classic-shop-checkout:disabled {
+  opacity: .56;
+  filter: grayscale(.25);
+}
+
+.classic-shop-screen .classic-shop-direct-image,
+.classic-shop-screen .classic-shop-semantic-art {
+  position: relative;
+  width: 78px;
+  height: 78px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.classic-shop-screen .classic-shop-direct-image img {
+  display: block;
+  max-width: 76px;
+  max-height: 76px;
+  object-fit: contain;
+  image-rendering: auto;
+  filter: drop-shadow(0 2px 2px rgba(74, 35, 12, .25));
+}
+
+.classic-shop-screen .classic-shop-semantic-art .classic-shop-atlas,
+.classic-shop-screen .classic-shop-semantic-art .classic-currency-icon {
+  transform: scale(1.22);
+  transform-origin: center;
+}

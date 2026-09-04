@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<language name="arena">
+	<language key="jingzhengchenghao" value="竞技称号"/>
+	<language key="jieshao_1" value="在召唤大陆中，最伟大的召唤师将被冠以独一无二的名号，响彻整个大陆。"/>
+	<language key="jieshao_2" value="每周日晚24：00，根据竞技排名将会赐予各伟大的召唤师对应的称号。称号将会在聊天系统中以图标显示。\n第一名：传说的召唤师\n第二名：召唤大师\n第三名：召唤贤者\n第四~十名：召唤新星"/>
+	<language key="guangbi" value="关闭"/>
+</language>

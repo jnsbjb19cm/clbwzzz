@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<language name="assignSmelting">
+    <language key="assignSmelting_/" value="/"/>
+	<language key="assignSmelting_text" value="熔炼"/>
+	<language key="assignSmelting_check" value="填满材料"/>
+	<language key="assignSmelting_level" value="等级不够"/>
+	<language key="assignSmelting_title" value="在右边选择想要熔炼的卡牌"/>
+	<language key="assignSmelting_redDimond" value="红钻不足"/>
+	<language key="assignSmelting_page" value="\n页"/>
+	<language key="assignSmelting_total" value="共\n"/>
+	<language key="assignSmelting_first" value="第\n"/>
+	<language key="assignSmelting_checkAlert1-1" value="填满材料熔炼"/>
+	<language key="assignSmelting_checkAlert1-2" value="需要消耗"/>
+	<language key="assignSmelting_checkAlert1-3" value="红钻，你确定熔炼吗?"/>
+	<language key="assignSmelting_checkAlert2-1" value=" 你确定要熔炼"/>
+	<language key="assignSmelting_checkAlert2-2" value=" 吗？"/>
+	<language key="assignSmelting_checkAlert3-1" value="获得卡牌"/>
+</language>

@@ -1,0 +1,119 @@
+/*
+ * 战斗最终显示层：
+ * - 逻辑格子尺寸不变；单位、子弹和技能 Canvas 可以延伸到整个战斗视口；
+ * - 左右冰柱按完整参考背景贴边；
+ * - 手牌、血条和单位状态不再被父容器裁切。
+ */
+
+body.battle-immersive .battle-alignment-audited-final,
+body.battle-immersive .battle-alignment-audited-final .battlefield-wrap,
+body.battle-immersive .battle-alignment-audited-final .bg-stack,
+body.battle-immersive .battle-alignment-audited-final .battle-unit-health-layer,
+body.battle-immersive .battle-fullscreen-final .battlefield-wrap[data-fullfield-visuals="true"] {
+  overflow: visible !important;
+  contain: none !important;
+  clip-path: none !important;
+  mask-image: none !important;
+}
+
+body.battle-immersive #battle-canvas.battle-canvas-fullfield-final,
+body.battle-immersive .battle-alignment-audited-final #battle-canvas {
+  position: absolute !important;
+  max-width: none !important;
+  max-height: none !important;
+  image-rendering: auto !important;
+  transform: none !important;
+  transform-origin: 0 0 !important;
+  clip-path: none !important;
+  mask-image: none !important;
+  filter: none !important;
+  overflow: visible !important;
+}
+
+/*
+ * 柱子素材本身带少量透明外边距。最终层适度放大并向屏幕外推，
+ * 让可见冰柱从最左/最右边缘开始，同时顶部头部和底部柱脚完整落在视口内。
+ */
+body.battle-immersive .battle-fullscreen-final > .bg-layer-left-column,
+body.battle-immersive .battle-fullscreen-final > .bg-layer-right-column {
+  top: -2.4dvh !important;
+  bottom: auto !important;
+  width: clamp(270px, 21vw, 430px) !important;
+  height: 105dvh !important;
+  background-size: auto 105dvh !important;
+  background-position-y: top !important;
+  z-index: 34 !important;
+  transform: none !important;
+  clip-path: none !important;
+  overflow: visible !important;
+}
+
+body.battle-immersive .battle-fullscreen-final > .bg-layer-left-column {
+  left: -1.15vw !important;
+  right: auto !important;
+  background-position-x: left !important;
+}
+
+body.battle-immersive .battle-fullscreen-final > .bg-layer-right-column {
+  right: -1.15vw !important;
+  left: auto !important;
+  background-position-x: right !important;
+}
+
+/* 顶部手牌允许星级、选中光效和立绘完整显示。 */
+body.battle-immersive .battle-alignment-audited-final .top-ui,
+body.battle-immersive .battle-alignment-audited-final .top-ui .slots-container {
+  overflow: visible !important;
+}
+
+body.battle-immersive .battle-alignment-audited-final #hand .deck-slot {
+  overflow: hidden !important;
+}
+
+/* 血槽宽度由 JS 根据顶部卡牌栏左右剩余空间实时设置。 */
+body.battle-immersive
+  .battle-game-wrap
+  > .base-hp-slot.base-hp-reference-final {
+  top: 0 !important;
+  height: clamp(36px, 5.1vh, 49px) !important;
+  min-width: 190px !important;
+  max-width: 430px !important;
+  z-index: 230 !important;
+}
+
+body.battle-immersive .base-hp-reference-final .base-hp-track-final {
+  inset: 2px 3px 2px !important;
+  border-radius: 3px 3px 13px 13px !important;
+}
+
+body.battle-immersive .base-hp-reference-final .hp {
+  top: 4px !important;
+}
+
+body.battle-immersive .base-hp-reference-final .label {
+  bottom: 4px !important;
+}
+
+/* 格子继续使用原逻辑区域；只让显示 Canvas 获得外延。 */
+body.battle-immersive .battle-alignment-audited-final #place-grid-overlay {
+  overflow: visible !important;
+  clip-path: none !important;
+}
+
+body.battle-immersive .battle-alignment-audited-final .battlefield-wrap {
+  isolation: isolate !important;
+}
+
+@media (max-width: 1000px), (max-height: 650px) {
+  body.battle-immersive
+    .battle-game-wrap
+    > .base-hp-slot.base-hp-reference-final {
+    min-width: 150px !important;
+    height: 34px !important;
+  }
+
+  body.battle-immersive .battle-fullscreen-final > .bg-layer-left-column,
+  body.battle-immersive .battle-fullscreen-final > .bg-layer-right-column {
+    width: clamp(190px, 22vw, 300px) !important;
+  }
+}

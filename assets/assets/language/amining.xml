@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<language name="amining">
+	<language key="amining_zhengshou" value="征收"/>
+	<language key="amining_yizhengshou" value="已征收"/>
+	<language key="amining_kaicai" value="开采"/>
+	<language key="amining_cishushangxian" value="次数上限"/>
+</language>

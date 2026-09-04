@@ -1,0 +1,13 @@
+{
+  "image": "map-3.png",
+  "path": "dyload/map-3.xml",
+  "sprites": [
+    {
+      "name": "map3",
+      "x": 2,
+      "y": 2,
+      "width": 1363,
+      "height": 768
+    }
+  ]
+}

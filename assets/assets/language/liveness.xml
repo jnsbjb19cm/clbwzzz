@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<language name="liveness">
+	<language key="liveness_lingqu" value="领取"/>
+	
+	<language key="liveness_jiman" value="集满"/>
+	<language key="liveness_lihesuoxu" value="100"/>
+	<language key="liveness_huoyueduihuan" value="点活跃值可以兑换一个"/>
+	<language key="liveness_xingyunlihe" value="幸运礼盒"/>
+	<language key="liveness_oo" value="哦"/>
+	
+	<language key="liveness_zhiduohuode" value="每天至多获得"/>
+	<language key="liveness_zhiduoshuliang" value="600"/>
+	<language key="liveness_yihuode" value="(已获得"/>
+	<language key="liveness_dianhuoyue" value=")点活跃值"/>
+	
+	<language key="liveness_huoqutujing" value="您可以通过以下途径获得活跃值："/>
+	
+	<language key="liveness_content_1" value=  "1.  每日登录"/>
+	<language key="liveness_val_1" value=  "30"/>
+	
+	<language key="liveness_content_2" value=  "2.  角色升级"/>
+	<language key="liveness_val_2" value=  "5"/>
+	
+	<language key="liveness_content_3" value=  "3.  进行1次征收"/>
+	<language key="liveness_val_3" value=  "5"/>
+	
+	<language key="liveness_content_4" value=  "4.  进行1次开采"/>
+	<language key="liveness_val_4" value=  "10"/>
+	
+	<language key="liveness_content_5" value=  "5.  通关任意关卡1次"/>
+	<language key="liveness_val_5" value=  "2"/>
+	
+	<language key="liveness_content_6" value=  "6.  购买体力1次"/>
+	<language key="liveness_val_6" value=  "5"/>
+	
+	<language key="liveness_content_7" value=  "7.  完成1次排行竞技"/>
+	<language key="liveness_val_7" value=  "3"/>
+	
+	<language key="liveness_content_8" value=  "8.  购买1次排行竞技"/>
+	<language key="liveness_val_8" value=  "5"/>
+	
+	<language key="liveness_content_9" value=  "9.  完成1次天梯竞技"/>
+	<language key="liveness_val_9" value=  "3"/>
+	
+	<language key="liveness_content_10" value="10. 购买1次天梯竞技"/>
+	<language key="liveness_val_10" value= "5"/>
+	
+	<language key="liveness_content_11" value="11. 抽取1次精英扭蛋"/>
+	<language key="liveness_val_11" value= "3"/>
+	
+	<language key="liveness_content_12" value="12. 抽取1次英雄扭蛋"/>
+	<language key="liveness_val_12" value= "10"/>
+	
+	<language key="liveness_content_13" value="13. 进行1次10连抽"/>
+	<language key="liveness_val_13" value= "100"/>
+	
+	<language key="liveness_content_14" value="14. 红钻购买道具"/>
+	<language key="liveness_val_14" value= "2"/>
+	
+	<language key="liveness_content_15" value="15. 卡牌提升1星"/>
+	<language key="liveness_val_15" value= "5"/>
+	
+	<language key="liveness_content_16" value="16. 合成1件装备"/>
+	<language key="liveness_val_16" value= "10"/>
+	
+	<language key="liveness_content_17" value="17. 装备强化等级加1"/>
+	<language key="liveness_val_17" value= "2"/>
+
+</language>

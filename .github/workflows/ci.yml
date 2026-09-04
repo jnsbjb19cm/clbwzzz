@@ -1,0 +1,123 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+      - fix/fullscreen-battle-20260803
+      - fix/pvp-wilderness-room-20260805
+      - '202691最新版'
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  syntax-and-build:
+    name: Syntax and Vite build
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Audit dependency vulnerabilities
+        run: npm audit --audit-level=moderate
+
+      - name: Check JavaScript syntax
+        run: node scripts/ci-syntax-check.mjs
+
+      - name: Verify 1536 room reconstruction
+        run: node scripts/verify-room-reference-1536.mjs
+
+      - name: Verify all card special attacks
+        run: npm run verify:card-specials
+
+      - name: Verify fly-shoe first-contact special
+        run: npm run verify:fly-shoe
+
+      - name: Verify multiplayer fly-shoe authority special
+        run: node scripts/verify-pvp-fly-shoe-authority.mjs
+
+      - name: Verify projectile appears at the animation release frame
+        run: node scripts/verify-attack-release-regression-20260811.mjs
+
+      - name: Verify projectile server timeline protocol
+        run: node scripts/verify-projectile-spawn-event-protocol-20260819.mjs
+
+      - name: Verify frame-rate independent projectile timeline
+        run: node scripts/verify-projectile-server-timeline-20260819.mjs
+
+      - name: Verify projectile authority cadence
+        run: node scripts/verify-authority-projectile-release-latency-20260819.mjs
+
+      - name: Verify range-one melee contact
+        run: npm run verify:melee-contact
+
+      - name: Verify mushroom toxic projectile
+        run: npm run verify:mushroom-projectile
+
+      - name: Verify projectile full-viewport travel
+        run: npm run verify:projectile-viewport
+
+      - name: Verify battle hot-loop does not rebind methods
+        run: npm run verify:hot-loop
+
+      - name: Verify reported runtime regressions
+        run: node scripts/verify-battle-runtime-regressions-20260810.mjs
+
+      - name: Verify original card sound mappings
+        run: npm run verify:sounds
+
+      - name: Verify functional shop items
+        run: npm run verify:functional-items
+
+      - name: Verify PVP server authority
+        run: npm run verify:pvp-authority
+
+      - name: Verify PVP combat polish
+        run: npm run verify:pvp-combat-polish
+
+      - name: Verify PVP round-two gameplay
+        run: npm run verify:pvp-round2
+
+      - name: Verify PVP round-three placement and pacing
+        run: npm run verify:pvp-round3
+
+      - name: Verify cooperative BOSS authority
+        run: npm run verify:coop-boss
+
+      - name: Verify latest multiplayer and BOSS battle rules
+        run: npm run verify:user-rules-20260819
+
+      - name: Verify BOSS commander never hijacks normal targeting
+        run: node scripts/verify-boss-commander-targeting-20260819.mjs
+
+      - name: Build production bundle
+        run: npm run build
+
+      - name: Verify calibrated parabola release frames
+        run: npm run verify:parabola-release
+
+      - name: Audit every rebaked unit animation frame
+        run: npm run verify:unit-animation-bounds
+
+      - name: Audit every projectile impact animation frame
+        run: npm run verify:bullet-animation-bounds

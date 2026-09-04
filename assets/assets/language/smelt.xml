@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<language name="smelt">
+	<language key="evolution_pinzhi" value="星级变化："/>
+	<language key="evolution_gongji" value="攻击力："/>
+	<language key="evolution_shengming" value="生命值："/>
+	<language key="evolution_queding" value="确  定"/>
+	<language key="evolution_cancle" value="返  回"/>
+	<language key="evolution_jiaru" value="加入"/>
+	<language key="evolution_crit" value="暴击"/>
+	<language key="evolution_jinhuakapai" value="选择卡牌"/>
+	<language key="evolution_sumExp" value="获得经验："/>
+	<language key="evolution_sumPrice" value="消耗金币："/>
+	<language key="evolution_jinjie" value="进化"/>
+	<language key="evolution_hongzuanbaoji" value="当次进化将获得1.5倍经验收益"/>
+	<language key="evolution_zuigao" value="该卡牌已达最高星级，无需进化"/>
+	<language key="evolution_effectCardNoSmelt" value="经验卡只能作为进化材料使用"/>
+	<language key="evolution_cailiao" value="材料"/>
+	<language key="evolution_mancailiao" value="材料已填满"/>
+	<language key="evolution_baojichengong" value="若红钻暴击"/>
+	<language key="evolution_yinbibuzu" value="您的金币不足"/>
+	<language key="evolution_back" value="返回"/>
+	<language key="evolution_useingNotPut" value="使用中的卡牌不能作为材料使用"/>
+	<language key="evolution_please_put_one_mainCard" value="请先选择一张主卡"/>
+	<language key="evolutionCurrentNoAutoPutMaterial" value="没有找到符合条件的材料，请尝试手动选择"/>
+</language>

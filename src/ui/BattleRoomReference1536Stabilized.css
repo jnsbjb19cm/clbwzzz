@@ -1,0 +1,289 @@
+/*
+ * Final visual stabilizer for the 1536×940 DOM/CSS room.
+ * Geometry is owned by BattleRoomReference1826Authority.js. This file only
+ * normalizes visual sizes that legacy room styles previously expressed in vw/em.
+ */
+
+.game-room.room-reference-1536 {
+  font-size: calc(14px * var(--room-scale, 1)) !important;
+}
+
+.game-room.room-reference-1536 .member-slot,
+.game-room.room-reference-1536 .enemy-slot {
+  border-width: calc(3px * var(--room-scale, 1)) !important;
+  border-radius: calc(8px * var(--room-scale, 1)) !important;
+}
+
+.game-room.room-reference-1536 .member-slot::before,
+.game-room.room-reference-1536 .enemy-slot::before {
+  inset: calc(4px * var(--room-scale, 1)) !important;
+  border-radius: calc(5px * var(--room-scale, 1)) !important;
+}
+
+.game-room.room-reference-1536 .member-name {
+  font-size: calc(12px * var(--room-scale, 1)) !important;
+}
+.game-room.room-reference-1536 .member-lv,
+.game-room.room-reference-1536 .member-tag.owner-tag {
+  font-size: calc(10px * var(--room-scale, 1)) !important;
+}
+.game-room.room-reference-1536 .ready-mark,
+.game-room.room-reference-1536 .not-ready {
+  font-size: calc(9px * var(--room-scale, 1)) !important;
+}
+
+.game-room.room-reference-1536 .enemy-slot.question-mark::after {
+  font-size: calc(126px * var(--room-scale, 1)) !important;
+}
+.game-room.room-reference-1536 .enemy-slots-row .enemy-slot.question-mark::after {
+  font-size: calc(108px * var(--room-scale, 1)) !important;
+}
+
+/* Header */
+.game-room.room-reference-1536 .room-top-bar {
+  padding: 0 calc(22px * var(--room-scale, 1)) !important;
+  border-width: calc(2px * var(--room-scale, 1)) !important;
+  border-radius:
+    calc(6px * var(--room-scale, 1))
+    calc(6px * var(--room-scale, 1))
+    calc(9px * var(--room-scale, 1))
+    calc(9px * var(--room-scale, 1)) !important;
+}
+.game-room.room-reference-1536 .room-title-text {
+  font-size: calc(34px * var(--room-scale, 1)) !important;
+  line-height: 1 !important;
+  -webkit-text-stroke-width: calc(1.5px * var(--room-scale, 1)) !important;
+}
+
+/* Deck header */
+.game-room.room-reference-1536 .deck-header {
+  border-width: calc(2px * var(--room-scale, 1)) !important;
+  border-radius: calc(18px * var(--room-scale, 1)) !important;
+}
+.game-room.room-reference-1536 .deck-title {
+  font-size: calc(23px * var(--room-scale, 1)) !important;
+  line-height: 1 !important;
+}
+.game-room.room-reference-1536 .deck-tab {
+  color: #3f4016 !important;
+  background: transparent !important;
+  border: 0 !important;
+  font-size: calc(16px * var(--room-scale, 1)) !important;
+  font-weight: 900 !important;
+  line-height: 1 !important;
+  padding: 0 0 0 calc(20px * var(--room-scale, 1)) !important;
+}
+.game-room.room-reference-1536 .deck-tab::before {
+  content: '' !important;
+  position: absolute !important;
+  left: calc(2px * var(--room-scale, 1)) !important;
+  top: 50% !important;
+  width: calc(14px * var(--room-scale, 1)) !important;
+  height: calc(14px * var(--room-scale, 1)) !important;
+  transform: translateY(-50%) !important;
+  border: calc(1px * var(--room-scale, 1)) solid #536c17 !important;
+  border-radius: calc(2px * var(--room-scale, 1)) !important;
+  background: #eef5bd !important;
+}
+.game-room.room-reference-1536 .deck-tab::after {
+  content: none !important;
+}
+.game-room.room-reference-1536 .deck-tab.active::after {
+  content: '✓' !important;
+  position: absolute !important;
+  left: calc(2px * var(--room-scale, 1)) !important;
+  top: 50% !important;
+  transform: translateY(-54%) rotate(-10deg) !important;
+  color: #159442 !important;
+  font-size: calc(16px * var(--room-scale, 1)) !important;
+  font-weight: 1000 !important;
+}
+.game-room.room-reference-1536 #swap-card-btn {
+  border-width: calc(1.5px * var(--room-scale, 1)) !important;
+  border-radius: calc(24px * var(--room-scale, 1)) !important;
+  font-size: calc(20px * var(--room-scale, 1)) !important;
+  line-height: 1 !important;
+  white-space: nowrap !important;
+}
+
+/* Ten deck slots: never allow legacy margins/percentage offsets to alter row. */
+.game-room.room-reference-1536 #deck-slots-row > * {
+  position: relative !important;
+  inset: auto !important;
+  width: 100% !important;
+  height: 100% !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+  margin: 0 !important;
+  transform: none !important;
+}
+
+/* VS */
+.game-room.room-reference-1536 .room-vs {
+  font-size: calc(102px * var(--room-scale, 1)) !important;
+  line-height: .78 !important;
+  letter-spacing: calc(-8px * var(--room-scale, 1)) !important;
+  -webkit-text-stroke-width: calc(2px * var(--room-scale, 1)) !important;
+  text-shadow:
+    0 0 calc(4px * var(--room-scale, 1)) #fff9c7,
+    0 0 calc(17px * var(--room-scale, 1)) rgba(255,252,203,.98),
+    calc(2px * var(--room-scale, 1)) calc(2px * var(--room-scale, 1)) calc(1px * var(--room-scale, 1)) rgba(149,74,7,.30) !important;
+}
+
+/* Chat */
+.game-room.room-reference-1536 .exact-room-chat {
+  border-width: calc(2px * var(--room-scale, 1)) !important;
+  border-radius: calc(4px * var(--room-scale, 1)) !important;
+}
+.game-room.room-reference-1536 .exact-room-chat-log {
+  left: calc(9px * var(--room-scale, 1)) !important;
+  right: calc(9px * var(--room-scale, 1)) !important;
+  top: calc(7px * var(--room-scale, 1)) !important;
+  bottom: calc(62px * var(--room-scale, 1)) !important;
+  font-size: calc(11px * var(--room-scale, 1)) !important;
+}
+.game-room.room-reference-1536 .exact-room-chat-form {
+  height: calc(61px * var(--room-scale, 1)) !important;
+  border-top-width: calc(2px * var(--room-scale, 1)) !important;
+}
+.game-room.room-reference-1536 .exact-room-chat-current {
+  left: calc(8px * var(--room-scale, 1)) !important;
+  font-size: calc(16px * var(--room-scale, 1)) !important;
+}
+.game-room.room-reference-1536 .exact-room-chat-form input {
+  left: calc(92px * var(--room-scale, 1)) !important;
+  top: calc(11px * var(--room-scale, 1)) !important;
+  width: calc(490px * var(--room-scale, 1)) !important;
+  height: calc(34px * var(--room-scale, 1)) !important;
+  padding: 0 calc(8px * var(--room-scale, 1)) !important;
+  font-size: calc(11px * var(--room-scale, 1)) !important;
+}
+.game-room.room-reference-1536 .exact-room-chat-form button {
+  right: calc(8px * var(--room-scale, 1)) !important;
+  top: calc(10px * var(--room-scale, 1)) !important;
+  width: calc(76px * var(--room-scale, 1)) !important;
+  height: calc(36px * var(--room-scale, 1)) !important;
+  font-size: calc(10px * var(--room-scale, 1)) !important;
+}
+
+/* Random map */
+.game-room.room-reference-1536 .dice-btn {
+  border-width: calc(2px * var(--room-scale, 1)) !important;
+  border-radius: calc(8px * var(--room-scale, 1)) !important;
+}
+.game-room.room-reference-1536 .dice-btn .room-vector-label,
+.game-room.room-reference-1536 .dice-label {
+  left: calc(10px * var(--room-scale, 1)) !important;
+  top: calc(9px * var(--room-scale, 1)) !important;
+  font-size: calc(16px * var(--room-scale, 1)) !important;
+}
+.game-room.room-reference-1536 .dice-btn .room-vector-icon,
+.game-room.room-reference-1536 .dice-icon {
+  width: calc(112px * var(--room-scale, 1)) !important;
+  height: calc(92px * var(--room-scale, 1)) !important;
+}
+.game-room.room-reference-1536 .reference-room-map-type {
+  right: calc(8px * var(--room-scale, 1)) !important;
+  bottom: calc(6px * var(--room-scale, 1)) !important;
+  max-width: calc(156px * var(--room-scale, 1)) !important;
+  padding: calc(2px * var(--room-scale, 1)) calc(6px * var(--room-scale, 1)) !important;
+  font-size: calc(12px * var(--room-scale, 1)) !important;
+}
+
+/* Skill/switch/ready */
+.game-room.room-reference-1536 .skill-btn,
+.game-room.room-reference-1536 .team-btn,
+.game-room.room-reference-1536 #room-ready-btn {
+  border-width: calc(2px * var(--room-scale, 1)) !important;
+  border-radius: calc(10px * var(--room-scale, 1)) !important;
+}
+.game-room.room-reference-1536 .skill-btn .room-vector-icon,
+.game-room.room-reference-1536 .skill-icon {
+  width: calc(78px * var(--room-scale, 1)) !important;
+  height: calc(72px * var(--room-scale, 1)) !important;
+}
+.game-room.room-reference-1536 .team-btn .room-vector-icon,
+.game-room.room-reference-1536 .team-icon {
+  width: calc(84px * var(--room-scale, 1)) !important;
+  height: calc(72px * var(--room-scale, 1)) !important;
+}
+.game-room.room-reference-1536 .skill-btn .room-vector-label,
+.game-room.room-reference-1536 .team-btn .room-vector-label,
+.game-room.room-reference-1536 .skill-label,
+.game-room.room-reference-1536 .team-label {
+  bottom: calc(9px * var(--room-scale, 1)) !important;
+  padding: 0 !important;
+  border: 0 !important;
+  background: transparent !important;
+  color: #f8efb6 !important;
+  font-size: calc(30px * var(--room-scale, 1)) !important;
+  line-height: 1 !important;
+  -webkit-text-stroke-width: calc(1px * var(--room-scale, 1)) !important;
+}
+.game-room.room-reference-1536 #room-ready-btn .ready-text {
+  padding: 0 !important;
+  border: 0 !important;
+  background: transparent !important;
+  font-size: calc(38px * var(--room-scale, 1)) !important;
+  line-height: 1 !important;
+  -webkit-text-stroke-width: calc(1.5px * var(--room-scale, 1)) !important;
+}
+
+/* Recharge */
+.game-room.room-reference-1536 .reference-room-recharge {
+  border-width: calc(2px * var(--room-scale, 1)) !important;
+}
+.game-room.room-reference-1536 .reference-room-recharge > span {
+  padding: 0 !important;
+  border: 0 !important;
+  background: transparent !important;
+  font-size: calc(17px * var(--room-scale, 1)) !important;
+}
+
+/* Bottom nav: preserve project icons, but remove legacy black label slabs and
+   guarantee all eight cells (especially 返回) stay inside the fixed footer. */
+.game-room.room-reference-1536 .room-bottom-bar {
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+}
+.game-room.room-reference-1536 .room-bottom-bar > .bottom-btn {
+  color: #f3e7a3 !important;
+  background: transparent !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  text-shadow: 0 calc(1px * var(--room-scale, 1)) calc(1px * var(--room-scale, 1)) rgba(40,67,13,.72) !important;
+  font-size: calc(12px * var(--room-scale, 1)) !important;
+}
+.game-room.room-reference-1536 .room-bottom-bar > .bottom-btn .room-vector-icon {
+  width: calc(30px * var(--room-scale, 1)) !important;
+  height: calc(30px * var(--room-scale, 1)) !important;
+  margin: 0 !important;
+  flex: 0 0 auto !important;
+}
+.game-room.room-reference-1536 .room-bottom-bar > .bottom-btn .room-vector-label {
+  display: block !important;
+  position: static !important;
+  width: auto !important;
+  height: auto !important;
+  margin: calc(2px * var(--room-scale, 1)) 0 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  color: #f3e7a3 !important;
+  font-size: calc(12px * var(--room-scale, 1)) !important;
+  font-weight: 900 !important;
+  line-height: 1 !important;
+  white-space: nowrap !important;
+  text-shadow: 0 calc(1px * var(--room-scale, 1)) calc(1px * var(--room-scale, 1)) rgba(40,67,13,.72) !important;
+  transform: none !important;
+}
+.game-room.room-reference-1536 #back-btn {
+  display: flex !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  transform: none !important;
+}

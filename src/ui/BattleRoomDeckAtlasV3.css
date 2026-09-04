@@ -1,0 +1,16 @@
+.game-room.room-deck-ui-v3 .v3-card-function .v3-atlas-function-icon {
+  width: 1.05em !important;
+  height: 1.05em !important;
+  flex: 0 0 auto !important;
+  display: block !important;
+  background-image: var(--atlas-url) !important;
+  background-repeat: no-repeat !important;
+  background-size: var(--atlas-size-x) var(--atlas-size-y) !important;
+  background-position: var(--atlas-pos-x) var(--atlas-pos-y) !important;
+  filter: drop-shadow(0 .06em .06em rgba(0,0,0,.62)) !important;
+}
+
+.game-room.room-deck-ui-v3 .v3-deck-slot .v3-card-function .v3-atlas-function-icon {
+  width: 1.22em !important;
+  height: 1.22em !important;
+}

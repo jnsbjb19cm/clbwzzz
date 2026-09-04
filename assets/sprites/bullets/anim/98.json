@@ -1,0 +1,112 @@
+{
+  "res": "98",
+  "frameW": 320,
+  "frameH": 320,
+  "animations": {
+    "yidong": {
+      "frameRate": 16.799999999999997,
+      "frames": [
+        {
+          "x": 0,
+          "y": 0,
+          "w": 320,
+          "h": 320,
+          "bounds": {
+            "left": 115,
+            "top": 149,
+            "right": 170,
+            "bottom": 168,
+            "opaque": 638
+          }
+        },
+        {
+          "x": 0,
+          "y": 320,
+          "w": 320,
+          "h": 320,
+          "bounds": {
+            "left": 115,
+            "top": 149,
+            "right": 170,
+            "bottom": 168,
+            "opaque": 638
+          }
+        },
+        {
+          "x": 0,
+          "y": 640,
+          "w": 320,
+          "h": 320,
+          "bounds": {
+            "left": 114,
+            "top": 149,
+            "right": 171,
+            "bottom": 168,
+            "opaque": 644
+          }
+        },
+        {
+          "x": 0,
+          "y": 960,
+          "w": 320,
+          "h": 320,
+          "bounds": {
+            "left": 117,
+            "top": 148,
+            "right": 172,
+            "bottom": 168,
+            "opaque": 673
+          }
+        }
+      ],
+      "loop": true,
+      "duration": 0.16666666666666666
+    },
+    "baoza": {
+      "frameRate": 12,
+      "frames": [
+        {
+          "x": 0,
+          "y": 1280,
+          "w": 320,
+          "h": 320,
+          "bounds": {
+            "left": 134,
+            "top": 145,
+            "right": 184,
+            "bottom": 179,
+            "opaque": 696
+          }
+        },
+        {
+          "x": 0,
+          "y": 1600,
+          "w": 320,
+          "h": 320,
+          "bounds": {
+            "left": 134,
+            "top": 144,
+            "right": 184,
+            "bottom": 178,
+            "opaque": 696
+          }
+        },
+        {
+          "x": 0,
+          "y": 1920,
+          "w": 320,
+          "h": 320,
+          "bounds": {
+            "left": 148,
+            "top": 148,
+            "right": 173,
+            "bottom": 171,
+            "opaque": 103
+          }
+        }
+      ],
+      "loop": false,
+      "duration": 0.16666666666666666
+    }
+  }
+}

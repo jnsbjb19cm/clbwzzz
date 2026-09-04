@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<language name="downloadRes">
+	<language key="loadingRes" value="正在加载战斗资源……"/>
+	<language key="enterGame" value="正在进入游戏……"/>
+	<language key="checkNet" value="当前使用的是2G/3G网络，确定下载资源包？"/>
+	<language key="bugeili" value="当前网络不给力哦！"/>
+	<language key="updating" value="正在更新，请稍侯……"/>
+	<language key="loadingTime" value="正在加载战斗资源，预计需要 "/>
+	<language key="minutes" value=" 分钟"/>
+	<language key="seconds" value=" 秒"/>
+	<language key="checkUpdate" value="正在检查更新……"/>
+</language>

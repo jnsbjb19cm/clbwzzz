@@ -1,0 +1,20 @@
+{
+  "image": "editCard.png",
+  "path": "preload/editCard.xml",
+  "sprites": [
+    {
+      "name": "editCard_mycard",
+      "x": 0,
+      "y": 0,
+      "width": 179,
+      "height": 48
+    },
+    {
+      "name": "editCard_allCard",
+      "x": 179,
+      "y": 0,
+      "width": 179,
+      "height": 48
+    }
+  ]
+}

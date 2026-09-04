@@ -1,0 +1,33 @@
+{
+  "res": "freeze",
+  "frameW": 200,
+  "frameH": 200,
+  "uniformBounds": {
+    "left": 64,
+    "top": 83,
+    "right": 135,
+    "bottom": 117,
+    "opaque": 902
+  },
+  "animations": {
+    "default": {
+      "frameRate": 12,
+      "frames": [
+        {
+          "x": 0,
+          "y": 0,
+          "w": 200,
+          "h": 200,
+          "bounds": {
+            "left": 70,
+            "top": 89,
+            "right": 129,
+            "bottom": 111,
+            "opaque": 902
+          }
+        }
+      ],
+      "loop": true
+    }
+  }
+}

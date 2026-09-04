@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<language name="role">
+	<language key="role_use" value="使用"/>
+	<language key="role_use_all" value="全部使用"/>
+	<language key="role_sell" value="卖出"/>
+	<language key="role_close" value="关闭"/>
+	<language key="role_num" value="数量："/>
+	<language key="role_max" value="最大"/>
+	<language key="role_comfirmChangeCareer" value="确定转职"/>
+	<language key="role_alertShow" value="已经是该职业, 无法转职!"/>
+	<language key="role_repair" value="修理"/>
+	<language key="role_puton" value="装备"/>
+	<language key="role_takeoff" value="卸下"/>
+	<language key="role_heroHp" value="英雄生命"/>
+	<language key="role_heroBaoji" value="英雄暴击"/>
+	<language key="role_armyBaoji" value="士兵暴击"/>
+	<language key="role_armyGedang" value="士兵格挡"/>
+	<language key="role_arrange" value="整理"/>
+	<language key="role_invalidateNum" value="无效的数量"/>
+	<language key="role_redDiamond" value="88红钻"/>
+	<language key="role_careerStone" value="转职水晶"/>
+	<language key="role_changeCost" value="转职消耗："/>
+	<language key="role_expandBag" value="开启1个格背包需要消耗红钻："/>
+	<language key="role_repair_value" value="修复 {0} 点耐久"/>
+	<language key="role_exp" value="经验"/>
+	<language key="TheRemoteUnitsAttack" value="远程单位攻击"/>
+	<language key="TheRemoteUnitsHP" value="远程单位生命"/>
+	<language key="ShortRangeUnitAttack" value="近程单位攻击"/>
+	<language key="ShortRangeUnitHP" value="近程单位生命"/>
+	<language key="role_use_item_compound" value="兑换"/>
+</language>

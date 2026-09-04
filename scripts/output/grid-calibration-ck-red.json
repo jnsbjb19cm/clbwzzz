@@ -1,0 +1,361 @@
+{
+  "generatedAt": "2026-06-26T12:14:35.133Z",
+  "model": "platform-anchored",
+  "sourceImage": "D:\\clbwz\\battle\\resources\\ck\\ck.png",
+  "imageSize": {
+    "w": 1248,
+    "h": 832
+  },
+  "canvas": {
+    "GAME_W": 1248,
+    "GAME_H": 832,
+    "FIELD_LEFT": 135,
+    "FIELD_TOP": 105,
+    "FIELD_W": 978,
+    "FIELD_H": 702
+  },
+  "columnAlign": {
+    "leftColumnHeight": 857,
+    "leftColumnTop": -25,
+    "rightColumnHeight": 832,
+    "note": "左柱上移25px，树根底与右柱看齐"
+  },
+  "playableEdges": {
+    "gridLeftFieldX": 0,
+    "gridRightFieldX": 977,
+    "playableW": 977,
+    "leftSamples": [
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "rightSamples": [
+      977,
+      977,
+      977,
+      977,
+      977
+    ],
+    "source": "detected"
+  },
+  "yellowGridVertical": {
+    "originY": 163,
+    "innerH": 394,
+    "boxBottom": 557,
+    "source": "detected",
+    "pointCount": 29517
+  },
+  "redFrameReference": {
+    "originX": 0,
+    "originY": 78,
+    "innerW": 977,
+    "innerH": 582,
+    "boxBottom": 660,
+    "source": "detected",
+    "pointCount": 117800,
+    "role": "reference_only"
+  },
+  "corridor": {
+    "BEARD_BOTTOM_FIELD_Y": 87,
+    "BOTTOM_ROOT_TOP_FIELD_Y": 645,
+    "innerH": 558
+  },
+  "lineLegend": {
+    "green": "绿线 field Y=87 — 胡须底",
+    "orange": "橙线 field Y=645 — 树根顶",
+    "cyan": "青框 — 格网标定外框(贴台横向)",
+    "magentaThick": "紫粗线 — 格网左/右缘，与台子内缘重合",
+    "redDashed": "红虚线 — ck.png 原稿红线(仅对照)",
+    "yellow": "黄线 — 12×5 战斗单元格",
+    "lightBlue": "浅蓝竖线 — 5+2+5 列分界"
+  },
+  "variants": [
+    {
+      "scheme": "yellow_grid_fill",
+      "label": "黄格区 铺满",
+      "outputPng": "D:\\clbwz\\battle\\scripts\\output\\格子预览-贴台黄格-铺满-ck.png",
+      "gridBox": {
+        "verticalPreset": "yellow_grid",
+        "originX": 0,
+        "originY": 163,
+        "innerW": 977,
+        "innerH": 394,
+        "boxBottom": 557,
+        "horizontalSource": "playable_edges",
+        "verticalSource": "detected",
+        "source": "platform_anchored"
+      },
+      "proposedBattleConfig": {
+        "mode": "fill_platform_box",
+        "scheme": "yellow_grid_fill",
+        "verticalPreset": "yellow_grid",
+        "GRID_ORIGIN_X": 0,
+        "GRID_ORIGIN_Y": 163,
+        "GRID_GAP": 3,
+        "CELL_W": 78.67,
+        "CELL_H": 76.4,
+        "GRID_BODY_W": 977,
+        "GRID_BODY_H": 394,
+        "GRID_V_PAD": 0,
+        "GRID_H_PAD": 0,
+        "GRID_RIGHT_MARGIN": 1,
+        "squareness": {
+          "ratio": 0.9712,
+          "deviationPct": 2.88
+        },
+        "gridBox": {
+          "originX": 0,
+          "originY": 163,
+          "innerW": 977,
+          "innerH": 394,
+          "boxBottom": 557,
+          "horizontalSource": "playable_edges",
+          "verticalSource": "detected"
+        },
+        "row0Y": 163,
+        "row4Bottom": 557,
+        "PLAYER_TREE_BEARD_BOTTOM_FIELD_Y": 87,
+        "BOTTOM_ROOT_TOP_FIELD_Y": 645,
+        "leftColumnTop": -25,
+        "columns": "5+2+5",
+        "rows": 5,
+        "playableEdges": {
+          "gridLeftFieldX": 0,
+          "gridRightFieldX": 977,
+          "playableW": 977,
+          "leftSamples": [
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "rightSamples": [
+            977,
+            977,
+            977,
+            977,
+            977
+          ],
+          "source": "detected"
+        }
+      }
+    },
+    {
+      "scheme": "yellow_grid_near_square",
+      "label": "黄格区 近似正方",
+      "outputPng": "D:\\clbwz\\battle\\scripts\\output\\格子预览-贴台黄格-近似正方-ck.png",
+      "gridBox": {
+        "verticalPreset": "yellow_grid",
+        "originX": 0,
+        "originY": 163,
+        "innerW": 977,
+        "innerH": 394,
+        "boxBottom": 557,
+        "horizontalSource": "playable_edges",
+        "verticalSource": "detected",
+        "source": "platform_anchored"
+      },
+      "proposedBattleConfig": {
+        "mode": "near_square_in_box",
+        "scheme": "yellow_grid_near_square",
+        "verticalPreset": "yellow_grid",
+        "GRID_ORIGIN_X": 0,
+        "GRID_ORIGIN_Y": 163,
+        "GRID_GAP": 3,
+        "CELL_W": 78.67,
+        "CELL_H": 76.4,
+        "GRID_BODY_W": 977,
+        "GRID_BODY_H": 394,
+        "GRID_V_PAD": 0,
+        "GRID_H_PAD": 0,
+        "GRID_RIGHT_MARGIN": 1,
+        "squareness": {
+          "ratio": 0.9712,
+          "deviationPct": 2.88
+        },
+        "gridBox": {
+          "originX": 0,
+          "originY": 163,
+          "innerW": 977,
+          "innerH": 394,
+          "boxBottom": 557,
+          "horizontalSource": "playable_edges",
+          "verticalSource": "detected"
+        },
+        "row0Y": 163,
+        "row4Bottom": 557,
+        "PLAYER_TREE_BEARD_BOTTOM_FIELD_Y": 87,
+        "BOTTOM_ROOT_TOP_FIELD_Y": 645,
+        "leftColumnTop": -25,
+        "columns": "5+2+5",
+        "rows": 5,
+        "playableEdges": {
+          "gridLeftFieldX": 0,
+          "gridRightFieldX": 977,
+          "playableW": 977,
+          "leftSamples": [
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "rightSamples": [
+            977,
+            977,
+            977,
+            977,
+            977
+          ],
+          "source": "detected"
+        }
+      }
+    },
+    {
+      "scheme": "corridor_fill",
+      "label": "走廊 铺满",
+      "outputPng": "D:\\clbwz\\battle\\scripts\\output\\格子预览-贴台走廊-铺满-ck.png",
+      "gridBox": {
+        "verticalPreset": "corridor",
+        "originX": 0,
+        "originY": 87,
+        "innerW": 977,
+        "innerH": 558,
+        "boxBottom": 645,
+        "horizontalSource": "playable_edges",
+        "verticalSource": "corridor_landmarks",
+        "source": "platform_anchored"
+      },
+      "proposedBattleConfig": {
+        "mode": "fill_platform_box",
+        "scheme": "corridor_fill",
+        "verticalPreset": "corridor",
+        "GRID_ORIGIN_X": 0,
+        "GRID_ORIGIN_Y": 87,
+        "GRID_GAP": 3,
+        "CELL_W": 78.67,
+        "CELL_H": 109.2,
+        "GRID_BODY_W": 977,
+        "GRID_BODY_H": 558,
+        "GRID_V_PAD": 0,
+        "GRID_H_PAD": 0,
+        "GRID_RIGHT_MARGIN": 1,
+        "squareness": {
+          "ratio": 0.7204,
+          "deviationPct": 27.96
+        },
+        "gridBox": {
+          "originX": 0,
+          "originY": 87,
+          "innerW": 977,
+          "innerH": 558,
+          "boxBottom": 645,
+          "horizontalSource": "playable_edges",
+          "verticalSource": "corridor_landmarks"
+        },
+        "row0Y": 87,
+        "row4Bottom": 645,
+        "PLAYER_TREE_BEARD_BOTTOM_FIELD_Y": 87,
+        "BOTTOM_ROOT_TOP_FIELD_Y": 645,
+        "leftColumnTop": -25,
+        "columns": "5+2+5",
+        "rows": 5,
+        "playableEdges": {
+          "gridLeftFieldX": 0,
+          "gridRightFieldX": 977,
+          "playableW": 977,
+          "leftSamples": [
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "rightSamples": [
+            977,
+            977,
+            977,
+            977,
+            977
+          ],
+          "source": "detected"
+        }
+      }
+    },
+    {
+      "scheme": "corridor_near_square",
+      "label": "走廊 近似正方",
+      "outputPng": "D:\\clbwz\\battle\\scripts\\output\\格子预览-贴台走廊-近似正方-ck.png",
+      "gridBox": {
+        "verticalPreset": "corridor",
+        "originX": 0,
+        "originY": 87,
+        "innerW": 977,
+        "innerH": 558,
+        "boxBottom": 645,
+        "horizontalSource": "playable_edges",
+        "verticalSource": "corridor_landmarks",
+        "source": "platform_anchored"
+      },
+      "proposedBattleConfig": {
+        "mode": "near_square_in_box",
+        "scheme": "corridor_near_square",
+        "verticalPreset": "corridor",
+        "GRID_ORIGIN_X": 0,
+        "GRID_ORIGIN_Y": 163.33,
+        "GRID_GAP": 3,
+        "CELL_W": 78.67,
+        "CELL_H": 78.67,
+        "GRID_BODY_W": 977,
+        "GRID_BODY_H": 405.33,
+        "GRID_V_PAD": 76.33,
+        "GRID_H_PAD": 0,
+        "GRID_RIGHT_MARGIN": 1,
+        "squareness": {
+          "ratio": 1,
+          "deviationPct": 0
+        },
+        "gridBox": {
+          "originX": 0,
+          "originY": 87,
+          "innerW": 977,
+          "innerH": 558,
+          "boxBottom": 645,
+          "horizontalSource": "playable_edges",
+          "verticalSource": "corridor_landmarks"
+        },
+        "row0Y": 163.33,
+        "row4Bottom": 568.67,
+        "PLAYER_TREE_BEARD_BOTTOM_FIELD_Y": 87,
+        "BOTTOM_ROOT_TOP_FIELD_Y": 645,
+        "leftColumnTop": -25,
+        "columns": "5+2+5",
+        "rows": 5,
+        "playableEdges": {
+          "gridLeftFieldX": 0,
+          "gridRightFieldX": 977,
+          "playableW": 977,
+          "leftSamples": [
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "rightSamples": [
+            977,
+            977,
+            977,
+            977,
+            977
+          ],
+          "source": "detected"
+        }
+      }
+    }
+  ],
+  "nextStep": "请对比 4 张预览，回复选哪张(黄格/走廊 + 铺满/近似正方)"
+}

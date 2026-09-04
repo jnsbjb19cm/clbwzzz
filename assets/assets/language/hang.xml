@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<language name="hang">
+	<language key="hang_/" value="/"/>
+	<language key="hang_maxTime" value="最高累积时间："/>
+	<language key="hang_maxTimeDesc" value="\n(至少挂机10分钟之后才有收获)"/>
+	<language key="hang_power" value="战斗力："/>
+	<language key="hang_powerDesc1-1" value="战斗力越高挂机收益越高"/>
+	<language key="hang_powerDesc1-2" value="战斗力随拥有的卡牌品质提升"/>
+	<language key="hang_checkReward" value="查看奖励"/>
+	<language key="hang_start" value="开始挂机"/>
+	<language key="hang_end" value="满载而归"/>
+	<language key="hang_hangTime" value="已挂机时间："/>
+	<language key="hang_checkAlert" value="挂机时间不足10分钟将没有奖励，您确定收获吗？"/>
+	<language key="hang_checkReward_silver" value="金币："/>
+	<language key="hang_checkReward_exp" value="经验："/>
+</language>

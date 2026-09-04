@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Data name="cardEvo">
+	<cardEvo id="1" card_quality="1" star="0" need_exp="0" add_exp="10"/>
+	<cardEvo id="2" card_quality="1" star="1" need_exp="20" add_exp="12"/>
+	<cardEvo id="3" card_quality="1" star="2" need_exp="50" add_exp="15"/>
+	<cardEvo id="4" card_quality="1" star="3" need_exp="110" add_exp="21"/>
+	<cardEvo id="5" card_quality="1" star="4" need_exp="230" add_exp="33"/>
+	<cardEvo id="6" card_quality="1" star="5" need_exp="470" add_exp="57"/>
+	<cardEvo id="7" card_quality="1" star="6" need_exp="950" add_exp="105"/>
+	<cardEvo id="8" card_quality="2" star="0" need_exp="0" add_exp="20"/>
+	<cardEvo id="9" card_quality="2" star="1" need_exp="50" add_exp="24"/>
+	<cardEvo id="10" card_quality="2" star="2" need_exp="120" add_exp="30"/>
+	<cardEvo id="11" card_quality="2" star="3" need_exp="240" add_exp="42"/>
+	<cardEvo id="12" card_quality="2" star="4" need_exp="480" add_exp="66"/>
+	<cardEvo id="13" card_quality="2" star="5" need_exp="960" add_exp="114"/>
+	<cardEvo id="14" card_quality="2" star="6" need_exp="1920" add_exp="210"/>
+	<cardEvo id="15" card_quality="3" star="0" need_exp="0" add_exp="60"/>
+	<cardEvo id="16" card_quality="3" star="1" need_exp="220" add_exp="72"/>
+	<cardEvo id="17" card_quality="3" star="2" need_exp="440" add_exp="87"/>
+	<cardEvo id="18" card_quality="3" star="3" need_exp="880" add_exp="117"/>
+	<cardEvo id="19" card_quality="3" star="4" need_exp="1760" add_exp="177"/>
+	<cardEvo id="20" card_quality="3" star="5" need_exp="3520" add_exp="297"/>
+	<cardEvo id="21" card_quality="3" star="6" need_exp="8000" add_exp="537"/>
+	<cardEvo id="22" card_quality="4" star="0" need_exp="0" add_exp="240"/>
+	<cardEvo id="23" card_quality="4" star="1" need_exp="487" add_exp="300"/>
+	<cardEvo id="24" card_quality="4" star="2" need_exp="974" add_exp="352"/>
+	<cardEvo id="25" card_quality="4" star="3" need_exp="1948" add_exp="468"/>
+	<cardEvo id="26" card_quality="4" star="4" need_exp="3896" add_exp="700"/>
+	<cardEvo id="27" card_quality="4" star="5" need_exp="7860" add_exp="1164"/>
+	<cardEvo id="28" card_quality="4" star="6" need_exp="15000" add_exp="1908"/>
+	<cardEvo id="29" card_quality="5" star="0" need_exp="0" add_exp="1200"/>
+	<cardEvo id="30" card_quality="5" star="1" need_exp="635" add_exp="1416"/>
+	<cardEvo id="31" card_quality="5" star="2" need_exp="1270" add_exp="1637"/>
+	<cardEvo id="32" card_quality="5" star="3" need_exp="2540" add_exp="2079"/>
+	<cardEvo id="33" card_quality="5" star="4" need_exp="5080" add_exp="2963"/>
+	<cardEvo id="34" card_quality="5" star="5" need_exp="10520" add_exp="4731"/>
+	<cardEvo id="35" card_quality="5" star="6" need_exp="22000" add_exp="8267"/>
+	<cardEvo id="36" card_quality="6" star="0" need_exp="0" add_exp="7000"/>
+	<cardEvo id="37" card_quality="6" star="1" need_exp="1382" add_exp="8120"/>
+	<cardEvo id="38" card_quality="6" star="2" need_exp="2764" add_exp="9022"/>
+	<cardEvo id="39" card_quality="6" star="3" need_exp="5528" add_exp="11050"/>
+	<cardEvo id="40" card_quality="6" star="4" need_exp="11056" add_exp="14296"/>
+	<cardEvo id="41" card_quality="6" star="5" need_exp="20000" add_exp="20139"/>
+	<cardEvo id="42" card_quality="6" star="6" need_exp="40000" add_exp="26715"/>
+</Data>

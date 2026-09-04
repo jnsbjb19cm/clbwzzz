@@ -1,0 +1,21 @@
+{
+  "mail_name": "邮件",
+  "mail_theme": "邮件主题：",
+  "mail_receiveName": "收 件 人 ：",
+  "mail_send": "发送信件",
+  "mail_sendAlert1": "请填写邮件主题",
+  "mail_sendAlert2": "请重新输入收件人",
+  "mail_sendAlert3": "请填写邮件内容",
+  "mail_write": "写邮件",
+  "mail_state": "邮件超过100封时将不能再接收到新的邮件。",
+  "mail_themeInfo": "主题内容",
+  "mail_sendName": "寄  信  人：",
+  "mail_nameInfo": "名字内容",
+  "mail_delete": "删除",
+  "mail_charge": "收取附件",
+  "mail_num1": "/100",
+  "mail_num2": "0/100",
+  "mail_:": ":",
+  "mail_reply": "回复邮件",
+  "mailcontentHaveIllegalityChar": "邮件中包含非法字符，请检测后发送！"
+}

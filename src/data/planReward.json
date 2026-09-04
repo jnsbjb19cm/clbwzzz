@@ -1,0 +1,47 @@
+[
+  {
+    "plan_lvl": 20,
+    "planReward": 200,
+    "task_id": 1086
+  },
+  {
+    "plan_lvl": 25,
+    "planReward": 250,
+    "task_id": 1087
+  },
+  {
+    "plan_lvl": 30,
+    "planReward": 300,
+    "task_id": 1088
+  },
+  {
+    "plan_lvl": 35,
+    "planReward": 400,
+    "task_id": 1089
+  },
+  {
+    "plan_lvl": 40,
+    "planReward": 500,
+    "task_id": 1090
+  },
+  {
+    "plan_lvl": 45,
+    "planReward": 600,
+    "task_id": 1091
+  },
+  {
+    "plan_lvl": 50,
+    "planReward": 750,
+    "task_id": 1092
+  },
+  {
+    "plan_lvl": 55,
+    "planReward": 850,
+    "task_id": 1093
+  },
+  {
+    "plan_lvl": 60,
+    "planReward": 1038,
+    "task_id": 1094
+  }
+]

@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<language name="arena">
+	<language key="mima" value="密码" />
+	<language key="moshi" value="模式" />
+	<language key="duizhan" value="对战" />
+	<language key="renshu" value="人数" />
+	<language key="queding" value="确定" />
+	<language key="quxiao" value="取消" />
+	<language key="guanbi" value="关闭" />
+	<language key="fangjian" value="房间ID：" />
+	<language key="huoyue" value="今日PVP活跃次数：" />
+	<language key="kaizhan" value="开始战斗" />
+	<language key="zhunbei" value="准备" />
+	<language key="fangjianID" value="请输入房间ID" />
+	<language key="chuangjian" value="创建" />
+	<language key="chazhao" value="查找" />
+	<language key="kuaisujiaru" value="快速加入" />
+	<language key="paizuming" value="牌组名称：" />
+	<language key="jingjipaiming" value="竞技排名" />
+	<language key="shangdian" value="竞技商店" />
+	<language key="yaoqing" value="邀请玩家" />
+	<language key="benfujiang" value="本服排名奖励" />
+	<language key="kuafujiang" value="跨服排名奖励" />
+	<language key="wodepaiming" value="我的排名：" />
+	<language key="jifen" value="积分" />
+	<language key="zuihoushijian" value="最后更新时间：" />
+	<language key="jifenTitle" value="积分排行榜" />
+	<language key="wanjia" value="玩家" />
+	<language key="arena_tongyi" value="同意" />
+	<language key="arena_yaoninjiaru" value="邀请你加入" />
+	<language key="arena_yaoqing" value="邀请" />
+	<language key="arena_ji" value="级" />
+	<language key="arena_zaixian" value="在线" />
+	<language key="arena_zhushou" value="助手" />
+	<language key="arena_friend" value="好友" />
+	<language key="arena_dekazhu" value="{0} 的卡组({1})张" />
+	<language key="arena_jifangfenshu" value="已方分数" />
+	<language key="arena_duishoufenshu" value="对手分数" />
+	<language key="arena_shengli" value="胜利" />
+	<language key="arena_shibai" value="失败" />
+	<language key="arena_paiming" value="排名" />
+	<language key="arena_wanjiaxingming" value="玩家姓名" />
+	<language key="arena_zhiye" value="职业" />
+	<language key="arena_zhanli" value="战力" />
+	<language key="arena_niyijingkaishizhunbeile" value="你已经开始匹配或准备了！" />
+	<language key="arena_benfu" value="本服" />
+	<language key="arena_kuafu" value="跨服" />
+	<language key="arena_rankAdd" value="每隔10分钟得到荣誉点 : " />
+	<language key="arena_2VS2disable" value="2 vs 2模式即将开放,敬请期待" />
+	<language key="arena_jifenjiangli" value="竞技奖励" />
+	<language key="arena_my1V1point" value="我的积分：" />
+	<language key="arena_chenghao" value="称号" />
+	<language key="arena_jifenjiangli_text1" value="今日再进行" />
+	<language key="arena_jifenjiangli_text2" value="场竞技，可得" />
+	<language key="arena_jingjiFinish_tip" value="今日天梯竞技日常奖励已发送至您的邮箱" />
+	<language key="arena_activeDesc" value="每月赛季重开时，全服玩家积分都将进行初始化" />
+	<language key="arena_myRank" value="我的排名：" />
+	<language key="arena_myHuiZhang" value="我的勋章" />
+	<language key="arena_quanbujujue" value="全部拒绝" />
+	<language key="arenaCding" value="关闭中..."/>
+	<language key="cuohezhong" value="匹配中..."/>
+	<language key="arenaIntergralRewardDec" value="进行排名统计，并通过邮件发放上周赛季奖励，同时积分清零开启新一轮赛季"/>
+	<language key="arenaRewardTitles" value="第{1}-{2}名"/>
+	<language key="arenaRewardFirstTitles" value="第{1}名"/>
+	<language key="arenaTimeOver" value="今日次数已用完"/>
+</language>

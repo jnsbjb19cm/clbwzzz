@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<language name="loginRaward">
+	<language key="loginRaward_lingqu" value="领取"/>
+	<language key="loginRaward_buling" value="补领"/>
+	<language key="loginRaward_weidaoda" value="未达到"/>
+	<language key="loginRaward_yilingqu" value="已领取"/>
+</language>

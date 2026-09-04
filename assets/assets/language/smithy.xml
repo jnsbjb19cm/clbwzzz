@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<language name="smithy">
+	<language key="qianghuashuoming" value="请放入希望强化的装备，然后放入强化粉"/>
+	<language key="jichulv" value="基础率"/>
+	<language key="jinbijiacheng" value="红钻加成"/>
+	<language key="zongchenggonglv" value="总成功率"/>
+	<language key="chenggonglv" value="成功率"/>
+	<language key="qianghua" value="强化"/>
+	<language key="zhuangbeiqianghua" value="装备强化"/>
+	<language key="hechengshuoming" value="请放入至少2件相同的装备，装备越多成功率越高"/>
+	<language key="tianman" value="填满材料"/>
+	<language key="hecheng" value="合成"/>
+	<language key="qianghua" value="强化"/>
+	<language key="baoji" value="英雄暴击"/>
+	<language key="xueliang" value="英雄血量"/>
+	<language key="sbaoji" value="士兵暴击"/>
+	<language key="sgedang" value="士兵格挡"/>
+	<language key="qianghuashangxian" value="强化上限"/>
+	<language key="goumaicailiao" value="购买材料"/>
+	<language key="smithy_goumaichenggong" value="购买成功！"/>
+	<language key="smithy_qingfangruqianghuazhuangbei" value="请放入强化装备！"/>
+	<language key="smithy_qingfangruqianghuacailiao" value="请放入强化材料！"/>
+	<language key="smithy_fangru" value="放入"/>
+	<language key="smithy_xiechu" value="卸除"/>
+	<language key="smithy_yidadao" value="已达到100%，不需要再放入强化石！"/>
+	<language key="smithy_qianghuashibai" value="强化失败！"/>
+	<language key="smithy_qingfangruliangjian" value="请放入两件或两件以上相同的装备！"/>
+	<language key="smithy_zuigaojibunenghecheng" value="该装备不能合成或已经是最高级了。"/>
+	<language key="smithy_hechengshibai" value="合成失败"/>
+	<language key="smithy_xuyaozhifu" value="需要支付"/>
+	<language key="smithy_goumai" value="购买"/>
+	<language key="smithy_ge" value="购买{0}个"/>
+	<language key="smithy_cailiaomiaoshu" value="材料描述"/>
+	<language key="smithy_qingxuanzeqianghua" value="请选择强化石。"/>
+</language>

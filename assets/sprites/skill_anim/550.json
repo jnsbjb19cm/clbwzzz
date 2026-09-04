@@ -1,0 +1,22 @@
+{
+  "skillId": 550,
+  "frameW": 208,
+  "frameH": 221,
+  "frameRate": 1.1764705882352942,
+  "duration": 0.85,
+  "releaseRatio": 0.42,
+  "drawBounds": {
+    "left": 0,
+    "top": 0,
+    "right": 207,
+    "bottom": 220
+  },
+  "frames": [
+    {
+      "x": 0,
+      "y": 0,
+      "w": 208,
+      "h": 221
+    }
+  ]
+}

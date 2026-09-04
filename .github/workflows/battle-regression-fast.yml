@@ -1,0 +1,46 @@
+name: Battle Regression Fast
+
+on:
+  push:
+    branches:
+      - fix/pvp-wilderness-room-20260805
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: battle-regression-fast-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  latest-rules:
+    name: Latest battle rules
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Run latest battle regressions
+        shell: bash
+        run: |
+          set +e
+          node scripts/verify-boss-commander-targeting-20260819.mjs
+          commander=$?
+          node scripts/verify-fly-shoe-regression.mjs
+          fly_shoe=$?
+          node scripts/verify-battle-rules-continuation-20260831.mjs
+          latest=$?
+          node scripts/verify-production-placement-install-order-20260819.mjs
+          placement_order=$?
+          node scripts/verify-authority-projectile-release-latency-20260819.mjs
+          projectile_latency=$?
+          node scripts/verify-projectile-spawn-event-protocol-20260819.mjs
+          projectile_spawn_event=$?
+          if [ "$commander" -ne 0 ] || [ "$fly_shoe" -ne 0 ] || [ "$latest" -ne 0 ] || [ "$placement_order" -ne 0 ] || [ "$projectile_latency" -ne 0 ] || [ "$projectile_spawn_event" -ne 0 ]; then
+            exit 1
+          fi

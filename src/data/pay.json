@@ -1,0 +1,32 @@
+[
+  {
+    "pay_id": 1,
+    "pay_value": 60,
+    "pay_give": 0,
+    "pay_price": 6
+  },
+  {
+    "pay_id": 2,
+    "pay_value": 300,
+    "pay_give": 30,
+    "pay_price": 30
+  },
+  {
+    "pay_id": 3,
+    "pay_value": 1280,
+    "pay_give": 130,
+    "pay_price": 128
+  },
+  {
+    "pay_id": 4,
+    "pay_value": 3280,
+    "pay_give": 330,
+    "pay_price": 328
+  },
+  {
+    "pay_id": 5,
+    "pay_value": 6480,
+    "pay_give": 650,
+    "pay_price": 648
+  }
+]

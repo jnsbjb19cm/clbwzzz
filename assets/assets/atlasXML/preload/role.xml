@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!-- Created with StarlingResourceExport version 0.0.0.1 -->
+<!-- author hanxianming -->
+<TextureAtlas imagePath="role.png">
+  <SubTexture name="role_heroHp_bg" x="0" y="0" width="132" height="25"/>
+  <SubTexture name="role_heroName_bg" x="132" y="0" width="194" height="43"/>
+  <SubTexture name="role-mc-bg" x="326" y="0" width="256" height="380"/>
+  <SubTexture name="role_currency_bg" x="0" y="25" width="99" height="22"/>
+</TextureAtlas>

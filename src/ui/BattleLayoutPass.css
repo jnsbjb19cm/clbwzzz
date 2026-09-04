@@ -1,0 +1,373 @@
+/* 第二轮布局校准：在现有像素皮肤之后加载，只覆盖换卡、聊天、底栏和战场。 */
+
+/* ---------- 战斗准备房：换卡改为从战团面板向下展开的抽屉 ---------- */
+.game-room.room-exact .card-drawer {
+  display: block !important;
+  left: 21.25% !important;
+  top: 34.8% !important;
+  width: 58.25% !important;
+  height: 52.6% !important;
+  padding: 10.5% 8.2% 8.2% 11.2% !important;
+  overflow: hidden !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+  transform: translateY(-8%) scaleY(.06) !important;
+  transform-origin: 50% 0 !important;
+  transition: transform .22s ease-out, opacity .16s ease-out, visibility 0s linear .22s !important;
+  border-radius: 0 0 .72em .72em !important;
+  background: linear-gradient(180deg, #98cd4f 0 7%, #60962e 7% 100%) !important;
+  box-shadow: inset 0 0 0 .14em #d8ed8b, inset 0 0 0 .28em #4d7921, 0 .45em 1.1em rgba(29, 35, 9, .55) !important;
+}
+
+.game-room.room-exact .card-drawer.open {
+  visibility: visible !important;
+  opacity: 1 !important;
+  pointer-events: auto !important;
+  transform: translateY(0) scaleY(1) !important;
+  transition: transform .22s ease-out, opacity .16s ease-out !important;
+}
+
+.game-room.room-exact .drawer-slide-grip {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: 8.5%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 2.2%;
+  color: #efffc8;
+  font-size: .62em;
+  font-weight: 900;
+  text-shadow: 0 .08em .08em #355a13;
+  background: linear-gradient(180deg, #c8ec81, #86b948);
+  border-bottom: .13em solid #50751b;
+}
+
+.game-room.room-exact .drawer-slide-grip span {
+  width: 12%;
+  height: .15em;
+  border-radius: 99px;
+  background: rgba(66, 104, 24, .72);
+  box-shadow: 0 .08em rgba(238, 255, 188, .6);
+}
+
+.game-room.room-exact .drawer-header {
+  top: 8.5% !important;
+  height: 11% !important;
+  justify-content: flex-start !important;
+  padding-left: 12.5% !important;
+  font-size: .84em !important;
+}
+
+.game-room.room-exact .drawer-close {
+  top: 15% !important;
+  right: 1.4% !important;
+}
+
+.game-room.room-exact .exact-drawer-category {
+  left: 1.8% !important;
+  top: 21% !important;
+  bottom: 14% !important;
+  width: 10.5% !important;
+  gap: 3% !important;
+}
+
+.game-room.room-exact .exact-drawer-category button {
+  flex-basis: 30.5% !important;
+  font-size: .66em !important;
+}
+
+.game-room.room-exact .drawer-cards {
+  position: absolute !important;
+  left: 13.2% !important;
+  right: 8.7% !important;
+  top: 21% !important;
+  bottom: 14% !important;
+  width: auto !important;
+  height: auto !important;
+  grid-template-columns: repeat(7, minmax(0, 1fr)) !important;
+  grid-template-rows: repeat(3, minmax(0, 1fr)) !important;
+  gap: 2.2% 1.15% !important;
+  padding: .7% !important;
+  overflow: hidden !important;
+}
+
+.game-room.room-exact .drawer-card {
+  width: auto !important;
+  min-width: 0 !important;
+  max-width: none !important;
+  height: auto !important;
+  min-height: 0 !important;
+  padding: 2% !important;
+}
+
+.game-room.room-exact .drawer-card img {
+  height: 82% !important;
+}
+
+.game-room.room-exact .exact-drawer-pager {
+  right: 1.5% !important;
+  top: 23% !important;
+  bottom: 17% !important;
+  width: 5.8% !important;
+  padding: 4% 0 !important;
+  border: .13em solid #4f7419;
+  border-radius: .45em;
+  background: linear-gradient(180deg, rgba(214, 237, 145, .5), rgba(84, 129, 39, .55));
+}
+
+.game-room.room-exact .exact-drawer-pager button {
+  flex: 0 0 30% !important;
+  writing-mode: horizontal-tb !important;
+  font-size: .9em !important;
+  border-radius: .42em !important;
+}
+
+.game-room.room-exact .exact-drawer-pager span {
+  display: grid;
+  place-items: center;
+  flex: 1;
+  font-size: .52em !important;
+}
+
+.game-room.room-exact .exact-drawer-footer {
+  left: 30% !important;
+  right: 16% !important;
+  bottom: 2.7% !important;
+  height: 8.5% !important;
+}
+
+/* ---------- 聊天框重新固定到左下框架，不跟弹层或底栏漂移 ---------- */
+.game-room.room-exact .exact-room-chat {
+  left: 2.35% !important;
+  bottom: 7.65% !important;
+  width: 45.3% !important;
+  height: 24.2% !important;
+  z-index: 60 !important;
+}
+
+.game-room.room-exact .exact-room-chat-log {
+  left: 1.5% !important;
+  right: 10.6% !important;
+  top: 3% !important;
+  bottom: 23% !important;
+}
+
+.game-room.room-exact .exact-room-chat-tabs {
+  right: .45% !important;
+  top: 2.5% !important;
+  bottom: 23% !important;
+  width: 8.8% !important;
+}
+
+.game-room.room-exact .exact-room-chat-form {
+  position: absolute !important;
+  left: .8% !important;
+  right: .8% !important;
+  bottom: 1.8% !important;
+  height: 17.5% !important;
+  grid-template-columns: 11% 1fr 13.5% !important;
+}
+
+/* ---------- 右下功能按钮：图标在上、文字在下，并锁定到原底栏 ---------- */
+.game-room.room-exact .room-bottom-bar {
+  left: 49.75% !important;
+  right: 1.85% !important;
+  bottom: 1.05% !important;
+  height: 7.25% !important;
+  display: grid !important;
+  grid-template-columns: repeat(8, minmax(0, 1fr)) !important;
+  gap: .22% !important;
+  align-items: stretch !important;
+}
+
+.game-room.room-exact .bottom-btn {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: .08em !important;
+  padding: .2em .05em !important;
+  line-height: 1 !important;
+}
+
+.game-room.room-exact .room-nav-icon {
+  display: block;
+  font-size: 1.25em;
+  line-height: .92;
+  filter: drop-shadow(0 .08em .05em rgba(37, 47, 10, .55));
+}
+
+.game-room.room-exact .room-nav-label {
+  display: block;
+  font-size: .86em;
+  white-space: nowrap;
+}
+
+.game-room.room-exact .room-mid-actions .mid-btn {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: flex-end !important;
+  padding: 8% 3% 8% !important;
+}
+
+.game-room.room-exact .room-mid-actions .room-nav-icon {
+  position: absolute;
+  left: 50%;
+  top: 12%;
+  width: auto;
+  height: auto;
+  transform: translateX(-50%);
+  font-size: 2.3em;
+}
+
+.game-room.room-exact .room-mid-actions .room-nav-label {
+  font-size: .78em;
+  font-weight: 900;
+}
+
+/* ---------- 战斗场：完整铺满、居中缩放、去掉错误的半幅 map 覆盖 ---------- */
+body.battle-immersive .battle-game-wrap {
+  overflow: hidden !important;
+  background-color: #1b5d2c !important;
+  background-image: var(--bg-grass) !important;
+  background-position: center !important;
+  background-size: cover !important;
+  background-repeat: no-repeat !important;
+}
+
+body.battle-immersive .battle-game-wrap > .game-container {
+  left: 50% !important;
+  top: 50% !important;
+  transform: translate(-50%, -50%) scale(var(--battle-scale, 1)) !important;
+  transform-origin: center center !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  background: #1c612e !important;
+}
+
+body.battle-immersive .bg-stack {
+  background: #1c612e !important;
+}
+
+body.battle-immersive .bg-layer-base {
+  background-image: var(--bg-grass, var(--bg-base)) !important;
+  background-size: cover !important;
+  background-position: center !important;
+}
+
+/* map-*.png 当前只覆盖左半幅，先禁用，避免战场被切成两张图。 */
+body.battle-immersive .bg-layer-map {
+  display: none !important;
+}
+
+/* 左右柱：锚定在 wrap 边缘(全屏侧边、随场景切换)，不随战场缩放、不溢出 */
+body.battle-immersive .battle-game-wrap > .bg-layer-left-column,
+body.battle-immersive .battle-game-wrap > .bg-layer-right-column {
+  position: absolute !important;
+  top: 0 !important;
+  bottom: 0 !important;
+  width: var(--column-right-w, 370px) !important;
+  max-width: 24% !important;
+  background-size: 100% 100% !important;
+  background-repeat: no-repeat !important;
+  z-index: 1 !important;
+  pointer-events: none !important;
+}
+
+body.battle-immersive .battle-game-wrap > .bg-layer-left-column {
+  left: 0 !important;
+  right: auto !important;
+  background-image: var(--bg-left) !important;
+  background-position: left center !important;
+  /* 左柱(蘑菇)加宽：蘑菇图较窄，需要更宽显示 */
+  width: calc(var(--column-right-w, 370px) * 1.25) !important;
+  max-width: 32% !important;
+}
+
+body.battle-immersive .battle-game-wrap > .bg-layer-right-column {
+  right: 0 !important;
+  left: auto !important;
+  background-image: var(--bg-right) !important;
+  background-position: right center !important;
+  /* 右柱镜像：面向战场方向与左柱对称 */
+  transform: none !important;
+}
+
+body.battle-immersive .battlefield-wrap {
+  /* 战场铺满 game-container(全屏场地)：柱/血池/手牌叠在战场上方 */
+  left: 0 !important;
+  right: 0 !important;
+  top: 0 !important;
+  bottom: 0 !important;
+  overflow: visible !important;
+}
+
+body.battle-immersive .base-hp-slot.player {
+  left: 18px !important;
+  top: 112px !important;
+}
+
+body.battle-immersive .base-hp-slot.enemy {
+  right: 18px !important;
+  top: 112px !important;
+}
+
+body.battle-immersive .top-ui {
+  top: 8px !important;
+  width: 874px !important;
+  max-width: calc(100% - 210px) !important;
+}
+
+body.battle-immersive .battle-immersive-dock {
+  position: fixed !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  z-index: 300 !important;
+  flex: none !important;
+  min-height: 66px !important;
+  padding: 7px 12px 9px !important;
+  background: linear-gradient(180deg, rgba(26,36,32,.78), rgba(15,26,18,.94)) !important;
+}
+
+/* 网格默认完全透明；只有当前悬停格出现实线高亮。 */
+body.battle-immersive .place-grid-cell,
+body.battle-immersive .place-grid-cell.place-ok,
+body.battle-immersive .place-grid-cell.place-forbidden,
+body.battle-immersive .place-grid-cell.place-occupied,
+body.battle-immersive .place-grid-cell.skill-target-ok {
+  border: 0 !important;
+  outline: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+body.battle-immersive .place-grid-cell.place-ok.place-hover,
+body.battle-immersive .place-grid-cell.skill-target-hover {
+  background: rgba(255, 234, 92, .09) !important;
+  box-shadow: inset 0 0 0 2px #ffe85d, 0 0 10px rgba(255, 232, 70, .55) !important;
+}
+
+body.battle-immersive .drag-ghost {
+  border: 0 !important;
+  outline: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+@media (max-width: 900px), (max-height: 700px) {
+  .game-room.room-exact .drawer-cards {
+    grid-template-columns: repeat(6, minmax(0, 1fr)) !important;
+  }
+
+  body.battle-immersive .battlefield-wrap {
+    left: 86px !important;
+    right: 86px !important;
+  }
+}

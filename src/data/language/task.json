@@ -1,0 +1,9 @@
+{
+  "task_target": "任务目标",
+  "task_reward": "任务奖励",
+  "task_getReward": "领取奖励",
+  "task_goto": "前 往",
+  "task_routineTaskIsCompelete": "已完成",
+  "task_routineTaskIsGetAward": "领 奖",
+  "task_routineTaskAwardTitle": "奖励："
+}

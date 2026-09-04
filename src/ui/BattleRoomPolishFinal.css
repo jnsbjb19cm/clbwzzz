@@ -1,0 +1,108 @@
+/* 最终房间校准覆盖：必须位于 BattleRoomPolish.css 之后。 */
+
+.game-room.room-rebuild.room-polish {
+  font-size: clamp(15px, 1.95vmin, 21px) !important;
+}
+
+.game-room.room-polish .room-title-text { font-size: 1.48em !important; }
+.game-room.room-polish .room-stage-display { font-size: 1em !important; }
+.game-room.room-polish .deck-title { font-size: 1.04em !important; }
+.game-room.room-polish .deck-tab { font-size: .8em !important; }
+.game-room.room-polish .swap-card-btn { font-size: .82em !important; }
+.game-room.room-polish .member-name { font-size: .8em !important; }
+.game-room.room-polish .empty-text { font-size: .75em !important; }
+.game-room.room-polish .exact-room-chat-log { font-size: .66em !important; }
+.game-room.room-polish .exact-room-chat-tabs button,
+.game-room.room-polish .exact-room-chat-current,
+.game-room.room-polish .exact-room-chat-form input,
+.game-room.room-polish .exact-room-chat-form button { font-size: .63em !important; }
+.game-room.room-polish .bottom-btn .room-vector-label { font-size: .62em !important; }
+
+/* VS 向下回到参考图中心，不压战团面板。 */
+.game-room.room-polish .room-vs {
+  left: 39.2% !important;
+  top: 41.2% !important;
+  width: 21.6% !important;
+  height: 23.8% !important;
+  font-size: 5.15em !important;
+}
+
+/* 中部功能卡和开始按钮之间保留明确间距。 */
+.game-room.room-polish.room-pve-like .room-mid-actions {
+  left: 49.5% !important;
+  width: 20.6% !important;
+  gap: 2.6% !important;
+}
+.game-room.room-polish.room-pve-like .room-ready-btn {
+  left: 71.25% !important;
+  width: 26.45% !important;
+}
+.game-room.room-polish .room-mid-actions,
+.game-room.room-polish .room-ready-btn {
+  bottom: 10.45% !important;
+  height: 19.8% !important;
+}
+
+/* 更多菜单固定成一颗按钮高度附近的小浮层。 */
+.game-room.room-polish .more-dropdown {
+  right: 7.55% !important;
+  bottom: 8.9% !important;
+  width: 9% !important;
+  max-height: 13% !important;
+}
+
+/* 房间内工具面板标题栏。 */
+.game-room.room-polish .room-tool-title {
+  position: absolute !important;
+  z-index: 4 !important;
+  left: 0 !important;
+  right: 0 !important;
+  top: 0 !important;
+  height: 9.5% !important;
+  display: flex !important;
+  align-items: center !important;
+  padding: 0 2.2% !important;
+  border-bottom: .13em solid #5b781d !important;
+  color: #3d5310 !important;
+  background: linear-gradient(180deg, #f0ffc5, #acd866) !important;
+  font-size: 1.04em !important;
+  font-weight: 1000 !important;
+  box-sizing: border-box !important;
+}
+.game-room.room-polish .room-tool-close {
+  top: 1.25% !important;
+}
+.game-room.room-polish .room-tool-content {
+  inset: 11% 2.2% 2.2% !important;
+}
+.game-room.room-polish .room-tool-placeholder {
+  min-height: 100% !important;
+  display: grid !important;
+  place-items: center !important;
+  color: #f4ffd0 !important;
+  text-align: center !important;
+}
+.game-room.room-polish .room-tool-placeholder h2 {
+  margin: 0 0 .45em !important;
+  font-size: 1.45em !important;
+}
+.game-room.room-polish .room-tool-placeholder p {
+  margin: 0 !important;
+  font-size: .82em !important;
+}
+
+/* 各模块嵌在房间弹窗时取消页面级最大宽度和外边距。 */
+.game-room.room-polish .room-tool-content > .page,
+.game-room.room-polish .room-tool-content > section,
+.game-room.room-polish .room-tool-content > div {
+  width: 100% !important;
+  max-width: none !important;
+  margin: 0 !important;
+  box-sizing: border-box !important;
+}
+
+@media (max-width: 1000px), (max-height: 700px) {
+  .game-room.room-rebuild.room-polish {
+    font-size: clamp(12px, 1.7vmin, 17px) !important;
+  }
+}

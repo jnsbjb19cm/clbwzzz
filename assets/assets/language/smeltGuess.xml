@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<language name="smelt">
+	<language key="smletGuess_guy" value="年轻人"/>
+	<language key="smletGuess_intro" value="要跟我赌一把么？"/>
+	<language key="smletGuess_text_1" value="胜：花费"/>
+	<language key="smletGuess_text_2" value="半价"/>
+	<language key="smletGuess_text_3" value="购得卡牌"/>
+	<language key="smletGuess_text_4" value="和：花费"/>
+	<language key="smletGuess_text_5" value="正价"/>
+	<language key="smletGuess_text_6" value="负：输一半的钱"/>
+	<language key="smletGuess_chooseCard" value="选择你要出的拳"/>
+	<language key="smletGuess_comfirm" value="确定"/>
+	<language key="smletGuess_get" value="，获得了"/>
+	<language key="smletGuess_win_text_1" value="你运气不错嘛~"/>
+	<language key="smletGuess_win_text_2" value="那这张卡牌就半价卖给你好了"/>
+	<language key="smletGuess_win_text_3" value="有空咱们再来一局"/>
+	<language key="smletGuess_ping_text_1" value="居然打平了…无妨"/>
+	<language key="smletGuess_ping_text_2" value="这张卡牌我就原价卖给你好了"/>
+	<language key="smletGuess_fail_text_1" value="哈哈，我赢了！"/>
+	<language key="smletGuess_fail_text_2" value="愿赌服输，钱我就收下喽~"/>
+	<language key="smletGuess_fail_text_3" value="真倒霉..."/>
+	<language key="smletGuess_fail_text_4" value="输掉了"/>
+	<language key="smletGuess_cost" value="花费"/>
+	<language key="smletGuess_money" value="价格："/>
+	<language key="smletGuess_shangdian" value="神秘商店"/>
+	<language key="smletGuess_useItem" value="使用猜拳骗术卷"/>
+</language>

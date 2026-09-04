@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with TexturePacker http://texturepacker.com-->
+<!-- $TexturePacker:SmartUpdate:2819088b2af67aeac885c13bb10fc0a6$ -->
+<TextureAtlas imagePath="effect1.png">
+    <SubTexture name="tear_effect_0001" x="1638" y="1811" width="407" height="199"/>
+    <SubTexture name="tear_effect_0002" x="1229" y="1811" width="407" height="199"/>
+    <SubTexture name="tear_effect_0003" x="1638" y="1610" width="407" height="199"/>
+    <SubTexture name="tear_effect_0004" x="1229" y="1610" width="407" height="199"/>
+    <SubTexture name="tear_effect_0005" x="1638" y="1409" width="407" height="199"/>
+    <SubTexture name="tear_effect_0006" x="1229" y="1409" width="407" height="199"/>
+    <SubTexture name="tear_effect_0007" x="820" y="1811" width="407" height="199"/>
+    <SubTexture name="tear_effect_0008" x="820" y="1610" width="407" height="199"/>
+    <SubTexture name="tear_effect_0009" x="820" y="1409" width="407" height="199"/>
+    <SubTexture name="tear_effect_0010" x="1638" y="1208" width="407" height="199"/>
+    <SubTexture name="tear_effect_0011" x="1229" y="1208" width="407" height="199"/>
+    <SubTexture name="tear_effect_0012" x="820" y="1208" width="407" height="199"/>
+    <SubTexture name="tear_effect_0013" x="1638" y="1007" width="407" height="199"/>
+    <SubTexture name="tear_effect_0014" x="1229" y="1007" width="407" height="199"/>
+    <SubTexture name="tear_effect_0015" x="820" y="1007" width="407" height="199"/>
+    <SubTexture name="tear_effect_0016" x="411" y="1811" width="407" height="199"/>
+    <SubTexture name="tear_effect_0017" x="411" y="1610" width="407" height="199"/>
+    <SubTexture name="tear_effect_0018" x="411" y="1409" width="407" height="199"/>
+    <SubTexture name="tear_effect_0019" x="411" y="1208" width="407" height="199"/>
+    <SubTexture name="tear_effect_0020" x="411" y="1007" width="407" height="199"/>
+    <SubTexture name="tear_effect_0021" x="1638" y="806" width="407" height="199"/>
+    <SubTexture name="tear_effect_0022" x="1229" y="806" width="407" height="199"/>
+    <SubTexture name="tear_effect_0023" x="820" y="806" width="407" height="199"/>
+    <SubTexture name="tear_effect_0024" x="411" y="806" width="407" height="199"/>
+    <SubTexture name="tear_effect_0025" x="1638" y="605" width="407" height="199"/>
+    <SubTexture name="tear_effect_0026" x="1229" y="605" width="407" height="199"/>
+    <SubTexture name="tear_effect_0027" x="820" y="605" width="407" height="199"/>
+    <SubTexture name="tear_effect_0028" x="411" y="605" width="407" height="199"/>
+    <SubTexture name="tear_effect_0029" x="2" y="1811" width="407" height="199"/>
+    <SubTexture name="tear_effect_0030" x="2" y="1610" width="407" height="199"/>
+    <SubTexture name="tear_effect_0031" x="2" y="1409" width="407" height="199"/>
+    <SubTexture name="tear_effect_0032" x="2" y="1208" width="407" height="199"/>
+    <SubTexture name="tear_effect_0033" x="2" y="1007" width="407" height="199"/>
+    <SubTexture name="tear_effect_0034" x="2" y="806" width="407" height="199"/>
+    <SubTexture name="tear_effect_0035" x="2" y="605" width="407" height="199"/>
+    <SubTexture name="tear_effect_0036" x="1638" y="404" width="407" height="199"/>
+    <SubTexture name="tear_effect_0037" x="1229" y="404" width="407" height="199"/>
+    <SubTexture name="tear_effect_0038" x="820" y="404" width="407" height="199"/>
+    <SubTexture name="tear_effect_0039" x="411" y="404" width="407" height="199"/>
+    <SubTexture name="tear_effect_0040" x="2" y="404" width="407" height="199"/>
+    <SubTexture name="tear_effect_0041" x="1638" y="203" width="407" height="199"/>
+    <SubTexture name="tear_effect_0042" x="1229" y="203" width="407" height="199"/>
+    <SubTexture name="tear_effect_0043" x="820" y="203" width="407" height="199"/>
+    <SubTexture name="tear_effect_0044" x="411" y="203" width="407" height="199"/>
+    <SubTexture name="tear_effect_0045" x="2" y="203" width="407" height="199"/>
+    <SubTexture name="tear_effect_0046" x="1638" y="2" width="407" height="199"/>
+    <SubTexture name="tear_effect_0047" x="1229" y="2" width="407" height="199"/>
+    <SubTexture name="tear_effect_0048" x="820" y="2" width="407" height="199"/>
+    <SubTexture name="tear_effect_0049" x="411" y="2" width="407" height="199"/>
+    <SubTexture name="tear_effect_0050" x="2" y="2" width="407" height="199"/>
+</TextureAtlas>

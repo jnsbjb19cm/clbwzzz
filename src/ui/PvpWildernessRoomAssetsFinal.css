@@ -1,0 +1,20 @@
+/* PVP 房间/战斗场景素材：黄沙主题（backrock 底图 + 岩石柱配套） */
+.pvp-wilderness-backdrop {
+  background:
+    linear-gradient(180deg, rgba(12, 43, 24, .10), rgba(8, 31, 17, .54)),
+    url('/battle/background/gameroom.png') center / cover no-repeat,
+    url('/battle/background/backrock.png') center / cover no-repeat !important;
+}
+
+.pvp-wilderness-room::before {
+  background-image: url('/battle/background/leftrock.png') !important;
+}
+
+.pvp-wilderness-room::after {
+  background-image: url('/battle/background/rightrock.png') !important;
+}
+
+.pvp-room-card-bg,
+.pvp-room-card-function i {
+  background-image: url('/atlas/cardParts.png') !important;
+}

@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<language name="vipDailyWelfare">
+	<language key="vipDailyWelfare_vip1" value="VIP 1  可领取"/>
+	<language key="vipDailyWelfare_vip2" value="VIP 2  可领取"/>
+	<language key="vipDailyWelfare_vip3" value="VIP 3  可领取"/>
+	<language key="vipDailyWelfare_vip4" value="VIP 4  可领取"/>
+	<language key="vipDailyWelfare_vip5" value="VIP 5  可领取"/>
+	<language key="vipDailyWelfare_vip6" value="VIP 6  可领取"/>
+	<language key="vipDailyWelfare_vip7" value="VIP 7  可领取"/>
+	<language key="vipDailyWelfare_vip8" value="VIP 8  可领取"/>
+	<language key="vipDailyWelfare_vip9" value="VIP 9  可领取"/>
+	<language key="vipDailyWelfare_vip10" value="VIP10 可领取"/>
+	
+	<language key="vipDailyWelfare_gold1" value="800"/>
+	<language key="vipDailyWelfare_gold2" value="8000"/>
+	<language key="vipDailyWelfare_gold3" value="80100"/>
+	<language key="vipDailyWelfare_gold4" value="800000"/>
+	<language key="vipDailyWelfare_gold5" value="800000"/>
+	<language key="vipDailyWelfare_gold6" value="800000"/>
+	<language key="vipDailyWelfare_gold7" value="800000"/>
+	<language key="vipDailyWelfare_gold8" value="800000"/>
+	<language key="vipDailyWelfare_gold9" value="800000"/>
+	<language key="vipDailyWelfare_gold10" value="800000"/>
+	
+	<language key="vipDailyWelfare_item1" value="全能经验卡[大] x 10"/>
+	<language key="vipDailyWelfare_item2" value="全能经验卡[大] x 10"/>
+	<language key="vipDailyWelfare_item3" value="全能经验卡[大] x 10"/>
+	<language key="vipDailyWelfare_item4" value="全能经验卡[大] x 10"/>
+	<language key="vipDailyWelfare_item5" value="全能经验卡[大] x 10"/>
+	<language key="vipDailyWelfare_item6" value="全能经验卡[大] x 10"/>
+	<language key="vipDailyWelfare_item7" value="全能经验卡[大] x 10"/>
+	<language key="vipDailyWelfare_item8" value="全能经验卡[大] x 10"/>
+	<language key="vipDailyWelfare_item9" value="全能经验卡[大] x 10"/>
+	<language key="vipDailyWelfare_item10" value="全能经验卡[大] x 10"/>
+	
+	<language key="vipDailyWelfare_curvipTxt" value="当前VIP等级："/>
+	<language key="vipDailyWelfare_zaichongzhipt1" value="再充值"/>
+	<language key="vipDailyWelfare_zaichongzhipt2" value="红钻，你将永远成为VIP"/>
+	<language key="vipDailyWelfare_lingqufuli" value="领取福利"/>
+	<language key="vipDailyWelfare_yilingqufuli" value="今日已领"/>
+	<language key="vipDailyWelfare_lingchenchongzhi" value="每日凌晨 00:00 重置"/>
+	<language key="vipDailyWelfare_vipMax" value="您的VIP等级已达到最高，无法继续提升。"/>
+	
+</language>

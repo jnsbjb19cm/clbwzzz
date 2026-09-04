@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <meta name="MobileOptimized" content="320" />
+    <meta name="format-detection" content="telephone=no" />
+
+    <title>九游充值中心</title>
+    <link type="text/css" rel="stylesheet" href="css/style.css"/>
+    <script type="text/javascript" src="js/zepto.min.js"></script>
+    <script type="text/javascript" src="js/underscore.min.js"></script>
+    <script type="text/javascript" src="js/backbone.min.js"></script>
+    <script type="text/javascript" src="js/sdkBase.min.js"></script>
+    <script type="text/javascript" src="js/rsa.min.js"></script>
+    <script type="text/javascript" src="js/aes.min.js"></script>
+
+    <script type="text/javascript" src="js/util.js"></script>
+    <script type="text/javascript" src="js/security.js"></script>
+    <script type="text/javascript" src="js/localstore.js"></script>
+
+    <script type="text/javascript" src="start.js"></script>
+    <script id="_js" type="text/javascript"></script>
+    <script type="text/javascript">
+        //开发模式
+        var devMode = false;
+        //访问网址
+        var baseUrl = "https://paycenter.uc.cn/game";
+        var authUrl = baseUrl + "/sdk/auth.htm";
+        var updUrl = baseUrl + "/sdk/update.htm";
+        var apiUrl = baseUrl + "/sdk/api.htm";
+
+        //SdkBase对象
+        var sdkB = new sdkBase();
+        //打开页面的初始时间
+        var beginTime = new Date().getTime();
+      
+        document.addEventListener("bridgeready", function () {
+            appManager.init();
+        });
+    </script>
+</head>
+<body>
+<div class="loading-page"><span class="loading-img"></span>&nbsp;&nbsp;正在加载...</div>
+</body>
+
+</html>

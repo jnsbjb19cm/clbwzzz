@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with TexturePacker http://texturepacker.com-->
+<!-- $TexturePacker:SmartUpdate:e0e8dec43e6c441acf91cd506f92dda1$ -->
+<TextureAtlas imagePath="windows.png">
+    <SubTexture name="alchemy_card_bg" x="2" y="644" width="334" height="329"/>
+    <SubTexture name="alchemy_material_card_bg" x="338" y="644" width="134" height="145"/>
+    <SubTexture name="evolution_aotu_put_material_btn" x="182" y="975" width="178" height="45"/>
+    <SubTexture name="evolution_select_card" x="338" y="791" width="124" height="35"/>
+    <SubTexture name="jinhua_background" x="464" y="791" width="232" height="25"/>
+    <SubTexture name="jinhua_green_progress" x="338" y="828" width="232" height="25"/>
+    <SubTexture name="jinhua_jinhua_btn" x="2" y="975" width="178" height="45"/>
+    <SubTexture name="window-bg" x="2" y="2" width="960" height="640"/>
+</TextureAtlas>

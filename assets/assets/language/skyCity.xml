@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<language name="skyCity">
+	<language key="mianfei" value="免费次数剩余："/>
+	<language key="qianggong" value="强攻次数剩余："/>
+	<language key="skyCity_buyTicketDesc" value="你的复活次数已用完"/>
+	<language key="skyCity_price" value="花费："/>
+	<language key="skyCity_confirmBuy" value="购买1次复活次数"/>
+	<language key="skyCity_queding" value="确定"/>
+	<language key="skyCity_quxiao" value="取消"/>
+	<language key="skyCity_challengeBtn1" value="开始挑战"/>
+	<language key="skyCity_challengeBtn2" value="未到达"/>
+	<language key="skyCity_challengeBtn3" value="已通过"/>
+	<language key="skyCity_di" value="第"/>
+	<language key="skyCity_ceng" value="层"/>
+	<language key="skyCity_1001" value="第一重"/>
+	<language key="skyCity_1002" value="第二重"/>
+	<language key="skyCity_1003" value="第三重"/>
+	<language key="skyCity_1004" value="第四重"/>
+	<language key="skyCity_1005" value="第五重"/>
+	<language key="skyCity_1006" value="第六重"/>
+	<language key="skyCity_1007" value="第七重"/>
+	<language key="skyCity_1008" value="第八重"/>
+	<language key="skyCity_1009" value="第九重"/>
+	<language key="skyCity_huizhangShop" value="徽章商店"/>
+	<language key="skyCity_revive" value="今日剩余复活次数:"/>
+	<language key="skyCity_freeAlert" value="你要进入天空之城{0}吗？"/>
+	<language key="skyCity_stormAlert" value="免费次数已用完，要花费{0}红钻强攻吗？"/>
+	<language key="skyCity_Alert3" value="你当前所有次数已用完，请等待恢复"/>
+	<language key="skyCity_passAlert" value="恭喜通过本重全部关卡，本重挑战已结束"/>
+	<language key="skyCity_huichengAlert" value="挑战进度已保留，暂时返回主城"/>
+	<language key="skyCity_overBtn" value="结束挑战"/>
+	<language key="skyCity_overAlert" value="结束后将需要重新扣除次数进入，确定要结束吗？"/>
+	<language key="skyCity_suiji" value="随机"/>
+</language>

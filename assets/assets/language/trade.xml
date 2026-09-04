@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<language name="trade">
+	<language key="tarde_huafei" value="花费："/>
+	<language key="tarde_shengyu" value="今日剩余行商次数："/>
+	<language key="tarde_shuaxin" value="刷新"/>
+	<language key="tarde_ci" value="次"/>
+	<language key="tarde_chufa" value="出发"/>
+	<language key="tarde_zengjia" value="增加行商次数1次"/>
+	<language key="tarde_quedinggoumai" value="确定要购买吗？"/>
+	<language key="tarde_goumai" value="购买"/>
+	<language key="tarde_quedingpaiqian" value="当前车队等级"/>
+	<language key="tarde_jinxing" value="确定要出发了吗？"/>
+	<language key="tarde_queding" value="确定"/>
+	<language key="tarde_like" value="立刻完成运送"/>
+	<language key="tarde_quedinglike" value="确定要立刻完成吗？"/>
+	<language key="tarde_haixuyao" value="还需要{0}获得奖励"/>
+	<language key="tarde_min" value="分钟"/>
+	<language key="tarde_pingzhi" value="商队档次："/>
+	<language key="tarde_yuji" value="预计收益："/>
+	<language key="tarde_xuyaoshijian" value="需要时间："/>
+	<language key="tarde_quality1" value="低级"/>
+	<language key="tarde_quality2" value="中级"/>
+	<language key="tarde_quality3" value="高级"/>
+	<language key="tarde_quality4" value="特级"/>
+	<language key="tarde_quality5" value="超级"/>
+	<language key="tarde_quality6" value="顶级"/>
+	<language key="tarde_yingbi" value="金币"/>
+	<language key="tarde_huizang" value="徽章"/>
+	<language key="tarde_refresh" value="刷新成功"/>
+</language>

@@ -1,0 +1,34 @@
+{
+  "image": "role.png",
+  "path": "preload/role.xml",
+  "sprites": [
+    {
+      "name": "role_heroHp_bg",
+      "x": 0,
+      "y": 0,
+      "width": 132,
+      "height": 25
+    },
+    {
+      "name": "role_heroName_bg",
+      "x": 132,
+      "y": 0,
+      "width": 194,
+      "height": 43
+    },
+    {
+      "name": "role-mc-bg",
+      "x": 326,
+      "y": 0,
+      "width": 256,
+      "height": 380
+    },
+    {
+      "name": "role_currency_bg",
+      "x": 0,
+      "y": 25,
+      "width": 99,
+      "height": 22
+    }
+  ]
+}

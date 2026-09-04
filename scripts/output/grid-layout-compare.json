@@ -1,0 +1,46 @@
+{
+  "corridor": {
+    "originX": 1,
+    "originY": 87,
+    "rootTop": 645,
+    "rightMargin": 64
+  },
+  "ref170721": {
+    "left": 60,
+    "right": 1055,
+    "top": 126,
+    "bottom": 506
+  },
+  "layouts": [
+    {
+      "name": "current",
+      "GRID_ORIGIN_X": 1,
+      "GRID_ORIGIN_Y": 87,
+      "innerW": 913,
+      "innerH": 558,
+      "CELL_W": 73.33,
+      "GRID_V_PAD": 89.67,
+      "row0Y": 176.67
+    },
+    {
+      "name": "youtube_bbox",
+      "GRID_ORIGIN_X": 0,
+      "GRID_ORIGIN_Y": 43.7,
+      "innerW": 961.29,
+      "innerH": 448.45,
+      "CELL_W": 77.36,
+      "GRID_V_PAD": 24.83,
+      "row0Y": 68.53
+    },
+    {
+      "name": "full_width",
+      "GRID_ORIGIN_X": 1,
+      "GRID_ORIGIN_Y": 43.7,
+      "innerW": 913,
+      "innerH": 448.45,
+      "CELL_W": 73.33,
+      "GRID_V_PAD": 34.89,
+      "row0Y": 78.59
+    }
+  ]
+}

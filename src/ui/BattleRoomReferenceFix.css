@@ -1,0 +1,139 @@
+/* 参考图校准：左右阵营、VS、功能按钮和翻页区域。最后加载。 */
+
+/* 红方保持参考图的窄列，但内部边框、圆角、阴影和蓝方一致。 */
+.game-room.room-rebuild.room-polish .room-right-side {
+  left: auto !important;
+  right: 2.2% !important;
+  width: 18.2% !important;
+  top: 3.45% !important;
+  height: 64.5% !important;
+}
+.game-room.room-rebuild.room-polish .room-right-side .top-enemy {
+  position: absolute !important;
+  left: 0 !important;
+  right: 0 !important;
+  top: 0 !important;
+  width: 100% !important;
+  height: 58.5% !important;
+}
+.game-room.room-rebuild.room-polish .room-right-side .enemy-slots-row {
+  position: absolute !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  width: 100% !important;
+  height: 40.2% !important;
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  gap: 4.2% !important;
+}
+.game-room.room-rebuild.room-polish .room-right-side .enemy-slots-row > .enemy-slot {
+  width: 100% !important;
+  height: 100% !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+  border-width: .2em !important;
+  border-radius: .62em !important;
+  box-shadow: inset 0 0 0 .09em rgba(255,238,127,.76), 0 .13em .28em rgba(45,33,9,.43) !important;
+}
+.game-room.room-rebuild.room-polish .room-right-side .qmark {
+  display: grid !important;
+  place-items: center !important;
+  width: 100% !important;
+  height: 100% !important;
+  font-size: 4.55em !important;
+}
+.game-room.room-rebuild.room-polish .room-right-side .enemy-slots-row .qmark {
+  font-size: 2.5em !important;
+}
+
+/* VS 位于真正的中间空白区，不压卡组或红方。 */
+.game-room.room-rebuild.room-polish .room-vs {
+  left: 39.1% !important;
+  top: 41.5% !important;
+  width: 20.9% !important;
+  height: 22% !important;
+  font-size: 4.9em !important;
+}
+
+/* PVE/BOSS：随机地图、技能、开始三块严格分开。 */
+.game-room.room-rebuild.room-polish.room-pve-like .room-mid-actions {
+  position: absolute !important;
+  left: 48.6% !important;
+  bottom: 10.4% !important;
+  width: 38% !important;
+  height: 19.8% !important;
+  display: grid !important;
+  grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  gap: 2% !important;
+}
+.game-room.room-rebuild.room-polish.room-pve-like .room-mid-actions .dice-btn,
+.game-room.room-rebuild.room-polish.room-pve-like .room-mid-actions .skill-btn {
+  display: flex !important;
+  width: auto !important;
+  min-width: 0 !important;
+}
+.game-room.room-rebuild.room-polish.room-pve-like .room-mid-actions .team-btn {
+  display: flex !important;
+}
+.game-room.room-rebuild.room-polish.room-pve-like .room-ready-btn {
+  position: absolute !important;
+  left: 88.2% !important;
+  bottom: 10.4% !important;
+  width: 9.6% !important;
+  height: 19.8% !important;
+  margin: 0 !important;
+}
+
+/* PVP：三项功能和开始按钮也保持间隔。 */
+.game-room.room-rebuild.room-polish.room-pvp-like .room-mid-actions {
+  left: 48.6% !important;
+  width: 38% !important;
+  grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  gap: 2% !important;
+}
+.game-room.room-rebuild.room-polish.room-pvp-like .room-ready-btn {
+  left: 88.2% !important;
+  width: 9.6% !important;
+}
+
+/* 底部工具栏保持完整，不让开始按钮遮盖。 */
+.game-room.room-rebuild.room-polish .room-bottom-bar {
+  left: 49.2% !important;
+  right: 1.7% !important;
+  bottom: 1.05% !important;
+  height: 7.5% !important;
+  z-index: 80 !important;
+}
+.game-room.room-rebuild.room-polish .room-mid-actions,
+.game-room.room-rebuild.room-polish .room-ready-btn {
+  z-index: 74 !important;
+}
+
+/* 字体进一步靠近参考图。 */
+.game-room.room-rebuild.room-polish {
+  font-size: clamp(16px, 2.05vmin, 22px) !important;
+}
+.game-room.room-rebuild.room-polish .room-title-text { font-size: 1.55em !important; }
+.game-room.room-rebuild.room-polish .room-stage-display { font-size: 1.04em !important; }
+.game-room.room-rebuild.room-polish .deck-title { font-size: 1.08em !important; }
+.game-room.room-rebuild.room-polish .deck-tab { font-size: .83em !important; }
+.game-room.room-rebuild.room-polish .swap-card-btn { font-size: .86em !important; }
+.game-room.room-rebuild.room-polish .room-vector-label { font-size: .76em !important; }
+.game-room.room-rebuild.room-polish .room-ready-btn { font-size: 1.48em !important; }
+
+/* 上一页/下一页按钮适合中文文字。 */
+.game-room.room-rebuild.room-polish .exact-drawer-pager {
+  width: 7.2% !important;
+  right: .8% !important;
+  padding: 3.2% .4% !important;
+}
+.game-room.room-rebuild.room-polish .drawer-cards {
+  right: 9.1% !important;
+}
+.game-room.room-rebuild.room-polish .exact-drawer-pager button {
+  flex-basis: 33% !important;
+  padding: .18em !important;
+  font-size: .68em !important;
+  font-weight: 1000 !important;
+}

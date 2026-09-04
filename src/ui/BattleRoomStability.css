@@ -1,0 +1,112 @@
+/* 战斗准备房稳定层：只修复缩放、点击区域和弹层，不再用脚本反复改 DOM。 */
+
+body:has(.game-room.room-exact),
+body:has(.game-room.room-exact) #app,
+body:has(.game-room.room-exact) .app-shell,
+body:has(.game-room.room-exact) .view-root,
+body:has(.game-room.room-exact) #view-root {
+  width: 100%;
+  height: 100dvh;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.deck-select-page:has(.game-room.room-exact) {
+  width: 100%;
+  height: 100dvh;
+  min-height: 0;
+  padding: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.game-room.room-exact {
+  width: min(calc(100vw - 12px), calc((100dvh - 12px) * 640 / 406)) !important;
+  height: auto !important;
+  max-width: calc(100vw - 12px) !important;
+  max-height: calc(100dvh - 12px) !important;
+  margin: 0 !important;
+  flex: 0 0 auto;
+  transform: none !important;
+  transform-origin: center center;
+  contain: layout paint;
+}
+
+.game-room.room-exact button,
+.game-room.room-exact input,
+.game-room.room-exact [role='button'] {
+  pointer-events: auto;
+  touch-action: manipulation;
+}
+
+.game-room.room-exact .deck-slot-item {
+  appearance: none;
+  font: inherit;
+}
+
+.game-room.room-exact .room-mid-actions,
+.game-room.room-exact .room-ready-btn,
+.game-room.room-exact .room-bottom-bar,
+.game-room.room-exact .exact-room-chat {
+  z-index: 30;
+}
+
+.game-room.room-exact .card-drawer {
+  z-index: 210;
+  visibility: hidden;
+  opacity: 0;
+  pointer-events: none;
+  transform: none;
+}
+
+.game-room.room-exact .card-drawer.open {
+  display: block;
+  visibility: visible;
+  opacity: 1;
+  pointer-events: auto;
+  animation: none;
+  transform: none;
+}
+
+.game-room.room-exact .card-drawer.open *,
+.game-room.room-exact .exact-drawer-footer,
+.game-room.room-exact .exact-drawer-category,
+.game-room.room-exact .exact-drawer-pager {
+  pointer-events: auto;
+}
+
+.game-room.room-exact .room-setting-modal,
+.game-room.room-exact .kick-modal {
+  z-index: 230;
+}
+
+.game-room.room-exact .more-dropdown {
+  z-index: 220;
+}
+
+.game-room.room-exact .room-toast {
+  z-index: 250;
+}
+
+.game-room.room-exact::before,
+.game-room.room-exact::after {
+  pointer-events: none !important;
+}
+
+@supports not (height: 100dvh) {
+  body:has(.game-room.room-exact),
+  body:has(.game-room.room-exact) #app,
+  body:has(.game-room.room-exact) .app-shell,
+  body:has(.game-room.room-exact) .view-root,
+  body:has(.game-room.room-exact) #view-root,
+  .deck-select-page:has(.game-room.room-exact) {
+    height: 100vh;
+  }
+
+  .game-room.room-exact {
+    width: min(calc(100vw - 12px), calc((100vh - 12px) * 640 / 406)) !important;
+    max-height: calc(100vh - 12px) !important;
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "payReward_getReward": "领取奖励",
+  "payReward_alert": "完成首次充值即可领取大奖",
+  "payReward_gotoPay": "前往充值",
+  "payReward_goOnPay": "继续充值",
+  "payReward_chong": "充",
+  "payReward_song": "送",
+  "payReward_appstorePoint": "￥",
+  "payReward_gain": "充{0}，您将获得{1}",
+  "payReward_X2": "X 2",
+  "payReward_nextVip": "成为下阶段VIP即可获得",
+  "payReward_maxVip": "您已获得所有VIP奖励",
+  "payReward_huobi": ""
+}

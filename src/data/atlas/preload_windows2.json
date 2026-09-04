@@ -1,0 +1,13 @@
+{
+  "image": "windows2.png",
+  "path": "preload/windows2.xml",
+  "sprites": [
+    {
+      "name": "setStar_Bg",
+      "x": 2,
+      "y": 2,
+      "width": 960,
+      "height": 640
+    }
+  ]
+}

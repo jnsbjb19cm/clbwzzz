@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html>
+<head><meta charset="UTF-8"><title>坐标查看工具</title>
+<style>
+body { margin: 0; background: #111; color: #fff; font-family: monospace; }
+#info { position: fixed; top: 0; left: 0; z-index: 999; background: rgba(0,0,0,0.8); padding: 10px; font-size: 14px; pointer-events: none; }
+canvas { display: block; max-width: 100vw; }
+</style>
+</head>
+<body>
+<div id="info">点击图片查看坐标</div>
+<canvas id="c"></canvas>
+<script>
+const c = document.getElementById('c');
+const ctx = c.getContext('2d');
+const img = new Image();
+img.onload = () => {
+  c.width = img.naturalWidth;
+  c.height = img.naturalHeight;
+  // Scale to fit screen
+  const scale = Math.min(window.innerWidth / c.width, window.innerHeight / c.height, 1);
+  c.style.width = (c.width * scale) + 'px';
+  c.style.height = (c.height * scale) + 'px';
+  ctx.drawImage(img, 0, 0);
+};
+img.src = 'resources/img/soldier.png';
+
+c.addEventListener('click', (e) => {
+  const rect = c.getBoundingClientRect();
+  const scaleX = c.width / rect.width;
+  const scaleY = c.height / rect.height;
+  const x = Math.round((e.clientX - rect.left) * scaleX);
+  const y = Math.round((e.clientY - rect.top) * scaleY);
+  const px = ctx.getImageData(x, y, 1, 1).data;
+  document.getElementById('info').innerHTML = 
+    '坐标: (' + x + ', ' + y + ') | RGB: (' + px[0] + ',' + px[1] + ',' + px[2] + ')' +
+    '<br>按住拖动可查看区域';
+});
+
+// Region selection
+let selStart = null;
+const selDiv = document.createElement('div');
+selDiv.style.cssText = 'position:fixed;border:2px solid #0f0;background:rgba(0,255,0,0.1);pointer-events:none;display:none;z-index:998';
+document.body.appendChild(selDiv);
+
+c.addEventListener('mousedown', (e) => {
+  const rect = c.getBoundingClientRect();
+  selStart = { x: e.clientX - rect.left, y: e.clientY - rect.top };
+  selDiv.style.display = 'block';
+  selDiv.style.left = selStart.x + 'px';
+  selDiv.style.top = selStart.y + 'px';
+  selDiv.style.width = '0';
+  selDiv.style.height = '0';
+});
+
+document.addEventListener('mousemove', (e) => {
+  if (!selStart) return;
+  const rect = c.getBoundingClientRect();
+  const scaleX = c.width / rect.width;
+  const scaleY = c.height / rect.height;
+  const cx = e.clientX - rect.left;
+  const cy = e.clientY - rect.top;
+  const left = Math.min(selStart.x, cx);
+  const top = Math.min(selStart.y, cy);
+  const w = Math.abs(cx - selStart.x);
+  const h = Math.abs(cy - selStart.y);
+  selDiv.style.left = left + 'px';
+  selDiv.style.top = top + 'px';
+  selDiv.style.width = w + 'px';
+  selDiv.style.height = h + 'px';
+  const x1 = Math.round(left * scaleX);
+  const y1 = Math.round(top * scaleY);
+  const x2 = Math.round((left + w) * scaleX);
+  const y2 = Math.round((top + h) * scaleY);
+  document.getElementById('info').innerHTML = 
+    '区域: (' + x1 + ',' + y1 + ') 到 (' + x2 + ',' + y2 + ') | 大小: ' + (x2-x1) + 'x' + (y2-y1) + 'px';
+});
+
+document.addEventListener('mouseup', () => {
+  selStart = null;
+  selDiv.style.display = 'none';
+});
+</script>
+</body>
+</html>

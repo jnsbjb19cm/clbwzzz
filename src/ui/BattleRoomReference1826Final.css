@@ -1,0 +1,863 @@
+/*
+ * 房间准备界面 1826 × 1117 原子化复刻层。
+ *
+ * 只覆盖 .game-room.room-exact 的视觉几何，不接管 DeckSelectView / RoomView 的业务事件。
+ * 因而保留现有：真实房间成员、战团切换/换卡、Socket 准备/开始、随机地图、换队、
+ * 房间聊天、房间工具覆盖层以及底部功能栏。
+ *
+ * Reference coordinates (px):
+ * blue:  (0,0,324,367) (0,382,313,362) (330,374,321,371)
+ * red:   (1497,0,319,367) (1153,374,324,371) (1497,382,319,362)
+ * title: (337,0)-(1485,84)
+ * team:  (352,115)-(1468,213)
+ * deck:  (352,229)-(1471,364)
+ * chat:  (1,743)-(866,1107)
+ * map:   (876,743)-(1148,992)
+ */
+
+body:has(.game-room.room-exact) {
+  overflow: hidden !important;
+  background: #6f9f1f !important;
+}
+
+.deck-select-page:has(.game-room.room-exact) {
+  width: 100vw !important;
+  max-width: none !important;
+  min-height: 100vh !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  display: grid !important;
+  place-items: center !important;
+  overflow: hidden !important;
+  background: #6f9f1f !important;
+}
+
+.game-room.room-exact {
+  --ref-green-dark: #476f08;
+  --ref-green-edge: #5d8b0e;
+  --ref-green: #8fbd2b;
+  --ref-green-light: #d9f39a;
+  --ref-blue-dark: #034975;
+  --ref-blue-mid: #159bd5;
+  --ref-blue-light: #66d4f8;
+  --ref-red-dark: #80220e;
+  --ref-red-mid: #f15a49;
+  --ref-red-light: #ffab99;
+  --ref-orange-dark: #9a3b08;
+  --ref-yellow: #ffd52e;
+  --ref-stage-w: 1826;
+  --ref-stage-h: 1117;
+
+  position: relative !important;
+  width: min(100vw, calc(100vh * 1.63473590)) !important;
+  height: auto !important;
+  aspect-ratio: 1826 / 1117 !important;
+  max-width: none !important;
+  max-height: none !important;
+  overflow: hidden !important;
+  isolation: isolate !important;
+  container-type: inline-size;
+  border: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: inset 0 0 1.25cqw rgba(46, 82, 4, .55) !important;
+  color: #3d4219 !important;
+  font-family: "Microsoft YaHei", "PingFang SC", "SimHei", Arial, sans-serif !important;
+  background:
+    radial-gradient(ellipse at 50% 45%, rgba(246, 250, 170, .96) 0%, rgba(221, 234, 126, .92) 18%, rgba(168, 205, 70, .93) 43%, rgba(113, 163, 29, .98) 78%, #628d19 100%) !important;
+}
+
+.game-room.room-exact::before,
+.game-room.room-exact::after {
+  display: none !important;
+}
+
+/* ===== 顶部标题：337,0 → 1485,84 ===== */
+.game-room.room-exact .room-top-bar {
+  position: absolute !important;
+  z-index: 24 !important;
+  left: 18.4556% !important;
+  top: 0 !important;
+  width: 62.8697% !important;
+  height: 7.5201% !important;
+  min-height: 0 !important;
+  padding: 0 !important;
+  display: block !important;
+  overflow: hidden !important;
+  border: .11cqw solid #517b0d !important;
+  border-radius: 0 0 .72cqw .72cqw !important;
+  background: linear-gradient(180deg, #a7d244 0%, #91bf2c 53%, #78a91b 100%) !important;
+  box-shadow:
+    inset 0 .18cqw .32cqw rgba(255,255,255,.28),
+    inset 0 -.18cqw .28cqw rgba(53,91,4,.25),
+    0 .14cqw .20cqw rgba(43,66,4,.26) !important;
+}
+
+.game-room.room-exact .room-top-bar::after {
+  content: '';
+  position: absolute;
+  left: 1.2%;
+  right: 1.2%;
+  top: .10cqw;
+  height: .46cqw;
+  pointer-events: none;
+  border-radius: 50%;
+  background: linear-gradient(rgba(255,255,255,.18), transparent);
+}
+
+.game-room.room-exact .room-title-group {
+  display: block !important;
+  position: absolute !important;
+  inset: 0 !important;
+}
+
+.game-room.room-exact .room-title-text {
+  position: absolute !important;
+  left: 1.46cqw !important;
+  top: 1.02cqw !important;
+  min-width: 0 !important;
+  font-size: 0 !important;
+  line-height: 1 !important;
+  color: transparent !important;
+  text-shadow: none !important;
+}
+
+.game-room.room-exact .room-title-text::after {
+  content: '房间';
+  display: block;
+  white-space: nowrap;
+  color: #ffd630;
+  font-size: 2.22cqw;
+  font-weight: 900;
+  line-height: 1;
+  -webkit-text-stroke: .105cqw #574000;
+  text-shadow: 0 .14cqw .05cqw rgba(0,0,0,.28);
+}
+
+.game-room.room-exact .room-id-tag,
+.game-room.room-exact .room-stage-display,
+.game-room.room-exact .room-rule-btn,
+.game-room.room-exact .room-status-bar {
+  display: none !important;
+}
+
+/* ===== 左蓝方：独立按像素坐标定位 ===== */
+.game-room.room-exact .room-left-side {
+  position: absolute !important;
+  z-index: 12 !important;
+  left: 0 !important;
+  top: 0 !important;
+  width: 35.6517% !important; /* 651 / 1826 */
+  height: 66.6069% !important; /* 744 / 1117 */
+  overflow: visible !important;
+  pointer-events: none;
+}
+
+.game-room.room-exact .room-side-label {
+  display: none !important;
+}
+
+.game-room.room-exact #owner-slot,
+.game-room.room-exact .owner-slot {
+  position: absolute !important;
+  left: 0 !important;
+  top: 0 !important;
+  width: 49.7696% !important; /* 324 / 651 */
+  height: 49.3279% !important; /* 367 / 744 */
+  pointer-events: auto;
+}
+
+.game-room.room-exact .member-slots-row {
+  position: static !important;
+  display: contents !important;
+}
+
+.game-room.room-exact #member-slot-1 {
+  position: absolute !important;
+  left: 0 !important;
+  top: 51.3441% !important; /* 382 / 744 */
+  width: 48.0799% !important; /* 313 / 651 */
+  height: 48.6559% !important; /* 362 / 744 */
+  pointer-events: auto;
+}
+
+.game-room.room-exact #member-slot-2 {
+  position: absolute !important;
+  left: 50.6912% !important; /* 330 / 651 */
+  top: 50.2688% !important; /* 374 / 744 */
+  width: 49.3088% !important; /* 321 / 651 */
+  height: 49.8656% !important; /* 371 / 744 */
+  pointer-events: auto;
+}
+
+/* ===== 右红方：1153..1816 为统一定位容器 ===== */
+.game-room.room-exact .room-right-side {
+  position: absolute !important;
+  z-index: 12 !important;
+  left: 63.1435% !important; /* 1153 / 1826 */
+  top: 0 !important;
+  width: 36.3090% !important; /* 663 / 1826 */
+  height: 66.6069% !important;
+  overflow: visible !important;
+  pointer-events: none;
+}
+
+.game-room.room-exact .room-right-side .top-enemy {
+  position: absolute !important;
+  left: 51.8854% !important; /* 344 / 663 */
+  top: 0 !important;
+  width: 48.1146% !important; /* 319 / 663 */
+  height: 49.3279% !important;
+  pointer-events: auto;
+}
+
+.game-room.room-exact .enemy-slots-row {
+  position: static !important;
+  display: contents !important;
+}
+
+.game-room.room-exact .enemy-slots-row > .enemy-slot:nth-child(1) {
+  position: absolute !important;
+  left: 0 !important;
+  top: 50.2688% !important; /* 374 / 744 */
+  width: 48.8688% !important; /* 324 / 663 */
+  height: 49.8656% !important;
+  pointer-events: auto;
+}
+
+.game-room.room-exact .enemy-slots-row > .enemy-slot:nth-child(2) {
+  position: absolute !important;
+  left: 51.8854% !important;
+  top: 51.3441% !important; /* 382 / 744 */
+  width: 48.1146% !important;
+  height: 48.6559% !important;
+  pointer-events: auto;
+}
+
+/* ===== 蓝/红槽材质 ===== */
+.game-room.room-exact .member-slot,
+.game-room.room-exact .enemy-slot {
+  overflow: hidden !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+  border-radius: .75cqw !important;
+  box-sizing: border-box !important;
+}
+
+.game-room.room-exact .member-slot {
+  border: .25cqw solid #034873 !important;
+  background:
+    linear-gradient(137deg, rgba(255,255,255,.22) 0 45%, transparent 45.4%),
+    linear-gradient(135deg, #6ed6fb 0%, #42c1ef 43%, #24abe4 43.4%, #169bd5 100%) !important;
+  box-shadow:
+    inset 0 0 0 .14cqw #4ed5ff,
+    inset .13cqw .13cqw .12cqw rgba(255,255,255,.45),
+    inset -.14cqw -.14cqw .22cqw rgba(0,72,119,.34),
+    .08cqw .13cqw .17cqw rgba(0,0,0,.36) !important;
+}
+
+.game-room.room-exact .enemy-slot {
+  border: .25cqw solid #82210d !important;
+  background:
+    linear-gradient(137deg, rgba(255,255,255,.20) 0 46%, transparent 46.4%),
+    linear-gradient(135deg, #ffad9d 0%, #ff8b78 43%, #ff6c59 43.4%, #f25445 100%) !important;
+  box-shadow:
+    inset 0 0 0 .14cqw #ffb8a8,
+    inset .13cqw .13cqw .12cqw rgba(255,255,255,.42),
+    inset -.14cqw -.14cqw .20cqw rgba(132,30,16,.32),
+    .08cqw .13cqw .17cqw rgba(0,0,0,.36) !important;
+}
+
+.game-room.room-exact .member-slot::after,
+.game-room.room-exact .enemy-slot::after {
+  content: '';
+  position: absolute;
+  inset: .22cqw;
+  z-index: 1;
+  border-radius: .46cqw;
+  border: .055cqw solid rgba(255,255,255,.24);
+  pointer-events: none;
+}
+
+/* 左上小喇叭：纯 CSS，不占用真实玩家内容 */
+.game-room.room-exact .room-left-side::before {
+  content: '';
+  position: absolute;
+  z-index: 40;
+  left: 1.25cqw;
+  top: .78cqw;
+  width: 3.45cqw;
+  height: 2.35cqw;
+  pointer-events: none;
+  transform: rotate(-14deg);
+  background:
+    linear-gradient(#fff7c8,#ffc52c) 24% 41% / 42% 37% no-repeat,
+    linear-gradient(90deg,#f4f0d3,#ffc32b) 23% 76% / 16% 39% no-repeat,
+    conic-gradient(from 225deg at 0 50%, transparent 0 25%, #ffb313 25% 75%, transparent 75%) 72% 48% / 48% 90% no-repeat;
+  filter: drop-shadow(.07cqw .10cqw .05cqw rgba(0,0,0,.30));
+}
+
+/* 真实成员信息仍显示，但压在原图槽内；空槽保持纯色。 */
+.game-room.room-exact .member-avatar,
+.game-room.room-exact .enemy-slot .member-avatar {
+  z-index: 3 !important;
+  inset: 13% 8% 5% !important;
+}
+.game-room.room-exact .member-avatar img,
+.game-room.room-exact .enemy-slot .member-avatar img {
+  max-width: 82% !important;
+  max-height: 82% !important;
+  object-fit: contain !important;
+}
+.game-room.room-exact .member-info,
+.game-room.room-exact .enemy-slot .member-info { z-index: 5 !important; }
+
+/* 红方空位问号 */
+.game-room.room-exact .enemy-slot.question-mark {
+  display: grid !important;
+  place-items: center !important;
+}
+.game-room.room-exact .enemy-slot.question-mark:not(:has(.qmark))::before {
+  content: '?';
+  position: absolute;
+  z-index: 4;
+  left: 50%;
+  top: 45%;
+  transform: translate(-50%,-50%) scaleX(.90);
+  color: #e97562;
+  font-family: "Arial Black", Impact, sans-serif;
+  font-size: 9.75cqw;
+  font-weight: 900;
+  line-height: .78;
+  text-shadow:
+    -.09cqw -.09cqw .04cqw rgba(255,190,170,.57),
+    .12cqw .15cqw .14cqw rgba(116,25,13,.34);
+}
+.game-room.room-exact .qmark {
+  position: relative !important;
+  z-index: 4 !important;
+  color: #e97562 !important;
+  font-family: "Arial Black", Impact, sans-serif !important;
+  font-size: 9.75cqw !important;
+  font-weight: 900 !important;
+  line-height: .80 !important;
+  transform: scaleX(.90) !important;
+  text-shadow:
+    -.09cqw -.09cqw .04cqw rgba(255,190,170,.57),
+    .12cqw .15cqw .14cqw rgba(116,25,13,.34) !important;
+}
+.game-room.room-exact .enemy-slots-row .qmark { font-size: 9.15cqw !important; }
+.game-room.room-exact .qmark-label,
+.game-room.room-exact .pvp-player-empty-label { display: none !important; }
+
+/* ===== 我的战团：352,115 → 1468,213；卡槽：352,229 → 1471,364 ===== */
+.game-room.room-exact .room-center-area {
+  position: absolute !important;
+  z-index: 22 !important;
+  left: 19.2760% !important;
+  top: 10.2954% !important;
+  width: 61.2815% !important;
+  height: 22.2919% !important; /* 249px */
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  overflow: visible !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+.game-room.room-exact .deck-header {
+  position: absolute !important;
+  left: 0 !important;
+  top: 0 !important;
+  width: 99.73% !important; /* 1116 / 1119 */
+  height: 39.3574% !important; /* 98 / 249 */
+  min-height: 0 !important;
+  padding: 0 1.75cqw !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 1.15cqw !important;
+  overflow: hidden !important;
+  border: .13cqw solid #71a717 !important;
+  border-radius: 1.08cqw !important;
+  background: linear-gradient(180deg,#e0f7a4 0%,#c4e978 30%,#afd75a 68%,#98c33b 100%) !important;
+  box-shadow:
+    inset 0 .18cqw .42cqw rgba(255,255,255,.72),
+    inset 0 -.20cqw .28cqw rgba(68,112,5,.28),
+    0 .10cqw .14cqw rgba(0,0,0,.17) !important;
+}
+
+.game-room.room-exact .deck-title {
+  flex: 0 0 auto !important;
+  color: #ffd72a !important;
+  font-size: 1.79cqw !important;
+  font-weight: 900 !important;
+  line-height: 1 !important;
+  white-space: nowrap !important;
+  -webkit-text-stroke: .095cqw #594100;
+  text-shadow: 0 .10cqw .05cqw rgba(0,0,0,.25) !important;
+}
+
+.game-room.room-exact .deck-tabs {
+  flex: 1 1 auto !important;
+  min-width: 0 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+  gap: 1.10cqw !important;
+}
+
+.game-room.room-exact .deck-tab {
+  position: relative !important;
+  min-width: 0 !important;
+  height: 2.05cqw !important;
+  padding: 0 0 0 1.92cqw !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  color: #443a26 !important;
+  font-size: 0 !important;
+  font-weight: 900 !important;
+  line-height: 2.05cqw !important;
+  overflow: visible !important;
+}
+
+.game-room.room-exact .deck-tab::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 50%;
+  width: 1.40cqw;
+  height: 1.40cqw;
+  transform: translateY(-50%);
+  border: .12cqw solid #456e00;
+  border-radius: .20cqw;
+  background: linear-gradient(135deg,#78aa20,#467900);
+  box-shadow: inset .09cqw .10cqw .13cqw rgba(255,255,255,.28);
+}
+.game-room.room-exact .deck-tab.active::before {
+  background:
+    radial-gradient(circle at 50% 48%,#dfff74 0 25%,transparent 28%),
+    linear-gradient(135deg,#669808,#315e00) !important;
+}
+.game-room.room-exact .deck-tab[data-tab="default"]::after { content: '默认'; }
+.game-room.room-exact .deck-tab[data-tab="team1"]::after { content: '战队1'; }
+.game-room.room-exact .deck-tab[data-tab="team2"]::after { content: '战队2'; }
+.game-room.room-exact .deck-tab[data-tab="team3"]::after { content: '战队3'; }
+.game-room.room-exact .deck-tab::after {
+  display: block;
+  color: #403623;
+  font-size: 1.46cqw;
+  font-weight: 900;
+  line-height: 2.05cqw;
+  white-space: nowrap;
+  text-shadow: 0 .06cqw 0 rgba(255,255,255,.74);
+}
+
+.game-room.room-exact .swap-card-btn {
+  flex: 0 0 9.15cqw !important;
+  width: 9.15cqw !important;
+  height: 3.45cqw !important;
+  min-height: 0 !important;
+  margin-left: auto !important;
+  padding: 0 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: .48cqw !important;
+  border: .13cqw solid #ffae15 !important;
+  border-radius: 1.85cqw !important;
+  color: #6b3210 !important;
+  background: linear-gradient(180deg,#fff48a 0%,#ffcd35 30%,#ff9b18 61%,#f96f14 100%) !important;
+  box-shadow:
+    inset 0 .22cqw .28cqw rgba(255,255,255,.8),
+    inset 0 -.22cqw .28cqw rgba(201,64,0,.22),
+    0 0 .45cqw rgba(255,241,80,.90),
+    0 .14cqw .18cqw rgba(0,0,0,.25) !important;
+  font-size: 1.58cqw !important;
+  font-weight: 900 !important;
+  cursor: pointer !important;
+}
+.game-room.room-exact .swap-card-btn .swap-icon {
+  color: #ffe236 !important;
+  font-size: 1.65cqw !important;
+  line-height: 1 !important;
+  text-shadow:
+    -.09cqw -.09cqw 0 #713700,
+    .09cqw -.09cqw 0 #713700,
+    -.09cqw .09cqw 0 #713700,
+    .09cqw .09cqw 0 #713700 !important;
+}
+
+.game-room.room-exact .deck-slots-row {
+  position: absolute !important;
+  left: 0 !important;
+  top: 45.7831% !important; /* 114 / 249 */
+  width: 100% !important;
+  height: 54.2169% !important; /* 135 / 249 */
+  padding: .18cqw .42cqw !important;
+  display: grid !important;
+  grid-template-columns: repeat(10, minmax(0, 1fr)) !important;
+  grid-template-rows: 1fr !important;
+  gap: .10cqw !important;
+  overflow: hidden !important;
+  border: .11cqw solid #628f12 !important;
+  border-radius: 0 !important;
+  background: linear-gradient(#80aa26,#659312) !important;
+  box-shadow: inset 0 .15cqw .24cqw rgba(255,255,255,.17), 0 .12cqw .15cqw rgba(0,0,0,.18) !important;
+}
+
+.game-room.room-exact .deck-slot-item,
+.game-room.room-exact .v3-deck-slot {
+  position: relative !important;
+  min-width: 0 !important;
+  width: auto !important;
+  height: 100% !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+  border: .075cqw solid #a7d55c !important;
+  border-radius: 0 !important;
+  background: linear-gradient(45deg,#95c43d 0 49%,#bde47a 49.5% 100%) !important;
+  box-shadow:
+    inset .09cqw .09cqw .16cqw rgba(255,255,255,.19),
+    inset -.10cqw -.13cqw .18cqw rgba(72,116,6,.22) !important;
+}
+
+/* 真卡牌仍可见；空槽不再显示“空位/编号”文字，保持参考图的空绿槽。 */
+.game-room.room-exact .deck-slot-item.empty > *,
+.game-room.room-exact .v3-deck-slot.empty > * {
+  visibility: hidden !important;
+}
+
+/* ===== VS ===== */
+.game-room.room-exact .room-vs {
+  position: absolute !important;
+  z-index: 18 !important;
+  left: 36.30% !important;
+  top: 39.65% !important;
+  width: 25.80% !important;
+  height: 20.10% !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  display: grid !important;
+  place-items: center !important;
+  color: #ffc217 !important;
+  background: radial-gradient(ellipse,rgba(255,255,255,.98) 0%,rgba(255,251,164,.72) 29%,rgba(255,239,98,.24) 51%,transparent 72%) !important;
+  border: 0 !important;
+  font-family: Impact, "Arial Black", sans-serif !important;
+  font-size: 8.25cqw !important;
+  font-style: italic !important;
+  font-weight: 900 !important;
+  letter-spacing: -.62cqw !important;
+  line-height: 1 !important;
+  transform: skewX(-7deg) scaleY(.88) !important;
+  -webkit-text-stroke: .23cqw #ff9700;
+  text-shadow:
+    0 .29cqw 0 #e85d00,
+    0 .46cqw .25cqw rgba(124,65,0,.30),
+    0 0 .55cqw #fff6a2,
+    0 0 1.05cqw #fff !important;
+  pointer-events: none !important;
+}
+
+/* ===== 聊天：1,743 → 866,1107 ===== */
+.game-room.room-exact .exact-room-chat {
+  position: absolute !important;
+  z-index: 30 !important;
+  left: .0548% !important;
+  top: 66.5175% !important;
+  width: 47.3713% !important;
+  height: 32.5873% !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: .55cqw .55cqw 0 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  overflow: hidden !important;
+}
+
+.game-room.room-exact .exact-room-chat-tabs {
+  display: none !important;
+}
+
+.game-room.room-exact .exact-room-chat-log {
+  position: absolute !important;
+  left: 0 !important;
+  top: 0 !important;
+  width: 100% !important;
+  height: 80.22% !important;
+  padding: .55cqw 1.55cqw .55cqw .65cqw !important;
+  overflow: auto !important;
+  border: .20cqw solid #4d740c !important;
+  border-radius: .55cqw .55cqw 0 0 !important;
+  color: #465129 !important;
+  background: linear-gradient(135deg,#dbe5b7 0%,#d3dfaa 49%,#c5d494 100%) !important;
+  box-shadow: inset .14cqw .14cqw .28cqw rgba(255,255,255,.30) !important;
+  font-size: .92cqw !important;
+}
+
+.game-room.room-exact .exact-room-chat-message {
+  margin: .08cqw 0 !important;
+  line-height: 1.30 !important;
+}
+
+.game-room.room-exact .exact-room-chat-form {
+  position: absolute !important;
+  left: 0 !important;
+  bottom: 0 !important;
+  width: 100% !important;
+  height: 19.78% !important;
+  padding: .48cqw .65cqw !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: .52cqw !important;
+  border: .20cqw solid #486808 !important;
+  border-radius: 0 0 .50cqw .50cqw !important;
+  background: linear-gradient(#809f34,#5d7d20) !important;
+  box-shadow: inset 0 .12cqw .20cqw rgba(255,255,255,.18) !important;
+}
+
+.game-room.room-exact .exact-room-chat-current {
+  flex: 0 0 4.05cqw !important;
+  color: #e6e9ae !important;
+  font-size: 1.45cqw !important;
+  font-weight: 900 !important;
+  text-align: left !important;
+  -webkit-text-stroke: .055cqw #4a5a10;
+  text-shadow: 0 .09cqw .06cqw #283400 !important;
+}
+
+.game-room.room-exact .exact-room-chat-form input {
+  flex: 1 1 auto !important;
+  min-width: 0 !important;
+  height: 2.48cqw !important;
+  margin: 0 !important;
+  padding: 0 .55cqw !important;
+  border: .07cqw solid #506013 !important;
+  border-radius: .18cqw !important;
+  outline: 0 !important;
+  color: #fff !important;
+  caret-color: #fff !important;
+  background: #050600 !important;
+  box-shadow: inset 0 .17cqw .21cqw rgba(0,0,0,.88) !important;
+  font-size: .95cqw !important;
+}
+
+.game-room.room-exact .exact-room-chat-form button {
+  flex: 0 0 3.25cqw !important;
+  height: 2.48cqw !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: .09cqw solid #6d7a2b !important;
+  border-radius: .35cqw !important;
+  color: #665b23 !important;
+  background: linear-gradient(#f2eaa8,#bfc779) !important;
+  font-size: .76cqw !important;
+  font-weight: 900 !important;
+}
+
+/* ===== 中部功能按钮容器改成全舞台定位，不改变按钮本身事件 ===== */
+.game-room.room-exact .room-mid-actions {
+  position: absolute !important;
+  z-index: 28 !important;
+  inset: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  display: block !important;
+  pointer-events: none !important;
+}
+
+.game-room.room-exact .room-mid-actions .mid-btn {
+  position: absolute !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+  margin: 0 !important;
+  pointer-events: auto !important;
+  cursor: pointer !important;
+  overflow: hidden !important;
+}
+
+/* 随机地图：876,743 → 1148,992 */
+.game-room.room-exact .dice-btn {
+  left: 47.9737% !important;
+  top: 66.5175% !important;
+  width: 14.8959% !important;
+  height: 22.2919% !important;
+  padding: 0 !important;
+  border: .19cqw solid #477006 !important;
+  border-radius: .57cqw !important;
+  color: #ffb229 !important;
+  background: radial-gradient(circle at 50% 45%,#add341,#76a81b 58%,#4e7d08 100%) !important;
+  box-shadow:
+    inset 0 .18cqw .30cqw rgba(255,255,255,.25),
+    inset 0 -.20cqw .30cqw rgba(52,91,0,.25),
+    0 .12cqw .17cqw rgba(0,0,0,.20) !important;
+}
+
+.game-room.room-exact .dice-btn::after {
+  content: '死亡模式';
+  position: absolute;
+  right: .72cqw;
+  bottom: .45cqw;
+  z-index: 5;
+  color: #ff7b25;
+  font-size: 1.05cqw;
+  font-weight: 900;
+  -webkit-text-stroke: .065cqw #753500;
+  pointer-events: none;
+}
+
+.game-room.room-exact .dice-label {
+  position: absolute !important;
+  left: .72cqw !important;
+  top: .52cqw !important;
+  z-index: 5 !important;
+  color: #ffb128 !important;
+  font-size: 1.14cqw !important;
+  font-weight: 900 !important;
+  line-height: 1 !important;
+  -webkit-text-stroke: .065cqw #794000;
+}
+
+.game-room.room-exact .dice-icon {
+  position: absolute !important;
+  left: 50% !important;
+  top: 49% !important;
+  transform: translate(-50%,-50%) rotate(-8deg) !important;
+  z-index: 4 !important;
+  width: 7.2cqw !important;
+  height: 6.0cqw !important;
+  display: grid !important;
+  place-items: center !important;
+  font-size: 4.9cqw !important;
+  line-height: 1 !important;
+  filter: drop-shadow(.12cqw .16cqw .10cqw rgba(0,0,0,.18));
+}
+
+/* 技能：1168,772 → 1358,960 */
+.game-room.room-exact .skill-btn {
+  left: 63.9649% !important;
+  top: 69.1137% !important;
+  width: 10.4053% !important;
+  height: 16.8308% !important;
+  padding: 0 0 .62cqw !important;
+  border: .19cqw solid rgba(224,255,198,.72) !important;
+  border-radius: .88cqw !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: flex-end !important;
+  color: #f3efad !important;
+  background: linear-gradient(#b8ef89,#7bd43e 47%,#5fc322) !important;
+  box-shadow: inset 0 .24cqw .42cqw rgba(255,255,255,.40), inset 0 -.28cqw .38cqw rgba(0,0,0,.12), 0 .14cqw .20cqw rgba(0,0,0,.20) !important;
+}
+
+/* 换队：1384,772 → 1577,960 */
+.game-room.room-exact .team-btn {
+  left: 75.7941% !important;
+  top: 69.1137% !important;
+  width: 10.5696% !important;
+  height: 16.8308% !important;
+  padding: 0 0 .62cqw !important;
+  border: .19cqw solid rgba(218,255,246,.70) !important;
+  border-radius: .88cqw !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: flex-end !important;
+  color: #f3efad !important;
+  background: linear-gradient(#9ee5d9,#5ed3c6 48%,#3cbdb7) !important;
+  box-shadow: inset 0 .24cqw .42cqw rgba(255,255,255,.40), inset 0 -.28cqw .38cqw rgba(0,0,0,.12), 0 .14cqw .20cqw rgba(0,0,0,.20) !important;
+}
+
+.game-room.room-exact .skill-icon,
+.game-room.room-exact .team-icon {
+  position: absolute !important;
+  left: 50% !important;
+  top: 34% !important;
+  transform: translate(-50%,-50%) !important;
+  font-size: 4.25cqw !important;
+  line-height: 1 !important;
+  filter: drop-shadow(.10cqw .14cqw .08cqw rgba(0,0,0,.25));
+}
+
+.game-room.room-exact .skill-label,
+.game-room.room-exact .team-label {
+  position: relative !important;
+  z-index: 5 !important;
+  font-size: 2.15cqw !important;
+  font-weight: 900 !important;
+  line-height: 1 !important;
+  color: #f1eda9 !important;
+  -webkit-text-stroke: .09cqw #557219;
+  text-shadow: 0 .12cqw .09cqw rgba(0,0,0,.26) !important;
+}
+
+/* 准备：1599,771 → 1792,961 */
+.game-room.room-exact .room-ready-btn {
+  position: absolute !important;
+  z-index: 29 !important;
+  left: 87.5685% !important;
+  top: 69.0242% !important;
+  width: 10.5696% !important;
+  height: 17.0098% !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  display: grid !important;
+  place-items: center !important;
+  border: .19cqw solid rgba(255,224,188,.78) !important;
+  border-radius: .90cqw !important;
+  color: #fff0c5 !important;
+  background: linear-gradient(#ffbf9a,#ff8052 44%,#f34e23) !important;
+  box-shadow: inset 0 .25cqw .43cqw rgba(255,255,255,.42), inset 0 -.28cqw .38cqw rgba(126,39,13,.16), 0 .14cqw .20cqw rgba(0,0,0,.21) !important;
+  cursor: pointer !important;
+}
+
+.game-room.room-exact .room-ready-btn[style] {
+  background: linear-gradient(#ffbf9a,#ff8052 44%,#f34e23) !important;
+}
+
+.game-room.room-exact .room-ready-btn .ready-text {
+  color: #fff0c6 !important;
+  font-size: 2.60cqw !important;
+  font-weight: 900 !important;
+  line-height: 1 !important;
+  -webkit-text-stroke: .135cqw #993313;
+  text-shadow: 0 .14cqw .10cqw rgba(80,22,5,.30) !important;
+}
+
+.game-room.room-exact .room-ready-btn:disabled {
+  filter: saturate(.72) brightness(.90) !important;
+  opacity: .72 !important;
+}
+
+/* ===== 底部栏：按用户要求不改其业务/结构；只确保不会盖住上方三大按钮 ===== */
+.game-room.room-exact .room-bottom-bar {
+  z-index: 35 !important;
+}
+
+/* 抽屉/模态框必须盖在复刻层上，换卡/规则/设置功能不能被皮肤吞掉。 */
+.game-room.room-exact .card-drawer,
+.game-room.room-exact .room-setting-modal,
+.game-room.room-exact .room-rule-modal,
+.game-room.room-exact .kick-modal,
+.game-room.room-exact .room-toast,
+.game-room.room-exact .more-dropdown {
+  z-index: 120 !important;
+}
+
+/* 小尺寸屏幕仍保持整张参考图等比缩放，不做响应式重排。 */
+@media (max-aspect-ratio: 1826/1117) {
+  .game-room.room-exact {
+    width: calc(100vh * 1.63473590) !important;
+    height: 100vh !important;
+  }
+}

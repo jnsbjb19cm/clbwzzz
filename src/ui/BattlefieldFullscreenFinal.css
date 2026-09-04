@@ -1,0 +1,348 @@
+/*
+ * 最终全屏战斗场覆盖层。
+ * 目标：背景真正覆盖视口；逻辑画面保持等比缩放；冰柱、棋盘和 HUD 分层；
+ * 在 16:9、16:10 和超宽屏下都不再出现中间网页面板或重复背景接缝。
+ */
+
+html:has(body.battle-immersive),
+body.battle-immersive,
+body.battle-immersive #app,
+body.battle-immersive .app-shell-X,
+body.battle-immersive .view-root-X,
+body.battle-immersive .battle-immersive-page,
+body.battle-immersive .battle-game-wrap.battle-fullscreen-final {
+  width: 100vw !important;
+  height: 100dvh !important;
+  min-width: 100vw !important;
+  min-height: 100dvh !important;
+  max-width: 100vw !important;
+  max-height: 100dvh !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+}
+
+body.battle-immersive {
+  background: #8dc9e8 !important;
+  overscroll-behavior: none !important;
+}
+
+body.battle-immersive .battle-stage-bar {
+  display: none !important;
+}
+
+/* 背景只在最外层出现一次，按 cover 填满屏幕，不拉伸、不平铺。 */
+body.battle-immersive .battle-game-wrap.battle-fullscreen-final {
+  position: fixed !important;
+  inset: 0 !important;
+  isolation: isolate !important;
+  background-color: #9fd4ec !important;
+  background-image: var(--ice-back-url) !important;
+  background-repeat: no-repeat !important;
+  background-position: 50% 50% !important;
+  background-size: cover !important;
+}
+
+body.battle-immersive .battle-game-wrap.battle-fullscreen-final::before,
+body.battle-immersive .battle-game-wrap.battle-fullscreen-final::after,
+body.battle-immersive .game-container.battle-fullscreen-final-stage::before,
+body.battle-immersive .game-container.battle-fullscreen-final-stage::after {
+  content: none !important;
+  display: none !important;
+}
+
+/* 清除旧场景在 1248×832 容器上重复绘制的底图、蒙版、边框和阴影。 */
+body.battle-immersive .battle-fullscreen-final .game-container.battle-fullscreen-final-stage,
+body.battle-immersive .battle-fullscreen-final .game-container.battle-fullscreen-final-stage .bg-stack,
+body.battle-immersive .battle-fullscreen-final .game-container.battle-fullscreen-final-stage .bg-layer-base,
+body.battle-immersive .battle-fullscreen-final .game-container.battle-fullscreen-final-stage .bg-layer-map,
+body.battle-immersive .battle-fullscreen-final .game-container.battle-fullscreen-final-stage .battlefield-wrap {
+  border: 0 !important;
+  border-radius: 0 !important;
+  outline: 0 !important;
+  background: transparent !important;
+  background-image: none !important;
+  box-shadow: none !important;
+  filter: none !important;
+}
+
+body.battle-immersive .battle-fullscreen-final .game-container.battle-fullscreen-final-stage .bg-stack,
+body.battle-immersive .battle-fullscreen-final .game-container.battle-fullscreen-final-stage .bg-layer-base,
+body.battle-immersive .battle-fullscreen-final .game-container.battle-fullscreen-final-stage .bg-layer-map {
+  display: none !important;
+  opacity: 0 !important;
+  visibility: hidden !important;
+}
+
+/* 逻辑舞台继续使用统一缩放，不再按 X/Y 分别拉伸。 */
+body.battle-immersive .battle-fullscreen-final > .game-container.battle-fullscreen-final-stage {
+  position: absolute !important;
+  left: 0 !important;
+  top: 0 !important;
+  width: 1248px !important;
+  height: 832px !important;
+  margin: 0 !important;
+  overflow: visible !important;
+  transform:
+    translate3d(var(--battle-offset-x, 0px), var(--battle-offset-y, 0px), 0)
+    scale(var(--battle-uniform-scale, 1)) !important;
+  transform-origin: 0 0 !important;
+  z-index: 20 !important;
+}
+
+/* 冰柱是独立前景，不参与逻辑舞台缩放；保持原图比例并固定在视口两侧。 */
+body.battle-immersive .battle-fullscreen-final > .bg-layer-left-column,
+body.battle-immersive .battle-fullscreen-final > .bg-layer-right-column {
+  position: absolute !important;
+  top: 0 !important;
+  bottom: 0 !important;
+  width: clamp(220px, 20vw, 410px) !important;
+  height: 100dvh !important;
+  display: block !important;
+  z-index: 28 !important;
+  opacity: 1 !important;
+  pointer-events: none !important;
+  background-color: transparent !important;
+  background-repeat: no-repeat !important;
+  background-size: auto 100% !important;
+  filter: drop-shadow(0 3px 5px rgba(12, 63, 110, .16)) !important;
+}
+
+body.battle-immersive .battle-fullscreen-final > .bg-layer-left-column {
+  left: 0 !important;
+  right: auto !important;
+  background-image: var(--ice-left-url) !important;
+  background-position: left center !important;
+}
+
+body.battle-immersive .battle-fullscreen-final > .bg-layer-right-column {
+  right: 0 !important;
+  left: auto !important;
+  background-image: var(--ice-right-url) !important;
+  background-position: right center !important;
+}
+
+/* 战斗区横向展开，接近参考图的 12 列宽棋盘；纵向仍保持五行完整。 */
+body.battle-immersive .battle-fullscreen-final .battlefield-wrap.battlefield-grid-v2 {
+  position: absolute !important;
+  left: 72px !important;
+  right: 72px !important;
+  top: 88px !important;
+  bottom: 30px !important;
+  width: auto !important;
+  height: auto !important;
+  overflow: visible !important;
+  isolation: isolate !important;
+}
+
+body.battle-immersive .battle-fullscreen-final .battlefield-wrap .battle-canvas,
+body.battle-immersive .battle-fullscreen-final .battlefield-wrap .battle-unit-health-layer {
+  position: absolute !important;
+  inset: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  max-width: none !important;
+  max-height: none !important;
+  transform: none !important;
+  transform-origin: 0 0 !important;
+}
+
+body.battle-immersive .battle-fullscreen-final .battle-placement-layer,
+body.battle-immersive .battle-fullscreen-final #place-grid-overlay {
+  position: absolute !important;
+  left: 0 !important;
+  right: auto !important;
+  top: 104px !important;
+  bottom: auto !important;
+  width: 100% !important;
+  height: 574px !important;
+  box-sizing: border-box !important;
+  transform: none !important;
+  transform-origin: 0 0 !important;
+}
+
+body.battle-immersive .battle-fullscreen-final .battle-placement-layer {
+  grid-template-columns: repeat(12, minmax(0, 1fr)) !important;
+  grid-template-rows: repeat(5, minmax(0, 1fr)) !important;
+  gap: 3px !important;
+  padding: 3px !important;
+  border-radius: 7px !important;
+  background: rgba(242, 163, 34, .95) !important;
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 231, 145, .88),
+    0 2px 5px rgba(58, 32, 4, .30) !important;
+}
+
+body.battle-immersive .battle-fullscreen-final .place-grid-cell {
+  border-radius: 5px !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, .24),
+    inset 0 -12px 22px rgba(26, 47, 72, .08) !important;
+}
+
+body.battle-immersive .battle-fullscreen-final .place-grid-cell.place-ok,
+body.battle-immersive .battle-fullscreen-final .place-grid-cell.skill-target-ok {
+  background: linear-gradient(180deg, rgba(181, 235, 252, .82), rgba(65, 169, 223, .76)) !important;
+}
+
+body.battle-immersive .battle-fullscreen-final .place-grid-cell.place-forbidden,
+body.battle-immersive .battle-fullscreen-final .place-grid-cell.place-occupied {
+  background: linear-gradient(180deg, rgba(255, 146, 146, .84), rgba(207, 67, 74, .78)) !important;
+}
+
+body.battle-immersive .battle-fullscreen-final .place-grid-cell.place-hover,
+body.battle-immersive .battle-fullscreen-final .place-grid-cell.skill-target-hover {
+  box-shadow:
+    inset 0 0 0 2px rgba(247, 255, 255, .92),
+    inset 0 0 22px rgba(255, 255, 255, .55),
+    0 0 14px rgba(50, 199, 255, .88) !important;
+}
+
+/* 顶部资源和十张卡牌作为独立 HUD 居中，不跟棋盘左右偏移。 */
+body.battle-immersive .battle-fullscreen-final .top-ui {
+  position: absolute !important;
+  left: 50% !important;
+  right: auto !important;
+  top: 0 !important;
+  width: 980px !important;
+  height: 104px !important;
+  max-width: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+  transform: translateX(-50%) !important;
+  z-index: 60 !important;
+}
+
+body.battle-immersive .battle-fullscreen-final .top-ui .slots-container {
+  position: absolute !important;
+  left: 128px !important;
+  right: 4px !important;
+  top: 5px !important;
+  bottom: 5px !important;
+  width: auto !important;
+  height: auto !important;
+  overflow: hidden !important;
+}
+
+body.battle-immersive .battle-fullscreen-final #hand {
+  display: grid !important;
+  grid-template-columns: repeat(10, minmax(0, 1fr)) !important;
+  grid-template-rows: minmax(0, 1fr) !important;
+  gap: 1px !important;
+  width: 100% !important;
+  height: 100% !important;
+  overflow: hidden !important;
+}
+
+body.battle-immersive .battle-fullscreen-final #hand .deck-slot {
+  width: auto !important;
+  min-width: 0 !important;
+  max-width: none !important;
+  height: 94px !important;
+  min-height: 94px !important;
+  max-height: 94px !important;
+  margin: 0 !important;
+  transform: none !important;
+}
+
+/* 基地血条贴近左右战场边缘，避免继续跟随旧的窄内容面板。 */
+body.battle-immersive .battle-fullscreen-final .base-hp-slot.player {
+  left: 18px !important;
+  right: auto !important;
+  top: 92px !important;
+}
+
+body.battle-immersive .battle-fullscreen-final .base-hp-slot.enemy {
+  right: 18px !important;
+  left: auto !important;
+  top: 92px !important;
+}
+
+/* 底部 HUD 只覆盖底缘，不参与战场高度计算，也不制造整块黑色网页栏。 */
+body.battle-immersive .battle-immersive-dock {
+  position: fixed !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  width: 100vw !important;
+  height: 58px !important;
+  min-height: 58px !important;
+  max-height: 58px !important;
+  padding: 4px 10px 6px !important;
+  box-sizing: border-box !important;
+  z-index: 100 !important;
+  background: linear-gradient(180deg, rgba(8, 28, 40, .05), rgba(4, 22, 34, .78)) !important;
+  border-top: 1px solid rgba(82, 185, 218, .35) !important;
+  box-shadow: none !important;
+  pointer-events: none !important;
+}
+
+body.battle-immersive .battle-immersive-dock > * {
+  pointer-events: auto !important;
+}
+
+body.battle-immersive .battle-fullscreen-final .deploy-tip {
+  max-width: min(680px, 58vw) !important;
+}
+
+/* 宽屏时继续扩大棋盘，但不改变逻辑舞台的统一缩放。 */
+body.battle-immersive .battle-fullscreen-final.battle-viewport-wide .battlefield-wrap.battlefield-grid-v2 {
+  left: 58px !important;
+  right: 58px !important;
+}
+
+body.battle-immersive .battle-fullscreen-final.battle-viewport-wide .top-ui {
+  width: 1000px !important;
+}
+
+body.battle-immersive .battle-fullscreen-final.battle-viewport-ultrawide .battlefield-wrap.battlefield-grid-v2 {
+  left: 44px !important;
+  right: 44px !important;
+}
+
+body.battle-immersive .battle-fullscreen-final.battle-viewport-ultrawide > .bg-layer-left-column,
+body.battle-immersive .battle-fullscreen-final.battle-viewport-ultrawide > .bg-layer-right-column {
+  width: clamp(250px, 19vw, 430px) !important;
+}
+
+/* 低高度屏幕压缩 HUD，而不是裁掉棋盘、卡牌或底部按钮。 */
+body.battle-immersive .battle-fullscreen-final.battle-viewport-compact .top-ui {
+  top: 0 !important;
+  width: 940px !important;
+  height: 100px !important;
+}
+
+body.battle-immersive .battle-fullscreen-final.battle-viewport-compact .battlefield-wrap.battlefield-grid-v2 {
+  left: 76px !important;
+  right: 76px !important;
+  top: 86px !important;
+  bottom: 28px !important;
+}
+
+body.battle-immersive .battle-fullscreen-final.battle-viewport-compact .battle-placement-layer,
+body.battle-immersive .battle-fullscreen-final.battle-viewport-compact #place-grid-overlay {
+  top: 102px !important;
+}
+
+body.battle-immersive .battle-fullscreen-final.battle-viewport-compact + .battle-immersive-dock,
+body.battle-immersive .battle-immersive-page:has(.battle-viewport-compact) .battle-immersive-dock {
+  height: 52px !important;
+  min-height: 52px !important;
+  max-height: 52px !important;
+}
+
+@media (max-width: 900px), (max-height: 620px) {
+  body.battle-immersive .battle-fullscreen-final > .bg-layer-left-column,
+  body.battle-immersive .battle-fullscreen-final > .bg-layer-right-column {
+    width: clamp(150px, 19vw, 250px) !important;
+  }
+
+  body.battle-immersive .battle-immersive-dock {
+    height: 48px !important;
+    min-height: 48px !important;
+    max-height: 48px !important;
+    padding-top: 3px !important;
+    padding-bottom: 4px !important;
+  }
+}

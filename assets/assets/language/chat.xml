@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<language name="chat">
+	<language key="chat-fasong" value="发送"/>
+	<language key="chat-quanbu" value="全部"/>
+	<language key="chat-fangjian" value="房间"/>
+	<language key="chat-juntuan" value="军团"/>
+	<language key="chat-siliao" value="私聊"/>
+	<language key="chat-fasonggei" value="发送给"/>
+	<language key="chat-meifangjian" value="你没有加入房间."/>
+	<language key="chat-meisiliao" value="你没有设置私聊对象."/>
+	<language key="chat-meijuntuan" value="你没有加入军团."/>
+	<language key="chat-meikaifang" value="暂未开放"/>
+	<language key="chat-rufangjian" value="加入房间"/>
+	<language key="chat-lifangjian" value="离开房间"/>
+	<language key="chat-duinishuo" value=" 对你说"/>
+	<language key="chat-nidui" value="你对 "/>
+	<language key="chat-shuo" value=" 说"/>
+	<language key="chat-jiahaoyou" value="加好友"/>
+	<language key="chat-qiecuo" value="切磋"/>
+</language>

@@ -1,0 +1,166 @@
+/*
+ * 战斗呈现最终层：基地血槽贴屏幕两端并按血量缩短；
+ * Canvas 增加逻辑外延，允许抛物线、基地命中特效和攻击动画越过棋盘边缘；
+ * 战场单位由 JS 保持原始比例放大，不再随宽棋盘横向压扁/拉宽。
+ */
+
+body.battle-immersive .battle-fullscreen-final .battlefield-wrap,
+body.battle-immersive .battle-fullscreen-final .game-container.battle-fullscreen-final-stage {
+  overflow: visible !important;
+}
+
+body.battle-immersive #battle-canvas.battle-canvas-overscan-final {
+  position: absolute !important;
+  max-width: none !important;
+  max-height: none !important;
+  transform: none !important;
+  transform-origin: 0 0 !important;
+  overflow: visible !important;
+  pointer-events: auto !important;
+}
+
+/*
+ * 新基地血槽已经从 1248×832 逻辑舞台移到 battle-game-wrap，
+ * 因此它们直接跟视口最左/最右边缘走，不再跟中间棋盘偏移。
+ */
+body.battle-immersive
+  .battle-game-wrap
+  > .base-hp-slot.base-hp-reference-final {
+  position: absolute !important;
+  top: 0 !important;
+  width: clamp(258px, 17.5vw, 350px) !important;
+  height: clamp(34px, 4.8vh, 46px) !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+  max-width: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  display: block !important;
+  overflow: visible !important;
+  transform: none !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  z-index: 210 !important;
+  pointer-events: none !important;
+}
+
+body.battle-immersive
+  .battle-game-wrap
+  > .base-hp-slot.base-hp-reference-final.player {
+  left: 0 !important;
+  right: auto !important;
+}
+
+body.battle-immersive
+  .battle-game-wrap
+  > .base-hp-slot.base-hp-reference-final.enemy {
+  right: 0 !important;
+  left: auto !important;
+}
+
+body.battle-immersive
+  .battle-game-wrap
+  > .base-hp-slot.base-hp-reference-final
+  .base-hp-bg {
+  display: none !important;
+}
+
+body.battle-immersive .base-hp-reference-final .base-hp-track-final {
+  position: absolute !important;
+  inset: 2px 3px 3px !important;
+  overflow: hidden !important;
+  border: 2px solid rgba(73, 31, 20, .96) !important;
+  border-radius: 4px 4px 12px 12px !important;
+  background:
+    linear-gradient(180deg, rgba(56, 22, 18, .96), rgba(20, 10, 10, .98)) !important;
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 211, 137, .55),
+    inset 0 -7px 10px rgba(0, 0, 0, .38),
+    0 2px 4px rgba(0, 0, 0, .45) !important;
+}
+
+body.battle-immersive .base-hp-reference-final .base-hp-fill-final {
+  position: absolute !important;
+  top: 0 !important;
+  bottom: 0 !important;
+  left: 0 !important;
+  display: block !important;
+  width: var(--base-hp-ratio, 100%);
+  min-width: 0 !important;
+  border-radius: 2px 2px 9px 9px !important;
+  background:
+    linear-gradient(180deg, #ff795d 0%, #ec352d 42%, #a41419 100%) !important;
+  box-shadow:
+    inset 0 2px 0 rgba(255, 218, 177, .68),
+    inset 0 -5px 8px rgba(92, 0, 8, .42) !important;
+  transition: width .18s linear !important;
+}
+
+/* 敌方血槽从屏幕右侧向左减少，视觉方向与左右阵营对应。 */
+body.battle-immersive
+  .base-hp-reference-final.enemy
+  .base-hp-fill-final {
+  left: auto !important;
+  right: 0 !important;
+}
+
+body.battle-immersive .base-hp-reference-final .hp,
+body.battle-immersive .base-hp-reference-final .label {
+  position: absolute !important;
+  left: 50% !important;
+  right: auto !important;
+  z-index: 3 !important;
+  width: auto !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  transform: translateX(-50%) !important;
+  color: #fff7e8 !important;
+  text-align: center !important;
+  white-space: nowrap !important;
+  text-shadow:
+    -1px -1px 0 #5b130e,
+    1px -1px 0 #5b130e,
+    -1px 1px 0 #5b130e,
+    1px 1px 0 #5b130e,
+    0 2px 2px rgba(0,0,0,.75) !important;
+}
+
+body.battle-immersive .base-hp-reference-final .hp {
+  top: 5px !important;
+  font-size: clamp(17px, 1.45vw, 25px) !important;
+  font-weight: 900 !important;
+  line-height: 1 !important;
+}
+
+body.battle-immersive .base-hp-reference-final .label {
+  bottom: 4px !important;
+  font-size: clamp(9px, .72vw, 12px) !important;
+  font-weight: 800 !important;
+  line-height: 1 !important;
+}
+
+/* 顶部卡牌和左右血槽互不挤压，保持手牌始终居中。 */
+body.battle-immersive .battle-fullscreen-final .top-ui {
+  z-index: 205 !important;
+}
+
+@media (max-width: 1000px), (max-height: 650px) {
+  body.battle-immersive
+    .battle-game-wrap
+    > .base-hp-slot.base-hp-reference-final {
+    width: clamp(190px, 19vw, 270px) !important;
+    height: 34px !important;
+  }
+
+  body.battle-immersive .base-hp-reference-final .hp {
+    top: 4px !important;
+    font-size: 16px !important;
+  }
+
+  body.battle-immersive .base-hp-reference-final .label {
+    bottom: 3px !important;
+    font-size: 9px !important;
+  }
+}

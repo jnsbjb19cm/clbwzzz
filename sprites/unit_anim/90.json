@@ -1,0 +1,108 @@
+{
+  "res": 90,
+  "frameW": 220,
+  "frameH": 220,
+  "uniformBounds": {
+    "left": 80,
+    "top": 65,
+    "right": 137,
+    "bottom": 184,
+    "opaque": 3713
+  },
+  "drawFootY": {
+    "default": 0.8136363636363636
+  },
+  "footOpaqueInset": 0,
+  "scaleBoost": 1.12,
+  "usePerFrameBounds": false,
+  "flying": false,
+  "hasSkeletonShadow": true,
+  "hpAnims": [],
+  "attackHpAnims": [],
+  "animations": {
+    "default": {
+      "frameRate": 12,
+      "frames": [
+        {
+          "x": 0,
+          "y": 0,
+          "w": 220,
+          "h": 220,
+          "bounds": {
+            "left": 86,
+            "top": 71,
+            "right": 131,
+            "bottom": 178,
+            "opaque": 3713
+          }
+        },
+        {
+          "x": 0,
+          "y": 220,
+          "w": 220,
+          "h": 220,
+          "bounds": {
+            "left": 86,
+            "top": 71,
+            "right": 131,
+            "bottom": 178,
+            "opaque": 3713
+          }
+        },
+        {
+          "x": 0,
+          "y": 440,
+          "w": 220,
+          "h": 220,
+          "bounds": {
+            "left": 86,
+            "top": 71,
+            "right": 131,
+            "bottom": 178,
+            "opaque": 3713
+          }
+        },
+        {
+          "x": 0,
+          "y": 660,
+          "w": 220,
+          "h": 220,
+          "bounds": {
+            "left": 86,
+            "top": 71,
+            "right": 131,
+            "bottom": 178,
+            "opaque": 3713
+          }
+        },
+        {
+          "x": 0,
+          "y": 880,
+          "w": 220,
+          "h": 220,
+          "bounds": {
+            "left": 86,
+            "top": 72,
+            "right": 131,
+            "bottom": 178,
+            "opaque": 3671
+          }
+        },
+        {
+          "x": 0,
+          "y": 1100,
+          "w": 220,
+          "h": 220,
+          "bounds": {
+            "left": 86,
+            "top": 72,
+            "right": 131,
+            "bottom": 178,
+            "opaque": 3671
+          }
+        }
+      ],
+      "loop": true
+    }
+  }
+}

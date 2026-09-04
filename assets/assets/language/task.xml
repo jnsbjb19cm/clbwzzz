@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<language name="task">
+	<language key="task_target" value="任务目标"/>
+	<language key="task_reward" value="任务奖励"/>
+	<language key="task_getReward" value="领取奖励"/>
+	<language key="task_goto" value="前 往"/>
+	<language key="task_routineTaskIsCompelete" value="已完成"/>
+	<language key="task_routineTaskIsGetAward" value="领 奖"/>
+	<language key="task_routineTaskAwardTitle" value="奖励："/>
+</language>

@@ -1,0 +1,224 @@
+{
+  "generatedAt": "2026-06-26T11:17:21.443Z",
+  "sourceImage": "D:\\clbwz\\battle\\resources\\ck\\我想要的.png",
+  "imageSize": {
+    "w": 1248,
+    "h": 832
+  },
+  "canvas": {
+    "GAME_W": 1248,
+    "GAME_H": 832,
+    "FIELD_LEFT": 135,
+    "FIELD_TOP": 105,
+    "FIELD_W": 978,
+    "FIELD_H": 702
+  },
+  "columnAlign": {
+    "leftColumnHeight": 857,
+    "leftColumnTop": -25,
+    "rightColumnHeight": 832,
+    "note": "左柱上移25px，树根底与右柱看齐"
+  },
+  "detectedBoxes": {
+    "yellow_grid": {
+      "originX": 0,
+      "originY": 163,
+      "innerW": 977,
+      "innerH": 406,
+      "boxBottom": 569,
+      "gameBbox": {
+        "left": 135,
+        "right": 1112,
+        "top": 268,
+        "bottom": 674
+      },
+      "source": "detected",
+      "pointCount": 37440
+    },
+    "blue_frame": {
+      "originX": -62,
+      "originY": -63,
+      "innerW": 1099,
+      "innerH": 721,
+      "boxBottom": 658,
+      "gameBbox": {
+        "left": 73,
+        "right": 1172,
+        "top": 42,
+        "bottom": 763
+      },
+      "source": "detected",
+      "pointCount": 56817
+    }
+  },
+  "playableEdges": {
+    "gridLeftFieldX": 0,
+    "gridRightFieldX": 977,
+    "playableW": 977,
+    "leftSamples": [
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "rightSamples": [
+      977,
+      977,
+      977,
+      977,
+      977
+    ],
+    "source": "detected"
+  },
+  "corridor": {
+    "BEARD_BOTTOM_FIELD_Y": 87,
+    "BOTTOM_ROOT_TOP_FIELD_Y": 645,
+    "innerH": 558
+  },
+  "lineLegend": {
+    "green": "绿线 field Y=87 — 胡须底，走廊顶",
+    "orange": "橙线 field Y=645 — 树根顶，走廊底",
+    "cyan": "青框 — 从用户图提取的标定外框(黄格线或蓝外框)",
+    "magenta": "紫线 — 左右台子内缘",
+    "yellow": "黄线 — 12×5 战斗单元格",
+    "lightBlue": "浅蓝竖线 — 5+2+5 列分界"
+  },
+  "variants": [
+    {
+      "scheme": "yellow_grid",
+      "label": "按黄格",
+      "outputPng": "D:\\clbwz\\battle\\scripts\\output\\格子预览-按黄格-我想要的.png",
+      "detectedBox": {
+        "originX": 0,
+        "originY": 163,
+        "innerW": 977,
+        "innerH": 406,
+        "boxBottom": 569,
+        "gameBbox": {
+          "left": 135,
+          "right": 1112,
+          "top": 268,
+          "bottom": 674
+        },
+        "source": "detected",
+        "pointCount": 37440
+      },
+      "proposedBattleConfig": {
+        "scheme": "yellow_grid",
+        "GRID_ORIGIN_X": 0,
+        "GRID_ORIGIN_Y": 163,
+        "GRID_GAP": 3,
+        "CELL_W": 78.67,
+        "CELL_H": 78.67,
+        "GRID_BODY_W": 977,
+        "GRID_BODY_H": 405.33,
+        "GRID_V_PAD": 0.33,
+        "GRID_H_PAD": 0,
+        "GRID_RIGHT_MARGIN": 1,
+        "calibBox": {
+          "originX": 0,
+          "originY": 163,
+          "innerW": 977,
+          "innerH": 406,
+          "source": "detected"
+        },
+        "row0Y": 163.33,
+        "row4Bottom": 568.67,
+        "PLAYER_TREE_BEARD_BOTTOM_FIELD_Y": 87,
+        "BOTTOM_ROOT_TOP_FIELD_Y": 645,
+        "leftColumnTop": -25,
+        "columns": "5+2+5",
+        "rows": 5,
+        "playableEdges": {
+          "gridLeftFieldX": 0,
+          "gridRightFieldX": 977,
+          "playableW": 977,
+          "leftSamples": [
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "rightSamples": [
+            977,
+            977,
+            977,
+            977,
+            977
+          ],
+          "source": "detected"
+        }
+      }
+    },
+    {
+      "scheme": "blue_frame",
+      "label": "按蓝框",
+      "outputPng": "D:\\clbwz\\battle\\scripts\\output\\格子预览-按蓝框-我想要的.png",
+      "detectedBox": {
+        "originX": -62,
+        "originY": -63,
+        "innerW": 1099,
+        "innerH": 721,
+        "boxBottom": 658,
+        "gameBbox": {
+          "left": 73,
+          "right": 1172,
+          "top": 42,
+          "bottom": 763
+        },
+        "source": "detected",
+        "pointCount": 56817
+      },
+      "proposedBattleConfig": {
+        "scheme": "blue_frame",
+        "GRID_ORIGIN_X": -62,
+        "GRID_ORIGIN_Y": -63,
+        "GRID_GAP": 3,
+        "CELL_W": 88.83,
+        "CELL_H": 88.83,
+        "GRID_BODY_W": 1099,
+        "GRID_BODY_H": 456.17,
+        "GRID_V_PAD": 132.42,
+        "GRID_H_PAD": 0,
+        "GRID_RIGHT_MARGIN": 0,
+        "calibBox": {
+          "originX": -62,
+          "originY": -63,
+          "innerW": 1099,
+          "innerH": 721,
+          "source": "detected"
+        },
+        "row0Y": 69.42,
+        "row4Bottom": 525.58,
+        "PLAYER_TREE_BEARD_BOTTOM_FIELD_Y": 87,
+        "BOTTOM_ROOT_TOP_FIELD_Y": 645,
+        "leftColumnTop": -25,
+        "columns": "5+2+5",
+        "rows": 5,
+        "playableEdges": {
+          "gridLeftFieldX": 0,
+          "gridRightFieldX": 977,
+          "playableW": 977,
+          "leftSamples": [
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "rightSamples": [
+            977,
+            977,
+            977,
+            977,
+            977
+          ],
+          "source": "detected"
+        }
+      }
+    }
+  ],
+  "nextStep": "请对比两张预览，选定后写入 BattleConfig.js 并同步 style.css left-frame top:-25px"
+}

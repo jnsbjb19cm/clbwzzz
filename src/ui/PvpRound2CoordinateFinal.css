@@ -1,0 +1,52 @@
+/*
+ * PVP 权威模式曾沿用旧版“裁切后拉伸 Canvas”的临时适配：
+ * canvas top:-19.98%、height:173.19%，放置层却铺满整个 FIELD。
+ * 这会把逻辑 GRID_ORIGIN_Y=81 抹掉，导致格子、点击和技能特效整体向上偏移。
+ *
+ * 当前坐标链统一恢复为 BattleConfig 的原始逻辑坐标：
+ * FIELD 978×702；棋盘从 y=81 开始；棋盘实体尺寸约 977×405.33。
+ */
+body.pvp-battle-active .battlefield-wrap.battlefield-grid-v2 .battle-canvas.battle-unit-health-layer {
+  position: absolute !important;
+  inset: 0 !important;
+  left: 0 !important;
+  top: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  max-width: none !important;
+  max-height: none !important;
+  transform: none !important;
+}
+
+body.pvp-battle-active .battlefield-wrap.battlefield-grid-v2 .place-grid-overlay.battle-placement-layer {
+  position: absolute !important;
+  inset: auto !important;
+  left: 0 !important;
+  top: 11.5384615% !important; /* 81 / 702 */
+  right: auto !important;
+  bottom: auto !important;
+  width: 99.8977505% !important; /* 977 / 978 */
+  height: 57.7397911% !important; /* 405.333333 / 702 */
+  grid-template-columns: repeat(12, minmax(0, 1fr)) !important;
+  grid-template-rows: repeat(5, minmax(0, 1fr)) !important;
+  gap: clamp(2px, .24vw, 4px) !important;
+  transform: none !important;
+}
+
+/* 旧本地障碍层也必须使用同一棋盘矩形，避免调试模式下与权威冰山错位。 */
+body.pvp-battle-active .battlefield-wrap.battlefield-grid-v2 .battle-obstacle-layer {
+  position: absolute !important;
+  inset: auto !important;
+  left: 0 !important;
+  top: 11.5384615% !important;
+  right: auto !important;
+  bottom: auto !important;
+  width: 99.8977505% !important;
+  height: 57.7397911% !important;
+  grid-template-columns: repeat(12, minmax(0, 1fr)) !important;
+  grid-template-rows: repeat(5, minmax(0, 1fr)) !important;
+  gap: clamp(2px, .24vw, 4px) !important;
+  transform: none !important;
+}

@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<language name="onlineActivity">
+	<language key="onlineAct_time" value="活动时间："/>
+	<language key="onlineAct_content_title" value="活动说明："/>
+	<language key="onlineAct_content" value="活动开始后，可以进入活动界面进行蓝钻挖掘。{1}开采后30秒内可能会遇到其他玩家的争夺而进入战斗，胜利方除获得自己挖掘的蓝钻还能掠夺失败一方挖掘蓝钻的50% ，失败方获得自己挖掘蓝钻的50% 。如果未遇到其他玩家的争夺，则30秒后立即获得挖掘的蓝钻。"/>
+	<language key="onlineAct_award_title" value="活动奖励："/>
+	<language key="onlineAct_award_content" value="通过该活动可获得大量蓝钻，蓝钻可用于在蓝钻商城中购买道具和卡牌等。"/>
+	<language key="onlineAct_find" value="发现"/>
+	<language key="onlineAct_timeTxt" value="正在挖掘中...\n倒计时完后即可获得蓝钻。"/>
+	<language key="onlineAct_beganDig" value="开始挖掘"/>
+	<language key="onlineAct_cancelDig" value="取消挖掘"/>
+	<language key="onlineAct_DigNum" value="剩余挖掘次数："/>
+	<language key="onlineAct_digAlert" value="你正在挖掘，是否取消挖掘？"/>
+	<language key="onlineAct_store" value="蓝钻商城"/>
+	<language key="onlineAct_ruleInfo" value="玩法介绍"/>
+	<language key="onlineAct_blueOverAlert" value="蓝钻争夺战活动已经结束！"/>
+	<language key="onlineAct_myblue" value="我的蓝钻："/>
+	<language key="onlineAct_rule" value="1.每次活动每人有6次挖掘机会。\n\n2.挖掘开始会发现不同数量的蓝钻宝藏，每次发现蓝钻的数量不一定相同。\n\n3.挖掘倒计时30秒内没有遇到其他玩家，则倒计时完后可以获得相应的蓝钻。\n\n4.挖掘期间若遇到其他玩家，胜利方可以获得(己方蓝钻+对方蓝钻50%)的蓝钻奖励。失败方则只能获得己方蓝钻数50%的奖励。"/>
+	<language key="online_logerStr" value="打败了{1},获得了"/>
+	<language key="online_blueDiamon_name" value="蓝钻"/>
+	<language key="online_digTime_over" value="挖掘次数已用完"/>
+	<language key="online_eveyDay" value="每天"/>
+	<language key="online_open_notice" value="【蓝钻争夺战】活动现已强势开启，一大波蓝钻来袭！各位勇者请速速前去挖掘吧！"/>
+	<language key="online_close_tips" value="今日蓝钻争夺战活动已结束！\n请明日再接再厉哦！"/>
+	<language key="online_close_tips2" value="今日蓝钻争夺战活动已结束！"/>
+</language>

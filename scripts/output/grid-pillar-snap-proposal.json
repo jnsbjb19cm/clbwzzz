@@ -1,0 +1,22 @@
+{
+  "FIELD_LEFT": 102,
+  "FIELD_RIGHT_INSET": 11,
+  "FIELD_W": 1135,
+  "GRID_ORIGIN_X": 0,
+  "GRID_ORIGIN_Y": 163,
+  "GRID_GAP": 3,
+  "CELL_W": 91.8333,
+  "CELL_H": 76.4,
+  "GRID_BODY_W": 1135,
+  "GRID_BODY_H": 394,
+  "col11RightFieldX": 1135,
+  "snapDelta": {
+    "col0": 0,
+    "col11": -2.2737367544323206e-13
+  },
+  "yellowVertical": {
+    "originY": 163,
+    "innerH": 394,
+    "boxBottom": 557
+  }
+}

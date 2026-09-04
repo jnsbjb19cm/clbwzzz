@@ -1,0 +1,47 @@
+{
+  "designAspect": 1.5,
+  "safeW": 1248,
+  "safeH": 832,
+  "visualH": 857,
+  "pillarPinMinGapPx": 20,
+  "buckets": [
+    {
+      "id": "tall",
+      "label": "偏高屏",
+      "maxAspect": 1.42,
+      "scaleMode": "fit",
+      "alignY": "center",
+      "pinPillarsToViewport": false
+    },
+    {
+      "id": "design",
+      "label": "标定比例 3:2",
+      "minAspect": 1.42,
+      "maxAspect": 1.68,
+      "scaleMode": "fit-height-stretch",
+      "alignY": "auto",
+      "pinPillarsToViewport": false,
+      "note": "≥1.5:1 横向拉长画布，柱子/格子/基地同步右移"
+    },
+    {
+      "id": "wide",
+      "label": "宽屏",
+      "minAspect": 1.68,
+      "maxAspect": 2.15,
+      "scaleMode": "fit-height",
+      "alignY": "top",
+      "stretchCanvas": true,
+      "pinPillarsToViewport": false,
+      "note": "画布横向拉长，格子随基地右移，scale=视口高/832"
+    },
+    {
+      "id": "ultra",
+      "label": "超宽屏",
+      "minAspect": 2.15,
+      "scaleMode": "fit-height",
+      "alignY": "top",
+      "stretchCanvas": true,
+      "pinPillarsToViewport": false
+    }
+  ]
+}

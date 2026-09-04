@@ -1,0 +1,826 @@
+/* Final ready-room presentation rebuilt from DOM, gradients and small sprites. */
+
+.deck-select-page:has(.game-room.room-reference-1536) {
+  position: fixed !important;
+  inset: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  max-width: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+  background: #78a51e !important;
+}
+
+.game-room.room-exact.room-reference-1536 {
+  container-type: size !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+  max-width: none !important;
+  max-height: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  overflow: hidden !important;
+  background:
+    radial-gradient(ellipse at 50% 48%, rgba(255, 255, 210, .98) 0 9%, rgba(232, 244, 151, .91) 25%, transparent 50%),
+    linear-gradient(90deg, rgba(78, 133, 5, .34), transparent 20% 80%, rgba(73, 126, 4, .36)),
+    linear-gradient(180deg, #acd550 0%, #c9e77a 33%, #d7e98d 58%, #83b326 100%) !important;
+  box-shadow: inset 0 0 2.4cqw rgba(48, 86, 0, .42) !important;
+}
+
+.game-room.room-exact.room-reference-1536::before {
+  content: '';
+  position: absolute;
+  inset: 31.2% 0 29.8%;
+  z-index: 1;
+  pointer-events: none;
+  background:
+    repeating-linear-gradient(0deg, transparent 0 1.2cqw, rgba(255,255,255,.08) 1.25cqw 1.33cqw),
+    radial-gradient(ellipse at 50% 48%, rgba(255,255,255,.82), transparent 33%);
+  mix-blend-mode: screen;
+}
+
+/* Room title strip. */
+.game-room.room-reference-1536 .room-top-bar {
+  box-sizing: border-box !important;
+  padding: 0 1.45cqw !important;
+  display: flex !important;
+  align-items: center !important;
+  border: 0 !important;
+  border-radius: 0 0 .72cqw .72cqw !important;
+  background: linear-gradient(180deg, #9ed536 0%, #83bf20 56%, #72a919 100%) !important;
+  box-shadow:
+    inset 0 .16cqw .28cqw rgba(255,255,255,.34),
+    inset 0 -.15cqw .20cqw rgba(58,101,0,.30),
+    0 .12cqw .18cqw rgba(32,67,0,.42) !important;
+}
+
+.game-room.room-reference-1536 .room-title-group {
+  display: flex !important;
+  align-items: center !important;
+}
+
+.game-room.room-reference-1536 .room-title-text {
+  position: absolute !important;
+  left: 1.46cqw !important;
+  top: 1.02cqw !important;
+  color: #ffe92f !important;
+  font-size: 0 !important;
+  font-weight: 900 !important;
+  line-height: 1 !important;
+  -webkit-text-stroke: 0 !important;
+  text-shadow: none !important;
+}
+
+.game-room.room-reference-1536 .room-title-text::after {
+  content: '房间' !important;
+  display: block !important;
+  color: #ffe92f !important;
+  font-size: 2.45cqw !important;
+  font-weight: 900 !important;
+  line-height: 1 !important;
+  -webkit-text-stroke: .11cqw #594000 !important;
+  text-shadow: 0 .13cqw .07cqw rgba(0,0,0,.35) !important;
+}
+
+.game-room.room-reference-1536 .room-id-tag,
+.game-room.room-reference-1536 .room-stage-display,
+.game-room.room-reference-1536 .room-rule-btn,
+.game-room.room-reference-1536 .room-status-bar {
+  display: none !important;
+}
+
+/* Blue and red glass player wells. */
+.game-room.room-reference-1536 .member-slot,
+.game-room.room-reference-1536 .enemy-slot {
+  box-sizing: border-box !important;
+  overflow: hidden !important;
+  border-radius: .72cqw !important;
+}
+
+.game-room.room-reference-1536 .member-slot {
+  border: .25cqw solid #0066a4 !important;
+  background:
+    linear-gradient(45deg, transparent 0 48%, rgba(255,255,255,.13) 48.3% 100%),
+    linear-gradient(180deg, #55c7f4 0%, #25ade9 52%, #159ddd 100%) !important;
+  box-shadow:
+    inset 0 0 0 .14cqw #86d9f7,
+    inset 0 0 0 .32cqw rgba(0,82,142,.62),
+    0 .12cqw .18cqw rgba(31,75,5,.36) !important;
+}
+
+.game-room.room-reference-1536 .enemy-slot {
+  border: .25cqw solid #b4210e !important;
+  background:
+    linear-gradient(45deg, transparent 0 48%, rgba(255,255,255,.14) 48.3% 100%),
+    linear-gradient(180deg, #ff9183 0%, #ff6554 54%, #f34b3c 100%) !important;
+  box-shadow:
+    inset 0 0 0 .14cqw #ffc0b4,
+    inset 0 0 0 .32cqw rgba(151,24,10,.55),
+    0 .12cqw .18cqw rgba(83,38,3,.38) !important;
+}
+
+.game-room.room-reference-1536 .member-slot::after,
+.game-room.room-reference-1536 .enemy-slot::after {
+  inset: .38cqw !important;
+  border: .07cqw solid rgba(255,255,255,.28) !important;
+  border-radius: .44cqw !important;
+}
+
+.game-room.room-reference-1536 .room-left-side::before {
+  content: '' !important;
+  left: 1.15cqw !important;
+  top: .62cqw !important;
+  width: 3.7cqw !important;
+  height: 2.6cqw !important;
+  transform: rotate(-13deg) !important;
+  border: 0 !important;
+  background:
+    radial-gradient(ellipse at 65% 50%, #fff8cc 0 19%, #ffd14a 20% 34%, transparent 35%),
+    linear-gradient(100deg, transparent 0 12%, #ffbd1b 13% 35%, #fff1a7 36% 51%, #ffb514 52% 67%, transparent 68%),
+    conic-gradient(from 225deg at 5% 50%, transparent 0 25%, #f39c08 25% 75%, transparent 75%) !important;
+  filter: drop-shadow(.08cqw .11cqw .05cqw rgba(0,0,0,.30)) !important;
+}
+
+.game-room.room-reference-1536 .question-mark::before,
+.game-room.room-reference-1536 .qmark {
+  color: #e76f5d !important;
+  font-size: 12.4cqw !important;
+  font-family: Impact, 'Arial Black', sans-serif !important;
+  font-weight: 900 !important;
+  line-height: .78 !important;
+  -webkit-text-stroke: .07cqw rgba(255,177,157,.52);
+  text-shadow: .13cqw .17cqw .13cqw rgba(111,24,12,.36) !important;
+}
+
+.game-room.room-reference-1536 .enemy-slots-row .qmark {
+  font-size: 11.4cqw !important;
+}
+
+/* Deck header and ten wells. */
+.game-room.room-reference-1536 .deck-header {
+  box-sizing: border-box !important;
+  padding: 0 1.8cqw 0 2.75cqw !important;
+  border: .13cqw solid #5e9008 !important;
+  border-radius: 1.25cqw !important;
+  background:
+    radial-gradient(ellipse at 10% 50%, rgba(255,255,205,.82), transparent 22%),
+    linear-gradient(180deg, #e7f9a7 0%, #c9e879 45%, #aed65a 100%) !important;
+  box-shadow:
+    inset 0 .20cqw .40cqw rgba(255,255,255,.74),
+    inset 0 -.22cqw .30cqw rgba(82,129,7,.30),
+    0 .13cqw .20cqw rgba(42,77,0,.30) !important;
+}
+
+.game-room.room-reference-1536 .deck-title {
+  color: #ffd728 !important;
+  font-size: 2.05cqw !important;
+  font-weight: 900 !important;
+  -webkit-text-stroke: .09cqw #5b4100;
+  text-shadow: 0 .10cqw .05cqw rgba(0,0,0,.26) !important;
+}
+
+.game-room.room-reference-1536 .deck-tabs {
+  gap: 1.18cqw !important;
+}
+
+.game-room.room-reference-1536 .deck-tab {
+  height: 2.15cqw !important;
+  padding-left: 1.62cqw !important;
+  color: #443724 !important;
+  line-height: 2.15cqw !important;
+}
+
+.game-room.room-reference-1536 .deck-tab::before {
+  width: 1.25cqw !important;
+  height: 1.25cqw !important;
+  border: .11cqw solid #456d00 !important;
+  border-radius: .22cqw !important;
+  background: linear-gradient(135deg, #81ad23, #3f7000) !important;
+}
+
+.game-room.room-reference-1536 .deck-tab::after {
+  font-size: 1.42cqw !important;
+  line-height: 2.15cqw !important;
+}
+
+.game-room.room-reference-1536 .swap-card-btn {
+  flex-basis: 9.75cqw !important;
+  width: 9.75cqw !important;
+  height: 3.8cqw !important;
+  border: .14cqw solid #ffae13 !important;
+  border-radius: 2cqw !important;
+  color: #6a300c !important;
+  background: linear-gradient(180deg, #fff88e 0%, #ffd03a 31%, #ff9a19 63%, #f26812 100%) !important;
+  box-shadow:
+    inset 0 .24cqw .30cqw rgba(255,255,255,.84),
+    0 0 .62cqw rgba(255,245,84,.88),
+    0 .15cqw .20cqw rgba(0,0,0,.26) !important;
+  font-size: 1.55cqw !important;
+}
+
+.game-room.room-reference-1536 .deck-slots-row {
+  box-sizing: border-box !important;
+  padding: .13cqw .35cqw !important;
+  gap: .14cqw !important;
+  border: .11cqw solid #638f11 !important;
+  background: linear-gradient(180deg, #89b62b, #65930f) !important;
+}
+
+.game-room.room-reference-1536 .deck-slot-item,
+.game-room.room-reference-1536 .v3-deck-slot {
+  border: .08cqw solid #b4dd70 !important;
+  border-radius: 0 !important;
+  background:
+    linear-gradient(45deg, transparent 0 49%, rgba(214,245,150,.44) 49.3% 100%),
+    linear-gradient(180deg, #a6cf59, #8fbd38) !important;
+  box-shadow: inset .1cqw .1cqw .16cqw rgba(255,255,255,.24) !important;
+}
+
+/* Large dimensional VS at the optical center. */
+.game-room.room-reference-1536 .room-vs {
+  left: 34.8% !important;
+  top: 35.8% !important;
+  width: 29.5% !important;
+  height: 27% !important;
+  display: grid !important;
+  place-items: center !important;
+  color: #ffc61b !important;
+  border: 0 !important;
+  background: radial-gradient(ellipse, #fff 0%, rgba(255,253,180,.78) 28%, rgba(255,235,82,.25) 49%, transparent 72%) !important;
+  font-family: Impact, 'Arial Black', sans-serif !important;
+  font-size: 11.1cqw !important;
+  font-style: italic !important;
+  font-weight: 900 !important;
+  letter-spacing: -.58cqw !important;
+  line-height: 1 !important;
+  transform: skewX(-8deg) scaleY(.90) !important;
+  -webkit-text-stroke: .27cqw #f29100 !important;
+  text-shadow:
+    0 .27cqw 0 #ea6100,
+    0 .46cqw .20cqw rgba(117,53,0,.30),
+    0 0 .7cqw #fff79b,
+    0 0 1.3cqw #fff !important;
+}
+
+/* Chat well and current-channel input. */
+.game-room.room-reference-1536 .exact-room-chat {
+  border-radius: .62cqw .62cqw 0 0 !important;
+  background: transparent !important;
+}
+
+.game-room.room-reference-1536 .exact-room-chat-log {
+  box-sizing: border-box !important;
+  padding: .62cqw 1.45cqw .48cqw .72cqw !important;
+  border: .19cqw solid #557710 !important;
+  border-radius: .62cqw .62cqw 0 0 !important;
+  color: #425027 !important;
+  background:
+    linear-gradient(135deg, rgba(224,234,188,.96), rgba(199,215,153,.95)) !important;
+  box-shadow: inset .16cqw .16cqw .28cqw rgba(255,255,255,.28) !important;
+}
+
+.game-room.room-reference-1536 .exact-room-chat-form {
+  box-sizing: border-box !important;
+  padding: .42cqw .55cqw !important;
+  border: .18cqw solid #496a0d !important;
+  border-radius: 0 0 .45cqw .45cqw !important;
+  background: linear-gradient(180deg, #809e34, #5f7f20) !important;
+}
+
+.game-room.room-reference-1536 .exact-room-chat-current {
+  flex-basis: 4.2cqw !important;
+  color: #e8e9ae !important;
+  font-size: 1.35cqw !important;
+  font-weight: 900 !important;
+  -webkit-text-stroke: .05cqw #4b5a12;
+}
+
+.game-room.room-reference-1536 .exact-room-chat-form input {
+  height: 2.5cqw !important;
+  border: .07cqw solid #4f5e12 !important;
+  border-radius: .18cqw !important;
+  color: #fff !important;
+  background: #050600 !important;
+  box-shadow: inset 0 .18cqw .24cqw rgba(0,0,0,.9) !important;
+}
+
+/* Random map panel with two CSS-rendered dice. */
+.game-room.room-reference-1536 .dice-btn {
+  border: .20cqw solid #477006 !important;
+  border-radius: .68cqw !important;
+  background: radial-gradient(circle at 50% 42%, #b2d94e 0%, #7fad20 58%, #4e7c08 100%) !important;
+  box-shadow:
+    inset 0 .20cqw .34cqw rgba(255,255,255,.28),
+    inset 0 -.22cqw .30cqw rgba(48,85,0,.28),
+    0 .14cqw .20cqw rgba(0,0,0,.22) !important;
+}
+
+.game-room.room-reference-1536 .dice-btn .room-vector-label,
+.game-room.room-reference-1536 .dice-label {
+  left: .75cqw !important;
+  top: .60cqw !important;
+  color: #ffae25 !important;
+  font-size: 1.22cqw !important;
+  -webkit-text-stroke: .07cqw #774000 !important;
+}
+
+.game-room.room-reference-1536 .dice-btn .room-vector-icon,
+.game-room.room-reference-1536 .dice-icon {
+  left: 50% !important;
+  top: 51% !important;
+  width: 8.2cqw !important;
+  height: 6.5cqw !important;
+  transform: translate(-50%, -50%) !important;
+  color: transparent !important;
+  background: none !important;
+  -webkit-mask: none !important;
+  mask: none !important;
+  filter: drop-shadow(.16cqw .20cqw .12cqw rgba(0,0,0,.22)) !important;
+}
+
+.game-room.room-reference-1536 .dice-btn .room-vector-icon::before,
+.game-room.room-reference-1536 .dice-icon::before,
+.game-room.room-reference-1536 .dice-btn .room-vector-icon::after,
+.game-room.room-reference-1536 .dice-icon::after {
+  content: '';
+  position: absolute;
+  width: 4.1cqw;
+  aspect-ratio: 1;
+  border: .10cqw solid rgba(207,102,0,.45);
+  border-radius: .72cqw;
+  box-shadow: inset .14cqw .18cqw .24cqw rgba(255,255,255,.50);
+}
+
+.game-room.room-reference-1536 .dice-btn .room-vector-icon::before,
+.game-room.room-reference-1536 .dice-icon::before {
+  left: .25cqw;
+  top: .45cqw;
+  z-index: 2;
+  transform: rotate(13deg);
+  background:
+    radial-gradient(circle at 25% 25%, #fff 0 8%, transparent 9%),
+    radial-gradient(circle at 75% 25%, #fff 0 8%, transparent 9%),
+    radial-gradient(circle at 50% 50%, #fff 0 8%, transparent 9%),
+    radial-gradient(circle at 25% 75%, #fff 0 8%, transparent 9%),
+    radial-gradient(circle at 75% 75%, #fff 0 8%, transparent 9%),
+    linear-gradient(145deg, #ffcf25, #ff861e);
+}
+
+.game-room.room-reference-1536 .dice-btn .room-vector-icon::after,
+.game-room.room-reference-1536 .dice-icon::after {
+  right: .15cqw;
+  bottom: .10cqw;
+  z-index: 3;
+  width: 3.45cqw;
+  transform: rotate(-10deg);
+  background:
+    radial-gradient(circle at 27% 25%, #fff 0 9%, transparent 10%),
+    radial-gradient(circle at 73% 25%, #fff 0 9%, transparent 10%),
+    radial-gradient(circle at 27% 50%, #fff 0 9%, transparent 10%),
+    radial-gradient(circle at 73% 50%, #fff 0 9%, transparent 10%),
+    radial-gradient(circle at 27% 75%, #fff 0 9%, transparent 10%),
+    radial-gradient(circle at 73% 75%, #fff 0 9%, transparent 10%),
+    linear-gradient(145deg, #ff8c83, #ee3d40);
+}
+
+.game-room.room-reference-1536 .reference-room-map-type {
+  right: .65cqw !important;
+  bottom: .52cqw !important;
+  border: 0 !important;
+  color: #ff8a30 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  font-size: 1.02cqw !important;
+  -webkit-text-stroke: .055cqw #6d3705;
+}
+
+/* Skill, switch-team and ready buttons. */
+.game-room.room-reference-1536 .skill-btn,
+.game-room.room-reference-1536 .team-btn,
+.game-room.room-reference-1536 .room-ready-btn {
+  border-width: .19cqw !important;
+  border-style: solid !important;
+  border-radius: .92cqw !important;
+  box-shadow:
+    inset 0 .25cqw .42cqw rgba(255,255,255,.42),
+    inset 0 -.28cqw .38cqw rgba(0,0,0,.13),
+    0 .15cqw .21cqw rgba(0,0,0,.23) !important;
+}
+
+.game-room.room-reference-1536 .skill-btn {
+  border-color: rgba(226,255,197,.74) !important;
+  background: linear-gradient(180deg, #c5f495, #7ed440 49%, #5fc321) !important;
+}
+
+.game-room.room-reference-1536 .team-btn {
+  border-color: rgba(220,255,248,.74) !important;
+  background: linear-gradient(180deg, #a8eadf, #60d2c8 49%, #3dbdb6) !important;
+}
+
+.game-room.room-reference-1536 .room-ready-btn,
+.game-room.room-reference-1536 .room-ready-btn[style] {
+  border-color: rgba(255,229,193,.82) !important;
+  background: linear-gradient(180deg, #ffc09a, #ff8153 44%, #f34d23) !important;
+}
+
+.game-room.room-reference-1536 .skill-btn .room-vector-icon,
+.game-room.room-reference-1536 .skill-icon {
+  top: 35% !important;
+  width: 6cqw !important;
+  height: 5.2cqw !important;
+  background: none !important;
+  -webkit-mask: none !important;
+  mask: none !important;
+}
+
+.game-room.room-reference-1536 .skill-btn .room-vector-icon::before,
+.game-room.room-reference-1536 .skill-icon::before {
+  content: '🫴';
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  font-size: 4.7cqw;
+  line-height: 1;
+  transform: rotate(-8deg);
+  filter: drop-shadow(.12cqw .16cqw .09cqw rgba(0,0,0,.24));
+}
+
+.game-room.room-reference-1536 .team-btn .room-vector-icon,
+.game-room.room-reference-1536 .team-icon {
+  top: 35% !important;
+  width: 6.1cqw !important;
+  height: 5.2cqw !important;
+  border-radius: 50% !important;
+  background:
+    radial-gradient(circle at 31% 24%, #5d5ab4 0 10%, transparent 11%),
+    radial-gradient(circle at 69% 24%, #ff6550 0 10%, transparent 11%),
+    radial-gradient(ellipse at 31% 63%, #5d5ab4 0 22%, transparent 23%),
+    radial-gradient(ellipse at 69% 63%, #ff6550 0 22%, transparent 23%) !important;
+  -webkit-mask: none !important;
+  mask: none !important;
+}
+
+.game-room.room-reference-1536 .team-btn .room-vector-icon::after,
+.game-room.room-reference-1536 .team-icon::after {
+  content: '↔';
+  position: absolute;
+  left: 50%;
+  bottom: -.05cqw;
+  transform: translateX(-50%);
+  color: #fff2c2;
+  font-size: 2.3cqw;
+  font-weight: 900;
+  text-shadow: 0 .08cqw .08cqw rgba(0,0,0,.32);
+}
+
+.game-room.room-reference-1536 .skill-btn .room-vector-label,
+.game-room.room-reference-1536 .team-btn .room-vector-label,
+.game-room.room-reference-1536 .skill-label,
+.game-room.room-reference-1536 .team-label {
+  font-size: 2.05cqw !important;
+  -webkit-text-stroke: .09cqw #557219 !important;
+}
+
+.game-room.room-reference-1536 .room-ready-btn .ready-text {
+  color: #fff1c6 !important;
+  font-size: 2.55cqw !important;
+  -webkit-text-stroke: .13cqw #983311 !important;
+  text-shadow: 0 .14cqw .10cqw rgba(80,22,5,.30) !important;
+}
+
+/* Recharge capsule and lower navigation. */
+.game-room.room-reference-1536 .reference-room-recharge {
+  top: 89.15% !important;
+  height: 8.15% !important;
+  border: .15cqw solid #b37b06 !important;
+  border-radius: 3cqw !important;
+  background:
+    radial-gradient(ellipse, #fffad5 0%, #ffe885 44%, #f2bf27 76%, #c88804 100%) !important;
+  box-shadow: inset 0 .20cqw .30cqw rgba(255,255,255,.72), 0 0 .55cqw rgba(255,210,52,.78) !important;
+}
+
+.game-room.room-reference-1536 .reference-room-recharge > span {
+  color: #fff3cb !important;
+  font-size: 1.35cqw !important;
+  -webkit-text-stroke: .08cqw #68410a;
+}
+
+.game-room.room-reference-1536 .room-bottom-bar {
+  top: 87.1% !important;
+  height: 12.4% !important;
+  gap: .18cqw !important;
+}
+
+.game-room.room-reference-1536 .room-bottom-bar .bottom-btn {
+  border: 0 !important;
+  border-radius: .38cqw !important;
+  background: transparent !important;
+}
+
+.game-room.room-reference-1536 .room-bottom-bar .bottom-btn:hover {
+  background: rgba(245,255,174,.19) !important;
+  filter: brightness(1.08) !important;
+}
+
+.game-room.room-reference-1536 .room-bottom-bar .room-vector-icon {
+  width: 3.25cqw !important;
+  height: 3.25cqw !important;
+  margin-bottom: .16cqw !important;
+}
+
+.game-room.room-reference-1536 .room-bottom-bar .room-vector-label {
+  color: #fff0ad !important;
+  font-size: .88cqw !important;
+  font-weight: 900 !important;
+  -webkit-text-stroke: .045cqw #445500;
+}
+
+/* Independent atlas sprites, never a full-room image. */
+.game-room.room-reference-1536 .bottom-btn[data-action='quest'] .room-vector-icon,
+.game-room.room-reference-1536 .bottom-btn[data-action='mail'] .room-vector-icon,
+.game-room.room-reference-1536 .bottom-btn[data-action='friend'] .room-vector-icon {
+  width: 4cqw !important;
+  height: 3.82cqw !important;
+  background-image: url('/atlas/scene.png') !important;
+  background-repeat: no-repeat !important;
+  -webkit-mask: none !important;
+  mask: none !important;
+  filter: drop-shadow(.08cqw .10cqw .05cqw rgba(48,58,7,.35)) !important;
+}
+
+.game-room.room-reference-1536 .bottom-btn[data-action='quest'] .room-vector-icon {
+  background-size: 2111.34% 2202.15% !important;
+  background-position: 9.64% 99.64% !important;
+}
+
+.game-room.room-reference-1536 .bottom-btn[data-action='mail'] .room-vector-icon {
+  background-size: 2111.34% 2275.56% !important;
+  background-position: 29.06% 37.59% !important;
+}
+
+.game-room.room-reference-1536 .bottom-btn[data-action='friend'] .room-vector-icon {
+  background-size: 2111.34% 2275.56% !important;
+  background-position: 34.14% 37.59% !important;
+}
+
+.game-room.room-reference-1536 .bottom-btn[data-action='quest'] .room-vector-label,
+.game-room.room-reference-1536 .bottom-btn[data-action='mail'] .room-vector-label,
+.game-room.room-reference-1536 .bottom-btn[data-action='friend'] .room-vector-label {
+  visibility: hidden !important;
+  height: .5cqw !important;
+}
+
+.game-room.room-reference-1536 .bottom-btn[data-action='hero'] {
+  display: none !important;
+}
+
+/* Keep actual overlays usable above the fixed-format room. */
+.game-room.room-reference-1536 .card-drawer,
+.game-room.room-reference-1536 .room-setting-modal,
+.game-room.room-reference-1536 .room-rule-modal,
+.game-room.room-reference-1536 .kick-modal,
+.game-room.room-reference-1536 .room-toast,
+.game-room.room-reference-1536 .more-dropdown,
+.game-room.room-reference-1536 .room-tool-overlay {
+  z-index: 120 !important;
+}
+
+@media (max-width: 900px) {
+  .game-room.room-reference-1536 .room-bottom-bar .room-vector-label {
+    font-size: 1.05cqw !important;
+  }
+}
+
+/* Final icon authority: project atlas only for the lower navigation. */
+.game-room.room-reference-1536 .room-bottom-bar {
+  grid-template-columns: repeat(8, minmax(0, 1fr)) !important;
+}
+
+.game-room.room-reference-1536 .bottom-btn[data-action='shop'] { grid-column: 1 !important; }
+.game-room.room-reference-1536 .bottom-btn[data-action='bag'] { grid-column: 2 !important; }
+.game-room.room-reference-1536 .bottom-btn[data-action='quest'] { grid-column: 3 !important; }
+.game-room.room-reference-1536 .bottom-btn[data-action='smithy'] { grid-column: 4 !important; }
+.game-room.room-reference-1536 .bottom-btn[data-action='mail'] { grid-column: 5 !important; }
+.game-room.room-reference-1536 .bottom-btn[data-action='friend'] { grid-column: 6 !important; }
+.game-room.room-reference-1536 #more-btn { grid-column: 7 !important; }
+.game-room.room-reference-1536 #back-btn { grid-column: 8 !important; }
+
+.game-room.room-reference-1536 .room-bottom-bar .room-vector-icon {
+  width: 4.1cqw !important;
+  height: 3.35cqw !important;
+  margin: 0 0 .08cqw !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background-color: transparent !important;
+  background-image: url('/atlas/scene.png') !important;
+  background-size: 2111.34% auto !important;
+  background-repeat: no-repeat !important;
+  -webkit-mask: none !important;
+  mask: none !important;
+  filter: drop-shadow(.10cqw .13cqw .06cqw rgba(32,43,4,.42)) !important;
+}
+
+.game-room.room-reference-1536 .bottom-btn[data-action='shop'] .room-vector-icon {
+  background-size: 1932.08% auto !important;
+  background-position: 12.62% 81.85% !important;
+}
+
+.game-room.room-reference-1536 .bottom-btn[data-action='bag'] .room-vector-icon {
+  background-position: 12.61% 64.05% !important;
+}
+
+.game-room.room-reference-1536 .bottom-btn[data-action='quest'] .room-vector-icon {
+  background-position: 9.64% 98.87% !important;
+}
+
+.game-room.room-reference-1536 .bottom-btn[data-action='smithy'] .room-vector-icon {
+  background-position: 20.30% 52.94% !important;
+}
+
+.game-room.room-reference-1536 .bottom-btn[data-action='mail'] .room-vector-icon {
+  background-position: 29.06% 37.35% !important;
+}
+
+.game-room.room-reference-1536 .bottom-btn[data-action='friend'] .room-vector-icon {
+  background-position: 34.14% 37.35% !important;
+}
+
+.game-room.room-reference-1536 #more-btn .room-vector-icon {
+  background-position: 19.78% 97.91% !important;
+}
+
+.game-room.room-reference-1536 #back-btn .room-vector-icon {
+  width: 2.5cqw !important;
+  height: 3.55cqw !important;
+  background-size: 5389.47% auto !important;
+  background-position: 88.25% 40.25% !important;
+}
+
+.game-room.room-reference-1536 .bottom-btn[data-action='quest'] .room-vector-label,
+.game-room.room-reference-1536 .bottom-btn[data-action='mail'] .room-vector-label,
+.game-room.room-reference-1536 .bottom-btn[data-action='friend'] .room-vector-label,
+.game-room.room-reference-1536 .room-bottom-bar .room-vector-label {
+  visibility: visible !important;
+  height: auto !important;
+  color: #fff0ad !important;
+  font-size: .92cqw !important;
+  line-height: 1 !important;
+}
+
+/* CSS-drawn hand replaces the platform-dependent emoji. */
+.game-room.room-reference-1536 .skill-btn .room-vector-icon::before,
+.game-room.room-reference-1536 .skill-icon::before {
+  content: '' !important;
+  position: absolute !important;
+  left: 5% !important;
+  top: 4% !important;
+  width: 90% !important;
+  height: 88% !important;
+  transform: rotate(-9deg) !important;
+  border: .08cqw solid rgba(98,65,12,.48) !important;
+  border-radius: 45% 38% 46% 35% !important;
+  background: linear-gradient(145deg, #d4b15f, #9b702a 68%, #715019) !important;
+  clip-path: polygon(0 58%, 18% 45%, 15% 24%, 24% 19%, 32% 47%, 36% 7%, 46% 4%, 48% 43%, 54% 0, 64% 1%, 62% 44%, 71% 8%, 81% 12%, 75% 51%, 94% 38%, 100% 49%, 79% 78%, 57% 94%, 31% 100%, 13% 84%) !important;
+  box-shadow: inset .25cqw .18cqw .25cqw rgba(255,240,171,.34) !important;
+  filter: drop-shadow(.13cqw .16cqw .08cqw rgba(0,0,0,.25)) !important;
+}
+
+.game-room.room-reference-1536 .skill-btn .room-vector-icon::after,
+.game-room.room-reference-1536 .skill-icon::after {
+  content: '' !important;
+  position: absolute !important;
+  left: 27% !important;
+  top: 58% !important;
+  width: 55% !important;
+  height: .10cqw !important;
+  transform: rotate(-14deg) !important;
+  background: rgba(93,59,12,.36) !important;
+  box-shadow: 0 .28cqw rgba(93,59,12,.26) !important;
+}
+
+/* Beat late legacy module styles that otherwise reveal duplicate labels. */
+.game-room.room-exact.room-reference-1536 .room-top-bar .room-title-text {
+  color: transparent !important;
+  font-size: 0 !important;
+  -webkit-text-stroke: 0 !important;
+  text-shadow: none !important;
+}
+
+.game-room.room-exact.room-reference-1536 .room-top-bar .room-title-text::after {
+  color: #ffe92f !important;
+  font-size: 2.45cqw !important;
+  -webkit-text-stroke: .11cqw #594000 !important;
+  text-shadow: 0 .13cqw .07cqw rgba(0,0,0,.35) !important;
+}
+
+.game-room.room-exact.room-reference-1536 .deck-header .deck-title {
+  color: #ffd728 !important;
+  font-size: 2.05cqw !important;
+  -webkit-text-stroke: .09cqw #5b4100 !important;
+}
+
+.game-room.room-exact.room-reference-1536 .deck-header .deck-tab {
+  color: transparent !important;
+  font-size: 0 !important;
+  text-shadow: none !important;
+}
+
+.game-room.room-exact.room-reference-1536 .deck-header .deck-tab::after {
+  color: #403623 !important;
+  font-size: 1.42cqw !important;
+  text-shadow: 0 .06cqw 0 rgba(255,255,255,.74) !important;
+}
+
+.game-room.room-exact.room-reference-1536 .room-vs {
+  left: 33.5% !important;
+  top: 34.8% !important;
+  width: 32% !important;
+  height: 29% !important;
+  font-size: 14cqw !important;
+  letter-spacing: -.18cqw !important;
+  transform: skewX(-7deg) scaleY(.90) !important;
+  -webkit-text-stroke-width: .30cqw !important;
+}
+
+.game-room.room-exact.room-reference-1536 .room-right-side .question-mark .qmark,
+.game-room.room-exact.room-reference-1536 .room-right-side .question-mark::before {
+  font-size: 13.2cqw !important;
+  transform: translate(-50%, -50%) scaleX(.88) !important;
+}
+
+.game-room.room-exact.room-reference-1536 .room-right-side .enemy-slots-row .question-mark .qmark,
+.game-room.room-exact.room-reference-1536 .room-right-side .enemy-slots-row .question-mark::before {
+  font-size: 12.5cqw !important;
+}
+
+/* Main-city atlas crops at a stable large size for the reference footer. */
+.game-room.room-exact.room-reference-1536 .room-bottom-bar .room-vector-icon {
+  flex: 0 0 auto !important;
+  width: 86px !important;
+  height: 80px !important;
+  max-width: 90% !important;
+  margin: 0 auto 1px !important;
+  background-image: url('/atlas/scene.png') !important;
+  background-size: 1822px 1822px !important;
+  background-repeat: no-repeat !important;
+}
+
+.game-room.room-exact.room-reference-1536 .bottom-btn[data-action='shop'] .room-vector-icon {
+  background-size: 1661px 1661px !important;
+  background-position: -199px -1303px !important;
+}
+
+.game-room.room-exact.room-reference-1536 .bottom-btn[data-action='bag'] .room-vector-icon {
+  background-position: -218px -1119px !important;
+}
+
+.game-room.room-exact.room-reference-1536 .bottom-btn[data-action='quest'] .room-vector-icon {
+  background-position: -167px -1727px !important;
+}
+
+.game-room.room-exact.room-reference-1536 .bottom-btn[data-action='smithy'] .room-vector-icon {
+  background-position: -351px -925px !important;
+}
+
+.game-room.room-exact.room-reference-1536 .bottom-btn[data-action='mail'] .room-vector-icon {
+  background-position: -503px -653px !important;
+}
+
+.game-room.room-exact.room-reference-1536 .bottom-btn[data-action='friend'] .room-vector-icon {
+  background-position: -591px -653px !important;
+}
+
+.game-room.room-exact.room-reference-1536 #more-btn .room-vector-icon {
+  background-position: -342px -1710px !important;
+}
+
+.game-room.room-exact.room-reference-1536 #back-btn .room-vector-icon {
+  width: 50px !important;
+  height: 80px !important;
+  background-size: 2686px 2686px !important;
+  background-position: -2327px -1049px !important;
+}
+
+.game-room.room-exact.room-reference-1536 .room-bottom-bar .bottom-btn {
+  justify-content: flex-end !important;
+  padding: 0 0 .14cqw !important;
+}
+
+.game-room.room-exact.room-reference-1536 .room-bottom-bar .room-vector-label {
+  min-height: 1.05cqw !important;
+  font-size: 1.02cqw !important;
+}
+
+@media (max-width: 1500px), (max-height: 760px) {
+  .game-room.room-exact.room-reference-1536 .room-bottom-bar .room-vector-icon {
+    width: 64px !important;
+    height: 58px !important;
+    background-size: 1352px 1352px !important;
+  }
+}

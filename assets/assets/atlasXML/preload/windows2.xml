@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with TexturePacker http://texturepacker.com-->
+<!-- $TexturePacker:SmartUpdate:259c33cdec2ffccf89116e93eb1d1093$ -->
+<TextureAtlas imagePath="windows2.png">
+    <SubTexture name="setStar_Bg" x="2" y="2" width="960" height="640"/>
+</TextureAtlas>

@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<language name="levy">
+	<language key="levytext1" value="每日可征收一次\n玩家等级越高，征收所得越多"/>
+	<language key="levytext2" value="当前征收可得："/>
+	<language key="levytext3" value="征收"/>
+</language>
+
+<!-- 
+<language key="levytext1" value="每日可征收一次"/>
+<language key="levytext1pt2" value="玩家等级越高，征收所得越多"/>
+-->

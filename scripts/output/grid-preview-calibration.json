@@ -1,0 +1,110 @@
+{
+  "generatedAt": "2026-06-26T11:00:14.431Z",
+  "model": "square-to-platforms",
+  "canvas": {
+    "GAME_W": 1248,
+    "GAME_H": 832,
+    "FIELD_LEFT": 135,
+    "FIELD_TOP": 105,
+    "FIELD_W": 978,
+    "FIELD_H": 702
+  },
+  "columnAlign": {
+    "leftColumnHeight": 857,
+    "leftColumnTop": -25,
+    "rightColumnHeight": 832,
+    "note": "左柱上移25px，树根底与右柱看齐"
+  },
+  "playableEdges": {
+    "gridLeftFieldX": 0,
+    "gridRightFieldX": 977,
+    "playableW": 977,
+    "leftSamples": [
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "rightSamples": [
+      977,
+      977,
+      977,
+      977,
+      977
+    ],
+    "source": "detected"
+  },
+  "corridor": {
+    "BEARD_BOTTOM_FIELD_Y": 87,
+    "BOTTOM_ROOT_TOP_FIELD_Y": 645,
+    "innerH": 558
+  },
+  "lineLegend": {
+    "green": "绿线 field Y=87 — 古树胡须最低垂点，格子上边界参考",
+    "orange": "橙线 field Y=645 — 草地树根上沿，格子下边界参考",
+    "cyan": "青框 — 胡须到树根的草地走廊外框(紫线之间)",
+    "magenta": "紫线 — 左右柱台子内缘，格子横向应贴齐此处",
+    "yellow": "黄线 — 5×12 战斗单元格(选卡时出现)",
+    "lightBlue": "浅蓝竖线 — 列区分界：左5列我方 / 中2列缓冲 / 右5列敌方",
+    "zoneTint": "半透明色块 — 绿=可放我方 / 褐=缓冲 / 橙=敌方区域"
+  },
+  "variants": [
+    {
+      "mode": "square_to_platforms",
+      "label": "正方形贴台",
+      "caption": "正方形贴台：边长78.7px，左右贴紫线台子内缘，走廊内垂直居中，左柱根与右柱底对齐 绿线=胡须87 橙线=树根645 青框=走廊 紫线=台子内缘 黄线=战斗格 浅蓝=5+2+5列界",
+      "outputPng": "D:\\clbwz\\battle\\scripts\\output\\格子预览-正方形贴台-2026-06-26.png",
+      "proposedBattleConfig": {
+        "mode": "square_to_platforms",
+        "gridLeftFieldX": 0,
+        "gridRightFieldX": 977,
+        "GRID_ORIGIN_X": 0,
+        "GRID_ORIGIN_Y": 87,
+        "GRID_GAP": 3,
+        "CELL_W": 78.67,
+        "CELL_H": 78.67,
+        "GRID_BODY_W": 977,
+        "GRID_BODY_H": 405.33,
+        "GRID_V_PAD": 76.33,
+        "GRID_H_PAD": 0,
+        "GRID_RIGHT_MARGIN": 1,
+        "GRID_BOX_TOP": 87,
+        "GRID_BOX_BOTTOM": 645,
+        "GRID_INNER_W": 977,
+        "GRID_INNER_H": 558,
+        "row0Y": 163.33,
+        "row4Bottom": 568.67,
+        "PLAYER_TREE_BEARD_BOTTOM_FIELD_Y": 87,
+        "BOTTOM_ROOT_TOP_FIELD_Y": 645,
+        "leftColumnTop": -25,
+        "columns": "5+2+5",
+        "rows": 5,
+        "playableEdges": {
+          "gridLeftFieldX": 0,
+          "gridRightFieldX": 977,
+          "playableW": 977,
+          "leftSamples": [
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "rightSamples": [
+            977,
+            977,
+            977,
+            977,
+            977
+          ],
+          "source": "detected"
+        }
+      }
+    }
+  ],
+  "notes": [
+    "选定后写入 BattleConfig.js 并同步 style.css left-frame top:-25px",
+    "游戏内格子仅选卡时显示"
+  ]
+}

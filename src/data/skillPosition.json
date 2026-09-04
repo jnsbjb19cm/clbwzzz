@@ -1,0 +1,93 @@
+[
+  {
+    "cardId": 500,
+    "position": 1,
+    "layer": 0
+  },
+  {
+    "cardId": 501,
+    "position": 5,
+    "layer": 1
+  },
+  {
+    "cardId": 502,
+    "avatar": 1,
+    "noshow": 1
+  },
+  {
+    "cardId": 503,
+    "position": 2
+  },
+  {
+    "cardId": 506,
+    "position": 1
+  },
+  {
+    "cardId": 514,
+    "position": 1
+  },
+  {
+    "cardId": 517,
+    "position": 2
+  },
+  {
+    "cardId": 522,
+    "position": 2
+  },
+  {
+    "cardId": 523,
+    "position": 4,
+    "layer": 1
+  },
+  {
+    "cardId": 526,
+    "position": 1
+  },
+  {
+    "cardId": 527,
+    "position": 1
+  },
+  {
+    "cardId": 528,
+    "position": 1
+  },
+  {
+    "cardId": 529,
+    "position": 1
+  },
+  {
+    "cardId": 530,
+    "position": 6
+  },
+  {
+    "cardId": 532,
+    "position": 1,
+    "layer": 1
+  },
+  {
+    "cardId": 533,
+    "position": 4
+  },
+  {
+    "cardId": 534,
+    "position": 4
+  },
+  {
+    "cardId": 535,
+    "position": 4
+  },
+  {
+    "cardId": 536,
+    "position": 4
+  },
+  {
+    "cardId": 538,
+    "avatar": 1,
+    "noshow": 1
+  },
+  {
+    "cardId": 539,
+    "position": 2,
+    "layer": 1
+  }
+]

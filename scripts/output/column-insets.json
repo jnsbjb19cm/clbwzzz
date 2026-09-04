@@ -1,0 +1,75 @@
+{
+  "generatedAt": "2026-08-24T13:02:19.093Z",
+  "canvas": {
+    "GAME_W": 1248,
+    "GAME_H": 832,
+    "FIELD_TOP": 105,
+    "legacyFieldLeft": 135,
+    "legacyFieldW": 978
+  },
+  "compositeFillMode": {
+    "note": "预览脚本把左柱拉满 GAME_W 的测量(旧)",
+    "left": {
+      "gameX": 99,
+      "fieldX": -36,
+      "samples": [
+        75,
+        92,
+        99,
+        85,
+        81
+      ]
+    },
+    "right": {
+      "gameX": 1235,
+      "fieldX": 1100,
+      "samples": [
+        1247,
+        1235,
+        1247,
+        1247,
+        1238
+      ]
+    },
+    "fieldLeft": -36,
+    "fieldRight": 1100,
+    "fieldW": 1136
+  },
+  "runtimeAutoWidth": {
+    "mode": "runtime_width_auto",
+    "leftColumnWidth": 1286,
+    "rightColumnWidth": 370,
+    "leftGameInnerX": 102,
+    "rightGameInnerX": 1237,
+    "leftFieldInnerX": -33,
+    "rightFieldInnerX": 1102,
+    "playableFieldW": 1135,
+    "leftSamples": [
+      77,
+      95,
+      102,
+      87,
+      84
+    ],
+    "rightSamples": [
+      1247,
+      1247,
+      1247,
+      1243,
+      1237
+    ]
+  },
+  "recommended": {
+    "FIELD_LEFT": 102,
+    "FIELD_RIGHT_INSET": 11,
+    "FIELD_W": 1135,
+    "gridLeftFieldX": 0,
+    "gridRightFieldX": 1135,
+    "note": "field 原点仍在 battlefield-wrap 左上；grid 从 0 铺到 fieldW，col11 右缘=fieldW"
+  },
+  "corridor": {
+    "fieldY0": 87,
+    "fieldY1": 645,
+    "innerH": 558
+  }
+}

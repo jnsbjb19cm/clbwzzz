@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<language name="vip">
+    <language key="vip_title1" value="再充值{0}红钻，你将永远成为VIP{1}"/>
+    <language key="vip_maxVip" value="您当前已经是最高VIP等级"/>
+    <language key="vip_jiangli" value="VIP奖励"/>
+</language>

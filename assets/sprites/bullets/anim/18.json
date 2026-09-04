@@ -1,0 +1,125 @@
+{
+  "res": "18",
+  "frameW": 320,
+  "frameH": 320,
+  "animations": {
+    "yidong": {
+      "frameRate": 12,
+      "frames": [
+        {
+          "x": 0,
+          "y": 0,
+          "w": 320,
+          "h": 320,
+          "bounds": {
+            "left": 151,
+            "top": 152,
+            "right": 168,
+            "bottom": 168,
+            "opaque": 238
+          }
+        }
+      ],
+      "loop": true,
+      "duration": 0.041666666666666664
+    },
+    "baoza": {
+      "frameRate": 12,
+      "frames": [
+        {
+          "x": 0,
+          "y": 320,
+          "w": 320,
+          "h": 320,
+          "bounds": {
+            "left": 164,
+            "top": 134,
+            "right": 183,
+            "bottom": 181,
+            "opaque": 362
+          }
+        },
+        {
+          "x": 0,
+          "y": 640,
+          "w": 320,
+          "h": 320,
+          "bounds": {
+            "left": 164,
+            "top": 79,
+            "right": 203,
+            "bottom": 246,
+            "opaque": 1116
+          }
+        },
+        {
+          "x": 0,
+          "y": 960,
+          "w": 320,
+          "h": 320,
+          "bounds": {
+            "left": 165,
+            "top": 79,
+            "right": 203,
+            "bottom": 246,
+            "opaque": 1362
+          }
+        },
+        {
+          "x": 0,
+          "y": 1280,
+          "w": 320,
+          "h": 320,
+          "bounds": {
+            "left": 165,
+            "top": 76,
+            "right": 205,
+            "bottom": 244,
+            "opaque": 1334
+          }
+        },
+        {
+          "x": 0,
+          "y": 1600,
+          "w": 320,
+          "h": 320,
+          "bounds": {
+            "left": 169,
+            "top": 76,
+            "right": 205,
+            "bottom": 244,
+            "opaque": 850
+          }
+        },
+        {
+          "x": 0,
+          "y": 1920,
+          "w": 320,
+          "h": 320,
+          "bounds": {
+            "left": 189,
+            "top": 83,
+            "right": 206,
+            "bottom": 240,
+            "opaque": 278
+          }
+        },
+        {
+          "x": 0,
+          "y": 2240,
+          "w": 320,
+          "h": 320,
+          "bounds": {
+            "left": 189,
+            "top": 83,
+            "right": 206,
+            "bottom": 240,
+            "opaque": 278
+          }
+        }
+      ],
+      "loop": false,
+      "duration": 0.3333333333333333
+    }
+  }
+}

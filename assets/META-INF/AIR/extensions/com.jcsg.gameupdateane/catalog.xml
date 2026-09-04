@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding ="utf-8"?>
+<swc xmlns="http://www.adobe.com/flash/swccatalog/9">
+  <versions>
+    <swc version="1.2" />
+    <flex version="4.5.1" build="21328" minimumSupportedVersion="3.0.0" />
+  </versions>
+  <features>
+    <feature-script-deps />
+    <feature-files />
+  </features>
+  <libraries>
+    <library path="library.swf">
+      <script name="com/jcsg/gameupdateane/UpdateGameEvents" mod="1398250337265" signatureChecksum="3005103740" >
+        <def id="com.jcsg.gameupdateane:UpdateGameEvents" /> 
+        <dep id="AS3" type="n" /> 
+        <dep id="Object" type="i" /> 
+      </script>
+      <script name="com/jcsg/gameupdateane/UpdateGameExtension" mod="1398409333937" signatureChecksum="1491058965" >
+        <def id="com.jcsg.gameupdateane:UpdateGameExtension" /> 
+        <dep id="flash.events:StatusEvent" type="e" /> 
+        <dep id="flash.external:ExtensionContext" type="e" /> 
+        <dep id="flash.events:IEventDispatcher" type="s" /> 
+        <dep id="flash.events:StatusEvent" type="s" /> 
+        <dep id="flash.external:ExtensionContext" type="s" /> 
+        <dep id="AS3" type="n" /> 
+        <dep id="flash.events:EventDispatcher" type="i" /> 
+      </script>
+      <script name="_efa4bd972dee620cf1d7eff5cfcfa49bafc5094ee1eacd150e24081fa37f5e3d_flash_display_Sprite" mod="1398409334296" signatureChecksum="2496364205" >
+        <def id="_efa4bd972dee620cf1d7eff5cfcfa49bafc5094ee1eacd150e24081fa37f5e3d_flash_display_Sprite" /> 
+        <dep id="flash.system:Security" type="e" /> 
+        <dep id="AS3" type="n" /> 
+        <dep id="flash.display:Sprite" type="i" /> 
+      </script>
+      <digests>
+        <digest type="SHA-256" signed="false" value="0f1dadb381495b8aee853deb94799c99b67761c4585ca2e6868a8bb42cfa8c05"   />
+      </digests>
+    </library>
+  </libraries>
+  <files>
+  </files>
+</swc>

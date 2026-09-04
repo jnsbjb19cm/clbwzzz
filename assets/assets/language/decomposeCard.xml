@@ -1,0 +1,8 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<language name="decomposeCard">
+	<language key="decomposeCard_pushCard" value="请放入希望分解的卡牌"/>
+	<language key="decomposeCard_num" value="分解数量:"/>
+	<language key="decomposeCard_cost" value="消耗:"/>
+	<language key="decomposeCard_preview" value="分解预览"/>
+	<language key="decomposeCard_decompose" value="分解"/>
+</language>

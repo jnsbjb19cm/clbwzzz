@@ -1,0 +1,181 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with TexturePacker http://texturepacker.com-->
+<!-- $TexturePacker:SmartUpdate:2e588ab07357c82e0456121f935d845e$ -->
+<TextureAtlas imagePath="modulesUI.png">
+    <SubTexture name="MTD_mtdTitle" x="2" y="14" width="717" height="54"/>
+    <SubTexture name="alchemy.title" x="552" y="1815" width="66" height="35"/>
+    <SubTexture name="arena.title" x="633" y="1736" width="89" height="34"/>
+    <SubTexture name="arenaRank_help_icon" x="934" y="1690" width="85" height="85"/>
+    <SubTexture name="arenaRank_title_desc" x="2" y="1321" width="242" height="40"/>
+    <SubTexture name="arena_chat_icon" x="35" y="1907" width="85" height="85"/>
+    <SubTexture name="arena_curete_title" x="480" y="375" width="148" height="42"/>
+    <SubTexture name="arena_encounter_bg" x="453" y="599" width="449" height="552"/>
+    <SubTexture name="arena_fastJoin_title" x="480" y="332" width="150" height="41"/>
+    <SubTexture name="arena_host_icon" x="887" y="1175" width="96" height="33"/>
+    <SubTexture name="arena_rank_bg" x="2" y="493" width="449" height="552"/>
+    <SubTexture name="arena_ready_icon" x="904" y="1140" width="96" height="33"/>
+    <SubTexture name="arena_room_cell_bg" x="2" y="1467" width="228" height="198"/>
+    <SubTexture name="arena_room_cell_close_bg" x="435" y="1429" width="228" height="198"/>
+    <SubTexture name="arena_waiting_icon" x="461" y="419" width="144" height="50" frameX="-44" frameY="-71" frameWidth="228" frameHeight="198"/>
+    <SubTexture name="arrow-down" x="122" y="1907" width="60" height="62"/>
+    <SubTexture name="badge_title" x="904" y="1000" width="102" height="31"/>
+    <SubTexture name="blue-diamond" x="538" y="1935" width="32" height="32"/>
+    <SubTexture name="cardManual_title" x="904" y="1096" width="97" height="42"/>
+    <SubTexture name="chat_guide_title" x="450" y="2006" width="66" height="36"/>
+    <SubTexture name="chat_normal_title" x="436" y="1941" width="66" height="36"/>
+    <SubTexture name="chat_private_title" x="477" y="1897" width="65" height="36"/>
+    <SubTexture name="chat_roome_title" x="2" y="2008" width="65" height="37"/>
+    <SubTexture name="coin-badge" x="993" y="224" width="26" height="32" frameX="-3" frameY="0" frameWidth="32" frameHeight="32"/>
+    <SubTexture name="coin-exp" x="436" y="1979" width="53" height="25"/>
+    <SubTexture name="coin-power" x="544" y="1894" width="32" height="30" frameX="0" frameY="-1" frameWidth="32" frameHeight="32"/>
+    <SubTexture name="common_line" x="1002" y="119" width="20" height="4"/>
+    <SubTexture name="copy.light.line" x="2" y="8" width="839" height="4"/>
+    <SubTexture name="cut_off_line" x="2" y="2" width="840" height="4"/>
+    <SubTexture name="deleteFriend_Btn" x="974" y="368" width="47" height="47"/>
+    <SubTexture name="friendShipHeadImg_0" x="840" y="1666" width="92" height="92"/>
+    <SubTexture name="friendShipHeadImg_1" x="858" y="1572" width="92" height="92"/>
+    <SubTexture name="fristRecharge_double" x="2" y="437" width="453" height="54"/>
+    <SubTexture name="getcard_effect" x="2" y="70" width="636" height="79"/>
+    <SubTexture name="giftBag" x="480" y="151" width="156" height="179"/>
+    <SubTexture name="gold" x="532" y="1969" width="32" height="32"/>
+    <SubTexture name="growUpTextureTxtImg" x="239" y="1397" width="194" height="53"/>
+    <SubTexture name="guide_NPC" x="2" y="1667" width="221" height="238"/>
+    <SubTexture name="invite_friend_title" x="291" y="2015" width="57" height="31"/>
+    <SubTexture name="invite_helper_title" x="566" y="1969" width="56" height="30"/>
+    <SubTexture name="invite_online_title" x="350" y="2015" width="57" height="30"/>
+    <SubTexture name="isRwdedImgTxt" x="638" y="250" width="73" height="29"/>
+    <SubTexture name="jingji_txt_meiri" x="2" y="1415" width="235" height="50"/>
+    <SubTexture name="jingji_txt_meiyue" x="2" y="1363" width="235" height="50"/>
+    <SubTexture name="jingji_txt_meizhou" x="441" y="1377" width="235" height="50"/>
+    <SubTexture name="levelRewardTitle" x="587" y="503" width="328" height="94"/>
+    <SubTexture name="loginRaward_day_count1" x="858" y="1534" width="94" height="36"/>
+    <SubTexture name="loginRaward_day_count2" x="859" y="1496" width="94" height="36"/>
+    <SubTexture name="loginRaward_day_count3" x="859" y="1458" width="94" height="36"/>
+    <SubTexture name="loginRaward_day_count4" x="881" y="1420" width="94" height="36"/>
+    <SubTexture name="loginRaward_day_count5" x="881" y="1382" width="94" height="36"/>
+    <SubTexture name="loginRaward_day_count6" x="882" y="1344" width="94" height="36"/>
+    <SubTexture name="loginRaward_day_count7" x="882" y="1306" width="94" height="36"/>
+    <SubTexture name="loginRaward_selected_day_count1" x="904" y="926" width="110" height="42"/>
+    <SubTexture name="loginRaward_selected_day_count2" x="904" y="882" width="110" height="42"/>
+    <SubTexture name="loginRaward_selected_day_count3" x="904" y="838" width="110" height="42"/>
+    <SubTexture name="loginRaward_selected_day_count4" x="904" y="794" width="110" height="42"/>
+    <SubTexture name="loginRaward_selected_day_count5" x="904" y="750" width="110" height="42"/>
+    <SubTexture name="loginRaward_selected_day_count6" x="904" y="706" width="110" height="42"/>
+    <SubTexture name="loginRaward_selected_day_count7" x="904" y="662" width="110" height="42"/>
+    <SubTexture name="mail_chest_icon1" x="69" y="1994" width="55" height="50" frameX="0" frameY="-3" frameWidth="55" frameHeight="54"/>
+    <SubTexture name="mail_chest_icon2" x="351" y="1835" width="49" height="46" frameX="-3" frameY="-4" frameWidth="55" frameHeight="54"/>
+    <SubTexture name="mail_icon1" x="491" y="1979" width="39" height="24" frameX="-8" frameY="-14" frameWidth="55" frameHeight="54"/>
+    <SubTexture name="mail_icon2" x="980" y="330" width="41" height="36" frameX="-7" frameY="-7" frameWidth="55" frameHeight="54"/>
+    <SubTexture name="mail_item_bg" x="2" y="1110" width="444" height="61"/>
+    <SubTexture name="mail_item_selected" x="2" y="1047" width="444" height="61"/>
+    <SubTexture name="mail_new_icon_001" x="436" y="1900" width="39" height="39"/>
+    <SubTexture name="mail_new_icon_002" x="500" y="1736" width="39" height="39"/>
+    <SubTexture name="mail_new_icon_003" x="478" y="1777" width="39" height="39"/>
+    <SubTexture name="mail_new_icon_004" x="443" y="1818" width="39" height="39"/>
+    <SubTexture name="mail_new_icon_005" x="404" y="1859" width="39" height="39"/>
+    <SubTexture name="mail_new_icon_006" x="409" y="2006" width="39" height="39"/>
+    <SubTexture name="mail_new_icon_007" x="1020" y="2" width="0" height="0" frameX="0" frameY="0" frameWidth="39" frameHeight="39"/>
+    <SubTexture name="mail_new_icon_008" x="395" y="1965" width="39" height="39"/>
+    <SubTexture name="mail_new_icon_009" x="395" y="1924" width="39" height="39"/>
+    <SubTexture name="mail_new_icon_010" x="459" y="1736" width="39" height="39"/>
+    <SubTexture name="mail_new_icon_011" x="437" y="1777" width="39" height="39"/>
+    <SubTexture name="mail_new_icon_012" x="402" y="1818" width="39" height="39"/>
+    <SubTexture name="mail_state_bg" x="514" y="543" width="55" height="54"/>
+    <SubTexture name="maplevel_1_icon" x="519" y="1777" width="66" height="36"/>
+    <SubTexture name="maplevel_2_icon" x="484" y="1818" width="66" height="36"/>
+    <SubTexture name="notice_background" x="720" y="173" width="279" height="49"/>
+    <SubTexture name="num_circle" x="363" y="1883" width="39" height="39"/>
+    <SubTexture name="pay_item_1" x="949" y="464" width="70" height="70"/>
+    <SubTexture name="pay_item_2" x="949" y="464" width="70" height="70"/>
+    <SubTexture name="pay_item_3" x="949" y="464" width="70" height="70"/>
+    <SubTexture name="pay_item_4" x="949" y="464" width="70" height="70"/>
+    <SubTexture name="pay_item_5" x="949" y="464" width="70" height="70"/>
+    <SubTexture name="pay_item_name_1" x="904" y="970" width="103" height="28"/>
+    <SubTexture name="pay_item_name_2" x="917" y="596" width="103" height="28"/>
+    <SubTexture name="pay_item_name_3" x="917" y="566" width="103" height="28"/>
+    <SubTexture name="pay_item_name_4" x="904" y="1033" width="102" height="28"/>
+    <SubTexture name="pay_item_name_5" x="917" y="536" width="103" height="28"/>
+    <SubTexture name="pay_pay_first_tips" x="2" y="390" width="457" height="45"/>
+    <SubTexture name="pay_pay_item_bg" x="721" y="122" width="279" height="49"/>
+    <SubTexture name="pay_pay_item_item" x="721" y="122" width="279" height="49"/>
+    <SubTexture name="rankTitle_fightCapacityRank" x="607" y="429" width="340" height="72"/>
+    <SubTexture name="rankTitle_levelRank" x="632" y="355" width="340" height="72"/>
+    <SubTexture name="rankTitle_orangeCardRank" x="2" y="1247" width="437" height="72"/>
+    <SubTexture name="rankTitle_purpleCardRank" x="441" y="1227" width="437" height="72"/>
+    <SubTexture name="rankTitle_rateOfStoryRank" x="2" y="1173" width="437" height="72"/>
+    <SubTexture name="rankTitle_redCardRank" x="448" y="1153" width="437" height="72"/>
+    <SubTexture name="rankTitle_richRank" x="638" y="281" width="340" height="72"/>
+    <SubTexture name="rechargeReward_icon" x="887" y="1210" width="94" height="94"/>
+    <SubTexture name="red-diamond" x="504" y="1935" width="32" height="32"/>
+    <SubTexture name="routine_type_10" x="126" y="1971" width="51" height="62" frameX="-16" frameY="-10" frameWidth="83" frameHeight="82"/>
+    <SubTexture name="routine_type_11" x="179" y="1971" width="59" height="60" frameX="-12" frameY="-11" frameWidth="83" frameHeight="82"/>
+    <SubTexture name="routine_type_12" x="453" y="543" width="59" height="54" frameX="-12" frameY="-14" frameWidth="83" frameHeight="82"/>
+    <SubTexture name="routine_type_2" x="243" y="1897" width="63" height="58" frameX="-11" frameY="-12" frameWidth="83" frameHeight="82"/>
+    <SubTexture name="routine_type_3" x="292" y="1777" width="61" height="56" frameX="-11" frameY="-11" frameWidth="83" frameHeight="82"/>
+    <SubTexture name="routine_type_4" x="291" y="1957" width="61" height="56" frameX="-10" frameY="-14" frameWidth="83" frameHeight="82"/>
+    <SubTexture name="routine_type_5" x="225" y="1837" width="65" height="58" frameX="-9" frameY="-12" frameWidth="83" frameHeight="82"/>
+    <SubTexture name="routine_type_6" x="240" y="1969" width="49" height="60" frameX="-17" frameY="-11" frameWidth="83" frameHeight="82"/>
+    <SubTexture name="routine_type_7" x="225" y="1777" width="65" height="58" frameX="-9" frameY="-12" frameWidth="83" frameHeight="82"/>
+    <SubTexture name="routine_type_8" x="292" y="1835" width="57" height="56" frameX="-13" frameY="-13" frameWidth="83" frameHeight="82"/>
+    <SubTexture name="routine_type_9" x="184" y="1907" width="57" height="60" frameX="-14" frameY="-11" frameWidth="83" frameHeight="82"/>
+    <SubTexture name="setStar_chapters" x="2" y="1907" width="31" height="99"/>
+    <SubTexture name="sexIcon_0" x="980" y="279" width="41" height="49" frameX="-2" frameY="0" frameWidth="45" frameHeight="49"/>
+    <SubTexture name="sexIcon_1" x="974" y="417" width="45" height="45" frameX="0" frameY="-3" frameWidth="45" frameHeight="49"/>
+    <SubTexture name="shortCutLine" x="665" y="1430" width="203" height="4"/>
+    <SubTexture name="tabBar_blueDiamond" x="445" y="1859" width="66" height="36"/>
+    <SubTexture name="tabBar_cardBag" x="952" y="1652" width="66" height="36"/>
+    <SubTexture name="tabBar_compound" x="952" y="1614" width="66" height="36"/>
+    <SubTexture name="tabBar_fans" x="952" y="1576" width="66" height="36"/>
+    <SubTexture name="tabBar_friend" x="954" y="1537" width="66" height="37"/>
+    <SubTexture name="tabBar_intensify" x="518" y="2005" width="65" height="36"/>
+    <SubTexture name="tabBar_limitShop" x="513" y="1856" width="64" height="36"/>
+    <SubTexture name="tabBar_prop" x="955" y="1498" width="66" height="37"/>
+    <SubTexture name="taskReward_icon_001" x="354" y="1949" width="39" height="39"/>
+    <SubTexture name="taskReward_icon_002" x="418" y="1736" width="39" height="39"/>
+    <SubTexture name="taskReward_icon_003" x="396" y="1777" width="39" height="39"/>
+    <SubTexture name="taskReward_icon_004" x="355" y="1777" width="39" height="39"/>
+    <SubTexture name="taskReward_icon_005" x="977" y="1457" width="39" height="39"/>
+    <SubTexture name="taskReward_icon_006" x="977" y="1416" width="39" height="39"/>
+    <SubTexture name="taskReward_icon_007" x="1020" y="2" width="0" height="0" frameX="0" frameY="0" frameWidth="39" frameHeight="39"/>
+    <SubTexture name="taskReward_icon_008" x="978" y="1375" width="39" height="39"/>
+    <SubTexture name="taskReward_icon_009" x="978" y="1334" width="39" height="39"/>
+    <SubTexture name="taskReward_icon_010" x="983" y="1293" width="39" height="39"/>
+    <SubTexture name="taskReward_icon_011" x="983" y="1252" width="39" height="39"/>
+    <SubTexture name="taskReward_icon_012" x="983" y="1211" width="39" height="39"/>
+    <SubTexture name="task_flag_finshed" x="308" y="1893" width="53" height="54" frameX="-2" frameY="-2" frameWidth="57" frameHeight="58"/>
+    <SubTexture name="task_item_default_skin" x="721" y="122" width="279" height="49"/>
+    <SubTexture name="task_item_selected_up_skin" x="720" y="173" width="279" height="49"/>
+    <SubTexture name="task_type_main" x="453" y="507" width="128" height="34"/>
+    <SubTexture name="task_type_sub" x="457" y="471" width="128" height="34"/>
+    <SubTexture name="tianti_arena_bg" x="2" y="151" width="476" height="237"/>
+    <SubTexture name="tianti_reward_title" x="904" y="1063" width="101" height="31"/>
+    <SubTexture name="title.activities" x="638" y="214" width="78" height="34"/>
+    <SubTexture name="title.editCard" x="640" y="106" width="79" height="34"/>
+    <SubTexture name="title.encounter" x="904" y="626" width="118" height="34"/>
+    <SubTexture name="title.liveness" x="841" y="38" width="174" height="34"/>
+    <SubTexture name="title.mail" x="638" y="178" width="78" height="34"/>
+    <SubTexture name="title.noticeBoard" x="587" y="1777" width="90" height="34"/>
+    <SubTexture name="title.openBos" x="844" y="2" width="174" height="34"/>
+    <SubTexture name="title.pieceComPosite" x="721" y="86" width="118" height="34"/>
+    <SubTexture name="title.rank" x="541" y="1729" width="90" height="34"/>
+    <SubTexture name="title.rankArena" x="721" y="50" width="118" height="34"/>
+    <SubTexture name="title.rankArenaShop" x="721" y="14" width="118" height="34"/>
+    <SubTexture name="title.role" x="640" y="142" width="78" height="34"/>
+    <SubTexture name="title.routine" x="841" y="74" width="165" height="43"/>
+    <SubTexture name="title.setStar" x="685" y="1301" width="195" height="53"/>
+    <SubTexture name="title.task" x="640" y="70" width="79" height="34"/>
+    <SubTexture name="vip.pay.button.up.skin" x="426" y="1629" width="219" height="98"/>
+    <SubTexture name="vipDailyWelfareImg" x="718" y="224" width="273" height="53"/>
+    <SubTexture name="vip_Big_0" x="232" y="1528" width="193" height="74"/>
+    <SubTexture name="vip_Big_1" x="647" y="1661" width="191" height="73"/>
+    <SubTexture name="vip_Big_10" x="441" y="1301" width="242" height="74"/>
+    <SubTexture name="vip_Big_2" x="225" y="1680" width="191" height="73"/>
+    <SubTexture name="vip_Big_3" x="665" y="1510" width="191" height="74"/>
+    <SubTexture name="vip_Big_4" x="685" y="1356" width="194" height="72"/>
+    <SubTexture name="vip_Big_5" x="665" y="1586" width="191" height="73"/>
+    <SubTexture name="vip_Big_6" x="239" y="1452" width="193" height="74"/>
+    <SubTexture name="vip_Big_7" x="665" y="1436" width="192" height="72"/>
+    <SubTexture name="vip_Big_8" x="246" y="1321" width="193" height="74"/>
+    <SubTexture name="vip_Big_9" x="232" y="1604" width="192" height="74"/>
+    <SubTexture name="zhengshou_star_icon" x="985" y="1175" width="36" height="34"/>
+</TextureAtlas>

@@ -1,0 +1,62 @@
+name: Room Reference Fast
+
+on:
+  push:
+    branches:
+      - '202691最新版'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: room-reference-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  room-reference:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Check changed room JavaScript syntax
+        run: |
+          node --check src/ui/BattleRoomExact.js
+          node --check src/ui/BattleRoomReference1826Bridge.js
+          node --check src/ui/BattleRoomReference1826Authority.js
+          node --check src/ui/BattleRoomEnemyGeometryFix.js
+          node --check src/ui/BattleRoomRebuild.js
+          node --check tests/room-reference-layout-20260902.spec.mjs
+
+      - name: Verify 1536 DOM/CSS reconstruction
+        run: node scripts/verify-room-reference-1536.mjs
+
+      - name: Build Vite bundle without rebaking assets
+        run: npx vite build
+
+      - name: Install Chromium
+        run: npx playwright install chromium
+
+      - name: Verify 2408x1229 and 2048x1157 room layout in Chromium
+        run: npx playwright test tests/room-reference-layout-20260902.spec.mjs
+
+      - name: Upload rendered room screenshot
+        if: always()
+        continue-on-error: true
+        uses: actions/upload-artifact@v6
+        with:
+          name: room-reference-${{ github.run_id }}
+          path: test-results/
+          if-no-files-found: ignore
+          retention-days: 7

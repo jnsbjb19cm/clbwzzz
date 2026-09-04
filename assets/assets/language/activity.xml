@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<language name="activity">
+	<language key="activity_input" value="输入兑换码："/>
+	<language key="activity_lingqu" value="领取"/>
+	<language key="activity_time" value="活动时间："/>
+	<language key="activity_content" value="活动内容："/>
+	<language key="activity_conclude" value="达成条件"/>
+	<language key="activity_award" value="奖励"/>
+	
+	<language key="cdk_shuru" value="激活码兑换："/>
+	<language key="cdk_jieshao" value="       使用激活码可以领取丰厚奖励，助你 快速踏上强者之路！"/>
+	<language key="cdk_duihuan" value="兑换"/>
+	
+</language>

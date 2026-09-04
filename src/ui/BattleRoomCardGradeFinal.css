@@ -1,0 +1,52 @@
+/*
+ * 房间选卡等级背景：直接使用 cardParts.png 中 card_bg_1~5 原始素材。
+ * 1灰白、2绿、3蓝、4紫、5金；不存在独立6级显示。
+ */
+.game-room.room-deck-ui-v3 .v3-card-grade-atlas {
+  border-color: transparent !important;
+  background: transparent !important;
+  box-shadow: 0 .08em .16em rgba(23, 43, 24, .34) !important;
+}
+
+.game-room.room-deck-ui-v3 .v3-card-quality.v3-atlas-card-bg {
+  inset: 0 !important;
+  opacity: 1 !important;
+  background-image: var(--atlas-url) !important;
+  background-size: var(--atlas-size-x) var(--atlas-size-y) !important;
+  background-position: var(--atlas-pos-x) var(--atlas-pos-y) !important;
+  background-repeat: no-repeat !important;
+  filter: none !important;
+}
+
+.game-room.room-deck-ui-v3 .v3-card-grade-atlas[data-card-grade="1"] {
+  --quality: #d9ddd0 !important;
+}
+.game-room.room-deck-ui-v3 .v3-card-grade-atlas[data-card-grade="2"] {
+  --quality: #6fa552 !important;
+}
+.game-room.room-deck-ui-v3 .v3-card-grade-atlas[data-card-grade="3"] {
+  --quality: #5f92ad !important;
+}
+.game-room.room-deck-ui-v3 .v3-card-grade-atlas[data-card-grade="4"] {
+  --quality: #9572a4 !important;
+}
+.game-room.room-deck-ui-v3 .v3-card-grade-atlas[data-card-grade="5"] {
+  --quality: #c7b94f !important;
+}
+
+/* 卡图、资源消耗和功能图标位于原卡底之上，保持参考图的层级。 */
+.game-room.room-deck-ui-v3 .v3-card-grade-atlas .v3-card-art {
+  z-index: 4 !important;
+}
+.game-room.room-deck-ui-v3 .v3-card-grade-atlas .v3-card-stars,
+.game-room.room-deck-ui-v3 .v3-card-grade-atlas .v3-card-name,
+.game-room.room-deck-ui-v3 .v3-card-grade-atlas .v3-card-footer,
+.game-room.room-deck-ui-v3 .v3-card-grade-atlas .v3-card-mark {
+  z-index: 8 !important;
+}
+
+/* 同名卡禁用只加灰膜，不能抹掉等级底色。 */
+.game-room.room-deck-ui-v3 .v3-card-grade-atlas.same-name-disabled {
+  filter: grayscale(.52) brightness(.72) !important;
+  opacity: .86 !important;
+}

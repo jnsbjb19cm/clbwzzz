@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<data name="sound">
+<send>
+<fighter id="1" url="sound/effect/fire/1.mp3"/>
+<fighter id="9" url="sound/effect/fire/9.mp3"/>
+<fighter id="17" url="sound/effect/fire/17.mp3"/>
+<fighter id="58" url="sound/effect/fire/58.mp3"/>
+</send>
+<bulletAttack>
+<fighter id="1" url="sound/effect/fire/b1.mp3"/>
+<fighter id="17" url="sound/effect/fire/b2.mp3"/>
+<fighter id="58" url="sound/effect/fire/b58.mp3"/>
+</bulletAttack>
+<nearAttack>
+<fighter id="5" url="sound/effect/fire/n5.mp3"/>
+<fighter id="27" url="sound/effect/fire/n5.mp3"/>
+<fighter id="28" url="sound/effect/fire/n6.mp3"/>
+<fighter id="29" url="sound/effect/fire/n6.mp3"/>
+<fighter id="8" url="sound/effect/fire/n8.mp3"/>
+<fighter id="11" url="sound/effect/fire/n11.mp3"/>
+<fighter id="12" url="sound/effect/fire/n12.mp3"/>
+<fighter id="41" url="sound/effect/fire/n41.mp3"/>
+<fighter id="40" url="sound/effect/fire/n40.mp3"/>
+<fighter id="49" url="sound/effect/fire/n49.mp3"/>
+<fighter id="3" url="sound/effect/fire/n3.mp3"/>
+<fighter id="6" url="sound/effect/fire/n6.mp3"/>
+<fighter id="35" url="sound/effect/fire/n35.mp3"/>
+<fighter id="57" url="sound/effect/fire/n57.mp3"/>
+<fighter id="56" url="sound/effect/fire/n56.mp3"/>
+<fighter id="31" url="sound/effect/fire/n8.mp3"/>
+<fighter id="7" url="sound/effect/fire/n7.mp3"/>
+<fighter id="33" url="sound/effect/fire/n33.mp3"/>  
+<fighter id="55" url="sound/effect/fire/n55.mp3"/>
+<fighter id="38" url="sound/effect/fire/n38.mp3"/>
+<fighter id="30" url="sound/effect/fire/n7.mp3"/>
+<fighter id="23" url="sound/effect/fire/n3.mp3"/>
+<fighter id="22" url="sound/effect/fire/addHP.mp3"/>
+<fighter id="36" url="sound/effect/fire/addHP.mp3"/>
+<fighter id="45" url="sound/effect/fire/n45.mp3"/>
+<fighter id="60" url="sound/effect/fire/n45.mp3"/><!--换召唤忍者-->
+</nearAttack>
+<death>
+<fighter id="7" url="sound/effect/fire/d7.mp3"/>
+<fighter id="30" url="sound/effect/fire/d7.mp3"/>
+</death>
+<digestAttack>
+<fighter id="34" url="sound/effect/fire/s34.mp3"/>
+</digestAttack>
+<curseAttack>
+<fighter id="53" url="sound/effect/fire/c53.mp3"/>
+</curseAttack>
+<skill>
+<fighter id="500" url="sound/effect/fire/skill_500.mp3"/>
+<fighter id="501" url="sound/effect/fire/skill_501.mp3"/>
+<fighter id="502" url="sound/effect/fire/skill_502.mp3"/>
+<fighter id="503" url="sound/effect/fire/skill_503.mp3"/>
+<fighter id="504" url="sound/effect/fire/skill_504.mp3"/>
+<fighter id="505" url="sound/effect/fire/skill_505.mp3"/>
+<fighter id="506" url="sound/effect/fire/skill_506.mp3"/>
+<fighter id="507" url="sound/effect/fire/skill_507.mp3"/>
+</skill>
+<other>
+<fighter id="12" url="sound/effect/fire/o12.mp3"/>
+<fighter id="45" url="sound/effect/fire/o45.mp3"/>
+</other>
+<underMove>
+<fighter id="41" url="sound/effect/fire/move_43.mp3"/>
+<fighter id="43" url="sound/effect/fire/move_43.mp3"/>
+</underMove>
+<normal>
+<node1 id="1">sound/button/normalButton.mp3</node1>
+</normal>
+<close>  
+<node1 id="1">sound/button/close.mp3</node1>
+</close>
+<page>  
+<node1 id="1">sound/button/page.mp3</node1>
+</page>
+<cancle>  
+<node1 id="1">sound/button/cancle.mp3</node1>
+</cancle>
+<functionBackButton>  
+<node1 id="1">sound/button/functionBackButton.mp3</node1>
+</functionBackButton>
+<invite>   
+<node1 id="1">sound/button/invite.mp3</node1>
+</invite>
+<mainCityButton>  
+<node1 id="1">sound/button/mainCityButton.mp3</node1>
+</mainCityButton>
+<otherFunctionButton>  
+<node1 id="1">sound/button/otherFunctionButton.mp3</node1>
+</otherFunctionButton>
+<smallBtn>   
+<node1 id="1">sound/button/smallBtn.mp3</node1>
+</smallBtn>
+<sure>   
+<node1 id="1">sound/button/sure.mp3</node1>
+</sure>
+</data>

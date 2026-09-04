@@ -1,0 +1,246 @@
+/* 房间内工具使用独立窗口布局，不再直接复用全屏页面尺寸。 */
+.game-room .room-tool-overlay.room-tool-compact .room-tool-content {
+  inset: 8.2% 1.6% 1.6% !important;
+  overflow: hidden !important;
+  background: #123847 !important;
+}
+.game-room .room-tool-overlay.room-tool-compact .room-tool-surface {
+  position: relative !important;
+  width: 100% !important;
+  height: 100% !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+  overflow: hidden !important;
+}
+.game-room .room-tool-overlay.room-tool-compact .page {
+  position: relative !important;
+  inset: auto !important;
+  width: 100% !important;
+  max-width: none !important;
+  height: 100% !important;
+  min-height: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+  background: transparent !important;
+}
+
+/* 背包：左侧模式，右侧筛选与物品区域。 */
+.game-room .room-tool-bag .bag-page {
+  display: grid !important;
+  grid-template-columns: 13.5em minmax(0, 1fr) !important;
+  grid-template-rows: auto auto minmax(0, 1fr) !important;
+  gap: .55em !important;
+}
+.game-room .room-tool-bag .bag-header {
+  grid-column: 1 / -1 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  min-height: 3.4em !important;
+  padding: .45em .9em !important;
+  border-bottom: .12em solid #b9df70 !important;
+  background: linear-gradient(180deg, #5f9a39, #2f6b2d) !important;
+}
+.game-room .room-tool-bag .bag-header h1 {
+  margin: 0 !important;
+  font-size: 1.35em !important;
+}
+.game-room .room-tool-bag .bag-mode-tabs {
+  grid-column: 1 !important;
+  grid-row: 2 / 4 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: .55em !important;
+  padding: .7em !important;
+  overflow: auto !important;
+  background: linear-gradient(180deg, #244f35, #133a2d) !important;
+}
+.game-room .room-tool-bag .bag-mode-tab {
+  min-height: 4.2em !important;
+  font-size: 1em !important;
+  font-weight: 900 !important;
+}
+.game-room .room-tool-bag .bag-toolbar {
+  grid-column: 2 !important;
+  grid-row: 2 !important;
+  display: flex !important;
+  flex-wrap: wrap !important;
+  align-items: center !important;
+  gap: .4em !important;
+  min-height: 3.8em !important;
+  padding: .45em !important;
+  overflow: auto hidden !important;
+  background: #2f6b31 !important;
+}
+.game-room .room-tool-bag .bag-body {
+  grid-column: 2 !important;
+  grid-row: 3 !important;
+  display: grid !important;
+  grid-template-columns: minmax(0, 1.2fr) minmax(18em, .8fr) !important;
+  gap: .65em !important;
+  min-height: 0 !important;
+  padding: .55em !important;
+  overflow: hidden !important;
+  align-items: stretch !important;
+}
+.game-room .room-tool-bag .bag-grid,
+.game-room .room-tool-bag .bag-detail {
+  min-width: 0 !important;
+  min-height: 0 !important;
+  height: 100% !important;
+  max-height: 100% !important;
+  overflow: auto !important;
+}
+.game-room .room-tool-bag #bag-debug-btn,
+.game-room .room-tool-bag #bag-test-gem,
+.game-room .room-tool-bag #bag-grant-mat,
+.game-room .room-tool-bag #bag-grant-powder,
+.game-room .room-tool-bag #bag-grant-all,
+.game-room .room-tool-bag #bag-reset {
+  display: none !important;
+}
+
+/* 打造：使用房间专用双栏外壳，业务逻辑仍由原打造系统处理。 */
+.game-room .room-tool-smithy .smithy-page {
+  display: grid !important;
+  grid-template-columns: 12.5em minmax(0, 1fr) !important;
+  grid-template-rows: auto minmax(0, 1fr) !important;
+  gap: 0 !important;
+}
+.game-room .room-tool-smithy .smithy-header {
+  grid-column: 1 / -1 !important;
+  grid-row: 1 !important;
+  min-height: 4.4em !important;
+  padding: .55em 1em !important;
+  border-bottom: .12em solid #9bd4c9 !important;
+  background: linear-gradient(180deg, #318399, #174f6c) !important;
+}
+.game-room .room-tool-smithy .smithy-header h1 {
+  margin: 0 !important;
+  font-size: 1.45em !important;
+}
+.game-room .room-tool-smithy .smithy-header p {
+  margin: .18em 0 0 !important;
+  font-size: .82em !important;
+}
+.game-room .room-tool-smithy .smithy-tabs {
+  grid-column: 1 !important;
+  grid-row: 2 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: .55em !important;
+  min-height: 0 !important;
+  padding: .7em !important;
+  overflow: auto !important;
+  background: linear-gradient(180deg, #17455e, #0d3046) !important;
+}
+.game-room .room-tool-smithy .smithy-tab {
+  position: relative !important;
+  width: 100% !important;
+  min-height: 4.25em !important;
+  margin: 0 !important;
+  font-size: 1em !important;
+  font-weight: 900 !important;
+}
+.game-room .room-tool-smithy .smithy-body {
+  grid-column: 2 !important;
+  grid-row: 2 !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+  padding: .8em !important;
+  overflow: hidden !important;
+  background: #103b52 !important;
+}
+.game-room .room-tool-smithy .smithy-body > * {
+  max-width: none !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+  height: 100% !important;
+  max-height: 100% !important;
+  margin: 0 !important;
+}
+.game-room .room-tool-smithy .smithy-craft-layout {
+  grid-template-rows: minmax(0, 1fr) !important;
+  align-items: stretch !important;
+  overflow: hidden !important;
+}
+.game-room .room-tool-smithy .smithy-craft-layout > .smithy-panel {
+  display: flex !important;
+  flex-direction: column !important;
+  min-height: 0 !important;
+  height: 100% !important;
+  overflow: hidden !important;
+}
+.game-room .room-tool-smithy .smithy-craft-layout > .smithy-craft-side {
+  overflow: auto !important;
+}
+.game-room .room-tool-smithy .smithy-craft-layout .smithy-card-pick-grid {
+  flex: 1 1 auto !important;
+  min-height: 0 !important;
+  max-height: none !important;
+  overflow: auto !important;
+}
+.game-room .room-tool-smithy .smithy-layout,
+.game-room .room-tool-smithy .starup-layout {
+  min-width: 0 !important;
+  grid-template-columns: minmax(13em, .8fr) minmax(18em, 1fr) minmax(18em, 1.15fr) !important;
+  gap: .7em !important;
+}
+.game-room .room-tool-smithy .smithy-card-grid,
+.game-room .room-tool-smithy .smithy-card-pick-grid,
+.game-room .room-tool-smithy .starup-scroll {
+  max-height: 33em !important;
+  overflow: auto !important;
+}
+
+/* 人物/技能：天赋树、技能栏均限制在窗口内部滚动。 */
+.game-room .room-tool-hero .talent-page {
+  display: grid !important;
+  grid-template-rows: auto minmax(0, 1fr) auto auto !important;
+  gap: .55em !important;
+  padding: .65em !important;
+}
+.game-room .room-tool-hero .talent-header {
+  min-height: 4.3em !important;
+  padding: .55em .9em !important;
+  background: linear-gradient(180deg, #5d9b4a, #2f7040) !important;
+}
+.game-room .room-tool-hero .talent-header h1 {
+  margin: 0 !important;
+  font-size: 1.45em !important;
+}
+.game-room .room-tool-hero .talent-tree-panel {
+  min-height: 0 !important;
+  overflow: auto !important;
+}
+.game-room .room-tool-hero .talent-tree-board {
+  min-width: 62em !important;
+  min-height: 34em !important;
+}
+.game-room .room-tool-hero .talent-equipped,
+.game-room .room-tool-hero .talent-pool {
+  min-height: 0 !important;
+  max-height: 10em !important;
+  overflow: auto !important;
+}
+.game-room .room-tool-hero .talent-actions {
+  position: absolute !important;
+  right: .8em !important;
+  bottom: .8em !important;
+  z-index: 8 !important;
+}
+
+@media (max-width: 1100px), (max-height: 720px) {
+  .game-room .room-tool-bag .bag-page,
+  .game-room .room-tool-smithy .smithy-page {
+    grid-template-columns: 10.5em minmax(0, 1fr) !important;
+  }
+  .game-room .room-tool-bag .bag-body {
+    grid-template-columns: minmax(0, 1fr) minmax(14em, .72fr) !important;
+  }
+  .game-room .room-tool-smithy .smithy-layout,
+  .game-room .room-tool-smithy .starup-layout {
+    grid-template-columns: minmax(12em, .75fr) minmax(16em, 1fr) minmax(16em, 1fr) !important;
+  }
+}

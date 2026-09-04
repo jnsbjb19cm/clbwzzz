@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<language name="cardTip">
+	<language key="cardTip_xiaohuashijian" value="消化时间："/>
+	<language key="cardTip_miao" value="秒"/>
+	<language key="cardTip_gongji" value="攻击："/>
+	<language key="cardTip_shengming" value="生命："/>
+	<language key="cardTip_gongjisudu" value="攻击速度："/>
+	<language key="cardTip_yidongsudu" value="移动速度："/>
+	<language key="cardTip_lengqueshijian" value="冷却时间："/>
+	
+</language>

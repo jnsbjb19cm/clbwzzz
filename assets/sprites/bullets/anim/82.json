@@ -1,0 +1,73 @@
+{
+  "res": "82",
+  "frameW": 320,
+  "frameH": 320,
+  "animations": {
+    "yidong": {
+      "frameRate": 12,
+      "frames": [
+        {
+          "x": 0,
+          "y": 0,
+          "w": 320,
+          "h": 320,
+          "bounds": {
+            "left": 139,
+            "top": 149,
+            "right": 180,
+            "bottom": 172,
+            "opaque": 790
+          }
+        }
+      ],
+      "loop": true,
+      "duration": 0.041666666666666664
+    },
+    "baoza": {
+      "frameRate": 12,
+      "frames": [
+        {
+          "x": 0,
+          "y": 320,
+          "w": 320,
+          "h": 320,
+          "bounds": {
+            "left": 164,
+            "top": 134,
+            "right": 203,
+            "bottom": 185,
+            "opaque": 724
+          }
+        },
+        {
+          "x": 0,
+          "y": 640,
+          "w": 320,
+          "h": 320,
+          "bounds": {
+            "left": 153,
+            "top": 118,
+            "right": 219,
+            "bottom": 201,
+            "opaque": 697
+          }
+        },
+        {
+          "x": 0,
+          "y": 960,
+          "w": 320,
+          "h": 320,
+          "bounds": {
+            "left": 153,
+            "top": 107,
+            "right": 220,
+            "bottom": 214,
+            "opaque": 245
+          }
+        }
+      ],
+      "loop": false,
+      "duration": 0.16666666666666666
+    }
+  }
+}

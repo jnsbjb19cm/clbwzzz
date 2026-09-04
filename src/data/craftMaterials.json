@@ -1,0 +1,208 @@
+{
+  "combineRatio": 10,
+  "levels": [
+    {
+      "level": 1,
+      "parchment": 50001,
+      "gem": 50011,
+      "charm": 50021,
+      "dna": 50031
+    },
+    {
+      "level": 2,
+      "parchment": 50002,
+      "gem": 50012,
+      "charm": 50022,
+      "dna": 50032
+    },
+    {
+      "level": 3,
+      "parchment": 50003,
+      "gem": 50013,
+      "charm": 50023,
+      "dna": 50033
+    },
+    {
+      "level": 4,
+      "parchment": 50004,
+      "gem": 50014,
+      "charm": 50024,
+      "dna": 50034
+    }
+  ],
+  "items": [
+    {
+      "item_id": 50001,
+      "item_name": "一级羊皮纸",
+      "item_type": 3,
+      "show_type": "制作材料",
+      "quality": 1,
+      "max_num": 9999,
+      "sell_price": 10
+    },
+    {
+      "item_id": 50002,
+      "item_name": "二级羊皮纸",
+      "item_type": 3,
+      "show_type": "制作材料",
+      "quality": 2,
+      "max_num": 9999,
+      "sell_price": 30
+    },
+    {
+      "item_id": 50003,
+      "item_name": "三级羊皮纸",
+      "item_type": 3,
+      "show_type": "制作材料",
+      "quality": 3,
+      "max_num": 9999,
+      "sell_price": 80
+    },
+    {
+      "item_id": 50004,
+      "item_name": "四级羊皮纸",
+      "item_type": 3,
+      "show_type": "制作材料",
+      "quality": 4,
+      "max_num": 9999,
+      "sell_price": 200
+    },
+    {
+      "item_id": 50011,
+      "item_name": "一级宝石",
+      "item_type": 3,
+      "show_type": "制作材料",
+      "quality": 1,
+      "max_num": 9999,
+      "sell_price": 15
+    },
+    {
+      "item_id": 50012,
+      "item_name": "二级宝石",
+      "item_type": 3,
+      "show_type": "制作材料",
+      "quality": 2,
+      "max_num": 9999,
+      "sell_price": 45
+    },
+    {
+      "item_id": 50013,
+      "item_name": "三级宝石",
+      "item_type": 3,
+      "show_type": "制作材料",
+      "quality": 3,
+      "max_num": 9999,
+      "sell_price": 120
+    },
+    {
+      "item_id": 50014,
+      "item_name": "四级宝石",
+      "item_type": 3,
+      "show_type": "制作材料",
+      "quality": 4,
+      "max_num": 9999,
+      "sell_price": 300
+    },
+    {
+      "item_id": 50021,
+      "item_name": "一级保护符",
+      "item_type": 3,
+      "show_type": "保护符",
+      "quality": 2,
+      "max_num": 9999,
+      "sell_price": 50
+    },
+    {
+      "item_id": 50022,
+      "item_name": "二级保护符",
+      "item_type": 3,
+      "show_type": "保护符",
+      "quality": 3,
+      "max_num": 9999,
+      "sell_price": 120
+    },
+    {
+      "item_id": 50023,
+      "item_name": "三级保护符",
+      "item_type": 3,
+      "show_type": "保护符",
+      "quality": 4,
+      "max_num": 9999,
+      "sell_price": 280
+    },
+    {
+      "item_id": 50024,
+      "item_name": "四级保护符",
+      "item_type": 3,
+      "show_type": "保护符",
+      "quality": 5,
+      "max_num": 9999,
+      "sell_price": 600
+    },
+    {
+      "item_id": 50031,
+      "item_name": "一级卡牌DNA",
+      "item_type": 3,
+      "show_type": "DNA",
+      "quality": 2,
+      "max_num": 9999,
+      "sell_price": 80
+    },
+    {
+      "item_id": 50032,
+      "item_name": "二级卡牌DNA",
+      "item_type": 3,
+      "show_type": "DNA",
+      "quality": 3,
+      "max_num": 9999,
+      "sell_price": 200
+    },
+    {
+      "item_id": 50033,
+      "item_name": "三级卡牌DNA",
+      "item_type": 3,
+      "show_type": "DNA",
+      "quality": 4,
+      "max_num": 9999,
+      "sell_price": 450
+    },
+    {
+      "item_id": 50034,
+      "item_name": "四级卡牌DNA",
+      "item_type": 3,
+      "show_type": "DNA",
+      "quality": 5,
+      "max_num": 9999,
+      "sell_price": 900
+    },
+    {
+      "item_id": 50041,
+      "item_name": "逆转卡",
+      "item_type": 3,
+      "show_type": "升星道具",
+      "quality": 4,
+      "max_num": 9999,
+      "sell_price": 500,
+      "desc": "可从铁匠铺销毁层还原尚未过期的副卡。"
+    }
+  ],
+  "starterCounts": {
+    "50001": 1000,
+    "50002": 1000,
+    "50003": 1000,
+    "50004": 1000,
+    "50011": 1000,
+    "50012": 1000,
+    "50013": 1000,
+    "50014": 1000,
+    "50021": 1000,
+    "50022": 1000,
+    "50023": 1000,
+    "50024": 1000,
+    "50031": 1000,
+    "50032": 1000,
+    "50033": 1000,
+    "50034": 1000,
+    "50041": 50
+  }
+}

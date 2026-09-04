@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<language name="monthToDate">
+	<language key="monthToDate_chongzhi" value="立即充值"/>
+	<language key="monthToDate_huodongshijian" value="活动时间：2014年6月8日00:00~2014年7月1日00:00"/>
+	<language key="monthToDate_num1" value="1."/>
+	<language key="monthToDate_num2" value="2."/>
+	<language key="monthToDate_num3" value="3."/>
+	<language key="monthToDate_num4" value="4."/>
+	<language key="monthToDate_num5" value="5."/>
+	<language key="monthToDate_num6" value="6."/>
+	<language key="monthToDate_Txtchongzhi" value="充值"/>
+	<language key="monthToDate_leiji" value="累计"/>
+	<language key="monthToDate_meirichongzhi" value="每日充值"/>
+</language>

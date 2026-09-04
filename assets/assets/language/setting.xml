@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<language name="setting">
+	<language key="setting_zhandougewei" value="显示战斗血条"/>
+	<language key="setting_sibaotexiao" value="商城扭蛋特效"/>
+	<language key="setting_logOut" value="注销"/>
+	<language key="setting_jujuemoshengren" value="拒绝陌生人邀请"/>
+	<language key="setting_yinyue" value="音乐"/>
+	<language key="setting_yinxiao" value="音效"/>
+	<language key="setting_xiugaimima" value="BUG提交"/>
+	<language key="setting_shuruneirongzhongyoufeifazifu" value="输入内容包含非法字符，请检测后再提交！"/>
+	<language key="setting_gonggao" value="公告"/>
+</language>

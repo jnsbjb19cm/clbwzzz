@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<language name="smithy">
+	<language key="fufei" value="付费重置"/>
+	<language key="qiangzhi" value="强制刷新"/>
+	<language key="tabi" value="通天塔币："/>
+	<language key="paizuming" value="牌组名称："/>
+	<language key="paizhanli" value="套牌战斗力："/>
+	<language key="genghuan" value="更换"/>
+	<language key="menpiao" value="剩余门票数："/>
+	<language key="maipiao" value="购买门票"/>
+	<language key="kaizhan" value="开始挑战"/>
+	<language key="tower_coins" value="通天塔币"/>
+	<language key="tower_desc" value="购买商品会扣除相应的通天塔币"/>
+	<language key="tower_shop" value="通天塔商店"/>
+	<language key="tower_reward" value="奖励预览"/>
+	<language key="tower_cost" value="消耗"/>
+	<language key="wan" value=" 万"/>
+	<language key="tower_alert1" value="已经是该套卡, 无需切换."/>
+	<language key="tower_alert2" value="免费次数已完，继续战斗将消耗通天塔门票"/>
+	<language key="tower_alert3" value="通天塔门票不足,无法开始战斗"/>
+	<language key="tower_alert4" value="重置NPC需要消耗"/>
+	<language key="tower_alert5" value="是否消耗30红钻来购买一张通天塔门票"/>
+	<language key="tower_alert6" value="您需要花费重置符来重置通天塔吗？"/>
+	<language key="tower_alert7" value="您需要花费"/>
+	<language key="tower_alert8" value="红钻来重置通天塔吗？"/>
+	<language key="tower_alert9" value="购买通天塔门票成功"/>
+	<language key="tower_nofree" value="免费次数已用完"/>
+	<language key="tower_freeNum" value="每天免费挑战次数为"/>
+	<language key="tower_ci" value="次"/>
+	<language key="tower_toTop" value="您已到达通天塔顶层"/>
+	<language key="tower_to" value="您正通往 第 "/>
+	<language key="tower_floor" value=" 层"/>
+	<language key="tower_operate" value="确定"/>
+</language>

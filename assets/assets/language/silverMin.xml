@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<language name="silverMin">
+	<language key="silverMintext1" value="开采金矿可以获得大量金币"/>
+	<language key="silverMintext2" value="当前花费："/>
+	<language key="silverMintext3" value="可获得："/>
+	<language key="silverMintext4" value="开采"/>
+	<language key="silverMintext5" value="开采次数随VIP等级提升而增加"/>
+</language>

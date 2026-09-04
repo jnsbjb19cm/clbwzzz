@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with TexturePacker http://texturepacker.com-->
+<!-- $TexturePacker:SmartUpdate:14b2d53d6caa5893f179776ecd4af0f0$ -->
+<TextureAtlas imagePath="login.png">
+    <SubTexture name="hot-icon" x="849" y="56" width="68" height="68"/>
+    <SubTexture name="item-bg" x="223" y="311" width="243" height="57"/>
+    <SubTexture name="login-back" x="2" y="2" width="550" height="307"/>
+    <SubTexture name="login-button-up-skin" x="2" y="311" width="219" height="86"/>
+    <SubTexture name="login_changeChannelBg_BG" x="554" y="2" width="379" height="52"/>
+    <SubTexture name="new-icon" x="935" y="2" width="68" height="68"/>
+    <SubTexture name="txt-all" x="554" y="56" width="293" height="71"/>
+    <SubTexture name="txt-zuijin" x="2" y="399" width="293" height="71"/>
+</TextureAtlas>

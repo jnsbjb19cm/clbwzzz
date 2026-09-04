@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<language name="friendShip">
+	<language key="friendShip_gongnengkaifang" value="该功能即将开放"/>
+	<language key="friendShip_zaixian" value="在线"/>
+	<language key="friendShip_lixian" value="离线"/>
+	<language key="friendShip_qiecuo" value="切磋"/>
+	<language key="friendShip_siliao" value="私聊"/>
+	<language key="friendShip_guanzhu" value="关注Ta"/>
+	<language key="friendShip_jiahaoyou" value="加好友"/>
+	<language key="friendShip_qingshuru" value="请输入对方名字"/>
+	<language key="friendShip_xingming" value="姓名"/>
+	<language key="friendShip_xingbie" value="性别"/>
+	<language key="friendShip_dengji" value="等级"/>
+	<language key="friendShip_zhuangtai" value="状态"/>
+	<language key="friendShip_quanbu" value="全部关注"/>
+	<language key="friendShip_zhandouli" value="战斗力"/>
+	<language key="friendShip_tianjiahaoyou" value="添加好友"/>
+	<language key="friendShip_huanyipi" value="换一批"/>
+	<language key="friendShip_friendlist" value="好友列表"/>
+	<language key="friendShip_applylist" value="粉丝列表"/>
+	<language key="friendShip_invitelist" value="邀请列表"/>
+	<language key="friendShip_friendnum" value="好友数量："/>
+</language>

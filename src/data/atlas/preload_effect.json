@@ -1,0 +1,275 @@
+{
+  "image": "effect.png",
+  "path": "preload/effect.xml",
+  "sprites": [
+    {
+      "name": "activating_0",
+      "x": 526,
+      "y": 544,
+      "width": 148,
+      "height": 148
+    },
+    {
+      "name": "activating_1",
+      "x": 376,
+      "y": 544,
+      "width": 148,
+      "height": 148
+    },
+    {
+      "name": "activating_2",
+      "x": 526,
+      "y": 2,
+      "width": 148,
+      "height": 148
+    },
+    {
+      "name": "activating_3",
+      "x": 540,
+      "y": 302,
+      "width": 148,
+      "height": 146,
+      "frameX": 0,
+      "frameY": -1,
+      "frameWidth": 148,
+      "frameHeight": 148
+    },
+    {
+      "name": "activating_4",
+      "x": 670,
+      "y": 152,
+      "width": 146,
+      "height": 144,
+      "frameX": -1,
+      "frameY": -2,
+      "frameWidth": 148,
+      "frameHeight": 148
+    },
+    {
+      "name": "activating_5",
+      "x": 676,
+      "y": 2,
+      "width": 142,
+      "height": 140,
+      "frameX": -3,
+      "frameY": -4,
+      "frameWidth": 148,
+      "frameHeight": 148
+    },
+    {
+      "name": "activating_6",
+      "x": 520,
+      "y": 152,
+      "width": 148,
+      "height": 148
+    },
+    {
+      "name": "activating_7",
+      "x": 376,
+      "y": 2,
+      "width": 148,
+      "height": 148
+    },
+    {
+      "name": "activating_8",
+      "x": 370,
+      "y": 176,
+      "width": 148,
+      "height": 148
+    },
+    {
+      "name": "ball-flicker000",
+      "x": 196,
+      "y": 380,
+      "width": 164,
+      "height": 166,
+      "frameX": -18,
+      "frameY": -16,
+      "frameWidth": 200,
+      "frameHeight": 200
+    },
+    {
+      "name": "ball-flicker001",
+      "x": 196,
+      "y": 204,
+      "width": 172,
+      "height": 174,
+      "frameX": -14,
+      "frameY": -12,
+      "frameWidth": 200,
+      "frameHeight": 200
+    },
+    {
+      "name": "ball-flicker002",
+      "x": 190,
+      "y": 592,
+      "width": 184,
+      "height": 182,
+      "frameX": -8,
+      "frameY": -9,
+      "frameWidth": 200,
+      "frameHeight": 200
+    },
+    {
+      "name": "ball-flicker003",
+      "x": 2,
+      "y": 398,
+      "width": 192,
+      "height": 192,
+      "frameX": -4,
+      "frameY": -4,
+      "frameWidth": 200,
+      "frameHeight": 200
+    },
+    {
+      "name": "ball-flicker004",
+      "x": 2,
+      "y": 2,
+      "width": 200,
+      "height": 200
+    },
+    {
+      "name": "ball-flicker005",
+      "x": 2,
+      "y": 204,
+      "width": 192,
+      "height": 192,
+      "frameX": -4,
+      "frameY": -4,
+      "frameWidth": 200,
+      "frameHeight": 200
+    },
+    {
+      "name": "ball-flicker006",
+      "x": 2,
+      "y": 592,
+      "width": 186,
+      "height": 186,
+      "frameX": -7,
+      "frameY": -7,
+      "frameWidth": 200,
+      "frameHeight": 200
+    },
+    {
+      "name": "ball-flicker007",
+      "x": 374,
+      "y": 776,
+      "width": 180,
+      "height": 178,
+      "frameX": -9,
+      "frameY": -11,
+      "frameWidth": 200,
+      "frameHeight": 200
+    },
+    {
+      "name": "ball-flicker008",
+      "x": 204,
+      "y": 2,
+      "width": 170,
+      "height": 172,
+      "frameX": -15,
+      "frameY": -13,
+      "frameWidth": 200,
+      "frameHeight": 200
+    },
+    {
+      "name": "level-up0000",
+      "x": 2,
+      "y": 968,
+      "width": 88,
+      "height": 28,
+      "frameX": -52,
+      "frameY": -107,
+      "frameWidth": 200,
+      "frameHeight": 200
+    },
+    {
+      "name": "level-up0001",
+      "x": 188,
+      "y": 964,
+      "width": 120,
+      "height": 58,
+      "frameX": -36,
+      "frameY": -81,
+      "frameWidth": 200,
+      "frameHeight": 200
+    },
+    {
+      "name": "level-up0002",
+      "x": 820,
+      "y": 2,
+      "width": 180,
+      "height": 132,
+      "frameX": -15,
+      "frameY": -33,
+      "frameWidth": 200,
+      "frameHeight": 200
+    },
+    {
+      "name": "level-up0003",
+      "x": 2,
+      "y": 780,
+      "width": 184,
+      "height": 186,
+      "frameX": -16,
+      "frameY": -6,
+      "frameWidth": 200,
+      "frameHeight": 200
+    },
+    {
+      "name": "level-up0004",
+      "x": 188,
+      "y": 780,
+      "width": 184,
+      "height": 182,
+      "frameX": -16,
+      "frameY": -9,
+      "frameWidth": 200,
+      "frameHeight": 200
+    },
+    {
+      "name": "level-up0005",
+      "x": 362,
+      "y": 380,
+      "width": 176,
+      "height": 162,
+      "frameX": -17,
+      "frameY": -20,
+      "frameWidth": 200,
+      "frameHeight": 200
+    },
+    {
+      "name": "level-up0006",
+      "x": 820,
+      "y": 136,
+      "width": 162,
+      "height": 102,
+      "frameX": -16,
+      "frameY": -39,
+      "frameWidth": 200,
+      "frameHeight": 200
+    },
+    {
+      "name": "level-up0007",
+      "x": 818,
+      "y": 240,
+      "width": 160,
+      "height": 102,
+      "frameX": -18,
+      "frameY": -35,
+      "frameWidth": 200,
+      "frameHeight": 200
+    },
+    {
+      "name": "level-up0008",
+      "x": 310,
+      "y": 964,
+      "width": 114,
+      "height": 56,
+      "frameX": -43,
+      "frameY": -84,
+      "frameWidth": 200,
+      "frameHeight": 200
+    }
+  ]
+}

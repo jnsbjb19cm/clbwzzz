@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Data>
+<!-->
+positon技能出现位置 1单个(放在哪个格就出现在哪个格)  2全屏中间出现 所有格子的中间 左右等同于屏幕中间 上下和所有格子中间 3左右 就是英雄的左右 上下和格子对齐 不是屏幕的左右 
+是角色所站的位置 4格子的左右 比如冰刺突袭   5左右 就是英雄的左右 上下和格子对齐 不是屏幕的左右 是角色所站的位置 和3的区别是这个是目标位置 不需要阵营反转 而3需要阵营反转 
+6、x为固定坐标点 y轴居中显示
+layer 默认是0 上层 1是下层 
+avatar  0为固定的 1特殊处理  每个怪生上出现
+noshow  0显示 1 不显示
+<-->
+<skill cardId="500" position='1' layer='0' ></skill>
+<skill cardId="501" position='5' layer='1'></skill>
+<skill cardId="502" avatar='1' noshow='1'></skill>
+<skill cardId="503" position='2'></skill>
+<skill cardId="506" position='1'></skill>
+<skill cardId="514" position='1'></skill>
+<skill cardId="517" position='2'></skill>
+<skill cardId="522" position='2'></skill>
+<skill cardId="523" position='4' layer='1'></skill>
+<skill cardId="526" position='1'></skill>
+<skill cardId="527" position='1'></skill>
+<skill cardId="528" position='1'></skill>
+<skill cardId="529" position='1'></skill>
+<skill cardId="530" position='6'></skill>
+<skill cardId="532" position='1' layer='1'></skill>
+<skill cardId="533" position='4'></skill>
+<skill cardId="534" position='4'></skill>
+<skill cardId="535" position='4'></skill>
+<skill cardId="536" position='4'></skill>
+<skill cardId="538" avatar='1' noshow='1'></skill>
+<skill cardId="539" position='2' layer='1'></skill>
+</Data>

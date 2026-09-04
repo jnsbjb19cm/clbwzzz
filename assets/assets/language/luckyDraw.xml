@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<language name="luckyDraw">
+	<language key="startDraw" value="开始抽奖"/>
+	<language key="drawDesc" value="提升VIP等级可以增加翻牌次数。&#xa;幸运抽奖每天 00:00 重置。"/>
+	<language key="curState" value="当前状态"/>
+	<language key="lowDraw" value="普通翻牌"/>
+	<language key="midDraw" value="高级翻牌"/>
+	<language key="highDraw" value="特级翻牌"/>
+	<language key="freeCount" value="免费翻牌次数"/>
+	<language key="goldCount" value="红钻翻牌次数"/>
+	<language key="pleaseDraw" value="请翻牌"/>
+</language>

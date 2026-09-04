@@ -1,0 +1,73 @@
+/*
+ * 冰场边框最终标定：左右柱完整贴边，保持素材原比例，不再被 auto background-size 截断。
+ * 战斗 Canvas 位于柱层之上，单位/攻击动画不会被边柱遮住。
+ */
+body.battle-immersive .battle-game-wrap.battle-fullscreen-final > .bg-layer-left-column,
+body.battle-immersive .battle-game-wrap.battle-fullscreen-final > .bg-layer-right-column,
+body.battle-immersive .battle-game-wrap > .bg-layer-left-column,
+body.battle-immersive .battle-game-wrap > .bg-layer-right-column {
+  top: 0 !important;
+  bottom: auto !important;
+  width: clamp(210px, 32.35dvh, 342px) !important;
+  height: 100dvh !important;
+  background-size: 100% 100% !important;
+  background-position: center top !important;
+  background-repeat: no-repeat !important;
+  transform: none !important;
+  opacity: 1 !important;
+  overflow: visible !important;
+  clip-path: none !important;
+  z-index: 8 !important;
+  pointer-events: none !important;
+}
+
+body.battle-immersive .battle-game-wrap.battle-fullscreen-final > .bg-layer-left-column,
+body.battle-immersive .battle-game-wrap > .bg-layer-left-column {
+  left: 0 !important;
+  right: auto !important;
+}
+
+body.battle-immersive .battle-game-wrap.battle-fullscreen-final > .bg-layer-right-column,
+body.battle-immersive .battle-game-wrap > .bg-layer-right-column {
+  right: 0 !important;
+  left: auto !important;
+}
+
+/*
+ * 左右柱和 game-container 是 battle-game-wrap 的同级元素。
+ * 只提高 canvas 自己的 z-index 无法跨越父级堆叠上下文，因此父容器也必须高于柱层。
+ */
+body.battle-immersive .battle-game-wrap > .game-container,
+body.battle-immersive .battle-fullscreen-final > .game-container {
+  position: relative !important;
+  z-index: 20 !important;
+}
+
+/* 单位、子弹和特效覆盖在装饰柱之上；格子仍保留原逻辑区域。 */
+body.battle-immersive .battle-scene-v3-final .battlefield-wrap {
+  z-index: 20 !important;
+}
+body.battle-immersive .battle-scene-v3-final #battle-canvas {
+  z-index: 24 !important;
+}
+body.battle-immersive .battle-scene-v3-final #place-grid-overlay,
+body.battle-immersive .battle-scene-v3-final .battle-placement-layer {
+  z-index: 28 !important;
+}
+
+/* HUD 永远在战斗表现层之上。 */
+body.battle-immersive .battle-fullscreen-final .top-ui,
+body.battle-immersive .battle-game-wrap > .base-hp-slot,
+body.battle-immersive .battle-fullscreen-final .battle-minimal-actions,
+body.battle-immersive .battle-fullscreen-final .skill-dock {
+  z-index: 230 !important;
+}
+
+@media (max-height: 700px) {
+  body.battle-immersive .battle-game-wrap.battle-fullscreen-final > .bg-layer-left-column,
+  body.battle-immersive .battle-game-wrap.battle-fullscreen-final > .bg-layer-right-column,
+  body.battle-immersive .battle-game-wrap > .bg-layer-left-column,
+  body.battle-immersive .battle-game-wrap > .bg-layer-right-column {
+    width: clamp(185px, 32.35dvh, 272px) !important;
+  }
+}

@@ -1,0 +1,138 @@
+/* PVP柱子只按参考图2：左右贴边、完整高度、压在战场画布之上。 */
+body.pvp-battle-active .pvp-authority-column {
+  top: 0 !important;
+  bottom: auto !important;
+  width: clamp(300px, 30vw, 520px) !important;
+  min-width: clamp(300px, 30vw, 520px) !important;
+  max-width: clamp(300px, 30vw, 520px) !important;
+  height: 100vh !important;
+  min-height: 100vh !important;
+  max-height: 100vh !important;
+  background-size: 100% 100% !important;
+  background-position: center center !important;
+  background-repeat: no-repeat !important;
+  opacity: 1 !important;
+  z-index: 34 !important;
+  filter: none !important;
+}
+
+body.pvp-battle-active .pvp-authority-column.left {
+  left: 0 !important;
+  right: auto !important;
+}
+
+body.pvp-battle-active .pvp-authority-column.right {
+  right: 0 !important;
+  left: auto !important;
+}
+
+/* 原版PVP基地血条不写“红方基地/蓝方基地”，阵营由柱子和玩家站位表达。 */
+body.pvp-battle-active .base-hp-slot .label {
+  display: none !important;
+  visibility: hidden !important;
+  width: 0 !important;
+  height: 0 !important;
+  overflow: hidden !important;
+}
+
+body.pvp-battle-active .pvp-player-stands {
+  position: absolute !important;
+  inset: 0 !important;
+  z-index: 37 !important;
+  pointer-events: none !important;
+  overflow: hidden !important;
+}
+
+body.pvp-battle-active .pvp-column-player {
+  position: absolute !important;
+  top: clamp(150px, 21vh, 250px) !important;
+  width: clamp(64px, 6.2vw, 106px) !important;
+  height: clamp(88px, 10vw, 150px) !important;
+  transform-origin: 50% 100% !important;
+  filter: drop-shadow(0 3px 3px rgba(0, 0, 0, 0.6)) !important;
+}
+
+body.pvp-battle-active .pvp-column-player.left {
+  left: clamp(18px, 3.8vw, 72px) !important;
+}
+
+body.pvp-battle-active .pvp-column-player.right {
+  right: clamp(18px, 3.8vw, 72px) !important;
+}
+
+body.pvp-battle-active .pvp-column-player.slot-1 {
+  top: clamp(210px, 31vh, 335px) !important;
+  transform: scale(0.86) !important;
+}
+
+body.pvp-battle-active .pvp-column-player.slot-2 {
+  top: clamp(275px, 41vh, 430px) !important;
+  transform: scale(0.74) !important;
+}
+
+body.pvp-battle-active .pvp-column-player img {
+  position: absolute !important;
+  left: 50% !important;
+  bottom: 18px !important;
+  width: 100% !important;
+  height: calc(100% - 18px) !important;
+  object-fit: contain !important;
+  object-position: center bottom !important;
+  transform: translateX(-50%) !important;
+  image-rendering: auto !important;
+}
+
+body.pvp-battle-active .pvp-column-player.right img {
+  transform: translateX(-50%) scaleX(-1) !important;
+}
+
+body.pvp-battle-active .pvp-column-player span {
+  position: absolute !important;
+  left: 50% !important;
+  bottom: 0 !important;
+  max-width: 130px !important;
+  transform: translateX(-50%) !important;
+  padding: 1px 5px !important;
+  border-radius: 3px !important;
+  background: rgba(7, 28, 48, 0.82) !important;
+  color: #fff !important;
+  font: 700 clamp(9px, 0.75vw, 12px)/1.25 system-ui, sans-serif !important;
+  white-space: nowrap !important;
+  text-shadow: 0 1px 2px #000 !important;
+}
+
+/* 中立冰山位于中间两列，不能被网格高亮层盖住。 */
+body.pvp-battle-active .battle-canvas {
+  z-index: 25 !important;
+}
+
+body.pvp-battle-active .place-grid-overlay {
+  z-index: 26 !important;
+}
+
+body.pvp-battle-active .top-ui,
+body.pvp-battle-active .base-hp-slot,
+body.pvp-battle-active .battle-immersive-dock,
+body.pvp-battle-active .skill-panel,
+body.pvp-battle-active .deploy-tip {
+  z-index: 42 !important;
+}
+
+@media (max-width: 900px), (max-height: 620px) {
+  body.pvp-battle-active .pvp-authority-column {
+    width: clamp(280px, 26vw, 480px) !important;
+    min-width: clamp(280px, 26vw, 480px) !important;
+    max-width: clamp(280px, 26vw, 480px) !important;
+  }
+
+  body.pvp-battle-active .pvp-column-player {
+    top: clamp(112px, 19vh, 160px) !important;
+    width: clamp(52px, 6vw, 72px) !important;
+    height: clamp(72px, 9vw, 96px) !important;
+  }
+}
+
+/* 右柱镜像：面向战场方向与左柱对称（不再错误显示为左柱朝向） */
+body.pvp-battle-active .pvp-authority-column.right {
+  transform: none !important;
+}

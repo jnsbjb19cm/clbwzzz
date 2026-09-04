@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root>
+<ip>112.91.169.189</ip> 
+<port>1618</port>
+<!--
+<ip>192.168.1.101</ip> 
+<port>1618</port>
+<ip>192.168.1.66</ip> 
+<port>1618</port>
+<ip>112.91.169.189</ip> 
+<port>1618</port>
+
+-->
+<rechargeURL>http://pay.clapalong.com/?action=payment!order &gid=2&sid=</rechargeURL> 
+<bbsURL>http://bbs.yaowan.com/sns/bbs/forumdisplay.php?fid=238</bbsURL> 
+<exitMainCityURL>http://cl.yaowan.com/</exitMainCityURL>
+<errorNavigationURL>http://cl.yaowan.com/</errorNavigationURL>
+</root>

@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!-- Created with StarlingResourceExport version 0.0.0.1 -->
+<!-- author hanxianming -->
+<TextureAtlas imagePath="editCard.png">
+  <SubTexture name="editCard_mycard" x="0" y="0" width="179" height="48"/>
+  <SubTexture name="editCard_allCard" x="179" y="0" width="179" height="48"/>
+</TextureAtlas>

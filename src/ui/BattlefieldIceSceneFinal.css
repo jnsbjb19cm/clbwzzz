@@ -1,0 +1,19 @@
+/*
+ * 冰雪战场只保留 battle-game-wrap 上的一张 backice，避免 game-container
+ * 内部再次铺同一张图造成缩放比例不同、边缘接缝和“网页面板”感。
+ */
+body.battle-immersive
+  .battle-game-wrap.ice-reference-preview
+  .game-container.battlefield-fullscreen-repair
+  .bg-stack,
+body.battle-immersive
+  .battle-game-wrap.ice-reference-preview
+  .game-container.battlefield-fullscreen-repair
+  .bg-layer-base,
+body.battle-immersive
+  .battle-game-wrap.ice-reference-preview
+  .game-container.battlefield-fullscreen-repair
+  .bg-layer-map {
+  display: none !important;
+  background-image: none !important;
+}

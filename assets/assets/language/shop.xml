@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<language name="shop">
+	<language key="shop_buy" value="抽一次"/>
+	<language key="shop_tearEffect" value="显示扭蛋特效"/>
+	<language key="shop_back" value="返回"/>
+	<language key="shop_cardset" value="卡牌管理"/>
+	<language key="shop_cardPackage" value="卡包"/>
+	<language key="shop_activityCard" value="特殊卡"/>
+	<language key="shop_blueDiamond" value="蓝钻商城"/>
+	<language key="shop_item" value="道具"/>
+	<language key="shop_price" value="价格"/>
+	<language key="shop_tearTen" value="十连抽"/>
+	<language key="shop_tips" value="小提示:"/>
+	<language key="shop_huasuan" value="使用十连抽更划算，且必出紫卡，还会赠送万能碎片哦！"/>
+	<language key="shop_jixushilian" value="继续十连抽"/>
+	<language key="shop_zanwu" value="暂无商品"/>
+	<language key="shop_nindejifen" value="当前英雄积分"/>
+	<language key="shop_kaishichoujiang" value="开始抽奖"/>
+	<language key="shop_jiaqian" value="积分/次"/>
+	<language key="shop_choujiangTip" value="每次抽奖必定能获得英雄蛋中的随机王级卡牌一张"/>
+	<language key="shop_jifenduihuan" value="积分抽奖"/>
+	<language key="shop_jiajifen" value="每个英雄蛋+1分，每次十连抽+10分"/>
+	<language key="shop_yichou" value="已抽到"/>
+	<language key="shop_zhe" value="折"/>
+	<language key="shop_fenxiangyoujiang" value="分享有奖"/>
+	<language key="shop_tearCard_freeGetCardPackage_time_over" value="今日免费次数已用完"/>
+	<language key="shop_tearCard_freeGetCardPackageCanGet" value="当前可免费抽卡"/>
+	<language key="shop_tearCard_freeGetCardPackageTimeTips" value="  后免费"/>
+	<language key="shop_free_tear_card" value="免费"/>
+	<language key="shop_free_tear_card_time" value="免费次数{1}/{2}"/>
+	<language key="shop_remain_sale_max_num" value="剩余：{1}"/>
+	<language key="shop_sale_over" value="已售完"/>
+</language>

@@ -1,0 +1,27 @@
+/* 使用 cardParts.png 的单星图块绘制固定六格星轨。 */
+.game-room.room-rebuild .room-card-star-atlas {
+  display: block !important;
+  width: 100% !important;
+  height: 100% !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+  aspect-ratio: 1 !important;
+  pointer-events: none !important;
+}
+.game-room.room-rebuild .room-card-star-extra {
+  position: absolute !important;
+  right: 0 !important;
+  top: 0 !important;
+  margin: 0 !important;
+  padding: 0 .08em !important;
+  color: #fff1a0 !important;
+  background: rgba(31, 42, 18, .72) !important;
+  border-radius: .18em !important;
+  font-family: "Arial Black", sans-serif !important;
+  font-size: .42em !important;
+  line-height: 1.05 !important;
+  text-shadow: 0 1px 0 #3f3d10 !important;
+}
+.game-room.room-rebuild .drawer-card .room-card-star-extra {
+  font-size: .46em !important;
+}

@@ -1,0 +1,181 @@
+/* 紧急稳定修复：该文件最后加载，只覆盖已确认的错位和点击问题。 */
+
+body.battle-immersive .battle-game-wrap {
+  overflow: hidden !important;
+  display: block !important;
+  position: relative !important;
+}
+
+/* BattleView 把 --battle-scale 写在 game-container 上，因此直接缩放该节点。 */
+body.battle-immersive .battle-game-wrap > .game-container {
+  position: absolute !important;
+  left: 50% !important;
+  top: 0 !important;
+  right: auto !important;
+  bottom: auto !important;
+  margin: 0 !important;
+  z-index: 2 !important;
+  transform: translateX(-50%) scale(var(--battle-scale, 1)) !important;
+  transform-origin: top center !important;
+  overflow: hidden !important;
+}
+
+body.battle-immersive .bg-stack {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+  background: #174f27;
+}
+
+body.battle-immersive .bg-layer {
+  position: absolute;
+  inset: 0;
+  display: block;
+  pointer-events: none;
+  background-repeat: no-repeat;
+}
+
+body.battle-immersive .bg-layer-base {
+  z-index: 0;
+  background-image: var(--bg-base);
+  background-size: cover;
+  background-position: center center;
+}
+
+body.battle-immersive .bg-layer-map {
+  z-index: 1;
+  background-image: var(--bg-map);
+  background-size: 100% 100%;
+  background-position: center;
+}
+
+body.battle-immersive .bg-layer-right-column {
+  z-index: 2;
+  left: auto;
+  width: var(--column-right-w, 370px);
+  background-image: var(--bg-right);
+  background-size: 100% 100%;
+  background-position: right center;
+}
+
+body.battle-immersive .top-ui,
+body.battle-immersive .base-hp-slot,
+body.battle-immersive .battlefield-wrap,
+body.battle-immersive .skill-panel,
+body.battle-immersive .settings-panel,
+body.battle-immersive .result-overlay,
+body.battle-immersive .drag-ghost {
+  isolation: isolate;
+}
+
+/* 常态不绘制整张虚线矩阵，只在鼠标所在的有效格显示高亮。 */
+body.battle-immersive .place-grid-cell,
+body.battle-immersive .place-grid-cell.place-ok,
+body.battle-immersive .place-grid-cell.place-forbidden,
+body.battle-immersive .place-grid-cell.place-occupied,
+body.battle-immersive .place-grid-cell.skill-target-ok {
+  border: 0 !important;
+  outline: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+body.battle-immersive .place-grid-cell.place-ok.place-hover,
+body.battle-immersive .place-grid-cell.skill-target-hover {
+  border: 0 !important;
+  background: rgba(255, 231, 83, 0.08) !important;
+  box-shadow: inset 0 0 0 2px rgba(255, 231, 83, 0.9) !important;
+}
+
+body.battle-immersive #hand,
+body.battle-immersive #hand .deck-slot {
+  pointer-events: auto !important;
+}
+
+body.battle-immersive #drag-ghost {
+  pointer-events: none !important;
+  border: 0 !important;
+  outline: 0 !important;
+}
+
+/* 清除旧版房间通用样式留下的固定像素宽高，它们会把10张卡挤出面板。 */
+.game-room.room-exact .room-center-area,
+.game-room.room-exact .deck-header,
+.game-room.room-exact .deck-slots-row,
+.game-room.room-exact .member-slots-row,
+.game-room.room-exact .enemy-slots-row,
+.game-room.room-exact .room-mid-actions,
+.game-room.room-exact .room-bottom-bar {
+  min-width: 0 !important;
+  min-height: 0 !important;
+  margin: 0 !important;
+  flex-wrap: nowrap !important;
+}
+
+.game-room.room-exact .deck-slot-item {
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: none !important;
+  height: 100% !important;
+  min-height: 0 !important;
+  max-height: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  flex: none !important;
+}
+
+.game-room.room-exact .slot-card-img {
+  width: auto !important;
+  height: auto !important;
+}
+
+.game-room.room-exact .room-ready-btn,
+.game-room.room-exact .mid-btn,
+.game-room.room-exact .bottom-btn {
+  margin: 0 !important;
+  box-sizing: border-box !important;
+}
+
+/* 房间内所有真实控件必须位于装饰层之上并能接收点击。 */
+.game-room.room-exact .room-top-bar,
+.game-room.room-exact .room-center-area,
+.game-room.room-exact .room-left-side,
+.game-room.room-exact .room-right-side,
+.game-room.room-exact .room-mid-actions,
+.game-room.room-exact .room-ready-btn,
+.game-room.room-exact .room-bottom-bar,
+.game-room.room-exact .exact-room-chat,
+.game-room.room-exact .card-drawer,
+.game-room.room-exact .room-setting-modal,
+.game-room.room-exact .more-dropdown {
+  pointer-events: auto !important;
+}
+
+.game-room.room-exact button,
+.game-room.room-exact input,
+.game-room.room-exact form,
+.game-room.room-exact .drawer-card,
+.game-room.room-exact .deck-slot-item {
+  pointer-events: auto !important;
+}
+
+.game-room.room-exact .exact-room-chat {
+  z-index: 80 !important;
+}
+
+.game-room.room-exact .exact-room-chat-form {
+  position: absolute !important;
+  z-index: 2;
+}
+
+.game-room.room-exact .card-drawer.open {
+  z-index: 300 !important;
+}
+
+@media (max-width: 900px), (max-height: 700px) {
+  body.battle-immersive .battle-game-wrap > .game-container {
+    transform: translateX(-50%) scale(var(--battle-scale, 1)) !important;
+  }
+}

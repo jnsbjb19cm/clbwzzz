@@ -1,0 +1,62 @@
+[
+  {
+    "id": 1,
+    "playerName": "虚拟玩家一",
+    "playerSex": 0,
+    "playerLevel": 31
+  },
+  {
+    "id": 2,
+    "playerName": "虚拟玩家二",
+    "playerSex": 1,
+    "playerLevel": 3
+  },
+  {
+    "id": 3,
+    "playerName": "虚拟玩家三",
+    "playerSex": 1,
+    "playerLevel": 23
+  },
+  {
+    "id": 4,
+    "playerName": "虚拟玩家四",
+    "playerSex": 0,
+    "playerLevel": 14
+  },
+  {
+    "id": 5,
+    "playerName": "虚拟玩家五",
+    "playerSex": 0,
+    "playerLevel": 16
+  },
+  {
+    "id": 6,
+    "playerName": "虚拟玩家六",
+    "playerSex": 0,
+    "playerLevel": 23
+  },
+  {
+    "id": 7,
+    "playerName": "虚拟玩家七",
+    "playerSex": 0,
+    "playerLevel": 22
+  },
+  {
+    "id": 8,
+    "playerName": "虚拟玩家八",
+    "playerSex": 0,
+    "playerLevel": 34
+  },
+  {
+    "id": 9,
+    "playerName": "虚拟玩家九",
+    "playerSex": 0,
+    "playerLevel": 32
+  },
+  {
+    "id": 10,
+    "playerName": "虚拟玩家十",
+    "playerSex": 0,
+    "playerLevel": 5
+  }
+]

@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<data name="soldierConfig">
+<item id="2" damageType="1"></item>
+<!--<item id="11" damageType="2"></item>-->
+<item id="15" damageType="2"></item>
+<item id="21" damageType="1" damageEffect="true"></item>
+<item id="52" damageType="2"></item>
+<item id="1000" damageType="1" damageEffect="true"></item>
+<item id="1001" damageType="1" damageEffect="true"></item>
+<item id="1002" damageType="1" damageEffect="true"></item>
+<item id="1003" damageType="1" damageEffect="true"></item>
+<item id="1004" damageType="1" damageEffect="true"></item>
+</data>

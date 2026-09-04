@@ -1,0 +1,17 @@
+{
+  "assignSmelting_/": "/",
+  "assignSmelting_text": "熔炼",
+  "assignSmelting_check": "填满材料",
+  "assignSmelting_level": "等级不够",
+  "assignSmelting_title": "在右边选择想要熔炼的卡牌",
+  "assignSmelting_redDimond": "红钻不足",
+  "assignSmelting_page": "\\n页",
+  "assignSmelting_total": "共\\n",
+  "assignSmelting_first": "第\\n",
+  "assignSmelting_checkAlert1-1": "填满材料熔炼",
+  "assignSmelting_checkAlert1-2": "需要消耗",
+  "assignSmelting_checkAlert1-3": "红钻，你确定熔炼吗?",
+  "assignSmelting_checkAlert2-1": "你确定要熔炼",
+  "assignSmelting_checkAlert2-2": "吗？",
+  "assignSmelting_checkAlert3-1": "获得卡牌"
+}

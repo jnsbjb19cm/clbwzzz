@@ -1,0 +1,123 @@
+/* Compatibility tail for BattleRoomReference1826Final.css.
+ * BattleRoomRebuild replaces the original emoji spans with room-vector-* spans;
+ * this file styles those live nodes without changing their event ownership.
+ */
+
+.game-room.room-exact.room-reference-1826 .dice-btn .room-vector-label {
+  position: absolute !important;
+  left: .72cqw !important;
+  top: .52cqw !important;
+  z-index: 5 !important;
+  color: #ffb128 !important;
+  font-size: 1.14cqw !important;
+  font-weight: 900 !important;
+  line-height: 1 !important;
+  -webkit-text-stroke: .065cqw #794000;
+  text-shadow: none !important;
+}
+
+.game-room.room-exact.room-reference-1826 .dice-btn .room-vector-icon {
+  position: absolute !important;
+  left: 50% !important;
+  top: 49% !important;
+  width: 6.55cqw !important;
+  height: 5.65cqw !important;
+  transform: translate(-50%, -50%) !important;
+  z-index: 4 !important;
+  margin: 0 !important;
+  filter: drop-shadow(.12cqw .16cqw .10cqw rgba(0,0,0,.18));
+}
+
+.game-room.room-exact.room-reference-1826 .skill-btn .room-vector-icon,
+.game-room.room-exact.room-reference-1826 .team-btn .room-vector-icon {
+  position: absolute !important;
+  left: 50% !important;
+  top: 34% !important;
+  width: 5.1cqw !important;
+  height: 4.6cqw !important;
+  margin: 0 !important;
+  transform: translate(-50%, -50%) !important;
+  filter: drop-shadow(.10cqw .14cqw .08cqw rgba(0,0,0,.25));
+}
+
+.game-room.room-exact.room-reference-1826 .skill-btn .room-vector-label,
+.game-room.room-exact.room-reference-1826 .team-btn .room-vector-label {
+  position: relative !important;
+  z-index: 5 !important;
+  margin: 0 !important;
+  color: #f1eda9 !important;
+  font-size: 2.15cqw !important;
+  font-weight: 900 !important;
+  line-height: 1 !important;
+  -webkit-text-stroke: .09cqw #557219;
+  text-shadow: 0 .12cqw .09cqw rgba(0,0,0,.26) !important;
+}
+
+/* Reference has a separate gold oval below Random Map. This is a real button:
+ * the JS bridge opens the existing in-room ShopView, whose default tab is recharge.
+ */
+.game-room.room-exact.room-reference-1826 .reference-room-recharge {
+  position: absolute !important;
+  z-index: 39 !important;
+  left: 48.40% !important;
+  top: 88.63% !important;
+  width: 13.55% !important;
+  height: 7.18% !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  display: grid !important;
+  place-items: center !important;
+  overflow: visible !important;
+  border: .18cqw solid #dc8d00 !important;
+  border-radius: 50% !important;
+  color: #5d3512 !important;
+  background: linear-gradient(#fff9c8 0%,#ffe776 24%,#ffc528 53%,#ffd450 76%,#fff4aa 100%) !important;
+  box-shadow:
+    0 0 .42cqw #fff16b,
+    inset 0 .28cqw .30cqw rgba(255,255,255,.88),
+    inset 0 -.28cqw .26cqw rgba(194,102,0,.18),
+    0 .14cqw .15cqw rgba(0,0,0,.24) !important;
+  cursor: pointer !important;
+}
+
+.game-room.room-exact.room-reference-1826 .reference-room-recharge::before,
+.game-room.room-exact.room-reference-1826 .reference-room-recharge::after {
+  content: '✦';
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #ffd232;
+  font-size: 3.10cqw;
+  line-height: 1;
+  -webkit-text-stroke: .10cqw #d48600;
+  text-shadow: 0 0 .25cqw #fff;
+  pointer-events: none;
+}
+.game-room.room-exact.room-reference-1826 .reference-room-recharge::before { left: -.95cqw; }
+.game-room.room-exact.room-reference-1826 .reference-room-recharge::after { right: -.95cqw; }
+
+.game-room.room-exact.room-reference-1826 .reference-room-recharge > span {
+  position: relative;
+  z-index: 2;
+  color: #5d3512;
+  font-size: 1.47cqw;
+  font-weight: 900;
+  line-height: 1;
+  -webkit-text-stroke: .045cqw #d39420;
+  white-space: nowrap;
+}
+
+.game-room.room-exact.room-reference-1826 .reference-room-recharge:hover {
+  filter: brightness(1.05);
+}
+.game-room.room-exact.room-reference-1826 .reference-room-recharge:active {
+  transform: translateY(.08cqw);
+}
+
+/* Keep the user's existing bottom tool strip untouched. The only contract here is
+ * that it stays above the stage background but below modal/drawer overlays. */
+.game-room.room-exact.room-reference-1826 .room-bottom-bar {
+  z-index: 40 !important;
+}
