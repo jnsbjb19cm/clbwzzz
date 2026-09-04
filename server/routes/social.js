@@ -188,7 +188,7 @@ socialRouter.get('/hall-of-fame', async (req, res) => {
     LIMIT 50
   `);
 
-  const fastest = await db.all(`
+  const fastestRows = await db.all(`
     SELECT s.stage_id AS stageId, s.best_time_ms AS bestTimeMs,
            u.id AS userId, p.nickname, p.level
     FROM player_stage_progress s
@@ -196,8 +196,21 @@ socialRouter.get('/hall-of-fame', async (req, res) => {
     JOIN player_profiles p ON p.user_id=s.user_id
     WHERE s.cleared=1 AND s.best_time_ms > 0
     ORDER BY s.best_time_ms ASC
-    LIMIT 50
+    LIMIT 5000
   `);
+  const fastestGroupsMap = new Map();
+  for (const row of fastestRows) {
+    if (!fastestGroupsMap.has(row.stageId)) fastestGroupsMap.set(row.stageId, []);
+    fastestGroupsMap.get(row.stageId).push(row);
+  }
+  const fastestGroups = [...fastestGroupsMap.entries()]
+    .map(([stageId, rows]) => ({
+      stageId,
+      best: rows[0],
+      top: rows.slice(0, 5),
+    }))
+    .sort((a, b) => (a.best.bestTimeMs - b.best.bestTimeMs));
+  const fastest = fastestGroups.slice(0, 50).map((g) => g.best);
 
   const adventure = await db.all(`
     SELECT u.id AS userId, p.nickname, p.level, p.honor,
@@ -215,6 +228,11 @@ socialRouter.get('/hall-of-fame', async (req, res) => {
     ok: true,
     honor: honor.map((row) => ({ ...row, online: isOnline(row.userId) })),
     fastest: fastest.map((row) => ({ ...row, online: isOnline(row.userId) })),
+    fastestGroups: fastestGroups.map((group) => ({
+      stageId: group.stageId,
+      best: { ...group.best, online: isOnline(group.best.userId) },
+      top: group.top.map((row) => ({ ...row, online: isOnline(row.userId) })),
+    })),
     adventure: adventure.map((row) => ({ ...row, online: isOnline(row.userId) })),
   });
 });

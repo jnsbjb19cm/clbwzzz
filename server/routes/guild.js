@@ -88,8 +88,51 @@ guildRouter.post('/join', async (req, res) => {
   if (my) return res.status(409).json({ message: '你已经加入了公会' });
   const guild = await db.get('SELECT id FROM guilds WHERE id=?', [guildId]);
   if (!guild) return res.status(404).json({ message: '公会不存在' });
-  await db.run('INSERT INTO guild_members(guild_id,user_id,role) VALUES(?,?,\'member\')', [guildId, req.user.id]);
-  return res.json({ ok: true });
+  const existing = await db.get('SELECT id FROM guild_join_requests WHERE guild_id=? AND user_id=? AND status=\'pending\'', [guildId, req.user.id]);
+  if (existing) return res.status(409).json({ message: '申请已发送，等待会长审批' });
+  await db.run('INSERT INTO guild_join_requests(guild_id,user_id,status) VALUES(?,?,\'pending\')', [guildId, req.user.id]);
+  return res.json({ ok: true, message: '入会申请已发送，等待会长审批' });
+});
+
+guildRouter.get('/:guildId/requests', async (req, res) => {
+  const guildId = Number(req.params.guildId);
+  const my = await getUserMember(req.user.id);
+  if (!my || my.guildId !== guildId || !['president', 'vice_president'].includes(my.role)) {
+    return res.status(403).json({ message: '只有会长/副会长可以审批申请' });
+  }
+  const rows = await db.all(`
+    SELECT gjr.id AS requestId, gjr.user_id AS userId, p.nickname, p.level, p.honor,
+           gjr.created_at AS createdAt
+    FROM guild_join_requests gjr
+    JOIN player_profiles p ON p.user_id=gjr.user_id
+    WHERE gjr.guild_id=? AND gjr.status='pending'
+    ORDER BY gjr.created_at
+  `, [guildId]);
+  return res.json({ ok: true, requests: rows });
+});
+
+guildRouter.post('/:guildId/approve', async (req, res) => {
+  const guildId = Number(req.params.guildId);
+  const my = await getUserMember(req.user.id);
+  if (!my || my.guildId !== guildId || !['president', 'vice_president'].includes(my.role)) {
+    return res.status(403).json({ message: '只有会长/副会长可以审批申请' });
+  }
+  const userId = clampInt(req.body.userId, 1, 2_000_000_000);
+  const approve = Boolean(req.body.approve);
+  const request = await db.get(
+    'SELECT * FROM guild_join_requests WHERE guild_id=? AND user_id=? AND status=\'pending\'',
+    [guildId, userId],
+  );
+  if (!request) return res.status(404).json({ message: '申请不存在或已处理' });
+
+  await withTransaction(async (conn) => {
+    await conn.run('UPDATE guild_join_requests SET status=? WHERE id=?', [approve ? 'approved' : 'rejected', request.id]);
+    if (approve) {
+      await conn.run('DELETE FROM guild_members WHERE guild_id=? AND user_id=?', [guildId, userId]);
+      await conn.run('INSERT INTO guild_members(guild_id,user_id,role) VALUES(?,?,\'member\')', [guildId, userId]);
+    }
+  });
+  return res.json({ ok: true, approved: approve });
 });
 
 guildRouter.post('/leave', async (req, res) => {

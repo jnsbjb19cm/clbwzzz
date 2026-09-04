@@ -1,0 +1,108 @@
+/* Final authority for the UI defects reported on 2026-09-04. */
+
+.classic-smithy-screen[data-smithy-mode='craft'] .smithy-craft-probability {
+  padding-top: 178px !important;
+  scroll-padding-top: 178px;
+}
+
+body.main-city-nav-active .bottom-nav.main-city-corner-nav .bottom-nav-btn::before {
+  background-image: url('/atlas/scene.png') !important;
+  background-repeat: no-repeat !important;
+}
+
+body.main-city-nav-active .bottom-nav-btn[data-route='shop']::before { background-position: -147px -964px !important; }
+body.main-city-nav-active .bottom-nav-btn[data-route='bag']::before { background-position: -148px -757px !important; }
+body.main-city-nav-active .bottom-nav-btn[data-route='quest']::before { background-position: -113px -1169px !important; }
+body.main-city-nav-active .bottom-nav-btn[data-route='gallery']::before { background-position: -207px -1029px !important; }
+body.main-city-nav-active .bottom-nav-btn[data-route='social']::before { background-position: -400px -442px !important; }
+body.main-city-nav-active .bottom-nav-btn[data-route='battle']::before { background-position: -1126px -291px !important; }
+body.main-city-nav-active .bottom-nav-btn[data-route='worldmap']::before { background-position: -274px -520px !important; }
+body.main-city-nav-active .bottom-nav-btn[data-route='settings']::before { background-position: -232px -1157px !important; }
+
+body.main-city-nav-active .bottom-nav-btn[data-route='smithy']::before {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cpath fill='%23f7df83' stroke='%23633b10' stroke-width='4' stroke-linejoin='round' d='m11 12 9-7 19 19-7 7zM28 29l8-8 8 8-8 8zm6 6 8-8 18 18-8 8zM8 51h34v8H8z'/%3E%3C/svg%3E") !important;
+  background-position: center !important;
+  background-size: 78% 78% !important;
+}
+
+body.main-city-nav-active .bottom-nav-btn[data-route='main']::before {
+  content: '\21a9' !important;
+  background-image: none !important;
+  background-position: center !important;
+}
+
+.game-room.room-reference-1536 .room-top-bar {
+  display: grid !important;
+  grid-template-columns: auto minmax(0, 1fr) auto !important;
+  column-gap: calc(8px * var(--room-scale, 1)) !important;
+}
+
+.game-room.room-reference-1536 .room-title-group {
+  display: flex !important;
+  align-items: center !important;
+  gap: calc(8px * var(--room-scale, 1)) !important;
+  min-width: 0 !important;
+}
+
+.game-room.room-reference-1536 .room-id-tag {
+  display: inline-flex !important;
+  align-items: center !important;
+  flex: 0 0 auto !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+  color: #fff4b0 !important;
+  font-size: clamp(11px, calc(16px * var(--room-scale, 1)), 20px) !important;
+  font-weight: 900 !important;
+  white-space: nowrap !important;
+}
+
+.game-room.room-reference-1536 .room-stage-display {
+  display: block !important;
+  min-width: 0 !important;
+  overflow: hidden !important;
+  color: #4f681a !important;
+  font-size: clamp(12px, calc(20px * var(--room-scale, 1)), 25px) !important;
+  font-weight: 900 !important;
+  text-align: center !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+}
+
+.game-room.room-reference-1536 .room-stage-display::before {
+  content: '\623f\95f4\540d\ff1a';
+}
+
+.game-room.room-reference-1536 .room-rule-btn {
+  position: relative !important;
+  inset: auto !important;
+  justify-self: end !important;
+  max-width: 100% !important;
+  white-space: nowrap !important;
+  transform: none !important;
+}
+
+@media (max-width: 900px), (max-height: 650px) {
+  .classic-smithy-screen[data-smithy-mode='craft'] .smithy-craft-probability {
+    padding-top: 128px !important;
+    scroll-padding-top: 128px;
+  }
+
+  body.main-city-nav-active .bottom-nav.main-city-corner-nav .bottom-nav-btn::before {
+    background-size: 929px 929px !important;
+  }
+
+  body.main-city-nav-active .bottom-nav-btn[data-route='shop']::before { background-position: -111px -730px !important; }
+  body.main-city-nav-active .bottom-nav-btn[data-route='bag']::before { background-position: -112px -573px !important; }
+  body.main-city-nav-active .bottom-nav-btn[data-route='quest']::before { background-position: -85px -885px !important; }
+  body.main-city-nav-active .bottom-nav-btn[data-route='gallery']::before { background-position: -156px -779px !important; }
+  body.main-city-nav-active .bottom-nav-btn[data-route='social']::before { background-position: -302px -334px !important; }
+  body.main-city-nav-active .bottom-nav-btn[data-route='battle']::before { background-position: -852px -220px !important; }
+  body.main-city-nav-active .bottom-nav-btn[data-route='worldmap']::before { background-position: -207px -393px !important; }
+  body.main-city-nav-active .bottom-nav-btn[data-route='settings']::before { background-position: -175px -876px !important; }
+  body.main-city-nav-active .bottom-nav-btn[data-route='smithy']::before {
+    background-position: center !important;
+    background-size: 78% 78% !important;
+  }
+}

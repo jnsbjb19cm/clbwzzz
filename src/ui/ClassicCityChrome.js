@@ -150,9 +150,18 @@ export function bindClassicChat(root, { onSend } = {}) {
     onSend?.(value, channel);
     let targetId = null;
     if (channel === 'private') {
-      targetId = input?.dataset?.privateTarget ? Number(input.dataset.privateTarget) : Number(prompt('私聊对象玩家ID'));
-      if (!Number.isFinite(targetId) || targetId <= 0) return;
-      if (input) input.dataset.privateTarget = targetId;
+      targetId = input?.dataset?.privateTarget ? Number(input.dataset.privateTarget) : null;
+      if (!Number.isFinite(targetId) || targetId <= 0) {
+        const friendData = await authStore.api.get('/social/friends').catch(() => ({ friends: [] }));
+        const friends = friendData.friends ?? [];
+        const hint = friends.map((f) => `${f.nickname || f.username}(${f.userId})`).join('、');
+        const targetText = prompt(`选择私聊对象(可填好友昵称或ID)：\n${hint || '你还没有好友'}`);
+        if (!targetText) return;
+        const matched = friends.find((f) => String(f.nickname || f.username) === targetText.trim() || String(f.userId) === targetText.trim());
+        targetId = matched ? Number(matched.userId) : Number(targetText);
+        if (!Number.isFinite(targetId) || targetId <= 0) return;
+        if (input) input.dataset.privateTarget = targetId;
+      }
     }
     try {
       await socket.sendLobbyChat(value, channel, targetId);

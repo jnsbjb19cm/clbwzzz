@@ -260,6 +260,17 @@ CREATE TABLE IF NOT EXISTS guild_members (
   FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
+CREATE TABLE IF NOT EXISTS guild_join_requests (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  guild_id INTEGER NOT NULL,
+  user_id INTEGER NOT NULL,
+  status TEXT NOT NULL DEFAULT 'pending' CHECK(status IN ('pending','approved','rejected')),
+  created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  UNIQUE(guild_id, user_id),
+  FOREIGN KEY(guild_id) REFERENCES guilds(id) ON DELETE CASCADE,
+  FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
 CREATE TABLE IF NOT EXISTS guild_warehouse (
   guild_id INTEGER NOT NULL,
   item_id INTEGER NOT NULL,
@@ -446,6 +457,16 @@ const MYSQL_TABLES = [
     PRIMARY KEY(guild_id, user_id),
     CONSTRAINT fk_gm_guild FOREIGN KEY(guild_id) REFERENCES guilds(id) ON DELETE CASCADE,
     CONSTRAINT fk_gm_user FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE
+  ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci`,
+  `CREATE TABLE IF NOT EXISTS guild_join_requests (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    guild_id BIGINT NOT NULL,
+    user_id BIGINT NOT NULL,
+    status VARCHAR(16) NOT NULL DEFAULT 'pending',
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE KEY uk_guild_join(guild_id, user_id),
+    CONSTRAINT fk_gjr_guild FOREIGN KEY(guild_id) REFERENCES guilds(id) ON DELETE CASCADE,
+    CONSTRAINT fk_gjr_user FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE
   ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci`,
   `CREATE TABLE IF NOT EXISTS guild_warehouse (
     guild_id BIGINT NOT NULL,

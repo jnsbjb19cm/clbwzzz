@@ -50,9 +50,10 @@ export class HallView {
   }
 
   async load() {
-    const data = await this.api.get('/social/hall-of-fame').catch(() => ({ honor: [], fastest: [], adventure: [] }));
+    const data = await this.api.get('/social/hall-of-fame').catch(() => ({ honor: [], fastest: [], fastestGroups: [], adventure: [] }));
     const honor = data.honor ?? [];
     const fastest = data.fastest ?? [];
+    const fastestGroups = data.fastestGroups ?? [];
     const adventure = data.adventure ?? [];
 
     this.root.querySelector('#hall-honor').innerHTML = honor.length
@@ -63,13 +64,23 @@ export class HallView {
         </div>`).join('')
       : '<div style="color:#888;">暂无荣誉数据</div>';
 
-    this.root.querySelector('#hall-fastest').innerHTML = fastest.length
-      ? fastest.map((row, i) => `
-        <div style="padding:5px 0;border-bottom:1px solid #223322;display:flex;justify-content:space-between;align-items:center;">
-          <span>${medal(i)} ${esc(row.stageId)}<br><small style="color:#888;">${esc(row.nickname || '玩家')}</small></span>
-          <b style="color:#8bff9b;">${fmtTime(row.bestTimeMs)}</b>
+    this.root.querySelector('#hall-fastest').innerHTML = fastestGroups.length
+      ? fastestGroups.map((group) => `
+        <div style="margin-bottom:10px;padding:8px;border:1px solid #3a5a3a;border-radius:8px;background:#1c2a1c;">
+          <h4 style="margin:0 0 6px;color:#ffd97a;">${esc(group.best?.stageId || group.stageId)}</h4>
+          ${group.top.map((row, i) => `
+            <div style="padding:4px 0;border-bottom:1px solid #223322;display:flex;justify-content:space-between;align-items:center;">
+              <span>${medal(i)} ${esc(row.nickname || '玩家')} <small style="color:#888;">Lv.${row.level ?? 1}</small></span>
+              <b style="color:#8bff9b;">${fmtTime(row.bestTimeMs)}</b>
+            </div>`).join('')}
         </div>`).join('')
-      : '<div style="color:#888;">暂无通关时间记录</div>';
+      : fastest.length
+        ? fastest.map((row, i) => `
+          <div style="padding:5px 0;border-bottom:1px solid #223322;display:flex;justify-content:space-between;align-items:center;">
+            <span>${medal(i)} ${esc(row.stageId)}<br><small style="color:#888;">${esc(row.nickname || '玩家')}</small></span>
+            <b style="color:#8bff9b;">${fmtTime(row.bestTimeMs)}</b>
+          </div>`).join('')
+        : '<div style="color:#888;">暂无通关时间记录</div>';
 
     this.root.querySelector('#hall-adventure').innerHTML = adventure.length
       ? adventure.map((row, i) => `

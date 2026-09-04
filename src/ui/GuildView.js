@@ -86,6 +86,7 @@ export class GuildView {
         <p style="color:#bbb;">你的职位：${ROLE_LABEL[g.role] || g.role}</p>
         <button id="guild-members-btn" type="button" style="padding:6px 12px;border-radius:6px;border:0;background:#3a5a3a;color:#fff;cursor:pointer;">成员</button>
         <button id="guild-warehouse-btn" type="button" style="padding:6px 12px;border-radius:6px;border:0;background:#3a5a3a;color:#fff;cursor:pointer;">仓库</button>
+        ${['president', 'vice_president'].includes(g.role) ? `<button id="guild-approve-btn" type="button" style="padding:6px 12px;border-radius:6px;border:0;background:#5a4a8a;color:#fff;cursor:pointer;">审批</button>` : ''}
         ${g.role === 'president' && g.level < 5 ? `<button id="guild-upgrade-btn" type="button" style="padding:6px 12px;border-radius:6px;border:0;background:#6a5a2a;color:#fff;cursor:pointer;">升级公会</button>` : ''}
         <button id="guild-leave-btn" type="button" style="padding:6px 12px;border-radius:6px;border:0;background:#6a3a3a;color:#fff;cursor:pointer;">退出公会</button>
       </div>
@@ -100,6 +101,7 @@ export class GuildView {
       } catch (e) { alert(e.message); }
     });
     el.querySelector('#guild-warehouse-btn').addEventListener('click', () => this.showWarehouse(g.guildId));
+    el.querySelector('#guild-approve-btn')?.addEventListener('click', () => this.showJoinRequests(g.guildId));
     el.querySelector('#guild-leave-btn').addEventListener('click', async () => {
       if (!confirm('确定退出公会？')) return;
       const res = await this.api.post('/guild/leave', {}).catch((e) => { alert(e.message); return null; });
@@ -120,6 +122,35 @@ export class GuildView {
             <span style="color:#bbb;">Lv.${m.level} · ${m.honor}荣誉</span>
           </div>`).join('')}
       </div>`;
+  }
+
+  async showJoinRequests(guildId) {
+    const data = await this.api.get(`/guild/${guildId}/requests`).catch(() => ({ requests: [] }));
+    const el = this.root.querySelector('#guild-detail');
+    el.innerHTML = `
+      <div style="background:#101d10;border:1px solid #3a5a3a;border-radius:12px;padding:14px;">
+        <h4 style="margin:0 0 8px;">入会申请审批</h4>
+        ${(data.requests ?? []).map((r) => `
+          <div style="padding:6px 0;border-bottom:1px solid #223322;display:flex;justify-content:space-between;align-items:center;">
+            <span>${esc(r.nickname || '玩家')} <small style="color:#888;">Lv.${r.level} · 荣誉${r.honor}</small></span>
+            <span>
+              <button type="button" data-guild-approve="${r.userId}" style="padding:4px 10px;border-radius:6px;border:0;background:#4a7a3a;color:#fff;cursor:pointer;">同意</button>
+              <button type="button" data-guild-reject="${r.userId}" style="padding:4px 10px;border-radius:6px;border:0;background:#6a3a3a;color:#fff;cursor:pointer;">拒绝</button>
+            </span>
+          </div>`).join('') || '<div style="color:#888;">暂无待审批申请</div>'}
+      </div>`;
+    el.querySelectorAll('[data-guild-approve]').forEach((btn) => btn.addEventListener('click', async () => {
+      try {
+        await this.api.post(`/guild/${guildId}/approve`, { userId: Number(btn.dataset.guildApprove), approve: true });
+        this.showJoinRequests(guildId);
+      } catch (e) { alert(e.message); }
+    }));
+    el.querySelectorAll('[data-guild-reject]').forEach((btn) => btn.addEventListener('click', async () => {
+      try {
+        await this.api.post(`/guild/${guildId}/approve`, { userId: Number(btn.dataset.guildReject), approve: false });
+        this.showJoinRequests(guildId);
+      } catch (e) { alert(e.message); }
+    }));
   }
 
   async showWarehouse(guildId) {
