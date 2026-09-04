@@ -14,6 +14,7 @@ import { TalentView } from './TalentView.js';
 import { PlaceholderView } from './PlaceholderView.js';
 import { QuestView } from './QuestView.js';
 import { FriendView } from './FriendView.js';
+import { HallView } from './HallView.js';
 import { ShopView } from './ShopView.js';
 import { WorldMapView, markWorldStageCleared } from './WorldMapView.js';
 import { RoomView } from './RoomView.js';
@@ -241,11 +242,19 @@ export class App {
     if (next) this.showGlobalNotice(next.title, next.desc);
   }
 
-  handleBattleResult({ won, stage, drops = [] }) {
+  handleBattleResult({ won, stage, drops = [], durationMs = 0 }) {
     const reward = getBattleRewards(stage, won);
     let totalGold = reward.gold;
     let totalExp = reward.exp;
     const special = won ? markWorldStageCleared(stage.stage_id ?? stage.id) : { firstClear: false, rewards: [] };
+    if (won && stage?.stage_id) {
+      authStore.api.post('/player/stage-result', {
+        stageId: stage.stage_id,
+        won,
+        durationMs,
+        bestStars: stage.stars ?? 1,
+      }).catch(() => {});
+    }
     const specialText = [];
     const dropTotals = new Map();
     for (const drop of Array.isArray(drops) ? drops : []) {
@@ -460,6 +469,10 @@ export class App {
     } else if (route === 'social') {
       const friend = new FriendView();
       friend.render(renderRoot);
+      this.updateResourceDisplay('--', '--');
+    } else if (route === 'hall') {
+      const hall = new HallView();
+      hall.render(renderRoot);
       this.updateResourceDisplay('--', '--');
     } else if (PLACEHOLDER_MODULES.has(route)) {
       new PlaceholderView(route).render(renderRoot);

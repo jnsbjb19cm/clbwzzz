@@ -77,6 +77,43 @@ playerRouter.put('/decks/:deckNo', async (req, res) => {
   return res.json({ ok: true, deckNo, cards });
 });
 
+playerRouter.post('/stage-result', async (req, res) => {
+  const stageId = String(req.body.stageId || '').trim();
+  const won = Boolean(req.body.won);
+  if (!won || !stageId) return res.json({ ok: true, recorded: false });
+
+  const durationMs = clampInt(req.body.durationMs, 0, 3_600_000);
+  const bestStars = clampInt(req.body.bestStars ?? 1, 0, 3);
+  const existing = await db.get(
+    'SELECT * FROM player_stage_progress WHERE user_id=? AND stage_id=?',
+    [req.user.id, stageId],
+  );
+  const clearCount = (existing?.clear_count ?? 0) + 1;
+  const newBestTime = existing?.best_time_ms
+    ? Math.min(Number(existing.best_time_ms), durationMs)
+    : durationMs;
+  const newBestStars = Math.max(Number(existing?.best_stars ?? 0), bestStars);
+
+  if (existing) {
+    await db.run(`
+      UPDATE player_stage_progress
+      SET cleared=1, clear_count=?, best_stars=?, best_time_ms=?, updated_at=CURRENT_TIMESTAMP
+      WHERE user_id=? AND stage_id=?
+    `, [clearCount, newBestStars, newBestTime, req.user.id, stageId]);
+  } else {
+    await db.run(`
+      INSERT INTO player_stage_progress(user_id,stage_id,cleared,best_stars,clear_count,best_time_ms)
+      VALUES(?,?,1,?,?,?)
+    `, [req.user.id, stageId, newBestStars, clearCount, newBestTime]);
+  }
+
+  // 荣誉值奖励：通关 +10，首次通关额外 +40
+  const honorGain = existing ? 10 : 50;
+  await db.run(`UPDATE player_profiles SET honor=honor+?, updated_at=CURRENT_TIMESTAMP WHERE user_id=?`, [honorGain, req.user.id]);
+
+  return res.json({ ok: true, recorded: true, clearCount, bestTimeMs: newBestTime, honorGain });
+});
+
 playerRouter.post('/migration/local-snapshot', async (req, res) => {
   const alreadyHasProgress = await db.get(`
     SELECT level, exp, gold, diamond FROM player_profiles WHERE user_id=?

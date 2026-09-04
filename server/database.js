@@ -193,6 +193,7 @@ CREATE TABLE IF NOT EXISTS player_stage_progress (
   cleared INTEGER NOT NULL DEFAULT 0 CHECK(cleared IN (0,1)),
   best_stars INTEGER NOT NULL DEFAULT 0 CHECK(best_stars >= 0),
   clear_count INTEGER NOT NULL DEFAULT 0 CHECK(clear_count >= 0),
+  best_time_ms INTEGER NOT NULL DEFAULT 0,
   updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY(user_id, stage_id),
   FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE
@@ -345,6 +346,7 @@ const MYSQL_TABLES = [
     cleared TINYINT(1) NOT NULL DEFAULT 0,
     best_stars INT NOT NULL DEFAULT 0,
     clear_count BIGINT NOT NULL DEFAULT 0,
+    best_time_ms BIGINT NOT NULL DEFAULT 0,
     updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     PRIMARY KEY(user_id, stage_id),
     CONSTRAINT fk_stage_user FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE
@@ -538,7 +540,7 @@ export async function getPlayerSnapshot(userId) {
   `, [userId]);
   const stages = (await all(`
     SELECT stage_id AS stageId, cleared, best_stars AS bestStars,
-           clear_count AS clearCount
+           clear_count AS clearCount, best_time_ms AS bestTimeMs
     FROM player_stage_progress WHERE user_id=? ORDER BY stage_id
   `, [userId])).map((row) => ({ ...row, cleared: Boolean(row.cleared) }));
   const quests = (await all(`

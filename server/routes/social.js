@@ -176,3 +176,45 @@ socialRouter.get('/search', async (req, res) => {
       .map((row) => ({ ...row, online: isOnline(row.userId) })),
   });
 });
+
+socialRouter.get('/hall-of-fame', async (req, res) => {
+  const honor = await db.all(`
+    SELECT u.id AS userId, p.nickname, p.level, p.honor, p.arena,
+           p.gold, p.diamond
+    FROM player_profiles p
+    JOIN users u ON u.id=p.user_id
+    WHERE p.honor > 0
+    ORDER BY p.honor DESC, p.updated_at ASC
+    LIMIT 50
+  `);
+
+  const fastest = await db.all(`
+    SELECT s.stage_id AS stageId, s.best_time_ms AS bestTimeMs,
+           u.id AS userId, p.nickname, p.level
+    FROM player_stage_progress s
+    JOIN users u ON u.id=s.user_id
+    JOIN player_profiles p ON p.user_id=s.user_id
+    WHERE s.cleared=1 AND s.best_time_ms > 0
+    ORDER BY s.best_time_ms ASC
+    LIMIT 50
+  `);
+
+  const adventure = await db.all(`
+    SELECT u.id AS userId, p.nickname, p.level, p.honor,
+           COALESCE(SUM(s.cleared), 0) AS clearedStages,
+           COUNT(s.stage_id) AS totalRecordedStages
+    FROM users u
+    JOIN player_profiles p ON p.user_id=u.id
+    LEFT JOIN player_stage_progress s ON s.user_id=u.id AND s.cleared=1
+    GROUP BY u.id
+    ORDER BY clearedStages DESC, p.honor DESC
+    LIMIT 50
+  `);
+
+  return res.json({
+    ok: true,
+    honor: honor.map((row) => ({ ...row, online: isOnline(row.userId) })),
+    fastest: fastest.map((row) => ({ ...row, online: isOnline(row.userId) })),
+    adventure: adventure.map((row) => ({ ...row, online: isOnline(row.userId) })),
+  });
+});
