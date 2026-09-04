@@ -2,6 +2,7 @@ import { roomManager } from '../rooms/RoomManager.js';
 import { CoopBossBattle } from '../battle/CoopBossBattle.js';
 import { PvpBattle } from '../battle/PvpBattle.js';
 import { unitAnimPlayer } from '../../src/battle/UnitAnimPlayer.js';
+import { db, withTransaction } from '../database.js';
 
 // 战斗结果固定约60Hz权威推进；普通世界状态约30Hz广播。
 // straight/parabola projectile 不再依赖周期性位置快照推进画面：发射时发送一次
@@ -344,7 +345,44 @@ function broadcastSnapshots(io, room, entry) {
   emitPersonalized(io, room, entry, 'pvp:authority:snapshot');
 }
 
+const AUTHORITY_DROP_ITEM_IDS = [10001, 10002, 10003, 10004, 10005, 30055];
+
+async function awardAuthorityBattleDrops(room, entry) {
+  if (entry._dropsAwarded) return;
+  entry._dropsAwarded = true;
+
+  const members = [...room.members.values()].filter((m) => Number.isFinite(Number(m.userId)));
+  if (!members.length) return;
+
+  const grants = members.map((member) => {
+    const itemId = AUTHORITY_DROP_ITEM_IDS[Math.floor(Math.random() * AUTHORITY_DROP_ITEM_IDS.length)];
+    const count = 1 + Math.floor(Math.random() * 3);
+    return { userId: Number(member.userId), itemId, count };
+  });
+
+  await withTransaction(async (conn) => {
+    for (const grant of grants) {
+      const existing = await conn.get(
+        'SELECT * FROM player_items WHERE user_id=? AND item_id=? AND is_bound=0',
+        [grant.userId, grant.itemId],
+      );
+      if (existing) {
+        await conn.run(
+          'UPDATE player_items SET count=count+? WHERE user_id=? AND item_id=? AND is_bound=0',
+          [grant.count, grant.userId, grant.itemId],
+        );
+      } else {
+        await conn.run(
+          'INSERT INTO player_items(user_id,item_id,count,is_bound) VALUES(?,?,?,0)',
+          [grant.userId, grant.itemId, grant.count],
+        );
+      }
+    }
+  });
+}
+
 function broadcastFinished(io, room, entry) {
+  awardAuthorityBattleDrops(room, entry).catch((error) => console.error('[clbwzzz] award drops failed', error));
   emitPersonalized(io, room, entry, 'pvp:authority:finished');
 }
 
