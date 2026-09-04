@@ -504,6 +504,40 @@ async function initSqlite() {
   sqlite.pragma('foreign_keys = ON');
   sqlite.pragma('busy_timeout = 5000');
   sqlite.exec(SQLITE_SCHEMA);
+  migrateSqlite();
+}
+
+function migrateSqlite() {
+  const tableColumns = (table) => new Set(
+    sqlite.prepare(`PRAGMA table_info("${table}")`).all().map((row) => String(row.name)),
+  );
+
+  // 旧 player_stage_progress 缺少 best_time_ms
+  const stageCols = tableColumns('player_stage_progress');
+  if (!stageCols.has('best_time_ms')) {
+    sqlite.exec('ALTER TABLE player_stage_progress ADD COLUMN best_time_ms INTEGER NOT NULL DEFAULT 0');
+  }
+
+  // 旧 player_items 缺少 is_bound 或主键仍是 (user_id,item_id)，重建为新结构
+  const itemCols = tableColumns('player_items');
+  if (!itemCols.has('is_bound')) {
+    sqlite.exec(`
+      BEGIN;
+      ALTER TABLE player_items RENAME TO player_items_old;
+      CREATE TABLE player_items (
+        user_id INTEGER NOT NULL,
+        item_id INTEGER NOT NULL,
+        count INTEGER NOT NULL DEFAULT 0 CHECK(count >= 0),
+        is_bound INTEGER NOT NULL DEFAULT 1 CHECK(is_bound IN (0,1)),
+        PRIMARY KEY(user_id, item_id, is_bound),
+        FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE
+      );
+      INSERT INTO player_items(user_id,item_id,count,is_bound)
+        SELECT user_id,item_id,count,1 FROM player_items_old;
+      DROP TABLE player_items_old;
+      COMMIT;
+    `);
+  }
 }
 
 async function initMysql() {
@@ -539,6 +573,30 @@ async function initMysql() {
   });
   for (const sql of MYSQL_TABLES) {
     await pool.query(sql);
+  }
+  await migrateMysql();
+}
+
+async function migrateMysql() {
+  const hasColumn = async (table, column) => {
+    const [rows] = await pool.query(`
+      SELECT 1 AS x
+      FROM information_schema.columns
+      WHERE table_schema=DATABASE() AND table_name=? AND column_name=?
+      LIMIT 1
+    `, [table, column]);
+    return Boolean(rows[0]);
+  };
+
+  if (!(await hasColumn('player_stage_progress', 'best_time_ms'))) {
+    await pool.query('ALTER TABLE player_stage_progress ADD COLUMN best_time_ms BIGINT NOT NULL DEFAULT 0');
+  }
+
+  if (!(await hasColumn('player_items', 'is_bound'))) {
+    await pool.query('ALTER TABLE player_items ADD COLUMN is_bound TINYINT(1) NOT NULL DEFAULT 1');
+    // 旧表主键 (user_id,item_id) 升为新主键 (user_id,item_id,is_bound)
+    await pool.query('ALTER TABLE player_items DROP PRIMARY KEY');
+    await pool.query('ALTER TABLE player_items ADD PRIMARY KEY (user_id,item_id,is_bound)');
   }
 }
 
