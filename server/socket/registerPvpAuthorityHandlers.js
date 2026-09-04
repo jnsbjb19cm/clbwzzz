@@ -431,18 +431,32 @@ function createBattle(teams, cardDb) {
   });
 }
 
-function runBotAI(entry, room) {
+function runBotAI(entry, room, cardDb) {
   if (!entry.battle || entry.battle.status !== 'playing') return;
   const now = entry.battle.engine?.time ?? 0;
   for (const member of room.members.values()) {
     if (!member?.isBot) continue;
-    const nextDeployAt = Number(member._botDeployAt || 0);
+    if (!member._botStartAt) member._botStartAt = 6; // 开局6秒后AI才第一次出卡
+    const nextDeployAt = Number(member._botDeployAt || member._botStartAt || 6);
     if (now < nextDeployAt) continue;
     member._botDeployAt = now + 2.2;
-    const cardId = BOT_DECK_IDS[Math.floor(Math.random() * BOT_DECK_IDS.length)];
+
+    const legalIds = BOT_DECK_IDS.filter((id) => {
+      const card = cardDb?.getById?.(id);
+      if (!card) return false;
+      if (card.card_name === '石巨人') return false;
+      if (Number(card.card_quality || 0) > 4) return false;
+      return true;
+    });
+    if (!legalIds.length) continue;
+    const cardId = legalIds[Math.floor(Math.random() * legalIds.length)];
+    const card = cardDb?.getById?.(cardId);
+    const movable = Boolean(card && Number(card.move_speed) > 0);
     const lane = Math.floor(Math.random() * 5);
     const isBlue = member.team === 'blue';
-    const col = isBlue ? Math.floor(Math.random() * 5) : 7 + Math.floor(Math.random() * 5);
+    let col;
+    if (isBlue) col = movable ? 3 + Math.floor(Math.random() * 2) : Math.floor(Math.random() * 2);
+    else col = movable ? 7 + Math.floor(Math.random() * 2) : 10 + Math.floor(Math.random() * 2);
     try {
       entry.battle.deploy(Number(member.userId), { cardId, lane, col });
     } catch {
@@ -501,7 +515,7 @@ function ensureAuthorityBattle(roomId, io, cardDb) {
       emitRemovedProjectileEvents(io, room, entry, previousProjectiles);
       entry.accumulator -= STEP_SECONDS;
     }
-    runBotAI(entry, room);
+    runBotAI(entry, room, cardDb);
 
     const unitCount = entry.battle.engine?.units?.length ?? 0;
     const broadcastInterval = unitCount >= HEAVY_UNIT_SNAPSHOT_THRESHOLD
@@ -655,4 +669,8 @@ export function registerPvpAuthorityHandlers(io, { cardDb }) {
 
 export function stopAllPvpAuthorityBattles() {
   for (const roomId of authorityBattles.keys()) stopAuthorityBattle(roomId);
+}
+
+export function stopAuthorityBattleByRoom(roomId) {
+  stopAuthorityBattle(Number(roomId));
 }

@@ -352,6 +352,13 @@ export class RoomManager {
     this.userRoom.delete(userId);
   }
 
+  destroyRoom(roomId) {
+    const room = this.getRoom(roomId);
+    if (!room) return false;
+    this.rooms.delete(room.id);
+    return true;
+  }
+
   ensureHost(room) {
     const members = [...room.members.values()].sort((a, b) => a.joinOrder - b.joinOrder);
     if (members.some((member) => member.isHost)) return;

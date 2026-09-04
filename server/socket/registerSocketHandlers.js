@@ -2,6 +2,7 @@ import { getSocketUser, db } from '../database.js';
 import { verifyToken } from '../middleware/auth.js';
 import { roomManager } from '../rooms/RoomManager.js';
 import { registerSocket, unregisterSocket, socketsForUser } from '../online.js';
+import { stopAuthorityBattleByRoom } from './registerPvpAuthorityHandlers.js';
 import { createRequire } from 'node:module';
 
 const require = createRequire(import.meta.url);
@@ -153,7 +154,14 @@ export function registerSocketHandlers(io) {
         const roomId = oldRoom?.id;
         const snapshot = roomManager.leave(userId);
         if (roomId) socket.leave(`room:${roomId}`);
-        if (roomId && snapshot) io.to(`room:${roomId}`).emit('room:snapshot', snapshot);
+        const afterRoom = roomId ? roomManager.getRoom(roomId) : null;
+        if (afterRoom && [...afterRoom.members.values()].every((m) => m.isBot)) {
+          // 真人全退的人机对局：停止权威战斗并销毁房间
+          stopAuthorityBattleByRoom(roomId);
+          roomManager.destroyRoom(roomId);
+        } else if (roomId && snapshot) {
+          io.to(`room:${roomId}`).emit('room:snapshot', snapshot);
+        }
         io.emit('rooms:list', roomManager.listRooms());
         ackOk(ack, { room: snapshot });
       } catch (error) { ackError(ack, error); }
