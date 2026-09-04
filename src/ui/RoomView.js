@@ -617,6 +617,16 @@ export class RoomView {
     const boss = BOSS_LIST.find((b) => b.id === this.room.bossId);
     const stageId = isBoss ? 1 : Number(this.room.stageId || 1);
 
+    const startWithRandomFallback = () => {
+      const realCount = (this.room.members ?? []).filter((m) => !m.isBot).length;
+      if (this.room?.mode === 'pvp' && realCount < 2) {
+        return this.socket.setRandomMatch(true)
+          .then(() => this.socket.startGame())
+          .catch((e) => this.notice(e.message));
+      }
+      return this.socket.startGame().catch((e) => this.notice(e.message));
+    };
+
     // 房间内统一使用 DeckSelectView(原选卡组界面)；房间简介显示在标题
     if (!this.deckSelect) this.deckSelect = new DeckSelectView();
     this.deckSelect.render(panel, {
@@ -639,13 +649,13 @@ export class RoomView {
         randomMatch: Boolean(this.room.randomMatch),
         bossInfo: isBoss && boss ? { name: boss.name, difficulty: this.room.difficulty || boss.difficulty, hp: boss.hp } : null,
         onReady: () => this.socket.setReady(!myMember?.ready).then((r) => this.refreshRoom(r)).catch((e) => this.notice(e.message)),
-        onStart: () => this.socket.startGame().catch((e) => this.notice(e.message)),
+        onStart: () => startWithRandomFallback(),
         onSetRule: (v) => this.socket.setRule(v).then((r) => this.refreshRoom(r)).catch((e) => this.notice(e.message)),
         onRandomMatch: (v) => this.socket.setRandomMatch(v).then((r) => this.refreshRoom(r)).catch((e) => this.notice(e.message)),
         onChangeMap: (mapId) => this.socket.changeMap(mapId).then((r) => this.refreshRoom(r)).catch((e) => this.notice(e.message)),
         onSwitch: () => this.socket.switchTeam().then((r) => this.refreshRoom(r)).catch((e) => this.notice(e.message)),
       },
-      onConfirm: () => this.socket.startGame().catch((e) => this.notice(e.message)),
+      onConfirm: () => startWithRandomFallback(),
       onBack: () => this.leaveRoom(),
     });
 
