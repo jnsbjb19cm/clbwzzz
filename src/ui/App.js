@@ -16,6 +16,7 @@ import { QuestView } from './QuestView.js';
 import { FriendView } from './FriendView.js';
 import { HallView } from './HallView.js';
 import { GuildView } from './GuildView.js';
+import { AuctionView } from './AuctionView.js';
 import { ShopView } from './ShopView.js';
 import { WorldMapView, markWorldStageCleared } from './WorldMapView.js';
 import { RoomView } from './RoomView.js';
@@ -254,6 +255,7 @@ export class App {
         won,
         durationMs,
         bestStars: stage.stars ?? 1,
+        drops: drops.map((drop) => ({ itemId: Number(drop?.itemId), count: Number(drop?.count) || 1 })),
       }).catch(() => {});
     }
     const specialText = [];
@@ -478,6 +480,10 @@ export class App {
     } else if (route === 'guild') {
       const guild = new GuildView();
       guild.render(renderRoot);
+      this.updateResourceDisplay('--', '--');
+    } else if (route === 'auction') {
+      const auction = new AuctionView();
+      auction.render(renderRoot);
       this.updateResourceDisplay('--', '--');
     } else if (PLACEHOLDER_MODULES.has(route)) {
       new PlaceholderView(route).render(renderRoot);

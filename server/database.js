@@ -183,7 +183,8 @@ CREATE TABLE IF NOT EXISTS player_items (
   user_id INTEGER NOT NULL,
   item_id INTEGER NOT NULL,
   count INTEGER NOT NULL DEFAULT 0 CHECK(count >= 0),
-  PRIMARY KEY(user_id, item_id),
+  is_bound INTEGER NOT NULL DEFAULT 1 CHECK(is_bound IN (0,1)),
+  PRIMARY KEY(user_id, item_id, is_bound),
   FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
@@ -266,6 +267,17 @@ CREATE TABLE IF NOT EXISTS guild_warehouse (
   updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY(guild_id, item_id),
   FOREIGN KEY(guild_id) REFERENCES guilds(id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS auction_listings (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  seller_id INTEGER NOT NULL,
+  item_id INTEGER NOT NULL,
+  count INTEGER NOT NULL DEFAULT 1 CHECK(count >= 1),
+  price INTEGER NOT NULL DEFAULT 1 CHECK(price >= 1),
+  status TEXT NOT NULL DEFAULT 'active' CHECK(status IN ('active','sold','cancelled')),
+  created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY(seller_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS battle_results (
@@ -366,7 +378,8 @@ const MYSQL_TABLES = [
     user_id BIGINT NOT NULL,
     item_id INT NOT NULL,
     count BIGINT NOT NULL DEFAULT 0,
-    PRIMARY KEY(user_id, item_id),
+    is_bound TINYINT(1) NOT NULL DEFAULT 1,
+    PRIMARY KEY(user_id, item_id, is_bound),
     CONSTRAINT fk_items_user FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE
   ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci`,
   `CREATE TABLE IF NOT EXISTS player_stage_progress (
@@ -441,6 +454,16 @@ const MYSQL_TABLES = [
     updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     PRIMARY KEY(guild_id, item_id),
     CONSTRAINT fk_gw_guild FOREIGN KEY(guild_id) REFERENCES guilds(id) ON DELETE CASCADE
+  ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci`,
+  `CREATE TABLE IF NOT EXISTS auction_listings (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    seller_id BIGINT NOT NULL,
+    item_id INT NOT NULL,
+    count BIGINT NOT NULL DEFAULT 1,
+    price BIGINT NOT NULL DEFAULT 1,
+    status VARCHAR(16) NOT NULL DEFAULT 'active',
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_auction_seller FOREIGN KEY(seller_id) REFERENCES users(id) ON DELETE CASCADE
   ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci`,
   `CREATE TABLE IF NOT EXISTS battle_results (
     id VARCHAR(64) PRIMARY KEY,
@@ -590,8 +613,11 @@ export async function getPlayerSnapshot(userId) {
     FROM player_cards WHERE user_id=? ORDER BY slot_index
   `, [userId]);
   const items = await all(`
-    SELECT item_id AS itemId, count FROM player_items
-    WHERE user_id=? AND count>0 ORDER BY item_id
+    SELECT item_id AS itemId, SUM(count) AS count
+    FROM player_items
+    WHERE user_id=? AND count>0
+    GROUP BY item_id
+    ORDER BY item_id
   `, [userId]);
   const stages = (await all(`
     SELECT stage_id AS stageId, cleared, best_stars AS bestStars,

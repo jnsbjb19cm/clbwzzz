@@ -19,6 +19,7 @@ import { authRouter } from './routes/auth.js';
 import { playerRouter } from './routes/player.js';
 import { socialRouter } from './routes/social.js';
 import { guildRouter } from './routes/guild.js';
+import { auctionRouter } from './routes/auction.js';
 import { getPvpCardDb } from './battle/PvpCardDb.js';
 import { installPvpGameplayFinal } from './battle/PvpGameplayInstall.js';
 import { installPvpCombatPolishFinal } from './battle/PvpCombatPolishFinal.js';
@@ -75,6 +76,7 @@ app.use('/api/auth', authRouter);
 app.use('/api/player', playerRouter);
 app.use('/api/social', socialRouter);
 app.use('/api/guild', guildRouter);
+app.use('/api/auction', auctionRouter);
 
 const distDir = path.resolve(__dirname, '../dist');
 const indexHtml = path.join(distDir, 'index.html');

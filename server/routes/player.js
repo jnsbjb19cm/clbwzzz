@@ -111,6 +111,27 @@ playerRouter.post('/stage-result', async (req, res) => {
   const honorGain = existing ? 10 : 50;
   await db.run(`UPDATE player_profiles SET honor=honor+?, updated_at=CURRENT_TIMESTAMP WHERE user_id=?`, [honorGain, req.user.id]);
 
+  // 战斗掉落：写为“非绑定”道具，可上架拍卖行
+  const drops = Array.isArray(req.body.drops) ? req.body.drops : [];
+  if (drops.length) {
+    await withTransaction(async (conn) => {
+      for (const drop of drops) {
+        const itemId = Number(drop?.itemId);
+        const count = clampInt(Number(drop?.count) || 1, 1, 99);
+        if (!Number.isInteger(itemId) || itemId <= 0) continue;
+        const existing = await conn.get(
+          'SELECT * FROM player_items WHERE user_id=? AND item_id=? AND is_bound=0',
+          [req.user.id, itemId],
+        );
+        if (existing) {
+          await conn.run('UPDATE player_items SET count=count+? WHERE user_id=? AND item_id=? AND is_bound=0', [count, req.user.id, itemId]);
+        } else {
+          await conn.run('INSERT INTO player_items(user_id,item_id,count,is_bound) VALUES(?,?,?,0)', [req.user.id, itemId, count]);
+        }
+      }
+    });
+  }
+
   return res.json({ ok: true, recorded: true, clearCount, bestTimeMs: newBestTime, honorGain });
 });
 
