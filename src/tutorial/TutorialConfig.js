@@ -1,4 +1,5 @@
 import './TutorialBaseProtection.js';
+import './TutorialPlacementRule.js';
 
 export const NEW_PLAYER_TUTORIAL_MARKER = '__clbwz_new_player_tutorial_v1__';
 export const NEW_PLAYER_TUTORIAL_STORAGE_KEY = 'clbwz_new_player_tutorial_completed_v1';
