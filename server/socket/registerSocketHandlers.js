@@ -202,6 +202,7 @@ export function registerSocketHandlers(io) {
     socket.on('room:random-match', (payload = {}, ack) => {
       try {
         const room = roomManager.setRandomMatch(userId, payload.enabled);
+        console.log('[clbwzzz][random-match]', { userId, enabled: payload.enabled, randomMatch: room.randomMatch, roomId: room.id });
         io.to(`room:${room.id}`).emit('room:snapshot', room);
         ackOk(ack, { room });
       } catch (error) { ackError(ack, error); }

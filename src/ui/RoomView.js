@@ -56,6 +56,7 @@ export class RoomView {
     this.onPlayerUpdate = onPlayerUpdate;
     this._autoCreateStarted = false;
     this.socket = new SocketClient({ getToken: () => authStore.token });
+    if (typeof window !== 'undefined') window.__roomSocket = this.socket;
     this.room = null;
     this.rooms = [];
     this.snap = null;

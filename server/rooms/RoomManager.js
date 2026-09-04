@@ -215,9 +215,11 @@ export class RoomManager {
     if (members.some((member) => !member.isHost && !member.ready)) throw new Error('还有玩家没有准备');
 
     if (room.mode === 'pvp' && room.randomMatch) {
+      console.log('[clbwzzz][random-match] canStart randomMatch=true', room.id);
       // 随机匹配：人数不足由系统补人机，只需要至少1名真实玩家即可开始
       if (members.filter((m) => !m.isBot).length < 1) throw new Error('随机匹配至少需要1名玩家');
     } else if (room.mode === 'pvp') {
+      console.log('[clbwzzz][random-match] canStart randomMatch=false', room.id);
       const blueCount = this.teamCount(room, 'blue');
       const redCount = this.teamCount(room, 'red');
       if (blueCount < 1 || redCount < 1) {

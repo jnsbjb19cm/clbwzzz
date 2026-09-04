@@ -54,6 +54,7 @@ function appendChatLine(root, text, tone = 'normal') {
 function getLobbySocket() {
   if (lobbySocket) return lobbySocket;
   lobbySocket = new SocketClient({ getToken: () => authStore.token });
+  if (typeof window !== 'undefined') window.__lobbySocket = lobbySocket;
   lobbyChatUnsubscribe = lobbySocket.on('lobby:chat', (payload = {}) => {
     const nickname = payload.nickname ?? payload.username ?? payload.sender ?? '玩家';
     const message = payload.text ?? payload.message ?? '';
