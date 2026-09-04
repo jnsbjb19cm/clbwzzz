@@ -13,6 +13,7 @@ const HEAVY_BROADCAST_SECONDS = 0.05;
 const HEAVY_UNIT_SNAPSHOT_THRESHOLD = 30;
 const MAX_CATCHUP_SECONDS = 0.25;
 const FINISHED_RETENTION_MS = 30_000;
+const BOT_DECK_IDS = [1, 2, 3, 4, 5, 6, 8, 9, 11, 15, 17, 19, 20, 21, 22, 25, 26, 30, 31, 32, 33, 35, 36, 37, 38];
 
 // roomId -> { battle, timer, lastAt, accumulator, broadcastAccumulator, seq, cleanupTimer }
 const authorityBattles = new Map();
@@ -430,6 +431,25 @@ function createBattle(teams, cardDb) {
   });
 }
 
+function runBotAI(entry, room) {
+  if (!entry.battle || entry.battle.status !== 'playing') return;
+  const now = entry.battle.engine?.time ?? 0;
+  for (const member of room.members.values()) {
+    if (!member?.isBot) continue;
+    const nextDeployAt = Number(member._botDeployAt || 0);
+    if (now < nextDeployAt) continue;
+    member._botDeployAt = now + 2.2;
+    const cardId = BOT_DECK_IDS[Math.floor(Math.random() * BOT_DECK_IDS.length)];
+    const lane = Math.floor(Math.random() * 5);
+    const col = Math.floor(Math.random() * 4);
+    try {
+      entry.battle.deploy(Number(member.userId), { cardId, lane, col });
+    } catch {
+      // 资源不足或位置非法时跳过
+    }
+  }
+}
+
 function ensureAuthorityBattle(roomId, io, cardDb) {
   const numericRoomId = Number(roomId);
   const existing = authorityBattles.get(numericRoomId);
@@ -480,6 +500,7 @@ function ensureAuthorityBattle(roomId, io, cardDb) {
       emitRemovedProjectileEvents(io, room, entry, previousProjectiles);
       entry.accumulator -= STEP_SECONDS;
     }
+    runBotAI(entry, room);
 
     const unitCount = entry.battle.engine?.units?.length ?? 0;
     const broadcastInterval = unitCount >= HEAVY_UNIT_SNAPSHOT_THRESHOLD

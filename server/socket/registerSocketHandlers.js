@@ -199,6 +199,14 @@ export function registerSocketHandlers(io) {
       } catch (error) { ackError(ack, error); }
     });
 
+    socket.on('room:random-match', (payload = {}, ack) => {
+      try {
+        const room = roomManager.setRandomMatch(userId, payload.enabled);
+        io.to(`room:${room.id}`).emit('room:snapshot', room);
+        ackOk(ack, { room });
+      } catch (error) { ackError(ack, error); }
+    });
+
     socket.on('lobby:chat', async (payload = {}, ack) => {
       const text = String(payload.text || '').trim().slice(0, 200);
       const channel = ['current', 'world', 'guild', 'private'].includes(payload.channel)

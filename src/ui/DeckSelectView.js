@@ -125,6 +125,7 @@ export class DeckSelectView {
       this._myId = this._roomState.myUserId ?? null;
       if (this._roomState.stageName) this._stageName = this._roomState.stageName;
       if (this._roomState.allowUnbalanced != null) this._allowUnbalanced = this._roomState.allowUnbalanced;
+      if (this._roomState.randomMatch != null) this._randomMatch = this._roomState.randomMatch;
       // 按队伍分边：蓝队左侧(含房主)，红队右侧 —— 玩家在哪个队就显示在哪边
       const membersAll = this._roomState.members ?? [];
       const blueMembers = membersAll.filter((m) => m.team === 'blue');
@@ -427,8 +428,16 @@ export class DeckSelectView {
                     允许不对等战斗
                   </label>
                   <span class="rule-hint">人数不等可开战，无掉落无经验</span>
+                </div>
+                <div class="setting-row checkbox-row rule-row">
+                  <label title="开启后人数不足时由系统补人机，1v1只补1v1、2v2只补2v2">
+                    <input type="checkbox" id="random-match" ${this._randomMatch ? 'checked' : ''} />
+                    随机匹配（补人机）
+                  </label>
+                  <span class="rule-hint">人少也能开，系统补人机</span>
                 </div>` : ''}
                 ${this._roomState && this._roomState.allowUnbalanced ? '<div class="room-rule-badge">⚖ 已开启「允许不对等战斗」</div>' : ''}
+                ${this._roomState && this._roomState.randomMatch ? '<div class="room-rule-badge">🎲 已开启随机匹配（人机补位）</div>' : ''}
               </div>
             </div>
           </div>
@@ -533,6 +542,11 @@ export class DeckSelectView {
     allowUnbalanced?.addEventListener('change', (e) => {
       this._allowUnbalanced = e.target.checked;
       this._roomState?.onSetRule?.(e.target.checked);
+    });
+    const randomMatch = root.querySelector('#random-match');
+    randomMatch?.addEventListener('change', (e) => {
+      this._randomMatch = e.target.checked;
+      this._roomState?.onRandomMatch?.(e.target.checked);
     });
 
     // 底部按钮(占位功能)

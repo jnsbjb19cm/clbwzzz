@@ -169,7 +169,11 @@ export function bindClassicChat(root, { onSend } = {}) {
       'active',
       button.dataset.classicChatChannel === channel,
     ));
-    if (channel === 'private') await pickPrivateTarget();
+    if (channel === 'private') {
+      // 再次点私聊=切换私聊对象
+      if (input) input.dataset.privateTarget = '';
+      await pickPrivateTarget();
+    }
   };
   channelButtons.forEach((button) => button.addEventListener('click', selectChannel));
   const socket = getLobbySocket();

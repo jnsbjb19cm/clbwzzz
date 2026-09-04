@@ -25,6 +25,7 @@ function cloneRoom(room) {
     bossId: room.bossId,
     difficulty: room.difficulty,
     allowUnbalanced: room.allowUnbalanced,
+    randomMatch: room.randomMatch,
     mode: room.mode,
     size: room.size,
     maxTeamSize: room.maxTeamSize,
@@ -90,6 +91,7 @@ export class RoomManager {
       bossId: bossId ? String(bossId) : null,
       difficulty: difficulty ? String(difficulty) : null,
       allowUnbalanced: false,
+      randomMatch: false,
       mode,
       size,
       maxTeamSize,
@@ -212,7 +214,10 @@ export class RoomManager {
     if (members.some((member) => !member.connected)) throw new Error('存在断线玩家');
     if (members.some((member) => !member.isHost && !member.ready)) throw new Error('还有玩家没有准备');
 
-    if (room.mode === 'pvp') {
+    if (room.mode === 'pvp' && room.randomMatch) {
+      // 随机匹配：人数不足由系统补人机，只需要至少1名真实玩家即可开始
+      if (members.filter((m) => !m.isBot).length < 1) throw new Error('随机匹配至少需要1名玩家');
+    } else if (room.mode === 'pvp') {
       const blueCount = this.teamCount(room, 'blue');
       const redCount = this.teamCount(room, 'red');
       if (blueCount < 1 || redCount < 1) {
@@ -237,8 +242,48 @@ export class RoomManager {
     return cloneRoom(room);
   }
 
+  /** 房主开启/关闭随机匹配：人数不足时由服务端补人机 */
+  setRandomMatch(userId, enabled) {
+    const room = this.getRoomByUser(userId);
+    if (!room) throw new Error('你不在房间中');
+    const member = room.members.get(Number(userId));
+    if (!member?.isHost) throw new Error('只有房主可以设置随机匹配');
+    if (room.mode !== 'pvp') throw new Error('仅 PVP 房间支持随机匹配');
+    room.randomMatch = Boolean(enabled);
+    this.resetReady(room);
+    return cloneRoom(room);
+  }
+
+  fillRandomBots(room) {
+    if (!room.randomMatch || room.mode !== 'pvp') return;
+    for (const team of ['blue', 'red']) {
+      let count = this.teamCount(room, team);
+      while (count < room.maxTeamSize) {
+        count += 1;
+        const botSeq = (room._botSeq = (room._botSeq || 0) + 1);
+        const userId = -100000 - botSeq;
+        const member = {
+          userId,
+          nickname: `人机${botSeq}`,
+          level: 1,
+          team,
+          ready: true,
+          connected: true,
+          isHost: false,
+          isBot: true,
+          selectedDeckNo: 1,
+          joinOrder: ++this.joinSequence,
+          socketId: null,
+          disconnectTimer: null,
+        };
+        room.members.set(member.userId, member);
+      }
+    }
+  }
+
   markStarted(userId) {
     const room = this.canStart(userId);
+    this.fillRandomBots(room);
     room.status = 'starting';
     return cloneRoom(room);
   }

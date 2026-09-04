@@ -103,6 +103,10 @@ export class SocketClient {
     return this.emitAck('room:set-rule', { allowUnbalanced }).then((r) => r.room);
   }
 
+  setRandomMatch(enabled) {
+    return this.emitAck('room:random-match', { enabled }).then((r) => r.room);
+  }
+
   sendPvpDeploy(payload) {
     return this.emitAck('pvp:deploy', payload);
   }
