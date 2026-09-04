@@ -105,6 +105,31 @@ guildRouter.post('/leave', async (req, res) => {
   return res.json({ ok: true });
 });
 
+const GUILD_UPGRADE_COST = {
+  2: 20_000,
+  3: 50_000,
+  4: 100_000,
+  5: 200_000,
+};
+
+guildRouter.post('/upgrade', async (req, res) => {
+  const my = await getUserMember(req.user.id);
+  if (!my) return res.status(404).json({ message: '你不在公会中' });
+  if (my.role !== 'president') return res.status(403).json({ message: '只有会长可以升级公会' });
+  if (my.level >= 5) return res.status(400).json({ message: '公会已满级' });
+  const nextLevel = my.level + 1;
+  const cost = GUILD_UPGRADE_COST[nextLevel];
+  const profile = await db.get('SELECT gold FROM player_profiles WHERE user_id=?', [req.user.id]);
+  if (!profile || Number(profile.gold) < cost) {
+    return res.status(400).json({ message: `升级到Lv.${nextLevel}需要 ${cost} 金币` });
+  }
+  await withTransaction(async (conn) => {
+    await conn.run('UPDATE player_profiles SET gold=gold-?, updated_at=CURRENT_TIMESTAMP WHERE user_id=?', [cost, req.user.id]);
+    await conn.run('UPDATE guilds SET level=? WHERE id=?', [nextLevel, my.guildId]);
+  });
+  return res.json({ ok: true, level: nextLevel, cost });
+});
+
 guildRouter.get('/:guildId/members', async (req, res) => {
   const guildId = Number(req.params.guildId);
   if (!Number.isFinite(guildId)) return res.status(400).json({ message: '参数无效' });

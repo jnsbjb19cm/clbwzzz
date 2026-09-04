@@ -53,6 +53,17 @@ auctionRouter.get('/mine', async (req, res) => {
   return res.json({ ok: true, listings: rows });
 });
 
+auctionRouter.get('/my-items', async (req, res) => {
+  const rows = await db.all(`
+    SELECT item_id AS itemId, SUM(count) AS count
+    FROM player_items
+    WHERE user_id=? AND is_bound=0 AND count>0
+    GROUP BY item_id
+    ORDER BY item_id
+  `, [req.user.id]);
+  return res.json({ ok: true, items: rows });
+});
+
 auctionRouter.post('/', async (req, res) => {
   const itemId = clampInt(req.body.itemId, 1, 100_000);
   const count = clampInt(req.body.count, 1, 10_000);

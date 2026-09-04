@@ -41,6 +41,7 @@ export class AuctionView {
   async load() {
     const data = await this.api.get('/auction').catch(() => ({ listings: [] }));
     const my = await this.api.get('/auction/mine').catch(() => ({ listings: [] }));
+    const myItems = await this.api.get('/auction/my-items').catch(() => ({ items: [] }));
     const list = this.root.querySelector('#auction-list');
     const myEl = this.root.querySelector('#auction-my');
     list.innerHTML = (data.listings ?? []).map((a) => `
@@ -51,6 +52,12 @@ export class AuctionView {
         <button type="button" data-buy="${a.listingId}" style="padding:5px;border-radius:6px;border:0;background:#4a7a3a;color:#fff;cursor:pointer;">购买</button>
       </div>`).join('') || '<div style="grid-column:1/-1;color:#999;">暂无拍卖品</div>';
     myEl.innerHTML = `
+      <h3 style="margin:0 0 6px;">我的非绑定物品</h3>
+      <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px;">
+        ${(myItems.items ?? []).map((it) => `
+          <button type="button" data-item="${it.itemId}" data-count="${it.count}" style="padding:5px 10px;border-radius:6px;border:1px solid #7aa75a;background:#1c2a1c;color:#fff;cursor:pointer;">${esc(itemName(it.itemId))} ×${it.count}</button>
+        `).join('') || '<span style="color:#888;">暂无非绑定道具</span>'}
+      </div>
       <h3 style="margin:0 0 6px;">我的上架</h3>
       ${(my.listings ?? []).map((a) => `
         <div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid #223322;">
@@ -59,6 +66,11 @@ export class AuctionView {
         </div>`).join('') || '<div style="color:#888;">你没有上架物品</div>'}`;
     list.querySelectorAll('[data-buy]').forEach((btn) => btn.addEventListener('click', () => this.buy(Number(btn.dataset.buy))));
     myEl.querySelectorAll('[data-cancel]').forEach((btn) => btn.addEventListener('click', () => this.cancel(Number(btn.dataset.cancel))));
+    myEl.querySelectorAll('[data-item]').forEach((btn) => btn.addEventListener('click', () => {
+      this.root.querySelector('#auction-item').value = btn.dataset.item;
+      this.root.querySelector('#auction-count').value = btn.dataset.count;
+      this.root.querySelector('#auction-price').focus();
+    }));
   }
 
   async post() {

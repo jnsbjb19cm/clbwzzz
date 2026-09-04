@@ -61,11 +61,19 @@ export class GuildView {
         <p style="color:#bbb;">你的职位：${ROLE_LABEL[g.role] || g.role}</p>
         <button id="guild-members-btn" type="button" style="padding:6px 12px;border-radius:6px;border:0;background:#3a5a3a;color:#fff;cursor:pointer;">成员</button>
         <button id="guild-warehouse-btn" type="button" style="padding:6px 12px;border-radius:6px;border:0;background:#3a5a3a;color:#fff;cursor:pointer;">仓库</button>
+        ${g.role === 'president' && g.level < 5 ? `<button id="guild-upgrade-btn" type="button" style="padding:6px 12px;border-radius:6px;border:0;background:#6a5a2a;color:#fff;cursor:pointer;">升级公会</button>` : ''}
         <button id="guild-leave-btn" type="button" style="padding:6px 12px;border-radius:6px;border:0;background:#6a3a3a;color:#fff;cursor:pointer;">退出公会</button>
       </div>
       <div id="guild-detail"></div>`;
 
     el.querySelector('#guild-members-btn').addEventListener('click', () => this.showMembers(g.guildId));
+    el.querySelector('#guild-upgrade-btn')?.addEventListener('click', async () => {
+      try {
+        const res = await this.api.post('/guild/upgrade', {});
+        alert(`公会升级成功，当前 Lv.${res.level}`);
+        this.load();
+      } catch (e) { alert(e.message); }
+    });
     el.querySelector('#guild-warehouse-btn').addEventListener('click', () => this.showWarehouse(g.guildId));
     el.querySelector('#guild-leave-btn').addEventListener('click', async () => {
       if (!confirm('确定退出公会？')) return;
