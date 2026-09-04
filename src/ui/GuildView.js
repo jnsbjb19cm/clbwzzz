@@ -1,4 +1,8 @@
 import { authStore } from '../core/AuthStore.js';
+import { ItemDatabase } from '../core/ItemDatabase.js';
+import { getCraftMaterialImage } from './SmithyMaterialArtwork.js';
+
+const itemDb = new ItemDatabase();
 
 function esc(text) {
   return String(text ?? '')
@@ -29,17 +33,31 @@ export class GuildView {
     this.renderGuild(data.guild);
   }
 
-  renderNoGuild() {
+  async renderNoGuild() {
     const el = this.root.querySelector('#guild-main');
+    const listData = await this.api.get('/guild/list').catch(() => ({ guilds: [] }));
+    const guilds = listData.guilds ?? [];
     el.innerHTML = `
-      <div style="background:#101d10;border:1px solid #3a5a3a;border-radius:12px;padding:14px;max-width:420px;">
+      <div style="background:#101d10;border:1px solid #3a5a3a;border-radius:12px;padding:14px;max-width:520px;margin-bottom:12px;">
         <p style="margin:0 0 10px;color:#ccc;">你还没有加入公会</p>
         <div style="display:flex;gap:8px;">
           <input id="guild-name" type="text" placeholder="公会名(2-16字)" style="flex:1;padding:8px;border-radius:8px;border:1px solid #7aa75a;background:#1c2a1c;color:#fff;" />
           <button id="guild-create" type="button" style="padding:8px 14px;border-radius:8px;border:0;background:#4a7a3a;color:#fff;cursor:pointer;">创建公会</button>
         </div>
         <p style="margin:10px 0 4px;font-size:13px;color:#888;">创建后你就是会长，公会等级1默认合成/强化概率+3%。</p>
+      </div>
+      <div style="background:#101d10;border:1px solid #3a5a3a;border-radius:12px;padding:14px;max-width:760px;">
+        <h4 style="margin:0 0 8px;">加入已有公会</h4>
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:8px;">
+          ${guilds.map((g) => `
+            <div style="background:#1c2a1c;border:1px solid #3a5a3a;border-radius:8px;padding:8px;">
+              <div style="font-weight:700;">${esc(g.name)} <small style="color:#888;">Lv.${g.level}</small></div>
+              <div style="font-size:12px;color:#aaa;">成员 ${g.memberCount ?? 0}</div>
+              <button type="button" data-join-guild="${g.guildId}" style="margin-top:6px;padding:5px 10px;border-radius:6px;border:0;background:#4a7a3a;color:#fff;cursor:pointer;">加入</button>
+            </div>`).join('') || '<div style="color:#888;">暂时没有公会可加入</div>'}
+        </div>
       </div>`;
+
     el.querySelector('#guild-create').addEventListener('click', async () => {
       const name = el.querySelector('#guild-name').value.trim();
       try {
@@ -47,6 +65,13 @@ export class GuildView {
         this.load();
       } catch (e) { alert(e.message); }
     });
+    el.querySelectorAll('[data-join-guild]').forEach((btn) => btn.addEventListener('click', async () => {
+      try {
+        await this.api.post('/guild/join', { guildId: Number(btn.dataset.joinGuild) });
+        alert('加入公会成功');
+        this.load();
+      } catch (e) { alert(e.message); }
+    }));
   }
 
   renderGuild(g) {
@@ -109,7 +134,13 @@ export class GuildView {
           <button id="gh-deposit" type="button" style="padding:6px 12px;border-radius:6px;border:0;background:#4a7a3a;color:#fff;cursor:pointer;">存入仓库</button>
           <button id="gh-withdraw" type="button" style="padding:6px 12px;border-radius:6px;border:0;background:#6a5a2a;color:#fff;cursor:pointer;">取出仓库</button>
         </div>
-        <div>${data.items.map((it) => `<div style="padding:5px 0;border-bottom:1px solid #223322;">道具#${it.itemId} ×${it.count}</div>`).join('') || '<div style="color:#888;">仓库为空</div>'}</div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:8px;max-height:320px;overflow-y:auto;">
+          ${data.items.map((it) => `
+            <div style="background:#1c2a1c;border:1px solid #3a5a3a;border-radius:8px;padding:6px;text-align:center;">
+              ${itemIcon(it.itemId)}<div style="font-size:11px;margin-top:4px;">${esc(itemName(it.itemId))}</div>
+              <div style="font-size:12px;color:#ffd97a;">×${it.count}</div>
+            </div>`).join('') || '<div style="grid-column:1/-1;color:#888;">仓库为空</div>'}
+        </div>
       </div>`;
 
     el.querySelector('#gh-deposit')?.addEventListener('click', async () => {

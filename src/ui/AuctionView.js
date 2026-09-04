@@ -52,13 +52,20 @@ export class AuctionView {
     const myItems = await this.api.get('/auction/my-items').catch(() => ({ items: [] }));
     const list = this.root.querySelector('#auction-list');
     const myEl = this.root.querySelector('#auction-my');
-    list.innerHTML = (data.listings ?? []).map((a) => `
-      <div style="background:#14261a;border:1px solid #4a7a3a;border-radius:10px;padding:10px;display:flex;flex-direction:column;gap:6px;">
-        <div>${itemIcon(a.itemId)}<strong>${esc(itemName(a.itemId))}</strong> ×${a.count}</div>
-        <div style="font-size:12px;color:#bbb;">${esc(a.sellerName || '玩家')} · Lv.${a.sellerLevel ?? 1}</div>
-        <div style="font-size:14px;color:#ffd97a;">${a.price} 金币</div>
-        <button type="button" data-buy="${a.listingId}" style="padding:5px;border-radius:6px;border:0;background:#4a7a3a;color:#fff;cursor:pointer;">购买</button>
-      </div>`).join('') || '<div style="grid-column:1/-1;color:#999;">暂无拍卖品</div>';
+    list.innerHTML = `
+      <div style="background:#14261a;border:1px solid #4a7a3a;border-radius:10px;overflow:hidden;">
+        <div style="display:grid;grid-template-columns:1fr 70px 100px 180px 80px;gap:6px;padding:8px;background:#1c2a1c;font-size:12px;color:#bbb;font-weight:700;">
+          <span>物品</span><span>数量</span><span>价格</span><span>卖家</span><span>操作</span>
+        </div>
+        ${(data.listings ?? []).map((a) => `
+          <div style="display:grid;grid-template-columns:1fr 70px 100px 180px 80px;gap:6px;padding:8px 8px;border-top:1px solid #223322;align-items:center;">
+            <span>${itemIcon(a.itemId)}${esc(itemName(a.itemId))}</span>
+            <span>×${a.count}</span>
+            <span style="color:#ffd97a;">${a.price}</span>
+            <span style="font-size:12px;color:#bbb;">${esc(a.sellerName || '玩家')} Lv.${a.sellerLevel ?? 1}</span>
+            <span><button type="button" data-buy="${a.listingId}" style="padding:4px 10px;border-radius:6px;border:0;background:#4a7a3a;color:#fff;cursor:pointer;">购买</button></span>
+          </div>`).join('') || '<div style="padding:10px;color:#999;">暂无拍卖品</div>'}
+      </div>`;
     myEl.innerHTML = `
       <h3 style="margin:0 0 6px;">我的非绑定物品</h3>
       <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px;">

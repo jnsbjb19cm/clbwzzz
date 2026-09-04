@@ -31,6 +31,18 @@ async function getUserMember(userId) {
   `, [Number(userId)]);
 }
 
+guildRouter.get('/list', async (req, res) => {
+  const rows = await db.all(`
+    SELECT g.id AS guildId, g.name, g.level, g.notice,
+           COUNT(gm.user_id) AS memberCount
+    FROM guilds g
+    LEFT JOIN guild_members gm ON gm.guild_id=g.id
+    GROUP BY g.id
+    ORDER BY g.id
+  `);
+  return res.json({ ok: true, guilds: rows });
+});
+
 guildRouter.get('/my', async (req, res) => {
   const my = await getUserMember(req.user.id);
   if (!my) return res.json({ ok: true, guild: null });
