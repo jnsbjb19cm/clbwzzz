@@ -1,8 +1,19 @@
 import { audio } from '../core/AudioManager.js';
+import {
+  NEW_PLAYER_TUTORIAL_MARKER,
+  getTutorialDeckCards,
+  getTutorialDeckSlots,
+} from '../tutorial/TutorialConfig.js';
+import { installNewPlayerTutorial } from '../tutorial/NewPlayerTutorial.js';
+
+// main.js 还会继续安装多套 BattleView 补丁；延迟到当前模块初始化结束后再装教程补丁，
+// 使新手教程成为最终表现层，不被旧的战斗补丁覆盖。
+if (typeof queueMicrotask === 'function') queueMicrotask(() => installNewPlayerTutorial());
+else Promise.resolve().then(() => installNewPlayerTutorial());
 
 /**
  * 训练营（前端页面）
- * - 主城「训练营」进入。
+ * - 「新手教程」：临时教学卡组 + 真实胜负教学，必须亲手击破敌方基地。
  * - 「卡牌教学」：卡一览分页展示，点卡看【功能/作用/用法】+ 开始教学（进训练战斗带该卡）。
  * - 「自由练习」：当前卡组进训练战斗。
  * - 资源无限/正常 开关；训练战斗可换背景。
@@ -15,7 +26,7 @@ export class TrainingView {
     this.onNavigate = onNavigate;
     this.pickCard = null;
     this.page = 0;
-    this.freeRes = true;   // 资源无限默认开
+    this.freeRes = true;   // 自由练习默认无限资源
     this.trainingMap = 'grass'; // 训练背景（grass/rock/ice）
   }
 
@@ -57,6 +68,7 @@ export class TrainingView {
     this.root = root;
     const cards = this.db?.cards ?? [];
     const deckSlots = this.cardInventory?.getSlots?.() ?? [];
+    const tutorialCards = getTutorialDeckCards(this.db, 6);
     const list = cards.filter((c) => Number(c.id) < 500);
     const totalPages = Math.max(1, Math.ceil(list.length / TrainingView.PAGE));
     this.page = Math.min(this.page, totalPages - 1);
@@ -67,10 +79,28 @@ export class TrainingView {
         <header class="training-header">
           <button type="button" id="training-back" class="btn-sm">返回主城</button>
           <h1>训练营</h1>
-          <p>练习卡牌用法与阵容，不消耗资源、不计胜负。</p>
+          <p>先学会怎样获胜，再自由练卡；训练内容不消耗背包卡牌、不产生正式关卡掉落。</p>
         </header>
 
         <section class="training-body">
+          <div class="training-card training-new-player">
+            <h2>新手教程</h2>
+            <p>使用训练营临时提供的教学卡组，从零完成一场真正的教学战。</p>
+            <ul class="training-tutorial-goals">
+              <li>学习拖卡、可放置区域、前后排与自动战斗</li>
+              <li>认识阳光 / 食物、技能与 MP（MP 每 50 秒恢复 10 点）</li>
+              <li>理解失败条件，并亲手把右侧敌方基地打到 0 获胜</li>
+            </ul>
+            <div class="training-starter-deck" title="教学卡组仅本次训练临时使用">
+              ${tutorialCards.map((card) => `
+                <div class="training-starter-card">
+                  <img src="/sprites/cards/${card.spriteRes ?? card.id}.png" alt="${card.card_name ?? card.name ?? ''}" draggable="false">
+                  <span>${card.card_name ?? card.name ?? `卡${card.id}`}</span>
+                </div>`).join('')}
+            </div>
+            <button type="button" id="training-tutorial" class="btn" ${tutorialCards.length ? '' : 'disabled'}>开始新手教程</button>
+          </div>
+
           <div class="training-card">
             <h2>自由练习</h2>
             <p>使用当前保存的卡组，进入练习战斗（不出怪、不结算、不掉落），可换背景、自由放置测试。</p>
@@ -78,6 +108,7 @@ export class TrainingView {
             <div class="training-maps">背景：${TrainingView.MAPS.map(m => `<label><input type="radio" name="training-map" value="${m.key}" ${this.trainingMap === m.key ? 'checked' : ''}> ${m.name}</label>`).join('')}</div>
             <button type="button" id="training-free" class="btn" ${deckSlots.length ? '' : 'disabled'}>进入自由练习</button>
           </div>
+
           <div class="training-card">
             <h2>卡牌教学</h2>
             <p>点下方任意卡牌查看【功能 / 作用 / 用法】，再点「开始教学」进入训练战斗使用它。</p>
@@ -100,6 +131,16 @@ export class TrainingView {
     root.querySelector('#training-back')?.addEventListener('click', () => {
       audio.playSfx('click');
       this.onNavigate?.('main');
+    });
+    root.querySelector('#training-tutorial')?.addEventListener('click', () => {
+      audio.playSfx('click');
+      this.onNavigate?.('battle', {
+        training: true,
+        trainingFreeRes: false,
+        trainingMap: 'grass',
+        deckSlots: getTutorialDeckSlots(this.db, 6),
+        tryUsage: NEW_PLAYER_TUTORIAL_MARKER,
+      });
     });
     root.querySelectorAll('input[name="training-map"]')?.forEach((r) => r.addEventListener('change', (e) => { if (e.target.checked) this.trainingMap = e.target.value; }));
     root.querySelector('#training-free-res')?.addEventListener('change', (e) => {
