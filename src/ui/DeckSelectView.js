@@ -546,7 +546,9 @@ export class DeckSelectView {
     const randomMatch = root.querySelector('#random-match');
     randomMatch?.addEventListener('change', (e) => {
       this._randomMatch = e.target.checked;
-      this._roomState?.onRandomMatch?.(e.target.checked);
+      console.log('[random-match] checkbox change', e.target.checked, Boolean(this._roomState?.onRandomMatch));
+      if (this._roomState?.onRandomMatch) this._roomState.onRandomMatch(e.target.checked);
+      else if (typeof window !== 'undefined' && window.__roomSocket?.setRandomMatch) window.__roomSocket.setRandomMatch(e.target.checked);
     });
 
     // 底部按钮(占位功能)

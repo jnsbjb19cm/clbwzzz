@@ -441,7 +441,8 @@ function runBotAI(entry, room) {
     member._botDeployAt = now + 2.2;
     const cardId = BOT_DECK_IDS[Math.floor(Math.random() * BOT_DECK_IDS.length)];
     const lane = Math.floor(Math.random() * 5);
-    const col = Math.floor(Math.random() * 4);
+    const isBlue = member.team === 'blue';
+    const col = isBlue ? Math.floor(Math.random() * 5) : 7 + Math.floor(Math.random() * 5);
     try {
       entry.battle.deploy(Number(member.userId), { cardId, lane, col });
     } catch {
