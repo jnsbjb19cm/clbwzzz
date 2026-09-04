@@ -509,6 +509,7 @@
 
 .classic-chat-log .is-system { color: #e6df65; }
 .classic-chat-log .is-guild { color: #39dc67; }
+.classic-chat-log .is-private { color: #c77dff; }
 .classic-chat-log .is-self { color: #ecf3b5; }
 
 .classic-chat-compose {

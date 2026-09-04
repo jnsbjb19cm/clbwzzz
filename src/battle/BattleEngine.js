@@ -1033,9 +1033,13 @@ export class BattleEngine {
     }
     audio.playSfx('vertigo', { tier: 'subtle' });
     audio.playSfx('stunning', { tier: 'subtle' });
+    const dmg = roundBattleAmount(
+      Math.max(1, unit.atk + this.getAuraBonus(unit) + (unit.tempAtkBonus ?? 0)) * 1.8,
+    );
     for (const v of victims) {
       v.stunnedUntil = Math.max(v.stunnedUntil ?? 0, this.time + 2.5);
-      this.pushLog(`【${unit.name}】碰到 ${v.name}，立刻击晕 2.5 秒`);
+      this.resolveMeleeImpact(unit, v, dmg);
+      this.pushLog(`【${unit.name}】碰到 ${v.name}，立刻击晕 2.5 秒并造成 ${dmg} 伤害`);
     }
     return true;
   }

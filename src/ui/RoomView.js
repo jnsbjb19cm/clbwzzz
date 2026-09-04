@@ -245,6 +245,8 @@ export class RoomView {
       if (e.key === 'Enter') this.sendChat();
     });
     this.root.querySelector('#lobby-recharge').addEventListener('click', () => this.notice('充值功能开发中'));
+    this.root.querySelector('.lobby-menu-btn[data-fn="gold"]')?.addEventListener('click', () => this.onNavigate?.('shop'));
+    this.root.querySelector('.lobby-menu-btn[data-fn="trophy"]')?.addEventListener('click', () => this.onNavigate?.('hall'));
     this.root.querySelector('#lobby-exit').addEventListener('click', () => this.onNavigate?.('main'));
     this.root.querySelector('#lobby-fn-backpack').addEventListener('click', () => this.onNavigate?.('bag'));
     this.root.querySelector('.lobby-menu-btn[data-fn="quest"]').addEventListener('click', () => this.onNavigate?.('quest'));

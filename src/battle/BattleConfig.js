@@ -240,8 +240,8 @@ export const REMOTE_RANGE = 12;
 export const TICK_INTERVAL = 0.155;
 export const MAX_RESOURCE = 40;
 export const RESOURCE_START = 10;
-export const RESOURCE_REGEN = 1;
-export const RESOURCE_REGEN_INTERVAL = 1.6;
+export const RESOURCE_REGEN = 10;
+export const RESOURCE_REGEN_INTERVAL = 10;
 
 export const WAVE_FIRST_DELAY = 5;
 export const WAVE_INTERVAL = 10;

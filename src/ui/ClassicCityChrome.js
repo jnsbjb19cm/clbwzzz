@@ -63,7 +63,8 @@ function getLobbySocket() {
         chatRoots.delete(root);
         continue;
       }
-      appendChatLine(root, `[${chatChannelLabel(payload.channel)}] ${nickname}：${message}`, 'normal');
+      const tone = payload.channel === 'guild' ? 'guild' : payload.channel === 'private' ? 'private' : 'normal';
+      appendChatLine(root, `[${chatChannelLabel(payload.channel)}] ${nickname}：${message}`, tone);
     }
   });
   return lobbySocket;
@@ -122,13 +123,32 @@ export function bindClassicChat(root, { onSend } = {}) {
   legacyChannel?.replaceWith(channelMenu);
   if (input) input.dataset.channel = 'current';
   const channelButtons = [...channelMenu.querySelectorAll('[data-classic-chat-channel]')];
-  const selectChannel = (event) => {
+
+  const pickPrivateTarget = async () => {
+    const existing = input?.dataset?.privateTarget ? Number(input.dataset.privateTarget) : null;
+    if (Number.isFinite(existing) && existing > 0) return existing;
+    const friendData = await authStore.api.get('/social/friends').catch(() => ({ friends: [] }));
+    const friends = friendData.friends ?? [];
+    const hint = friends.map((f) => `${f.nickname || f.username}(${f.userId})`).join('、');
+    const targetText = prompt(`请选择私聊对象(填好友昵称或ID)：\n${hint || '你还没有好友'}`);
+    if (!targetText) return null;
+    const matched = friends.find((f) => String(f.nickname || f.username) === targetText.trim() || String(f.userId) === targetText.trim());
+    const targetId = matched ? Number(matched.userId) : Number(targetText);
+    if (Number.isFinite(targetId) && targetId > 0) {
+      if (input) input.dataset.privateTarget = targetId;
+      return targetId;
+    }
+    return null;
+  };
+
+  const selectChannel = async (event) => {
     const channel = normalizeChatChannel(event.currentTarget.dataset.classicChatChannel);
     if (input) input.dataset.channel = channel;
     channelButtons.forEach((button) => button.classList.toggle(
       'active',
       button.dataset.classicChatChannel === channel,
     ));
+    if (channel === 'private') await pickPrivateTarget();
   };
   channelButtons.forEach((button) => button.addEventListener('click', selectChannel));
   const socket = getLobbySocket();
@@ -151,17 +171,8 @@ export function bindClassicChat(root, { onSend } = {}) {
     let targetId = null;
     if (channel === 'private') {
       targetId = input?.dataset?.privateTarget ? Number(input.dataset.privateTarget) : null;
-      if (!Number.isFinite(targetId) || targetId <= 0) {
-        const friendData = await authStore.api.get('/social/friends').catch(() => ({ friends: [] }));
-        const friends = friendData.friends ?? [];
-        const hint = friends.map((f) => `${f.nickname || f.username}(${f.userId})`).join('、');
-        const targetText = prompt(`选择私聊对象(可填好友昵称或ID)：\n${hint || '你还没有好友'}`);
-        if (!targetText) return;
-        const matched = friends.find((f) => String(f.nickname || f.username) === targetText.trim() || String(f.userId) === targetText.trim());
-        targetId = matched ? Number(matched.userId) : Number(targetText);
-        if (!Number.isFinite(targetId) || targetId <= 0) return;
-        if (input) input.dataset.privateTarget = targetId;
-      }
+      if (!Number.isFinite(targetId) || targetId <= 0) targetId = await pickPrivateTarget();
+      if (!Number.isFinite(targetId) || targetId <= 0) return;
     }
     try {
       await socket.sendLobbyChat(value, channel, targetId);

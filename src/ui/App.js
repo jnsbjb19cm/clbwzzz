@@ -39,7 +39,7 @@ const BOTTOM_NAV = [
 ];                                                   /*UI索引值  */
 
 const PLACEHOLDER_MODULES = new Set(['guild', 'social', 'hall', 'auction']);
-const CITY_OVERLAY_ROUTES = new Set(['gallery', 'guild', 'quest', 'worldmap', 'social', 'hall', 'auction', 'settings']);
+const CITY_OVERLAY_ROUTES = new Set(['gallery', 'guild', 'quest', 'worldmap', 'social', 'hall', 'auction', 'settings', 'bag', 'shop']);
 
 const CITY_BGM_ROUTES = new Set([
   'main',
