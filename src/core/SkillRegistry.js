@@ -2,11 +2,11 @@
 export const SKILL_SLOT_COUNT = 6;
 export const SKILL_HOTKEYS = ['Q', 'W', 'E', 'R', 'T', 'Y'];
 
-/** 英雄 MP：战斗中自动恢复。 */
+/** 英雄 MP：战斗中每 50 秒恢复 10 点。 */
 export const HERO_MP_MAX = 100;
 export const HERO_MP_START = 100;
-export const HERO_MP_REGEN = 8;
-export const HERO_MP_REGEN_INTERVAL = 1.6;
+export const HERO_MP_REGEN = 10;
+export const HERO_MP_REGEN_INTERVAL = 50;
 
 /** 初始只装备非天赋技能；其余技能必须先在天赋树解锁。 */
 export const DEFAULT_SKILL_LOADOUT = [503, 504, 505, null, null, null];
