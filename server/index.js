@@ -18,6 +18,7 @@ const __dirname = path.dirname(__filename);
 import { authRouter } from './routes/auth.js';
 import { playerRouter } from './routes/player.js';
 import { socialRouter } from './routes/social.js';
+import { guildRouter } from './routes/guild.js';
 import { getPvpCardDb } from './battle/PvpCardDb.js';
 import { installPvpGameplayFinal } from './battle/PvpGameplayInstall.js';
 import { installPvpCombatPolishFinal } from './battle/PvpCombatPolishFinal.js';
@@ -73,6 +74,7 @@ app.get('/api/health', (_req, res) => {
 app.use('/api/auth', authRouter);
 app.use('/api/player', playerRouter);
 app.use('/api/social', socialRouter);
+app.use('/api/guild', guildRouter);
 
 const distDir = path.resolve(__dirname, '../dist');
 const indexHtml = path.join(distDir, 'index.html');

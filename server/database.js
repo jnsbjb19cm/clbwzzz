@@ -239,6 +239,35 @@ CREATE TABLE IF NOT EXISTS friend_requests (
   FOREIGN KEY(receiver_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
+CREATE TABLE IF NOT EXISTS guilds (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  name TEXT NOT NULL,
+  notice TEXT NOT NULL DEFAULT '',
+  level INTEGER NOT NULL DEFAULT 1 CHECK(level BETWEEN 1 AND 5),
+  created_by INTEGER NOT NULL,
+  created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY(created_by) REFERENCES users(id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS guild_members (
+  guild_id INTEGER NOT NULL,
+  user_id INTEGER NOT NULL,
+  role TEXT NOT NULL DEFAULT 'member' CHECK(role IN ('president','vice_president','elite','member')),
+  joined_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY(guild_id, user_id),
+  FOREIGN KEY(guild_id) REFERENCES guilds(id) ON DELETE CASCADE,
+  FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS guild_warehouse (
+  guild_id INTEGER NOT NULL,
+  item_id INTEGER NOT NULL,
+  count INTEGER NOT NULL DEFAULT 0 CHECK(count >= 0),
+  updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY(guild_id, item_id),
+  FOREIGN KEY(guild_id) REFERENCES guilds(id) ON DELETE CASCADE
+);
+
 CREATE TABLE IF NOT EXISTS battle_results (
   id TEXT PRIMARY KEY,
   room_id INTEGER,
@@ -386,6 +415,32 @@ const MYSQL_TABLES = [
     UNIQUE KEY uk_friend_request(sender_id, receiver_id),
     CONSTRAINT fk_freq_sender FOREIGN KEY(sender_id) REFERENCES users(id) ON DELETE CASCADE,
     CONSTRAINT fk_freq_receiver FOREIGN KEY(receiver_id) REFERENCES users(id) ON DELETE CASCADE
+  ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci`,
+  `CREATE TABLE IF NOT EXISTS guilds (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(64) NOT NULL,
+    notice TEXT NOT NULL,
+    level INT NOT NULL DEFAULT 1,
+    created_by BIGINT NOT NULL,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_guild_creator FOREIGN KEY(created_by) REFERENCES users(id) ON DELETE CASCADE
+  ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci`,
+  `CREATE TABLE IF NOT EXISTS guild_members (
+    guild_id BIGINT NOT NULL,
+    user_id BIGINT NOT NULL,
+    role VARCHAR(20) NOT NULL DEFAULT 'member',
+    joined_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY(guild_id, user_id),
+    CONSTRAINT fk_gm_guild FOREIGN KEY(guild_id) REFERENCES guilds(id) ON DELETE CASCADE,
+    CONSTRAINT fk_gm_user FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE
+  ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci`,
+  `CREATE TABLE IF NOT EXISTS guild_warehouse (
+    guild_id BIGINT NOT NULL,
+    item_id INT NOT NULL,
+    count BIGINT NOT NULL DEFAULT 0,
+    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    PRIMARY KEY(guild_id, item_id),
+    CONSTRAINT fk_gw_guild FOREIGN KEY(guild_id) REFERENCES guilds(id) ON DELETE CASCADE
   ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci`,
   `CREATE TABLE IF NOT EXISTS battle_results (
     id VARCHAR(64) PRIMARY KEY,
