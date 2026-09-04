@@ -84,20 +84,20 @@ socialRouter.post('/friends/request', async (req, res) => {
   }
 
   const existing = await db.get(
-    'SELECT id FROM friend_requests WHERE sender_id=? AND receiver_id=? AND status="pending"',
+    'SELECT id FROM friend_requests WHERE sender_id=? AND receiver_id=? AND status=\'pending\'',
     [req.user.id, targetId],
   );
   if (existing) return res.status(409).json({ message: '好友申请已发送，等待对方处理' });
 
   const reverse = await db.get(
-    'SELECT id FROM friend_requests WHERE sender_id=? AND receiver_id=? AND status="pending"',
+    'SELECT id FROM friend_requests WHERE sender_id=? AND receiver_id=? AND status=\'pending\'',
     [targetId, req.user.id],
   );
   if (reverse) {
     // 对方已经申请过你：直接接受
     await withTransaction(async (conn) => {
       await conn.run(
-        'UPDATE friend_requests SET status="accepted" WHERE id=?',
+        'UPDATE friend_requests SET status=\'accepted\' WHERE id=?',
         [reverse.id],
       );
       await conn.run('DELETE FROM friends WHERE user_id=? AND friend_id=?', [req.user.id, targetId]);
@@ -109,7 +109,7 @@ socialRouter.post('/friends/request', async (req, res) => {
   }
 
   await db.run(
-    'INSERT INTO friend_requests(sender_id,receiver_id,status) VALUES(?,?,"pending")',
+    'INSERT INTO friend_requests(sender_id,receiver_id,status) VALUES(?,?,\'pending\')',
     [req.user.id, targetId],
   );
   return res.json({ ok: true, requested: true, target }); 
@@ -118,13 +118,13 @@ socialRouter.post('/friends/request', async (req, res) => {
 socialRouter.post('/friends/accept', async (req, res) => {
   const requestId = clampInt(req.body.requestId, 1, 2_000_000_000);
   const request = await db.get(
-    'SELECT * FROM friend_requests WHERE id=? AND receiver_id=? AND status="pending"',
+    'SELECT * FROM friend_requests WHERE id=? AND receiver_id=? AND status=\'pending\'',
     [requestId, req.user.id],
   );
   if (!request) return res.status(404).json({ message: '好友申请不存在或已处理' });
 
   await withTransaction(async (conn) => {
-    await conn.run('UPDATE friend_requests SET status="accepted" WHERE id=?', [requestId]);
+    await conn.run('UPDATE friend_requests SET status=\'accepted\' WHERE id=?', [requestId]);
     await conn.run('DELETE FROM friends WHERE user_id=? AND friend_id=?', [req.user.id, request.sender_id]);
     await conn.run('INSERT INTO friends(user_id,friend_id) VALUES(?,?)', [req.user.id, request.sender_id]);
     await conn.run('DELETE FROM friends WHERE user_id=? AND friend_id=?', [request.sender_id, req.user.id]);

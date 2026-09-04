@@ -61,7 +61,7 @@ guildRouter.post('/create', async (req, res) => {
     );
     const id = result.lastInsertRowid ?? result.insertId;
     await conn.run(
-      'INSERT INTO guild_members(guild_id,user_id,role) VALUES(?,?,"president")',
+      'INSERT INTO guild_members(guild_id,user_id,role) VALUES(?,?,\'president\')',
       [id, req.user.id],
     );
     return id;
@@ -76,7 +76,7 @@ guildRouter.post('/join', async (req, res) => {
   if (my) return res.status(409).json({ message: '你已经加入了公会' });
   const guild = await db.get('SELECT id FROM guilds WHERE id=?', [guildId]);
   if (!guild) return res.status(404).json({ message: '公会不存在' });
-  await db.run('INSERT INTO guild_members(guild_id,user_id,role) VALUES(?,?,"member")', [guildId, req.user.id]);
+  await db.run('INSERT INTO guild_members(guild_id,user_id,role) VALUES(?,?,\'member\')', [guildId, req.user.id]);
   return res.json({ ok: true });
 });
 
@@ -85,7 +85,7 @@ guildRouter.post('/leave', async (req, res) => {
   if (!my) return res.status(404).json({ message: '你不在公会中' });
   if (my.role === 'president') {
     const members = await db.all(
-      'SELECT user_id AS userId FROM guild_members WHERE guild_id=? AND role!="president" ORDER BY joined_at LIMIT 1',
+      'SELECT user_id AS userId FROM guild_members WHERE guild_id=? AND role!=\'president\' ORDER BY joined_at LIMIT 1',
       [my.guildId],
     );
     if (!members.length) {
@@ -96,8 +96,8 @@ guildRouter.post('/leave', async (req, res) => {
     // 转让会长给最早加入的成员
     const next = members[0];
     await withTransaction(async (conn) => {
-      await conn.run('UPDATE guild_members SET role="member" WHERE guild_id=? AND user_id=?', [my.guildId, req.user.id]);
-      await conn.run('UPDATE guild_members SET role="president" WHERE guild_id=? AND user_id=?', [my.guildId, next.userId]);
+      await conn.run('UPDATE guild_members SET role=\'member\' WHERE guild_id=? AND user_id=?', [my.guildId, req.user.id]);
+      await conn.run('UPDATE guild_members SET role=\'president\' WHERE guild_id=? AND user_id=?', [my.guildId, next.userId]);
     });
     return res.json({ ok: true, message: '会长已转让并退出成功' });
   }

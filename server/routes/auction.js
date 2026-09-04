@@ -81,7 +81,7 @@ auctionRouter.post('/', async (req, res) => {
       [count, req.user.id, itemId],
     );
     const result = await conn.run(
-      'INSERT INTO auction_listings(seller_id,item_id,count,price,status) VALUES(?,?,?,?,"active")',
+      'INSERT INTO auction_listings(seller_id,item_id,count,price,status) VALUES(?,?,?,?,\'active\')',
       [req.user.id, itemId, count, price],
     );
     return result.lastInsertRowid ?? result.insertId;
@@ -92,7 +92,7 @@ auctionRouter.post('/', async (req, res) => {
 auctionRouter.post('/buy', async (req, res) => {
   const listingId = clampInt(req.body.listingId, 1, 2_000_000_000);
   const listing = await db.get(
-    'SELECT * FROM auction_listings WHERE id=? AND status="active"',
+    'SELECT * FROM auction_listings WHERE id=? AND status=\'active\'',
     [listingId],
   );
   if (!listing) return res.status(404).json({ message: '拍卖品不存在或已售出' });
@@ -108,7 +108,7 @@ auctionRouter.post('/buy', async (req, res) => {
     await conn.run('UPDATE player_profiles SET gold=gold-?, updated_at=CURRENT_TIMESTAMP WHERE user_id=?', [listing.price, req.user.id]);
     await conn.run('UPDATE player_profiles SET gold=gold+?, updated_at=CURRENT_TIMESTAMP WHERE user_id=?', [listing.price, listing.seller_id]);
     await addNonBoundItem(conn, req.user.id, listing.item_id, listing.count);
-    await conn.run('UPDATE auction_listings SET status="sold" WHERE id=?', [listingId]);
+    await conn.run('UPDATE auction_listings SET status=\'sold\' WHERE id=?', [listingId]);
   });
   return res.json({ ok: true, message: '购买成功' });
 });
@@ -116,13 +116,13 @@ auctionRouter.post('/buy', async (req, res) => {
 auctionRouter.delete('/:id', async (req, res) => {
   const listingId = Number(req.params.id);
   const listing = await db.get(
-    'SELECT * FROM auction_listings WHERE id=? AND seller_id=? AND status="active"',
+    'SELECT * FROM auction_listings WHERE id=? AND seller_id=? AND status=\'active\'',
     [listingId, req.user.id],
   );
   if (!listing) return res.status(404).json({ message: '拍卖品不存在或无法取消' });
   await withTransaction(async (conn) => {
     await addNonBoundItem(conn, req.user.id, listing.item_id, listing.count);
-    await conn.run('UPDATE auction_listings SET status="cancelled" WHERE id=?', [listingId]);
+    await conn.run('UPDATE auction_listings SET status=\'cancelled\' WHERE id=?', [listingId]);
   });
   return res.json({ ok: true });
 });
