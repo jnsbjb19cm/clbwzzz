@@ -8,8 +8,9 @@ export class SettingsView {
 
   async render(root) {
     root.innerHTML = `
-      <div style="max-width:520px;margin:20px auto;padding:20px;color:#fff;background:#101d10;border:1px solid #3a5a3a;border-radius:12px;">
-        <h2 style="margin:0 0 16px;">设置</h2>
+      <div style="max-width:340px;margin:20px auto;padding:16px;color:#fff;background:#101d10;border:1px solid #3a5a3a;border-radius:12px;">
+        <h2 style="margin:0 0 12px;color:#fff8c2;">设置</h2>
+        <p style="margin:0 0 8px;font-size:12px;color:#999;">调整后立即生效，点右上角 X 关闭。</p>
         <label style="display:block;margin:14px 0;">音乐音量
           <input id="setting-music" type="range" min="0" max="100" value="${Math.round(audio.volume * 100)}" style="width:100%;" />
         </label>

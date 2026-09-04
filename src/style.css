@@ -3868,7 +3868,7 @@ body.battle-immersive .top-ui {
 .quest-detail-block p,
 .quest-window-title p { font-weight: 400; }
 
-.ch-stage-view { width: min(1180px, 100%); margin: 0 auto; }
+.ch-stage-view { width: min(1363px, 100%); margin: 0 auto; max-height: calc(100vh - 30px); overflow-y: auto; }
 .ch-stage-map { max-width: none; min-height: min(62vh, 620px); aspect-ratio: 1363 / 768 !important; background: #1f3522; }
 .ch-stage-bg { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: center; }
 .ch-stage-svg { z-index: 1; }

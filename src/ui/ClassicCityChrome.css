@@ -1142,7 +1142,18 @@ body.main-city-nav-active .bottom-nav-btn[data-route='social']::before { backgro
 body.main-city-nav-active .bottom-nav-btn[data-route='battle']::before { background-position: -1126px -291px; }
 body.main-city-nav-active .bottom-nav-btn[data-route='worldmap']::before { background-position: -274px -520px; }
 body.main-city-nav-active .bottom-nav-btn[data-route='settings']::before { background-position: -212px -1061px; }
-body.main-city-nav-active .bottom-nav-btn[data-route='main']::before { background-position: -232px -1157px; }
+/* 返回按钮用独立返回图标，避免和设置共用齿轮图标 */
+body.main-city-nav-active .bottom-nav-btn[data-route='main']::before {
+  background-image: none !important;
+  background-color: #c99e2e !important;
+  color: #fff8c2 !important;
+  content: '↩';
+  font-family: sans-serif !important;
+  font-size: 30px !important;
+  font-weight: 900 !important;
+  line-height: 56px !important;
+  text-align: center !important;
+}
 
 body.main-city-nav-active .bottom-nav.main-city-corner-nav .bottom-nav-btn:hover,
 body.main-city-nav-active .bottom-nav.main-city-corner-nav .bottom-nav-btn.active {
