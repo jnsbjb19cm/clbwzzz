@@ -1,0 +1,181 @@
+/* 战斗内半透明聊天覆盖层：可展开/收起，不挡住战场操作。 */
+.battle-chat-shell {
+  position: fixed;
+  left: 14px;
+  bottom: 64px;
+  z-index: 1000;
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+  font-family: "Microsoft YaHei", system-ui, sans-serif;
+  pointer-events: none;
+  user-select: none;
+}
+
+.battle-chat-panel {
+  pointer-events: auto;
+  display: flex;
+  flex-direction: column;
+  width: min(330px, calc(100vw - 28px));
+  max-height: min(220px, 40vh);
+  overflow: hidden;
+  border: 1px solid rgba(168, 217, 91, 0.55);
+  border-radius: 12px;
+  background: rgba(6, 32, 17, 0.74);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.42);
+  color: #eafff2;
+}
+
+.battle-chat-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 5px 8px;
+  background: rgba(0, 0, 0, 0.28);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.battle-chat-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: #d9ffa6;
+  text-shadow: 0 1px rgba(0, 0, 0, 0.5);
+}
+
+.battle-chat-min {
+  width: 26px;
+  height: 24px;
+  padding: 0;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: #cfe7a8;
+  font-size: 17px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.battle-chat-min:hover {
+  background: rgba(255, 255, 255, 0.16);
+}
+
+.battle-chat-log {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 6px 8px;
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.battle-chat-log::-webkit-scrollbar {
+  width: 6px;
+}
+
+.battle-chat-log::-webkit-scrollbar-thumb {
+  background: rgba(168, 217, 91, 0.5);
+  border-radius: 999px;
+}
+
+.battle-chat-message {
+  margin-bottom: 3px;
+  color: #e8ffe8;
+  word-break: break-all;
+}
+
+.battle-chat-message b {
+  color: #d7ff9e;
+}
+
+.battle-chat-message.system {
+  color: #ffe66c;
+}
+
+.battle-chat-message.system b {
+  color: #ffe66c;
+}
+
+.battle-chat-form {
+  display: flex;
+  gap: 6px;
+  padding: 6px;
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.battle-chat-form input {
+  flex: 1 1 auto;
+  min-width: 0;
+  padding: 6px 8px;
+  border: 1px solid rgba(168, 217, 91, 0.55);
+  border-radius: 8px;
+  background: rgba(0, 0, 0, 0.38);
+  color: #fff;
+  font-size: 12px;
+  outline: none;
+}
+
+.battle-chat-form input:focus {
+  border-color: #dbbd42;
+}
+
+.battle-chat-form button {
+  flex: 0 0 auto;
+  padding: 6px 10px;
+  border: 1px solid #a8d95b;
+  border-radius: 8px;
+  background: linear-gradient(180deg, #85b83f, #4f7f2b);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.battle-chat-form button:disabled,
+.battle-chat-form input:disabled {
+  opacity: 0.55;
+  cursor: default;
+}
+
+.battle-chat-toggle {
+  pointer-events: auto;
+  display: none;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+  border: 1px solid rgba(168, 217, 91, 0.55);
+  border-radius: 999px;
+  background: rgba(6, 32, 17, 0.78);
+  color: #eafff2;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35);
+}
+
+.battle-chat-toggle:hover {
+  background: rgba(16, 56, 28, 0.85);
+}
+
+.battle-chat-shell.minimized .battle-chat-panel {
+  display: none;
+}
+
+.battle-chat-shell.minimized .battle-chat-toggle {
+  display: inline-flex;
+}
+
+.battle-chat-badge {
+  display: none;
+  min-width: 18px;
+  padding: 1px 6px;
+  border-radius: 999px;
+  background: #ff5252;
+  color: #fff;
+  font-size: 11px;
+  text-align: center;
+}
+
+.battle-chat-badge.visible {
+  display: inline-block;
+}

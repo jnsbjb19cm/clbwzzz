@@ -1324,6 +1324,13 @@ export class BattleView {
   }
 
   _onKeydown = (e) => {
+    // 输入框（战斗聊天、设置等）内不触发战斗快捷键。
+    const target = e.target;
+    if (target instanceof HTMLElement && (
+      target.matches('input, textarea, select')
+      || target.isContentEditable
+      || Boolean(target.closest?.('.battle-chat-shell'))
+    )) return;
     if (this.pvp?.spectator) return;
     if (!this.viewRoot || !this.engine) return;
     if (e.key === 'Escape') {

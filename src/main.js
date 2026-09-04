@@ -41,6 +41,7 @@ import './ui/PvpCombatPolishFinal.css';
 import './ui/PvpRound2CoordinateFinal.css';
 import './ui/PvpRound3ReferenceFinal.css';
 import './ui/ClassicCityChrome.css';
+import './ui/BattleChatOverlay.css';
 // Final room visual authority: real DOM/CSS only, measured from the 1536×940 reference.
 // Legacy 1826 visual tails are deliberately not loaded anymore.
 import './ui/BattleRoomReference1536Pixel.css';
@@ -123,6 +124,7 @@ import { installBattleTalentAuthority20260830 } from './ui/BattleTalentAuthority
 import { schedulePvpProjectileContinuity20260819 } from './ui/PvpProjectileContinuity20260819.js';
 import { installBattleUserRules20260903 } from './battle/BattleUserRules20260903.js';
 import { installBattleUserPresentation20260903 } from './ui/BattleUserPresentation20260903.js';
+import { installBattleChatOverlay } from './ui/BattleChatOverlay.js';
 import { RoomUtilityOverlay } from './ui/RoomUtilityOverlay.js';
 import { App } from './ui/App.js';
 
@@ -205,6 +207,7 @@ installBattleRoomReference1826Authority();
 // User battle-rule authority must be last: permanent peach flight/death VFX + phantom air-death summon.
 installBattleUserRules20260903();
 installBattleUserPresentation20260903();
+installBattleChatOverlay();
 
 const app = new App(document.getElementById('app'));
 const roomUtilityOverlay = new RoomUtilityOverlay(app);

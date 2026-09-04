@@ -75,3 +75,12 @@ test-results/
 
 # 本地技能安装产物
 .agents/skills/
+
+# 旧 Android/AIR 遗留 XML（JS 版未使用，不入库）
+AndroidManifest.xml
+res/**/*.xml
+assets/META-INF/**/*.xml
+assets/ucgamesdk/**/*.xml
+assets/xml/**/*.xml
+assets/assets/resources/*.xml
+assets/assets/skeletonXML/*.xml

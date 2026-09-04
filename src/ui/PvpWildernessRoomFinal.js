@@ -487,6 +487,7 @@ function enterPvpBattle(view) {
     heroSkills: null,
     pvp: {
       roomId: view.room.id,
+      room: view.room,
       team: view.myTeam,
       socket: view.socket,
       deckSlots,

@@ -732,7 +732,7 @@ export class RoomView {
       this.roomBattleView = new BattleView(this.db, {
         cardInventory: this.cardInventory,
         heroSkills: null,
-        pvp: { roomId: this.room.id },
+        pvp: { roomId: this.room.id, room: this.room, socket: this.socket },
         onNavigate: this.onNavigate,
       });
       this.roomBattleView.render(panel);

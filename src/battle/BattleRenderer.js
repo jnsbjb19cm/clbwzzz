@@ -606,9 +606,10 @@ export class BattleRenderer {
   drawUnitName(ctx, x, y, w, name, team) {
     // 名字显示开关（localStorage clbwz_show_unit_names，默认开）
     if (typeof localStorage !== 'undefined' && localStorage.getItem('clbwz_show_unit_names') === '0') return;
-    // BOSS 关不显示敌方/BOSS 方卡牌名称（保留我方名称，便于看自己单位）。
-    if (this._hideBossEnemyNames && team === 'enemy') return;
-    const label = name.length > 5 ? `${name.slice(0, 5)}…` : name;
+    // 只要玩家开启“名称显示”，低画质/大军团/BOSS 模式都不再自动隐藏名称。
+    const nameText = String(name ?? '').trim();
+    if (!nameText) return;
+    const label = nameText.length > 5 ? `${nameText.slice(0, 5)}…` : nameText;
     ctx.font = 'bold 9px "Microsoft YaHei", sans-serif';
     ctx.textAlign = 'center';
     ctx.fillStyle = 'rgba(0,0,0,0.65)';
@@ -769,11 +770,9 @@ export class BattleRenderer {
     const {
       cellTop, portraitX, portraitW, cx, footY, circleSize, barW, barX, barY,
     } = layout;
-    // 大军团低画质：省略名字/星级/品质文字类高频绘制，只保留血条和状态反馈。
-    if (!this._lowQuality) {
-      this.drawUnitName(ctx, portraitX, cellTop + 2, portraitW, unit.customName || unit.name, unit.team);
-      this.drawStrengthStars(ctx, unit, cx, footY, circleSize);
-    }
+    // 名字始终跟随设置显示；低画质时只省略星级等文字，不省略名称。
+    this.drawUnitName(ctx, portraitX, cellTop + 2, portraitW, unit.customName || unit.name, unit.team);
+    if (!this._lowQuality) this.drawStrengthStars(ctx, unit, cx, footY, circleSize);
     const hpPct = unit.hp / unit.maxHp;
     ctx.fillStyle = '#1a1a1a';
     ctx.fillRect(barX, barY, barW, 5);
@@ -1248,14 +1247,13 @@ export class BattleRenderer {
       + (engine?.deployEffects?.length ?? 0)
       + skillEffects.length
       + (engine?.projectiles?.length ?? 0);
-    // 大军团/多特效时进入低画质：省略名字/星级，并只绘制最上层的若干特效。
+    // 大军团/多特效时进入低画质：保留名称(由名字开关控制)，仅省略星级/卡牌脸等，并只绘制最上层的若干特效。
     this._lowQuality = this.forceLowQuality
       || aliveUnits >= LOW_QUALITY_UNIT_COUNT
       || hasFullscreenSkill
       || effectCount >= LOW_QUALITY_EFFECT_COUNT;
     this._effectDrawCap = this._lowQuality ? EFFECT_DRAW_CAP_LOW : EFFECT_DRAW_CAP_NORMAL;
     this._isBossBattle = Boolean(engine?.coopBoss || engine?.stage?.stage_type === 2);
-    this._hideBossEnemyNames = this._isBossBattle;
     this._renderPerfAudit = {
       aliveUnits,
       effectCount,
