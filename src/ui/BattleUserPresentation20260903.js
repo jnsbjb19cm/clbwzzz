@@ -40,21 +40,27 @@ function syncAuthorityPlayerState(view) {
   if (!snapshot) return;
 
   const userId = Number(
-    authStore.user?.id
+    snapshot.viewerUserId
+      ?? authStore.user?.id
       ?? authStore.snapshot?.profile?.userId
       ?? view.pvp?.userId
       ?? 0,
   );
-  if (!Number.isFinite(userId) || userId <= 0) return;
 
   const engine = view.engine;
-  const resources = snapshot.resourcesByUser?.[String(userId)];
+  const resources = snapshot.resources
+    ?? (Number.isFinite(userId) && userId > 0
+      ? snapshot.resourcesByUser?.[String(userId)]
+      : null);
   if (resources) {
     engine.sunlight = Math.max(0, finite(resources.sun, engine.sunlight));
     engine.food = Math.max(0, finite(resources.food, engine.food));
   }
 
-  const skill = snapshot.skillsByUser?.[String(userId)];
+  const skill = snapshot.skill
+    ?? (Number.isFinite(userId) && userId > 0
+      ? snapshot.skillsByUser?.[String(userId)]
+      : null);
   if (!skill) return;
 
   engine.heroMpMax = Math.max(1, finite(skill.maxMp, engine.heroMpMax));
