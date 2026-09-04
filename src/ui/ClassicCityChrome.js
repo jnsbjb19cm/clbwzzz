@@ -145,12 +145,17 @@ export function bindClassicChat(root, { onSend } = {}) {
     if (!value) return;
     const channel = normalizeChatChannel(input?.dataset.channel);
     input.value = '';
-    appendChatLine(root, `[${chatChannelLabel(channel)}] [我] ${value}`, 'self');
     diagnostics.sendAttempts += 1;
     diagnostics.channel = channel;
     onSend?.(value, channel);
+    let targetId = null;
+    if (channel === 'private') {
+      targetId = input?.dataset?.privateTarget ? Number(input.dataset.privateTarget) : Number(prompt('私聊对象玩家ID'));
+      if (!Number.isFinite(targetId) || targetId <= 0) return;
+      if (input) input.dataset.privateTarget = targetId;
+    }
     try {
-      await socket.sendLobbyChat(value, channel);
+      await socket.sendLobbyChat(value, channel, targetId);
     } catch (error) {
       diagnostics.sendFailures += 1;
       appendChatLine(root, `发送失败：${error?.message ?? '网络未连接'}`, 'system');

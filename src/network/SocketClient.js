@@ -107,8 +107,8 @@ export class SocketClient {
     return this.emitAck('pvp:deploy', payload);
   }
 
-  sendLobbyChat(text, channel = 'current') {
-    return this.emitAck('lobby:chat', { text, channel });
+  sendLobbyChat(text, channel = 'current', targetId = null) {
+    return this.emitAck('lobby:chat', { text, channel, targetId });
   }
 
   sendChat(text) {

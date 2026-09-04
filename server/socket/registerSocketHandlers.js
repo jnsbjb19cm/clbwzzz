@@ -1,7 +1,7 @@
-import { getSocketUser } from '../database.js';
+import { getSocketUser, db } from '../database.js';
 import { verifyToken } from '../middleware/auth.js';
 import { roomManager } from '../rooms/RoomManager.js';
-import { markOnline, markOffline } from '../online.js';
+import { registerSocket, unregisterSocket, socketsForUser } from '../online.js';
 import { createRequire } from 'node:module';
 
 const require = createRequire(import.meta.url);
@@ -69,7 +69,7 @@ export function registerSocketHandlers(io) {
 
   io.on('connection', (socket) => {
     const userId = socket.user.id;
-    markOnline(userId);
+    registerSocket(userId, socket.id);
     const restored = roomManager.reconnect(userId, socket.id);
     if (restored) {
       socket.join(`room:${restored.id}`);
@@ -199,18 +199,46 @@ export function registerSocketHandlers(io) {
       } catch (error) { ackError(ack, error); }
     });
 
-    socket.on('lobby:chat', (payload = {}, ack) => {
+    socket.on('lobby:chat', async (payload = {}, ack) => {
       const text = String(payload.text || '').trim().slice(0, 200);
       const channel = ['current', 'world', 'guild', 'private'].includes(payload.channel)
         ? payload.channel
         : 'current';
       if (!text) return ackError(ack, new Error('消息不能为空'));
-      io.emit('lobby:chat', {
+      const senderId = Number(socket.user.id);
+      const message = {
         nickname: socket.user.nickname || socket.user.username,
         text,
         channel,
         at: Date.now(),
-      });
+        senderId,
+      };
+
+      if (channel === 'private') {
+        const targetId = Number(payload.targetId);
+        if (!Number.isFinite(targetId) || targetId <= 0) {
+          return ackError(ack, new Error('缺少私聊目标'));
+        }
+        const targetSockets = socketsForUser(targetId);
+        if (!targetSockets.length) return ackError(ack, new Error('对方不在线'));
+        for (const sid of targetSockets) io.to(sid).emit('lobby:chat', message);
+        for (const sid of socketsForUser(senderId)) io.to(sid).emit('lobby:chat', message);
+        return ackOk(ack, { ok: true });
+      }
+
+      if (channel === 'guild') {
+        const membership = await db.get('SELECT guild_id FROM guild_members WHERE user_id=?', [senderId]);
+        if (!membership) return ackError(ack, new Error('你不在公会中'));
+        const members = await db.all('SELECT user_id AS userId FROM guild_members WHERE guild_id=?', [membership.guild_id]);
+        const socketIds = new Set();
+        for (const member of members) {
+          for (const sid of socketsForUser(member.userId)) socketIds.add(sid);
+        }
+        for (const sid of socketIds) io.to(sid).emit('lobby:chat', message);
+        return ackOk(ack, { ok: true });
+      }
+
+      io.emit('lobby:chat', message);
       ackOk(ack, { ok: true });
     });
 
@@ -273,7 +301,7 @@ export function registerSocketHandlers(io) {
     });
 
     socket.on('disconnect', () => {
-      markOffline(userId);
+      unregisterSocket(userId, socket.id);
       const previousWatch = watchRooms.get(userId);
       if (previousWatch) {
         socket.leave(`room:${previousWatch.roomId}`);
