@@ -217,6 +217,27 @@ CREATE TABLE IF NOT EXISTS player_hero_skills (
   FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
+CREATE TABLE IF NOT EXISTS friends (
+  user_id INTEGER NOT NULL,
+  friend_id INTEGER NOT NULL,
+  created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY(user_id, friend_id),
+  UNIQUE(friend_id, user_id),
+  FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE,
+  FOREIGN KEY(friend_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS friend_requests (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  sender_id INTEGER NOT NULL,
+  receiver_id INTEGER NOT NULL,
+  status TEXT NOT NULL DEFAULT 'pending' CHECK(status IN ('pending','accepted','rejected')),
+  created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  UNIQUE(sender_id, receiver_id),
+  FOREIGN KEY(sender_id) REFERENCES users(id) ON DELETE CASCADE,
+  FOREIGN KEY(receiver_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
 CREATE TABLE IF NOT EXISTS battle_results (
   id TEXT PRIMARY KEY,
   room_id INTEGER,
@@ -344,6 +365,25 @@ const MYSQL_TABLES = [
     unlocked TINYINT(1) NOT NULL DEFAULT 0,
     PRIMARY KEY(user_id, skill_id),
     CONSTRAINT fk_heaskills_user FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE
+  ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci`,
+  `CREATE TABLE IF NOT EXISTS friends (
+    user_id BIGINT NOT NULL,
+    friend_id BIGINT NOT NULL,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY(user_id, friend_id),
+    UNIQUE KEY uk_friends_reverse(friend_id, user_id),
+    CONSTRAINT fk_friends_user FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE,
+    CONSTRAINT fk_friends_friend FOREIGN KEY(friend_id) REFERENCES users(id) ON DELETE CASCADE
+  ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci`,
+  `CREATE TABLE IF NOT EXISTS friend_requests (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    sender_id BIGINT NOT NULL,
+    receiver_id BIGINT NOT NULL,
+    status VARCHAR(16) NOT NULL DEFAULT 'pending',
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE KEY uk_friend_request(sender_id, receiver_id),
+    CONSTRAINT fk_freq_sender FOREIGN KEY(sender_id) REFERENCES users(id) ON DELETE CASCADE,
+    CONSTRAINT fk_freq_receiver FOREIGN KEY(receiver_id) REFERENCES users(id) ON DELETE CASCADE
   ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci`,
   `CREATE TABLE IF NOT EXISTS battle_results (
     id VARCHAR(64) PRIMARY KEY,

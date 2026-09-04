@@ -13,6 +13,7 @@ import { TrainingView } from './TrainingView.js';
 import { TalentView } from './TalentView.js';
 import { PlaceholderView } from './PlaceholderView.js';
 import { QuestView } from './QuestView.js';
+import { FriendView } from './FriendView.js';
 import { ShopView } from './ShopView.js';
 import { WorldMapView, markWorldStageCleared } from './WorldMapView.js';
 import { RoomView } from './RoomView.js';
@@ -456,6 +457,10 @@ export class App {
       });
       room.render(renderRoot);
       this.views.room = room;
+    } else if (route === 'social') {
+      const friend = new FriendView();
+      friend.render(renderRoot);
+      this.updateResourceDisplay('--', '--');
     } else if (PLACEHOLDER_MODULES.has(route)) {
       new PlaceholderView(route).render(renderRoot);
       this.updateResourceDisplay('--', '--');

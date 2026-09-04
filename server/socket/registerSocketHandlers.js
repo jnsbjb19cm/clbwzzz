@@ -1,6 +1,7 @@
 import { getSocketUser } from '../database.js';
 import { verifyToken } from '../middleware/auth.js';
 import { roomManager } from '../rooms/RoomManager.js';
+import { markOnline, markOffline } from '../online.js';
 import { createRequire } from 'node:module';
 
 const require = createRequire(import.meta.url);
@@ -68,6 +69,7 @@ export function registerSocketHandlers(io) {
 
   io.on('connection', (socket) => {
     const userId = socket.user.id;
+    markOnline(userId);
     const restored = roomManager.reconnect(userId, socket.id);
     if (restored) {
       socket.join(`room:${restored.id}`);
@@ -271,6 +273,7 @@ export function registerSocketHandlers(io) {
     });
 
     socket.on('disconnect', () => {
+      markOffline(userId);
       const previousWatch = watchRooms.get(userId);
       if (previousWatch) {
         socket.leave(`room:${previousWatch.roomId}`);

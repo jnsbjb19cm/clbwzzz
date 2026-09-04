@@ -39,4 +39,5 @@ export class ApiClient {
   get(path) { return this.request(path); }
   post(path, body) { return this.request(path, { method: 'POST', body: JSON.stringify(body ?? {}) }); }
   put(path, body) { return this.request(path, { method: 'PUT', body: JSON.stringify(body ?? {}) }); }
+  delete(path, body) { return this.request(path, { method: 'DELETE', body: body == null ? undefined : JSON.stringify(body) }); }
 }

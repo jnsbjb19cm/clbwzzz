@@ -56,7 +56,8 @@
     "dev:all": "concurrently -k -n SERVER,CLIENT \"npm:dev:server\" \"npm:dev:client\"",
     "server": "node server/index.js",
     "server:prod": "node server/index.js",
-    "start:prod": "npm run build && node server/index.js",
+    "build:deploy": "npm run build:data && vite build",
+    "start:prod": "npm run build:deploy && node server/index.js",
     "encrypt:db": "node scripts/encrypt-db-password.mjs",
     "build": "npm run build:data && npm run build:sprites && vite build",
     "preview": "vite preview"
