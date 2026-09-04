@@ -5,6 +5,7 @@ import { HeroSkillStore } from '../core/HeroSkillStore.js';
 import { audio } from '../core/AudioManager.js';
 import { authStore } from '../core/AuthStore.js';
 import { CardGallery } from './CardGallery.js';
+import { getCraftMaterialImage } from './SmithyMaterialArtwork.js';
 import { BattleView } from './BattleView.js';
 import { MainCityView } from './MainCityView.js';
 import { BagView } from './BagView.js';
@@ -232,7 +233,7 @@ export class App {
       return;
     }
     notice.querySelector('#global-notice-title').textContent = title;
-    notice.querySelector('#global-notice-desc').textContent = desc;
+    notice.querySelector('#global-notice-desc').innerHTML = desc;
     notice.classList.remove('hidden');
   }
 
@@ -249,12 +250,12 @@ export class App {
     let totalGold = reward.gold;
     let totalExp = reward.exp;
     const special = won ? markWorldStageCleared(stage.stage_id ?? stage.id) : { firstClear: false, rewards: [] };
-    if (won && stage?.stage_id) {
+    if (won && (stage?.stage_id || drops.length)) {
       authStore.api.post('/player/stage-result', {
-        stageId: stage.stage_id,
+        stageId: stage?.stage_id ?? null,
         won,
         durationMs,
-        bestStars: stage.stars ?? 1,
+        bestStars: stage?.stars ?? 1,
         drops: drops.map((drop) => ({ itemId: Number(drop?.itemId), count: Number(drop?.count) || 1 })),
       }).catch(() => {});
     }
@@ -268,8 +269,13 @@ export class App {
     }
     for (const [itemId, count] of dropTotals) {
       const item = this.itemDb.getById(itemId);
-      if (this.inventory.addItem(itemId, count)) specialText.push(`战斗掉落：${item.name} ×${count}`);
-      else specialText.push(`掉落未拾取（背包已满）：${item.name} ×${count}`);
+      const img = getCraftMaterialImage(itemId);
+      const iconHtml = img ? `<img src="${img}" alt="" style="width:34px;height:34px;vertical-align:middle;margin-right:6px;border-radius:6px;background:#243b24;">` : '';
+      if (this.inventory.addItem(itemId, count)) {
+        specialText.push(`<div style="text-align:left;margin:4px 0;">${iconHtml}战斗掉落：${item.name} ×${count}</div>`);
+      } else {
+        specialText.push(`<div style="text-align:left;margin:4px 0;">${iconHtml}掉落未拾取（背包已满）：${item.name} ×${count}</div>`);
+      }
     }
     if (special.firstClear) {
       for (const entry of special.rewards) {
@@ -297,10 +303,10 @@ export class App {
     QuestView.dispatch('gold_gain', { amount: totalGold });
     this.updatePlayerDisplay();
     const levelText = progress.levelsGained > 0 ? `\uff0c\u7b49\u7ea7 ${progress.level}` : '';
-    const firstClearText = specialText.length ? `; ${specialText.join('; ')}` : '';
+    const dropHtml = specialText.length ? `<div style="margin-top:8px;">${specialText.join('')}</div>` : '';
     this.showGlobalNotice(
       won ? '\u5192\u9669\u80dc\u5229' : '\u6218\u6597\u7ed3\u675f',
-      `\u91d1\u5e01 +${totalGold}; \u7ecf\u9a8c +${totalExp}${levelText}${firstClearText}`,
+      `<div>\u91d1\u5e01 +${totalGold}; \u7ecf\u9a8c +${totalExp}${levelText}</div>${dropHtml}`,
     );
   }
 
