@@ -1,8 +1,12 @@
+import cardPartsUrl from '../../resources/img/cardParts.png?url';
 import { DeckSelectView } from './DeckSelectView.js';
 
 const PATCH_FLAG = Symbol.for('clbwzzz.battleRoomDeckAtlasV3');
-const ATLAS_URL = '/resources/img/cardParts.png';
+// 交给 Vite 管理这张图集：生产构建时会自动复制到 dist/assets 并生成正确 URL，
+// 不再依赖 Nginx 单独映射 /resources/img/cardParts.png。
+const ATLAS_URL = cardPartsUrl;
 const ATLAS_SIZE = 1024;
+let atlasPreloadPromise = null;
 
 const FRAME_BY_LABEL = Object.freeze({
   攻击: 'cardType_1',
@@ -21,6 +25,36 @@ const GRADE_COLORS = Object.freeze({
   4: '#9572a4',
   5: '#c7b94f',
 });
+
+function preloadAtlas() {
+  if (atlasPreloadPromise) return atlasPreloadPromise;
+  if (typeof document === 'undefined' || typeof Image === 'undefined') {
+    atlasPreloadPromise = Promise.resolve(false);
+    return atlasPreloadPromise;
+  }
+
+  // 在大厅/选卡 DOM 真正渲染前就要求浏览器拉取图集，避免首屏卡牌先裸底再补背景。
+  if (!document.head.querySelector(`link[data-clbwz-card-atlas="${ATLAS_URL}"]`)) {
+    const link = document.createElement('link');
+    link.rel = 'preload';
+    link.as = 'image';
+    link.href = ATLAS_URL;
+    link.setAttribute('fetchpriority', 'high');
+    link.dataset.clbwzCardAtlas = ATLAS_URL;
+    document.head.append(link);
+  }
+
+  atlasPreloadPromise = new Promise((resolve) => {
+    const image = new Image();
+    image.decoding = 'async';
+    image.onload = () => resolve(true);
+    image.onerror = () => resolve(false);
+    image.src = ATLAS_URL;
+    if (image.complete && image.naturalWidth > 0) resolve(true);
+  });
+
+  return atlasPreloadPromise;
+}
 
 function getFrame(view, name) {
   return view?._db?.atlases?.cardParts?.sprites?.find((frame) => frame.name === name) ?? null;
@@ -90,6 +124,9 @@ export function installBattleRoomDeckAtlasV3() {
   if (globalThis[PATCH_FLAG]) return;
   globalThis[PATCH_FLAG] = true;
 
+  // main.js 在 App.mount() 前安装补丁，因此这里会比房间卡牌渲染更早开始加载图集。
+  void preloadAtlas();
+
   const previousDeck = DeckSelectView.prototype._renderDeckSlots;
   DeckSelectView.prototype._renderDeckSlots = function renderDeckSlotsWithAtlas(root) {
     const result = previousDeck.call(this, root);
@@ -106,6 +143,8 @@ export function installBattleRoomDeckAtlasV3() {
 
   window.__verifyBattleRoomDeckAtlasV3 = () => ({
     enabled: true,
+    atlasUrl: ATLAS_URL,
+    atlasBundledByVite: !ATLAS_URL.startsWith('/resources/'),
     icons: document.querySelectorAll('.room-deck-ui-v3 .v3-atlas-function-icon').length,
     gradeBackgrounds: document.querySelectorAll('.room-deck-ui-v3 .v3-atlas-card-bg').length,
     gradeSix: document.querySelectorAll('.room-deck-ui-v3 [data-card-grade="6"]').length,
