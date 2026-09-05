@@ -46,12 +46,12 @@ const { installBattleImpactSafetyFinal } = await import('../src/ui/BattleImpactS
 installBattleRenderLoadShedding20260905();
 installBattleImpactSafetyFinal();
 
-function makeRenderer() {
+function makeRenderer({ forceLowQuality = false } = {}) {
   const renderer = Object.create(BattleRenderer.prototype);
   let clearCount = 0;
   let unitPassCount = 0;
 
-  renderer.forceLowQuality = false;
+  renderer.forceLowQuality = forceLowQuality;
   renderer.fieldScale = 1;
   renderer.fieldOffsetX = 0;
   renderer.fieldOffsetY = 0;
@@ -105,6 +105,16 @@ function makeEngine(unitCount) {
     { clearCount: 2, unitPassCount: 2 },
     '50-unit battle must draw every RAF frame; installed performance policy must neutralize internal ~30 FPS throttling',
   );
+  assert.equal(
+    renderer._lowQuality,
+    false,
+    'large unit count must not automatically switch the battlefield into low-quality mode',
+  );
+  assert.equal(
+    renderer.__perfSkipHalos20260905,
+    false,
+    'large unit count must not automatically hide craft-quality halos',
+  );
 }
 
 {
@@ -120,7 +130,7 @@ function makeEngine(unitCount) {
   assert.deepEqual(
     counts(),
     { clearCount: 2, unitPassCount: 2 },
-    'full-screen skills may lower decorative quality but must not throttle the complete battle frame',
+    'full-screen skills must not throttle the complete battle frame',
   );
 }
 
@@ -128,16 +138,36 @@ function makeEngine(unitCount) {
   const { renderer } = makeRenderer();
   const engine = makeEngine(8);
   for (const unit of engine.units) {
-    unit.strengthLv = 5;
+    unit.strengthLv = 12;
     unit.craftQuality = 4;
   }
 
   nowMs = 200;
   renderer.draw(engine);
 
-  assert.equal(renderer.__perfHighTierUnits20260905, 8, 'expected all eight 4/5-level cards to be counted as high tier');
-  assert.equal(renderer.__perfSkipHalos20260905, true, 'eight high-tier cards should disable expensive decorative halos');
-  assert.equal(renderer.__perfHeavyVisuals20260905, false, 'high-tier halo shedding alone must not force the whole unit renderer into low quality');
+  assert.equal(renderer.__perfHighTierUnits20260905, 8, 'expected all eight high-star/high-quality cards to be counted for diagnostics');
+  assert.equal(
+    renderer.__perfSkipHalos20260905,
+    false,
+    'high-star/high-quality density must not hide quality halos in normal quality mode',
+  );
+  assert.equal(
+    renderer._lowQuality,
+    false,
+    'high-star/high-quality density must not force low-quality rendering',
+  );
+}
+
+{
+  const { renderer } = makeRenderer({ forceLowQuality: true });
+  const engine = makeEngine(50);
+  nowMs = 250;
+  renderer.draw(engine);
+  assert.equal(
+    renderer._lowQuality,
+    true,
+    'explicit low-quality mode must remain available even though automatic load-based degradation is removed',
+  );
 }
 
 {
