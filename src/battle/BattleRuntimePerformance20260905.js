@@ -121,6 +121,17 @@ function installPeriodicCleanup() {
   };
 }
 
+function installClientRenderLoadShedding() {
+  if (typeof window === 'undefined') return;
+  void import('../ui/BattleRenderLoadShedding20260905.js')
+    .then(({ installBattleRenderLoadShedding20260905 }) => {
+      installBattleRenderLoadShedding20260905?.();
+    })
+    .catch((error) => {
+      console.warn('[clbwz] battle render load-shedding patch failed to load', error);
+    });
+}
+
 export function installBattleRuntimePerformance20260905() {
   if (globalThis[PATCH_FLAG]) return;
   globalThis[PATCH_FLAG] = true;
@@ -128,6 +139,7 @@ export function installBattleRuntimePerformance20260905() {
   installImpactBudget();
   installSmallFxBudgets();
   installPeriodicCleanup();
+  installClientRenderLoadShedding();
 }
 
 export const BATTLE_RUNTIME_PERFORMANCE_20260905 = Object.freeze({
