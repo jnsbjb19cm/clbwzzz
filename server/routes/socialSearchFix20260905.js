@@ -4,7 +4,6 @@ import { requireAuth } from '../middleware/auth.js';
 import { isOnline } from '../online.js';
 
 export const socialSearchFixRouter = Router();
-socialSearchFixRouter.use(requireAuth);
 
 /**
  * 好友搜索最终入口：
@@ -13,11 +12,12 @@ socialSearchFixRouter.use(requireAuth);
  * - 不依赖 ESCAPE '\\' 的 SQL 方言差异，兼容 MySQL 与 SQLite；
  * - 该路由必须挂在旧 socialRouter 前面，以覆盖旧 /search。
  */
-socialSearchFixRouter.get('/search', async (req, res) => {
+socialSearchFixRouter.get('/search', requireAuth, async (req, res) => {
   const query = String(req.query.q ?? '').trim().slice(0, 64);
   if (!query) return res.json({ ok: true, results: [] });
 
-  const numericId = /^\d{1,18}$/.test(query) ? Number(query) : -1;
+  const parsedId = /^\d{1,18}$/.test(query) ? Number(query) : -1;
+  const numericId = Number.isSafeInteger(parsedId) && parsedId > 0 ? parsedId : -1;
   const like = `%${query}%`;
   const rows = await db.all(`
     SELECT u.id AS userId, u.username, p.nickname, p.level, p.honor, p.arena
