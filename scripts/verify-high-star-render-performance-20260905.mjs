@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
 
 // Minimal browser stubs for importing the battle renderer in Node.
 globalThis.Audio = class {
@@ -179,7 +180,7 @@ function makeEngine(unitCount) {
 
 {
   // Missing/unsafe source impact animation used to fall back to a stroked ctx.arc,
-  // which is the visible small attack/debug circle reported in gameplay.  Runtime
+  // which is the visible small attack/debug circle reported in gameplay. Runtime
   // may omit that cosmetic impact, but it must never synthesize a debug-style ring.
   const renderer = Object.create(BattleRenderer.prototype);
   renderer.bulletAnims = new Map();
@@ -205,6 +206,26 @@ function makeEngine(unitCount) {
     strokeCalls,
     0,
     'missing attack impact animation must not stroke a synthetic hit/debug ring',
+  );
+}
+
+{
+  // The old card-feedback patch independently synthesized attack/damage/summon
+  // circles with ctx.arc/ctx.ellipse. These are presentation-only debug-looking
+  // HIT/deploy rings and must be absent from production source entirely.
+  const feedbackSource = readFileSync(
+    new URL('../src/ui/BattleCardFeedbackFinal.js', import.meta.url),
+    'utf8',
+  );
+  assert.doesNotMatch(
+    feedbackSource,
+    /ctx\.(?:arc|ellipse)\s*\(/,
+    'card feedback must not synthesize circular attack/damage/summon/death markers',
+  );
+  assert.doesNotMatch(
+    feedbackSource,
+    /createRadialGradient\s*\(/,
+    'card feedback must not synthesize circular glow markers around attack/deploy events',
   );
 }
 
