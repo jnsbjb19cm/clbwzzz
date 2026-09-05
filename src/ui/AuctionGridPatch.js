@@ -4,6 +4,7 @@ import { getCraftMaterialImage } from './SmithyMaterialArtwork.js';
 import './EconomyGridUi.css';
 
 const PATCH_FLAG = Symbol.for('clbwzzz.auctionGrid20260905');
+const BAG_SLOT_COUNT = 60;
 const itemDb = new ItemDatabase();
 
 function esc(text) {
@@ -16,17 +17,22 @@ function esc(text) {
 function itemName(id) { return itemDb.getById(Number(id))?.name ?? `道具#${id}`; }
 function iconMarkup(id, size = 48) {
   const src = getCraftMaterialImage(Number(id));
-  if (src) return `<img src="${src}" alt="" style="width:${size}px;height:${size}px" draggable="false">`;
+  if (src) return `<img class="bag-item-image" src="${src}" alt="" style="width:${size}px;height:${size}px" draggable="false">`;
   return `<span class="fallback-icon" style="width:${size}px;height:${size}px">${Number(id) || '?'}</span>`;
 }
 function bagSlots(items) {
-  if (!items?.length) return '<div class="economy-empty">暂无可上架的非绑定物品</div>';
-  return items.map((it) => `
-    <button type="button" class="economy-item-slot" data-auction-item="${Number(it.itemId)}" data-count="${Number(it.count) || 0}">
-      ${iconMarkup(it.itemId)}
-      <span class="name">${esc(itemName(it.itemId))}</span>
-      <span class="count">×${Number(it.count) || 0}</span>
-    </button>`).join('');
+  const rows = Array.isArray(items) ? items : [];
+  const size = Math.max(BAG_SLOT_COUNT, rows.length);
+  return Array.from({ length: size }, (_, index) => {
+    const it = rows[index];
+    if (!it) return '<span class="economy-item-slot bag-slot empty economy-empty-slot" aria-hidden="true"></span>';
+    return `
+      <button type="button" class="economy-item-slot bag-slot" data-auction-item="${Number(it.itemId)}" data-count="${Number(it.count) || 0}" title="${esc(itemName(it.itemId))}">
+        ${iconMarkup(it.itemId)}
+        <span class="name">${esc(itemName(it.itemId))}</span>
+        <span class="count">${Number(it.count) || 0}</span>
+      </button>`;
+  }).join('');
 }
 
 export function installAuctionGridPatch() {
@@ -37,14 +43,14 @@ export function installAuctionGridPatch() {
     this.root = root;
     this._gridSelected = null;
     root.innerHTML = `
-      <section class="economy-grid-shell auction-grid-shell">
+      <section class="economy-grid-shell auction-grid-shell backpack-economy-ui">
         <h2 class="economy-grid-title">拍卖行</h2>
         <div class="economy-grid-workbench">
           <div class="economy-grid-panel">
-            <h3>我的背包 <span class="muted">仅显示可交易的非绑定物品</span></h3>
-            <div id="auction-grid-bag" class="economy-item-grid"></div>
+            <h3>我的背包 <span class="muted" id="auction-bag-count">0/${BAG_SLOT_COUNT} · 仅显示可交易的非绑定物品</span></h3>
+            <div id="auction-grid-bag" class="economy-item-grid bag-item-grid"></div>
           </div>
-          <div class="economy-grid-panel">
+          <div class="economy-grid-panel economy-transfer-panel">
             <h3>待上架物品</h3>
             <div id="auction-grid-target" class="economy-transfer-card">
               <div class="empty">从左侧背包点击一个物品，放到这里设置数量与价格。</div>
@@ -53,11 +59,11 @@ export function installAuctionGridPatch() {
         </div>
         <div class="economy-grid-panel" style="margin-bottom:14px">
           <h3>正在拍卖</h3>
-          <div id="auction-grid-market" class="economy-market-grid"></div>
+          <div id="auction-grid-market" class="economy-market-grid backpack-market-grid"></div>
         </div>
         <div class="economy-grid-panel">
           <h3>我的上架</h3>
-          <div id="auction-grid-mine" class="economy-market-grid"></div>
+          <div id="auction-grid-mine" class="economy-market-grid backpack-market-grid"></div>
         </div>
       </section>`;
     await this.load();
@@ -74,9 +80,13 @@ export function installAuctionGridPatch() {
     const mineEl = this.root.querySelector('#auction-grid-mine');
     if (!bag || !marketEl || !mineEl) return;
 
-    bag.innerHTML = bagSlots(myItems.items ?? []);
+    const availableItems = Array.isArray(myItems.items) ? myItems.items : [];
+    bag.innerHTML = bagSlots(availableItems);
+    const bagCount = this.root.querySelector('#auction-bag-count');
+    if (bagCount) bagCount.textContent = `${availableItems.length}/${BAG_SLOT_COUNT} · 仅显示可交易的非绑定物品`;
+
     marketEl.innerHTML = (market.listings ?? []).map((a) => `
-      <article class="economy-market-card">
+      <article class="economy-market-card bag-market-slot">
         <div class="head">${iconMarkup(a.itemId, 42)}<div><strong>${esc(itemName(a.itemId))}</strong><br><small>×${Number(a.count) || 1}</small></div></div>
         <div class="price">${Number(a.price) || 0} 金币</div>
         <small>${esc(a.sellerName || '玩家')} · Lv.${Number(a.sellerLevel) || 1}${a.sellerOnline ? ' · 在线' : ''}</small>
@@ -84,7 +94,7 @@ export function installAuctionGridPatch() {
       </article>`).join('') || '<div class="economy-empty">暂无拍卖品</div>';
 
     mineEl.innerHTML = (mine.listings ?? []).map((a) => `
-      <article class="economy-market-card">
+      <article class="economy-market-card bag-market-slot">
         <div class="head">${iconMarkup(a.itemId, 42)}<div><strong>${esc(itemName(a.itemId))}</strong><br><small>×${Number(a.count) || 1}</small></div></div>
         <div class="price">${Number(a.price) || 0} 金币</div>
         <small>状态：${esc(a.status || '')}</small>
