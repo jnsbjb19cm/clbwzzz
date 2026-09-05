@@ -5,7 +5,7 @@ import { requireAuth } from '../middleware/auth.js';
 export const materialRefillRouter = Router();
 materialRefillRouter.use(requireAuth);
 
-const DAILY_LIMIT = 50;
+const DAILY_LIMIT = 500;
 const GRANT_PER_ITEM = 100;
 
 // 强化粉 + 铁匠铺全部制作/加工材料。补发来源统一为绑定。
