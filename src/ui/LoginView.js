@@ -1,7 +1,7 @@
 /**
  * 登录 / 注册 / 忘记密码。
  *
- * - 默认显示登录，不再要求填写游戏名字；注册后的昵称默认等于账号名。
+ * - 登录只填写账号和密码；注册时额外填写游戏昵称。
  * - 登录态仅持续当前浏览器会话，重新打开网站需要再次登录。
  * - 注册与老账号首次升级会展示一次恢复码；忘记密码使用“账号 + 恢复码”重置。
  */
@@ -13,6 +13,7 @@ export class LoginView {
     this.mode = 'login';
     this.busy = false;
     this.recoveryNext = 'game';
+    this.pendingSuccessMeta = {};
   }
 
   render(root) {
@@ -32,6 +33,10 @@ export class LoginView {
             <label class="login-field">
               <span>账号（3 位以上）</span>
               <input id="login-username" type="text" maxlength="20" autocomplete="username" required />
+            </label>
+            <label class="login-field" id="login-nickname-field" hidden>
+              <span>游戏昵称（1～20 个字符）</span>
+              <input id="login-nickname" type="text" maxlength="20" autocomplete="off" placeholder="给你的勇士取个名字" />
             </label>
             <label class="login-field">
               <span>密码（6 位以上）</span>
@@ -92,7 +97,7 @@ export class LoginView {
     });
     this.root.querySelector('#login-recovery-copy').addEventListener('click', () => void this.copyRecoveryCode());
     this.root.querySelector('#login-recovery-confirm').addEventListener('click', () => {
-      if (this.recoveryNext === 'game') this.onSuccess?.();
+      if (this.recoveryNext === 'game') this.onSuccess?.(this.pendingSuccessMeta || {});
       else this.setMode('login');
     });
 
@@ -102,15 +107,20 @@ export class LoginView {
   setMode(mode) {
     this.mode = mode === 'register' || mode === 'reset' ? mode : 'login';
     const isReset = this.mode === 'reset';
+    const isRegister = this.mode === 'register';
     const form = this.root.querySelector('#login-form');
     const resetForm = this.root.querySelector('#login-reset-form');
     const tabs = this.root.querySelector('#login-tabs');
     const recovery = this.root.querySelector('#login-recovery-panel');
+    const nicknameField = this.root.querySelector('#login-nickname-field');
+    const nicknameInput = this.root.querySelector('#login-nickname');
 
     if (form) form.hidden = isReset;
     if (resetForm) resetForm.hidden = !isReset;
     if (tabs) tabs.hidden = isReset;
     if (recovery) recovery.hidden = true;
+    if (nicknameField) nicknameField.hidden = !isRegister;
+    if (nicknameInput) nicknameInput.required = isRegister;
 
     this.root.querySelectorAll('.login-tab').forEach((btn) => {
       btn.classList.toggle('active', btn.dataset.mode === this.mode);
@@ -119,16 +129,16 @@ export class LoginView {
     const submit = this.root.querySelector('#login-submit');
     const forgot = this.root.querySelector('#login-forgot');
     const password = this.root.querySelector('#login-password');
-    if (submit) submit.textContent = this.mode === 'register' ? '注册并进入' : '登录';
+    if (submit) submit.textContent = isRegister ? '注册并进入' : '登录';
     if (forgot) forgot.hidden = this.mode !== 'login';
-    if (password) password.autocomplete = this.mode === 'register' ? 'new-password' : 'current-password';
+    if (password) password.autocomplete = isRegister ? 'new-password' : 'current-password';
 
     const sub = this.root.querySelector('#login-sub');
     if (sub) {
       sub.textContent = isReset
         ? '使用账号恢复码重置密码'
-        : this.mode === 'register'
-          ? '创建账号即可进入，游戏昵称默认使用账号名'
+        : isRegister
+          ? '创建账号，并给你的勇士取一个名字'
           : '登录账号进入魔幻森林';
     }
     this.setError('');
@@ -146,10 +156,11 @@ export class LoginView {
     if (el) el.textContent = text;
   }
 
-  showRecoveryCode(code, next = 'game') {
+  showRecoveryCode(code, next = 'game', successMeta = {}) {
     const recoveryCode = String(code || '').trim();
+    this.pendingSuccessMeta = successMeta || {};
     if (!recoveryCode) {
-      if (next === 'game') this.onSuccess?.();
+      if (next === 'game') this.onSuccess?.(this.pendingSuccessMeta);
       else this.setMode('login');
       return;
     }
@@ -181,8 +192,12 @@ export class LoginView {
     if (this.busy) return;
     const username = this.root.querySelector('#login-username').value.trim();
     const password = this.root.querySelector('#login-password').value;
+    const nickname = this.root.querySelector('#login-nickname')?.value?.trim() ?? '';
     if (username.length < 3) return this.setError('账号至少 3 位');
     if (password.length < 6) return this.setError('密码至少 6 位');
+    if (this.mode === 'register' && (nickname.length < 1 || nickname.length > 20)) {
+      return this.setError('游戏昵称需要 1～20 个字符');
+    }
 
     this.busy = true;
     const btn = this.root.querySelector('#login-submit');
@@ -190,15 +205,17 @@ export class LoginView {
     btn.textContent = '请稍候…';
     this.setError('');
     try {
-      const result = this.mode === 'register'
-        ? await authStore.register({ username, password })
+      const isNewAccount = this.mode === 'register';
+      const result = isNewAccount
+        ? await authStore.register({ username, password, nickname })
         : await authStore.login({ username, password });
       this.busy = false;
       btn.disabled = false;
+      const successMeta = { isNewAccount, nickname: result?.snapshot?.profile?.nickname ?? nickname };
       if (result?.recoveryCode) {
-        this.showRecoveryCode(result.recoveryCode, 'game');
+        this.showRecoveryCode(result.recoveryCode, 'game', successMeta);
       } else {
-        this.onSuccess?.();
+        this.onSuccess?.(successMeta);
       }
     } catch (error) {
       this.setError(error.message || '操作失败');
