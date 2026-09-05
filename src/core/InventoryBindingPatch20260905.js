@@ -5,6 +5,7 @@ import {
 import { BAG_MAX_STACK } from './constants.js';
 
 const PATCH_FLAG = Symbol.for('clbwzzz.inventoryBindingPatch20260905');
+const APP_PATCH_FLAG = Symbol.for('clbwzzz.inventoryBindingBattleResultPatch20260905');
 
 function boolBound(value, fallback = true) {
   if (value == null) return fallback;
@@ -105,6 +106,25 @@ export function markInventoryQuantityUnbound(store, itemId, count) {
   return true;
 }
 
+function installBattleResultBindingPatch() {
+  // 用动态 import 避开 ItemDatabase -> App -> BagView 的静态循环依赖。
+  void import('../ui/App.js').then(({ App }) => {
+    if (!App?.prototype || App.prototype[APP_PATCH_FLAG]) return;
+    App.prototype[APP_PATCH_FLAG] = true;
+    const previous = App.prototype.handleBattleResult;
+    if (typeof previous !== 'function') return;
+    App.prototype.handleBattleResult = function handleBattleResultWithTradableLoot(payload = {}) {
+      const result = previous.call(this, payload);
+      for (const drop of Array.isArray(payload?.drops) ? payload.drops : []) {
+        const itemId = Number(drop?.itemId);
+        const count = Math.max(1, Math.floor(Number(drop?.count) || 1));
+        if (itemId > 0) markInventoryQuantityUnbound(this.inventory, itemId, count);
+      }
+      return result;
+    };
+  }).catch(() => {});
+}
+
 export function installInventoryBindingPatch20260905() {
   if (globalThis[PATCH_FLAG]) return;
   globalThis[PATCH_FLAG] = true;
@@ -171,4 +191,6 @@ export function installInventoryBindingPatch20260905() {
     }
     this.save();
   };
+
+  installBattleResultBindingPatch();
 }
