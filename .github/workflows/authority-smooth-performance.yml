@@ -22,5 +22,13 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v6
 
+      - name: Check changed JavaScript syntax
+        run: |
+          node --check server/battle/AuthorityPerformance20260905.js
+          node --check server/socket/AuthoritySnapshotBackpressure20260905.js
+          node --check src/ui/BattleRenderLoadShedding20260905.js
+          node --check src/ui/PvpAuthoritySmoothMotion20260905.js
+          node --check src/battle/BattleRuntimePerformance20260905.js
+
       - name: Run focused regression
         run: node scripts/verify-authority-smooth-performance-20260905.mjs
