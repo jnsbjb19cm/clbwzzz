@@ -19,6 +19,7 @@ import { authRouter } from './routes/auth.js';
 import { playerRouter } from './routes/player.js';
 import { socialRouter } from './routes/social.js';
 import { guildRouter } from './routes/guild.js';
+import { guildWarehouseGridRouter } from './routes/guildWarehouseGrid.js';
 import { auctionRouter } from './routes/auction.js';
 import { getPvpCardDb } from './battle/PvpCardDb.js';
 import { installPvpGameplayFinal } from './battle/PvpGameplayInstall.js';
@@ -31,7 +32,9 @@ import { installCoopBossOwnerResourceFinal } from './battle/CoopBossOwnerResourc
 import { installAuthorityRuleConvergence20260830 } from './battle/AuthorityRuleConvergence20260830.js';
 import { installRoomBossRound2Fix } from './rooms/RoomBossRound2Fix.js';
 import { startRoomLifetimeService } from './rooms/RoomLifetimeService.js';
+import { startRandomMatchBotService } from './rooms/RandomMatchBotService.js';
 import { registerSocketHandlers } from './socket/registerSocketHandlers.js';
+import { installSystemAnnouncementService } from './socket/SystemAnnouncementService.js';
 import {
   registerPvpAuthorityHandlers,
   stopAllPvpAuthorityBattles,
@@ -77,6 +80,8 @@ app.get('/api/health', (_req, res) => {
 app.use('/api/auth', authRouter);
 app.use('/api/player', playerRouter);
 app.use('/api/social', socialRouter);
+// 新仓库接口放在旧 guildRouter 前面，相同 deposit/withdraw 路径由新版非绑定物品规则优先处理。
+app.use('/api/guild', guildWarehouseGridRouter);
 app.use('/api/guild', guildRouter);
 app.use('/api/auction', auctionRouter);
 
@@ -86,7 +91,6 @@ if (fs.existsSync(indexHtml)) {
   app.use(express.static(distDir, {
     maxAge: '1d',
     setHeaders(res, filePath) {
-      // SPA 入口不能强缓存，资源文件保持 1 天缓存。
       if (filePath.endsWith('index.html')) {
         res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
       }
@@ -118,6 +122,10 @@ const io = new Server(server, {
 });
 registerSocketHandlers(io);
 registerPvpAuthorityHandlers(io, { cardDb: getPvpCardDb() });
+installSystemAnnouncementService(io);
+
+// 随机匹配：先给真人 10 秒匹配窗口，超时仍有空位再补人机。
+const stopRandomMatchBotService = startRandomMatchBotService(io);
 
 // 房间从创建起最多存在 2 小时；同时回收随机匹配后只剩人机的死房间。
 const stopRoomLifetimeService = startRoomLifetimeService(io, {
@@ -130,10 +138,10 @@ server.listen(config.port, () => {
 
 function shutdown(signal) {
   console.log(`[clbwzzz] ${signal} received, shutting down...`);
+  stopRandomMatchBotService?.();
   stopRoomLifetimeService?.();
   stopAllPvpAuthorityBattles();
   server.close(() => process.exit(0));
-  // 兜底：5 秒内未关闭则强制退出。
   setTimeout(() => process.exit(1), 5000).unref();
 }
 process.on('SIGTERM', () => shutdown('SIGTERM'));
