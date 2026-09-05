@@ -14,7 +14,8 @@ function token(user) {
 }
 
 function normalizeRecoveryCode(value) {
-  return String(value || '').trim().toUpperCase();
+  const compact = String(value || '').toUpperCase().replace(/[^A-Z0-9]/g, '');
+  return compact ? compact.match(/.{1,4}/g).join('-') : '';
 }
 
 function createRecoveryCode() {
