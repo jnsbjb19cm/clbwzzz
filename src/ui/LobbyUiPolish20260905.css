@@ -155,7 +155,7 @@
 }
 
 .classic-game-hall .lobby-chat-channel {
-  position: static;
+  position: relative;
   min-width: 45px;
   height: 23px;
   padding: 0 8px;
@@ -170,6 +170,19 @@
 
 .classic-game-hall .lobby-chat-channel:hover {
   filter: brightness(1.03);
+}
+
+.classic-game-hall .lobby-chat-channel.has-unread::after {
+  content: '';
+  position: absolute;
+  right: -2px;
+  top: -3px;
+  width: 7px;
+  height: 7px;
+  border: 1px solid #fff9dc;
+  border-radius: 50%;
+  background: #e54838;
+  box-shadow: 0 1px 2px rgba(0,0,0,.28);
 }
 
 .classic-game-hall .lobby-chat-channel.active[data-channel='current'] {
@@ -235,6 +248,29 @@
 
 .classic-game-hall .lobby-chat-item.is-private {
   color: #68477c;
+}
+
+.classic-game-hall .lobby-chat-sender,
+.classic-game-hall .lobby-chat-sender-static {
+  position: static;
+  display: inline;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  font-weight: 800;
+}
+
+.classic-game-hall .lobby-chat-sender {
+  cursor: pointer;
+  text-decoration: underline;
+  text-decoration-style: dotted;
+  text-underline-offset: 2px;
+}
+
+.classic-game-hall .lobby-chat-sender:hover {
+  color: #6c4a88;
 }
 
 .classic-game-hall .lobby-chat-input-row {
