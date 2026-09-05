@@ -28,9 +28,13 @@ jobs:
           node --check src/ui/BattleRenderLoadShedding20260905.js
           node --check scripts/verify-high-star-render-performance-20260905.mjs
           node --check scripts/verify-authority-smooth-performance-20260905.mjs
+          node --check scripts/verify-resource-regeneration-regression-20260905.mjs
 
       - name: Run high-star focused regression
         run: node scripts/verify-high-star-render-performance-20260905.mjs
 
       - name: Run existing authority smooth-performance regression
         run: node scripts/verify-authority-smooth-performance-20260905.mjs
+
+      - name: Run battle resource cadence regression
+        run: node scripts/verify-resource-regeneration-regression-20260905.mjs
