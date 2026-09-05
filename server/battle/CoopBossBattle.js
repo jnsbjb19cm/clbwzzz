@@ -47,7 +47,8 @@ function round2(value) {
 
 function normalizeInstance(payload = {}) {
   const craftQuality = Math.max(1, Math.min(5, Math.round(Number(payload.craftQuality) || 1)));
-  const strengthLv = Math.max(0, Math.min(6, Math.round(Number(payload.strengthLv ?? payload.star) || 0)));
+  // 与普通 PVE / 权威 PVP 同步：保留真实 8+ 星，只规范为非负整数。
+  const strengthLv = Math.max(0, Math.round(Number(payload.strengthLv ?? payload.star) || 0));
   return {
     craftQuality,
     strengthLv,
