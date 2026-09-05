@@ -1,3 +1,4 @@
+import './LobbyChatPatch20260905.js';
 import { authStore } from '../core/AuthStore.js';
 import { SocketClient } from '../network/SocketClient.js';
 import { StarUpgradeSystem } from '../systems/StarUpgradeSystem.js';
