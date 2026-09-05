@@ -4,15 +4,17 @@ import { RoomView } from './RoomView.js';
 
 const PATCH_FLAG = Symbol.for('clbwz.mainCityTrialBulletin20260905');
 const NOTICE_TEXT = '完成日常任务「强化能手」后领取奖励即可满级';
+const REFILL_NOTICE_TEXT = '补卡：背包 → 卡牌 → 补全卡；补强化粉：背包 → 强化 → 补发绑定材料';
 const LOBBY_NOTICE_TEXT = `公告提示：${NOTICE_TEXT}`;
 
 const FEATURE_GROUPS = Object.freeze([
   {
-    title: '试玩福利',
+    title: '试玩福利 · 补发入口',
     items: [
-      { route: 'gallery', label: '全卡体验', desc: '新号可直接体验全部可收藏卡牌' },
-      { route: 'bag', label: '补强化粉/材料', desc: '背包内每日最多50次，每次各100个绑定材料' },
-      { route: 'quest', label: '满级捷径', desc: '日常 → 强化能手 → 强化1次 → 领取奖励' },
+      { route: 'bag', label: '补卡在哪？', desc: '主城 → 背包 → 卡牌 → 点击「补全卡」' },
+      { route: 'bag', label: '强化粉在哪补？', desc: '主城 → 背包 → 强化 → 点击「补发绑定材料」' },
+      { route: 'gallery', label: '全卡体验', desc: '补全后可在图鉴查看全部可收藏卡牌' },
+      { route: 'quest', label: '满级捷径', desc: '任务 → 日常 → 强化能手 → 强化1次 → 领取奖励' },
     ],
   },
   {
@@ -27,7 +29,7 @@ const FEATURE_GROUPS = Object.freeze([
     title: '成长与制作',
     items: [
       { route: 'quest', label: '任务', desc: '主线、日常、成就奖励' },
-      { route: 'bag', label: '背包', desc: '卡牌、道具、绑定材料' },
+      { route: 'bag', label: '背包', desc: '卡牌、道具、强化粉、绑定材料' },
       { route: 'gallery', label: '图鉴', desc: '查看全部卡牌' },
       { route: 'smithy', label: '铁匠铺', desc: '造卡 / 强化 / 加工 / 拆解' },
       { route: 'shop', label: '商店', desc: '商城与道具' },
@@ -68,7 +70,7 @@ function applyIdleTrialAnnouncement() {
     bar.classList.remove('is-idle');
     const label = bar.querySelector('.classic-broadcast-label');
     if (label) label.textContent = '📣 公告提示';
-    setClassicTrack(bar.querySelector('.classic-broadcast-track'), NOTICE_TEXT);
+    setClassicTrack(bar.querySelector('.classic-broadcast-track'), `${NOTICE_TEXT}　｜　${REFILL_NOTICE_TEXT}`);
   }
 }
 
@@ -86,6 +88,17 @@ function bulletinMarkup() {
           <b>${NOTICE_TEXT}</b>
           <small>点击前往任务</small>
         </button>
+        <div class="trial-bulletin-refill-guide" aria-label="试玩补发位置">
+          <button type="button" data-trial-route="bag">
+            <b>🃏 补卡位置</b>
+            <span>主城 → 背包 → <em>卡牌</em> → 点击「<strong>补全卡</strong>」</span>
+          </button>
+          <button type="button" data-trial-route="bag">
+            <b>✨ 补强化粉位置</b>
+            <span>主城 → 背包 → <em>强化</em> → 点击「<strong>补发绑定材料</strong>」</span>
+            <small>强化粉1~5级 + 羊皮纸/宝石/保护符/DNA等，每次各100个；每天最多50次，全部绑定</small>
+          </button>
+        </div>
         ${FEATURE_GROUPS.map((group) => `
           <section class="trial-bulletin-group">
             <h4>${group.title}</h4>
@@ -126,7 +139,7 @@ function injectMainCityBulletin(view, root) {
 function updateLobbyAnnouncement(view) {
   const track = view.root?.querySelector?.('.classic-game-hall .lobby-announcement-track');
   if (!track) return;
-  track.textContent = `${LOBBY_NOTICE_TEXT}　｜　全卡体验已开放　｜　背包可补强化粉及制作材料（每日50次，每次各100个，均为绑定）　｜　房间最长保留2小时，无真人玩家的房间会自动回收　｜　绑定材料制作出的产物一定绑定`;
+  track.textContent = `${LOBBY_NOTICE_TEXT}　｜　补卡位置：主城 → 背包 → 卡牌 →「补全卡」　｜　补强化粉位置：主城 → 背包 → 强化 →「补发绑定材料」（强化粉1~5级及制作材料每次各100个，每日最多50次，全部绑定）　｜　房间最长保留2小时，无真人玩家的房间会自动回收　｜　绑定材料制作出的产物一定绑定`;
 }
 
 export function installMainCityTrialBulletin20260905() {
@@ -162,6 +175,7 @@ export function installMainCityTrialBulletin20260905() {
       enabled: true,
       bulletin: Boolean(document.querySelector('[data-trial-bulletin]')),
       notice: NOTICE_TEXT,
+      refillGuide: REFILL_NOTICE_TEXT,
       lobbyNotice: document.querySelector('.lobby-announcement-track')?.textContent ?? '',
     });
   }
