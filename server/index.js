@@ -30,10 +30,12 @@ import { installPvpRound2Gameplay } from './battle/PvpRound2Gameplay.js';
 import { installPvpNeutralDamageOwnership20260903 } from './battle/PvpNeutralDamageOwnership20260903.js';
 import { installCoopBossOwnerResourceFinal } from './battle/CoopBossOwnerResourceFinal.js';
 import { installAuthorityRuleConvergence20260830 } from './battle/AuthorityRuleConvergence20260830.js';
+import { installPvpBotAi20260905 } from './battle/PvpBotAi20260905.js';
 import { installRoomBossRound2Fix } from './rooms/RoomBossRound2Fix.js';
 import { startRoomLifetimeService } from './rooms/RoomLifetimeService.js';
 import { startRandomMatchBotService } from './rooms/RandomMatchBotService.js';
 import { registerSocketHandlers } from './socket/registerSocketHandlers.js';
+import { installBattleChatService } from './socket/BattleChatService.js';
 import { installSystemAnnouncementService } from './socket/SystemAnnouncementService.js';
 import {
   registerPvpAuthorityHandlers,
@@ -57,6 +59,8 @@ installAuthorityRuleConvergence20260830();
 // 中立障碍的精灵归属只认真正造成扣血并完成击杀的一方。
 installBattleUserRules20260903();
 installPvpNeutralDamageOwnership20260903();
+// 人机只改 PVP 行为：遵循真实资源与软 CD，同时提高可移动卡/前线判断权重。
+installPvpBotAi20260905();
 
 const app = express();
 app.disable('x-powered-by');
@@ -122,6 +126,7 @@ const io = new Server(server, {
 });
 registerSocketHandlers(io);
 registerPvpAuthorityHandlers(io, { cardDb: getPvpCardDb() });
+installBattleChatService(io);
 installSystemAnnouncementService(io);
 
 // 随机匹配：先给真人 10 秒匹配窗口，超时仍有空位再补人机。
