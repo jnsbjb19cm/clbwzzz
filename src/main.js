@@ -126,6 +126,7 @@ import { installBattleUserRules20260903 } from './battle/BattleUserRules20260903
 import { installBattleUserPresentation20260903 } from './ui/BattleUserPresentation20260903.js';
 import { installBattleChatOverlay } from './ui/BattleChatOverlay.js';
 import { installBattleCraftMaterialDrops20260905 } from './battle/BattleCraftMaterialDrops20260905.js';
+import { installBattleRuntimePerformance20260905 } from './battle/BattleRuntimePerformance20260905.js';
 import { installGuildWarehouseGridPatch } from './ui/GuildWarehouseGridPatch.js';
 import { installAuctionGridPatch } from './ui/AuctionGridPatch.js';
 import { installSystemAnnouncementClient } from './ui/SystemAnnouncementClient.js';
@@ -220,6 +221,8 @@ installGuildWarehouseGridPatch();
 installAuctionGridPatch();
 installSystemAnnouncementClient();
 installCardLoreDetailPatch();
+// 最终性能收口必须在全部战斗表现补丁之后：只限制纯视觉队列，不改变伤害/目标/技能语义。
+installBattleRuntimePerformance20260905();
 
 const app = new App(document.getElementById('app'));
 const roomUtilityOverlay = new RoomUtilityOverlay(app);
