@@ -126,6 +126,63 @@ await check('authority snapshots stay frequent enough for smooth movement under 
   );
 });
 
+await check('authority unit presentation extrapolates briefly but stops while movement is locked', async () => {
+  const {
+    UNIT_EXTRAPOLATE_SEC_20260905,
+    predictAuthorityAxis20260905,
+  } = await import('../src/ui/PvpAuthorityMotionMath20260905.js');
+
+  const moving = predictAuthorityAxis20260905({
+    authoritative: 4,
+    velocity: 2,
+    age: 0.05,
+    current: 4,
+    frameDt: 1 / 60,
+    min: 0,
+    max: 11,
+  });
+  assert.ok(Math.abs(moving.predicted - 4.1) < 1e-9, `expected 4.1 predicted col, got ${moving.predicted}`);
+  assert.ok(moving.value > 4 && moving.value <= moving.predicted, `expected smooth forward correction, got ${moving.value}`);
+
+  const capped = predictAuthorityAxis20260905({
+    authoritative: 4,
+    velocity: 2,
+    age: 1,
+    current: 4,
+    frameDt: 1 / 60,
+    min: 0,
+    max: 11,
+  });
+  assert.ok(
+    Math.abs(capped.predicted - (4 + 2 * UNIT_EXTRAPOLATE_SEC_20260905)) < 1e-9,
+    `extrapolation must cap at ${UNIT_EXTRAPOLATE_SEC_20260905}s, got ${capped.predicted}`,
+  );
+
+  const locked = predictAuthorityAxis20260905({
+    authoritative: 4,
+    velocity: 2,
+    age: 0.05,
+    current: 4,
+    frameDt: 1 / 60,
+    min: 0,
+    max: 11,
+    locked: true,
+  });
+  assert.equal(locked.predicted, 4, 'stunned/frozen/attacking units must not extrapolate movement');
+
+  const discontinuity = predictAuthorityAxis20260905({
+    authoritative: 7,
+    velocity: 0,
+    age: 0,
+    current: 4,
+    frameDt: 1 / 60,
+    min: 0,
+    max: 11,
+    forceSnap: true,
+  });
+  assert.equal(discontinuity.value, 7, 'large authoritative discontinuities should snap instead of dragging behind');
+});
+
 if (failures.length) {
   console.error('\nAuthority smooth-performance regression failures:');
   for (const failure of failures) console.error(`- ${failure}`);
