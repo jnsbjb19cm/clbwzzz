@@ -1,4 +1,4 @@
-/* 卡牌 / 道具绑定状态：格子角标保持小巧，避免遮挡主体图。 */
+/* 卡牌 / 道具绑定状态：格子角标保持小巧，放回右上角，避免与数量/底部信息挤在一起。 */
 .card-bag-slot,
 .bag-card-slot,
 .bag-slot:not(.empty) {
@@ -9,9 +9,9 @@
 .bag-item-binding-badge {
   position: absolute;
   right: 3px;
-  bottom: 3px;
+  top: 3px;
   left: auto;
-  top: auto;
+  bottom: auto;
   z-index: 12;
   display: inline-flex;
   align-items: center;
