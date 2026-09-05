@@ -1,18 +1,93 @@
 import { authStore } from '../core/AuthStore.js';
 import { SocketClient } from '../network/SocketClient.js';
 import { StarUpgradeSystem } from '../systems/StarUpgradeSystem.js';
+import { CardCraftSystem } from '../systems/CardCraftSystem.js';
 import { App } from './App.js';
-import './SystemAnnouncementClient.css';
 
 const PATCH_FLAG = Symbol.for('clbwzzz.systemAnnouncementClient20260905');
 let socketClient = null;
 let unsubscribe = null;
-let bannerTimer = null;
-const queue = [];
+let expiryTimer = null;
+let welcomedUserId = null;
 
 function socket() {
   if (!socketClient) socketClient = new SocketClient({ getToken: () => authStore.token });
   return socketClient;
+}
+
+function currentAnnouncement() {
+  return globalThis.__clbwzLastSystemAnnouncement ?? null;
+}
+
+function clearCurrentAnnouncement(expectedId = null) {
+  const current = currentAnnouncement();
+  if (expectedId && current?.id !== expectedId) return;
+  globalThis.__clbwzLastSystemAnnouncement = null;
+  applyAnnouncementToClassicBars();
+  window.dispatchEvent(new CustomEvent('clbwz:system-announcement', {
+    detail: { clear: true, id: expectedId || current?.id || null },
+  }));
+}
+
+function setTrackText(track, text) {
+  if (!track) return;
+  track.replaceChildren();
+  const first = document.createElement('b');
+  first.className = 'classic-broadcast-item';
+  first.textContent = text;
+  const dot = document.createElement('i');
+  dot.setAttribute('aria-hidden', 'true');
+  dot.textContent = '◆';
+  const second = first.cloneNode(true);
+  track.append(first, dot, second);
+}
+
+function applyAnnouncementToClassicBars() {
+  const data = currentAnnouncement();
+  const text = data?.text || '系统信息待播报';
+  for (const root of document.querySelectorAll('.classic-system-broadcast')) {
+    root.dataset.systemKind = String(data?.kind || 'idle');
+    root.classList.toggle('is-idle', !data);
+    const label = root.querySelector('.classic-broadcast-label');
+    if (label) label.textContent = data ? `📣 ${data.title || '系统广播'}` : '📣 系统广播';
+    setTrackText(root.querySelector('.classic-broadcast-track'), text);
+  }
+}
+
+function appendSystemToClassicChats(data) {
+  if (!data?.text) return;
+  for (const log of document.querySelectorAll('[data-classic-chat-log]')) {
+    if (log.dataset.lastSystemAnnouncementId === String(data.id)) continue;
+    const line = document.createElement('p');
+    line.className = 'is-system';
+    line.textContent = `[系统] ${data.title ? `${data.title}：` : ''}${data.text}`;
+    log.append(line);
+    while (log.children.length > 80) log.firstElementChild?.remove();
+    log.scrollTop = log.scrollHeight;
+    log.dataset.lastSystemAnnouncementId = String(data.id);
+  }
+}
+
+function publishAnnouncement(raw = {}, { ttl = 14000 } = {}) {
+  if (!raw?.text) return;
+  const data = {
+    id: raw.id || `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+    kind: raw.kind || 'system',
+    title: raw.title || '系统广播',
+    text: String(raw.text),
+    at: Number(raw.at) || Date.now(),
+    ...raw,
+  };
+  globalThis.__clbwzLastSystemAnnouncement = data;
+  applyAnnouncementToClassicBars();
+  appendSystemToClassicChats(data);
+  window.dispatchEvent(new CustomEvent('clbwz:system-announcement', { detail: data }));
+
+  if (expiryTimer) window.clearTimeout(expiryTimer);
+  expiryTimer = window.setTimeout(() => {
+    clearCurrentAnnouncement(data.id);
+    expiryTimer = null;
+  }, Math.max(4000, Number(ttl) || 14000));
 }
 
 function disconnectAnnouncements() {
@@ -20,59 +95,27 @@ function disconnectAnnouncements() {
   unsubscribe = null;
   try { socketClient?.disconnect?.(); } catch {}
   socketClient = null;
-  queue.length = 0;
-  if (bannerTimer) window.clearTimeout(bannerTimer);
-  bannerTimer = null;
-  document.querySelector('#system-announcement-feed')?.remove();
-}
-
-function ensureBanner() {
-  let root = document.querySelector('#system-announcement-feed');
-  if (root) return root;
-  root = document.createElement('div');
-  root.id = 'system-announcement-feed';
-  root.className = 'system-announcement-feed hidden';
-  root.innerHTML = `
-    <div class="system-announcement-emblem">✦</div>
-    <div class="system-announcement-copy">
-      <strong></strong>
-      <span></span>
-    </div>`;
-  document.body.append(root);
-  return root;
-}
-
-function showNext() {
-  if (bannerTimer) return;
-  const data = queue.shift();
-  if (!data) return;
-  const root = ensureBanner();
-  root.dataset.kind = String(data.kind || 'system');
-  root.querySelector('strong').textContent = data.title || '系统播报';
-  root.querySelector('span').textContent = data.text || '';
-  root.classList.remove('hidden', 'show');
-  void root.offsetWidth;
-  root.classList.add('show');
-  bannerTimer = window.setTimeout(() => {
-    root.classList.remove('show');
-    window.setTimeout(() => {
-      root.classList.add('hidden');
-      bannerTimer = null;
-      showNext();
-    }, 260);
-  }, 5200);
-}
-
-function enqueue(data) {
-  if (!data?.text) return;
-  queue.push(data);
-  if (queue.length > 12) queue.splice(0, queue.length - 12);
-  showNext();
+  welcomedUserId = null;
+  if (expiryTimer) window.clearTimeout(expiryTimer);
+  expiryTimer = null;
+  clearCurrentAnnouncement();
 }
 
 function connectAnnouncements() {
   if (!authStore.isLoggedIn() || !authStore.token || unsubscribe) return;
-  unsubscribe = socket().on('system:announcement', enqueue);
+  unsubscribe = socket().on('system:announcement', (data) => publishAnnouncement(data));
+}
+
+function publishWelcomeOnce() {
+  const userId = Number(authStore.user?.id ?? authStore.user?.userId) || String(authStore.user?.username || 'logged-in');
+  if (welcomedUserId === userId) return;
+  welcomedUserId = userId;
+  publishAnnouncement({
+    id: `welcome-${String(userId)}-${Date.now()}`,
+    kind: 'welcome',
+    title: '系统消息',
+    text: '欢迎进入魔幻森林',
+  }, { ttl: 9000 });
 }
 
 function announceStrengthen({ cardId, cardName, star }) {
@@ -81,6 +124,16 @@ function announceStrengthen({ cardId, cardName, star }) {
     cardId: Number(cardId) || null,
     cardName: String(cardName || '').slice(0, 32),
     star: Number(star) || 0,
+  }).catch(() => {});
+}
+
+function announceCraftAscend({ fromCardName, cardId, resultName, craftQuality }) {
+  if (!authStore.isLoggedIn()) return;
+  socket().emitAck('system:announce:craft-ascend', {
+    fromCardName: String(fromCardName || '').slice(0, 32),
+    cardId: Number(cardId) || null,
+    resultName: String(resultName || '').slice(0, 48),
+    craftQuality: Number(craftQuality) || null,
   }).catch(() => {});
 }
 
@@ -103,13 +156,30 @@ export function installSystemAnnouncementClient() {
   App.prototype.bootstrap = function bootstrapWithAnnouncements(...args) {
     const result = previousBootstrap.apply(this, args);
     connectAnnouncements();
+    publishWelcomeOnce();
+    queueMicrotask(() => applyAnnouncementToClassicBars());
+    return result;
+  };
+
+  const previousNavigate = App.prototype.navigate;
+  App.prototype.navigate = function navigateWithSystemMarquee(...args) {
+    const result = previousNavigate.apply(this, args);
+    queueMicrotask(() => {
+      applyAnnouncementToClassicBars();
+      const data = currentAnnouncement();
+      if (data) appendSystemToClassicChats(data);
+    });
     return result;
   };
 
   const previousBattleResult = App.prototype.handleBattleResult;
   App.prototype.handleBattleResult = function handleBattleResultWithStreak(payload = {}) {
     const result = previousBattleResult.call(this, payload);
-    if (String(payload?.mode || '').toLowerCase() === 'pvp') {
+    if (
+      String(payload?.mode || '').toLowerCase() === 'pvp'
+      || Boolean(payload?.pvp)
+      || Boolean(this.routeOpts?.pvp)
+    ) {
       reportPvpResult(Boolean(payload?.won));
     }
     return result;
@@ -128,6 +198,27 @@ export function installSystemAnnouncementClient() {
     const result = previousUpgrade.call(this, mainIndex, subIndices, options);
     if (result?.ok && result?.success && Number(result.star) >= 6) {
       announceStrengthen({ cardId, cardName, star: Number(result.star) });
+    }
+    return result;
+  };
+
+  const previousCraft = CardCraftSystem.prototype.craft;
+  CardCraftSystem.prototype.craft = function craftWithAscendAnnouncement(
+    targetCardId,
+    inventory,
+    cardInventory,
+    craftState,
+    options = {},
+  ) {
+    const target = this.db?.getById?.(targetCardId);
+    const result = previousCraft.call(this, targetCardId, inventory, cardInventory, craftState, options);
+    if (result?.ok && result?.outcome === 'ascend') {
+      announceCraftAscend({
+        fromCardName: target?.name ?? target?.card_name ?? `卡牌#${targetCardId}`,
+        cardId: result.cardId,
+        resultName: result.displayName || result.cardName || `卡牌#${result.cardId}`,
+        craftQuality: result.craftQuality,
+      });
     }
     return result;
   };
