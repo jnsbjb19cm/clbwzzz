@@ -98,6 +98,22 @@ function renderMessages(view) {
   list.scrollTop = list.scrollHeight;
 }
 
+function appendExactRoomLog(view, { nickname, text, spectator = false }) {
+  const log = view.root?.querySelector?.('.exact-room-chat-log');
+  if (!log || !text) return;
+  const row = document.createElement('div');
+  row.className = 'exact-room-chat-message';
+  const name = `${spectator ? '[观战] ' : ''}${cleanText(nickname) || '玩家'}`;
+  const strong = document.createElement('b');
+  strong.textContent = `${name}：`;
+  const span = document.createElement('span');
+  span.textContent = text;
+  row.append(strong, span);
+  log.append(row);
+  while (log.children.length > MAX_LINES) log.firstElementChild?.remove();
+  log.scrollTop = log.scrollHeight;
+}
+
 async function loadFriends(view) {
   const state = ensureState(view);
   if (state.friendsLoaded) return;
@@ -141,7 +157,6 @@ function mountLobbyChat(view) {
   const host = view.root?.querySelector?.('.classic-game-hall .lobby-chat');
   if (!host) return;
 
-  // renderShell 会重建 DOM，因此每次重建大厅都重新挂载干净的聊天控件。
   if (view.__lobbySystemHandler) {
     window.removeEventListener('clbwz:system-announcement', view.__lobbySystemHandler);
     view.__lobbySystemHandler = null;
@@ -235,8 +250,12 @@ export function installLobbyChatPatch20260905() {
       ? 'current'
       : normalizeChannel(message.channel, 'current');
     const nickname = cleanText(message.nickname ?? message.username ?? message.sender) || '玩家';
-    pushOne(state, channel, { nickname, text, spectator: Boolean(message.spectator) });
+    const item = { nickname, text, spectator: Boolean(message.spectator) };
+    pushOne(state, channel, item);
     if (channel === state.active) renderMessages(this);
+
+    // 房间内原有 DeckSelectView 聊天框仍保留，不因大厅分频道改造而丢消息。
+    if (this.room && channel === 'current') appendExactRoomLog(this, item);
   };
 
   RoomView.prototype.sendChat = async function sendChannelChat() {
@@ -282,5 +301,4 @@ export function installLobbyChatPatch20260905() {
   });
 }
 
-// 由 SystemAnnouncementClient 侧效 import；加载模块时立即安装，避免再侵入 RoomView 大文件。
 installLobbyChatPatch20260905();
