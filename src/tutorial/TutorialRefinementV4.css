@@ -1,0 +1,121 @@
+/* 2026-09-05 新手教程表现收口：减少遮挡、保留可读性。 */
+.new-player-tutorial-panel {
+  width: min(430px, calc(100vw - 28px)) !important;
+  max-height: min(31vh, 270px) !important;
+  bottom: 10px !important;
+  padding: 10px 12px 9px !important;
+  border-width: 1.5px !important;
+  border-radius: 11px !important;
+  background:
+    radial-gradient(circle at 88% 0%, rgba(200, 235, 127, .10), transparent 34%),
+    linear-gradient(180deg, rgba(21, 48, 39, .93), rgba(7, 24, 24, .93)) !important;
+  box-shadow: 0 9px 25px rgba(0, 0, 0, .42) !important;
+  backdrop-filter: blur(5px);
+  scrollbar-width: thin;
+}
+
+.new-player-tutorial-panel.is-skill-step {
+  bottom: 72px !important;
+}
+
+.new-player-tutorial-progress {
+  gap: 7px !important;
+  margin-bottom: 5px !important;
+  font-size: 11px !important;
+}
+
+.new-player-tutorial-progress-bar {
+  height: 5px !important;
+}
+
+.new-player-tutorial-title {
+  margin: 0 0 5px !important;
+  font-size: 17px !important;
+  line-height: 1.25 !important;
+}
+
+.new-player-tutorial-text {
+  font-size: 12.5px !important;
+  line-height: 1.55 !important;
+}
+
+.new-player-tutorial-hint {
+  margin-top: 5px !important;
+  padding: 5px 7px !important;
+  font-size: 11px !important;
+  line-height: 1.42 !important;
+}
+
+.new-player-tutorial-continue {
+  min-height: 15px !important;
+  margin-top: 4px !important;
+  font-size: 11px !important;
+}
+
+.new-player-tutorial-actions {
+  margin-top: 4px !important;
+}
+
+.new-player-tutorial-actions button {
+  min-width: 72px !important;
+  padding: 5px 9px !important;
+  font-size: 11px !important;
+}
+
+.new-player-tutorial-shortcuts {
+  margin-top: 5px;
+  color: rgba(226, 241, 204, .86);
+  font-size: 10.5px;
+  line-height: 1.4;
+  text-align: center;
+}
+
+.new-player-tutorial-shortcuts kbd {
+  display: inline-block;
+  min-width: 22px;
+  margin: 0 2px;
+  padding: 1px 5px;
+  border: 1px solid rgba(255,255,255,.22);
+  border-bottom-color: rgba(255,255,255,.4);
+  border-radius: 4px;
+  background: rgba(255,255,255,.09);
+  color: #fff0a0;
+  font: inherit;
+  font-weight: 800;
+}
+
+.new-player-tutorial-panel.tutorial-buffer-locked {
+  border-color: rgba(216, 199, 111, .72) !important;
+}
+
+.new-player-tutorial-panel.tutorial-buffer-bump {
+  animation: tutorialBufferBump .18s ease-out;
+}
+
+@keyframes tutorialBufferBump {
+  0% { transform: translateX(-50%) scale(1); }
+  45% { transform: translateX(-50%) scale(1.018); }
+  100% { transform: translateX(-50%) scale(1); }
+}
+
+/* 最终反攻只提示性高亮约 3 秒，之后让视线回到战场。 */
+.new-player-tutorial-layer:has(.new-player-tutorial-panel[data-step="final"]) .new-player-tutorial-focus {
+  animation: tutorialFinalFocusFade 3s ease forwards;
+}
+
+@keyframes tutorialFinalFocusFade {
+  0%, 72% { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+@media (max-width: 900px) {
+  .new-player-tutorial-panel {
+    width: min(390px, calc(100vw - 18px)) !important;
+    max-height: 34vh !important;
+    bottom: 7px !important;
+  }
+
+  .new-player-tutorial-panel.is-skill-step {
+    bottom: 62px !important;
+  }
+}
