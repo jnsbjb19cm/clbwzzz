@@ -45,7 +45,7 @@ function pushMessage(state, channel, message) {
   if (id && state.seenIds.has(id)) return;
   if (id) {
     state.seenIds.add(id);
-    if (state.seenIds.size > 300) state.seenIds.clear();
+    if (state.seenIds.size > 500) state.seenIds.clear();
   }
   target.push(message);
   if (target.length > MAX_LOG_ITEMS) target.splice(0, target.length - MAX_LOG_ITEMS);
@@ -112,18 +112,35 @@ function setMinimized(shell, minimized) {
   } catch { /* storage unavailable */ }
 }
 
+function restartMarqueeAnimation(marquee) {
+  const text = marquee?.querySelector('.battle-system-marquee-text');
+  if (!text) return;
+  text.style.animation = 'none';
+  void text.offsetWidth;
+  text.style.animation = '';
+}
+
 function setBattleMarquee(shell, data) {
   const marquee = shell?.querySelector('.battle-system-marquee');
   if (!marquee) return;
+  const title = marquee.querySelector('.battle-system-marquee-title');
+  const text = marquee.querySelector('.battle-system-marquee-text');
+
   if (!data?.text) {
-    marquee.classList.add('hidden');
-    marquee.querySelector('.battle-system-marquee-text').textContent = '';
+    marquee.dataset.kind = 'idle';
+    marquee.classList.remove('hidden');
+    marquee.classList.add('idle');
+    if (title) title.textContent = '📣 系统广播';
+    if (text) text.textContent = '暂无新的系统消息';
+    restartMarqueeAnimation(marquee);
     return;
   }
+
   marquee.dataset.kind = String(data.kind || 'system');
-  marquee.querySelector('.battle-system-marquee-title').textContent = data.title || '系统消息';
-  marquee.querySelector('.battle-system-marquee-text').textContent = data.text;
-  marquee.classList.remove('hidden');
+  marquee.classList.remove('hidden', 'idle');
+  if (title) title.textContent = `📣 ${data.title || '系统消息'}`;
+  if (text) text.textContent = data.text;
+  restartMarqueeAnimation(marquee);
 }
 
 async function choosePrivateTarget(shell, state, { force = false } = {}) {
@@ -175,7 +192,7 @@ function selectChannel(shell, state, channel) {
   shell.querySelectorAll('[data-battle-chat-channel]').forEach((button) => {
     button.classList.toggle('active', button.dataset.battleChatChannel === channel);
   });
-  // 这里直接重绘当前频道，所以其它频道的信息不会混在一起。
+  // 每个频道都有独立 buffer；切换时只显示当前频道，不混入其它频道信息。
   renderLog(shell, state);
   if (channel === 'private' && !state.privateTarget) void choosePrivateTarget(shell, state);
 }
@@ -194,9 +211,9 @@ function mountBattleChatOverlay(view) {
   shell.className = 'battle-chat-shell';
   shell.setAttribute('data-battle-chat-shell', '');
   shell.innerHTML = `
-    <div class="battle-system-marquee hidden" aria-live="polite">
-      <span class="battle-system-marquee-title">系统消息</span>
-      <span class="battle-system-marquee-window"><span class="battle-system-marquee-text"></span></span>
+    <div class="battle-system-marquee" aria-live="polite">
+      <span class="battle-system-marquee-title">📣 系统广播</span>
+      <span class="battle-system-marquee-window"><span class="battle-system-marquee-text">暂无新的系统消息</span></span>
     </div>
     <section class="battle-chat-panel" aria-label="战斗聊天">
       <header class="battle-chat-header">
@@ -271,12 +288,17 @@ function mountBattleChatOverlay(view) {
     const data = event.detail || {};
     setBattleMarquee(shell, data.clear ? null : data);
     if (data.clear || !data.text) return;
-    appendMessage(shell, state, state.active, {
-      id: `system-${data.id || Date.now()}-${state.active}`,
-      nickname: '系统',
-      text: `${data.title ? `${data.title}：` : ''}${data.text}`,
-      system: true,
-    });
+
+    // 系统信息不是某一个聊天频道私有的：四个频道都保留一份，切换后仍能看到系统播报。
+    for (const channel of CHANNELS) {
+      pushMessage(state, channel.id, {
+        id: `system-${data.id || Date.now()}-${channel.id}`,
+        nickname: '系统',
+        text: `${data.title ? `${data.title}：` : ''}${data.text}`,
+        system: true,
+      });
+    }
+    renderLog(shell, state);
   };
 
   const unsubs = [
@@ -298,15 +320,18 @@ function mountBattleChatOverlay(view) {
       spectator: Boolean(entry?.spectator),
     });
   }
+
   const latestSystem = globalThis.__clbwzLastSystemAnnouncement;
+  setBattleMarquee(shell, latestSystem || null);
   if (latestSystem?.text) {
-    setBattleMarquee(shell, latestSystem);
-    pushMessage(state, 'current', {
-      id: `system-${latestSystem.id || Date.now()}-initial`,
-      nickname: '系统',
-      text: `${latestSystem.title ? `${latestSystem.title}：` : ''}${latestSystem.text}`,
-      system: true,
-    });
+    for (const channel of CHANNELS) {
+      pushMessage(state, channel.id, {
+        id: `system-${latestSystem.id || Date.now()}-initial-${channel.id}`,
+        nickname: '系统',
+        text: `${latestSystem.title ? `${latestSystem.title}：` : ''}${latestSystem.text}`,
+        system: true,
+      });
+    }
   }
   renderLog(shell, state);
 
@@ -347,5 +372,6 @@ export function installBattleChatOverlay() {
     enabled: true,
     mounted: Boolean(document.querySelector('.battle-chat-shell')),
     channel: document.querySelector('.battle-chat-channels .active')?.dataset?.battleChatChannel || null,
+    marquee: document.querySelector('.battle-system-marquee-text')?.textContent || null,
   });
 }
