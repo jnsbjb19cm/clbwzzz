@@ -229,4 +229,19 @@ function makeEngine(unitCount) {
   );
 }
 
+{
+  // PVP impacts outside the 12x5 unit grid had a second independent fallback
+  // ctx.arc ring while the real baoza animation was unavailable. Base hits must
+  // not reintroduce the same synthetic HIT circle through the PVP viewport patch.
+  const pvpImpactSource = readFileSync(
+    new URL('../src/ui/PvpImpactFxFinal.js', import.meta.url),
+    'utf8',
+  );
+  assert.doesNotMatch(
+    pvpImpactSource,
+    /ctx\.arc\s*\(/,
+    'PVP/base impact fallback must not synthesize a circular HIT marker',
+  );
+}
+
 console.log('High-star render-performance regression: OK');
