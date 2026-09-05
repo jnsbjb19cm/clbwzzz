@@ -36,8 +36,12 @@ function ensureLobbyChatState(view) {
 function insertAnnouncement(view) {
   const stage = view.root?.querySelector('.classic-game-hall .lobby-stage');
   if (!stage || stage.querySelector('.lobby-announcement')) return;
+
+  const titleBar = stage.querySelector('.lobby-title-bar');
+  if (!titleBar) return;
+
   const bar = document.createElement('div');
-  bar.className = 'lobby-announcement';
+  bar.className = 'lobby-announcement lobby-announcement-in-title';
   bar.setAttribute('role', 'status');
   bar.setAttribute('aria-label', '大厅公告');
   bar.innerHTML = `
@@ -45,7 +49,9 @@ function insertAnnouncement(view) {
     <span class="lobby-announcement-window">
       <span class="lobby-announcement-track">房间最长保留 2 小时，无真人玩家的房间会自动回收　｜　请文明交流，谨防非官方交易诈骗　｜　绑定材料参与制作后，产物会继承绑定状态</span>
     </span>`;
-  stage.appendChild(bar);
+
+  // 公告属于大厅顶栏，而不是筛选栏与房间列表之间。
+  titleBar.appendChild(bar);
 }
 
 function setPrivateTarget(view, userId) {
@@ -113,7 +119,8 @@ function selectLobbyChatChannel(view, channel) {
   if (!CHAT_CHANNELS.some((entry) => entry.id === channel)) return;
   view.lobbyChatChannel = channel;
   view.root?.querySelectorAll('.lobby-chat-channel').forEach((button) => {
-    const active = button.dataset.channel === channel;
+    const buttonChannel = button.dataset.channel || button.dataset.lobbyChatChannel;
+    const active = buttonChannel === channel;
     button.classList.toggle('active', active);
     if (active) button.classList.remove('has-unread');
   });
@@ -142,7 +149,7 @@ function insertChatChannels(view) {
   chat.prepend(head);
 
   head.querySelectorAll('.lobby-chat-channel').forEach((button) => {
-    button.addEventListener('click', () => selectLobbyChatChannel(view, button.dataset.channel));
+    button.addEventListener('click', () => selectLobbyChatChannel(view, button.dataset.channel || button.dataset.lobbyChatChannel));
   });
   const target = head.querySelector('#lobby-private-target');
   target?.addEventListener('input', () => {
@@ -150,7 +157,6 @@ function insertChatChannels(view) {
     if (target.value !== view.lobbyPrivateTargetId) target.value = view.lobbyPrivateTargetId;
   });
 
-  // 原页面内的两条写死演示消息换成真正按频道保存/筛选的消息列表。
   renderLobbyMessages(view);
   selectLobbyChatChannel(view, view.lobbyChatChannel);
 }
@@ -201,7 +207,6 @@ export function installLobbyUiPolish20260905() {
 
   const originalAppendChat = RoomView.prototype.appendChat;
   RoomView.prototype.appendChat = function appendChannelChat20260905(msg) {
-    // 房间内部仍使用原来的房间聊天；大厅消息才按频道分类。
     if (this.room || !msg?.channel) return originalAppendChat.call(this, msg);
     ensureLobbyChatState(this);
     const channel = CHAT_CHANNELS.some((entry) => entry.id === msg.channel) ? msg.channel : 'current';
@@ -209,7 +214,7 @@ export function installLobbyUiPolish20260905() {
     if (this.lobbyChatMessages.length > 160) this.lobbyChatMessages.splice(0, this.lobbyChatMessages.length - 160);
 
     if (channel !== this.lobbyChatChannel) {
-      this.root?.querySelector(`.lobby-chat-channel[data-channel="${channel}"]`)?.classList.add('has-unread');
+      this.root?.querySelector(`.lobby-chat-channel[data-channel="${channel}"], .lobby-chat-channel[data-lobby-chat-channel="${channel}"]`)?.classList.add('has-unread');
     }
     renderLobbyMessages(this);
   };
