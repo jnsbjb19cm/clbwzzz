@@ -3,7 +3,7 @@ import {
   isMonsterCard,
   isPlantCard,
 } from '../battle/BattleConfig.js';
-import cardLoreJson from '../data/cardLore.json';
+import cardLoreJson from '../data/cardLore.json' with { type: 'json' };
 import { ATK_STYLE, CARD_QUALITY, CARD_TYPE, VIEW_TYPE } from './constants.js';
 
 export const EXPERIENCE_CARD_IDS = new Set([122, 123, 124]);
