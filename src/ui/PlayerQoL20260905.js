@@ -63,33 +63,30 @@ function enhanceBatchUse(view, root) {
   const actions = detail.querySelector('.bag-detail-actions');
   actions?.insertAdjacentElement('beforebegin', panel);
 
-  const input = panel.querySelector('[data-batch-use-count]');
-  const clampInput = () => {
-    const currentSlot = view.inventory?.getSlots?.()?.[view.selectedIndex];
-    const available = Math.max(1, Math.floor(Number(currentSlot?.count) || maxCount));
-    const amount = Math.max(1, Math.min(available, Math.floor(Number(input.value) || 1)));
-    input.max = String(available);
-    input.value = String(amount);
-    useButton.textContent = amount > 1 ? `批量打开/使用 ×${amount}` : '打开/使用';
-  };
-  panel.querySelectorAll('[data-batch-use-quick]').forEach((button) => button.addEventListener('click', () => {
-    const value = button.dataset.batchUseQuick;
-    input.value = value === 'all' ? String(maxCount) : String(Math.min(maxCount, Number(value) || 1));
-    clampInput();
-  }));
-  input.addEventListener('input', clampInput);
-  clampInput();
-
   // 克隆按钮去掉 BagView 原来的单次使用监听，统一改为数量驱动。
   const batchButton = useButton.cloneNode(true);
   batchButton.dataset.batchUseBound = 'true';
   useButton.replaceWith(batchButton);
-  const syncButtonText = () => {
-    const amount = Math.max(1, Math.min(maxCount, Math.floor(Number(input.value) || 1)));
+
+  const input = panel.querySelector('[data-batch-use-count]');
+  const clampAndSync = () => {
+    const selectedSlot = view.inventory?.getSlots?.()?.[view.selectedIndex];
+    const available = Math.max(1, Math.floor(Number(selectedSlot?.itemId) === Number(item.id)
+      ? Number(selectedSlot?.count) || 1
+      : maxCount));
+    const amount = Math.max(1, Math.min(available, Math.floor(Number(input.value) || 1)));
+    input.max = String(available);
+    input.value = String(amount);
     batchButton.textContent = amount > 1 ? `批量打开/使用 ×${amount}` : '打开/使用';
   };
-  input.addEventListener('input', syncButtonText);
-  syncButtonText();
+
+  panel.querySelectorAll('[data-batch-use-quick]').forEach((button) => button.addEventListener('click', () => {
+    const value = button.dataset.batchUseQuick;
+    input.value = value === 'all' ? String(maxCount) : String(Math.min(maxCount, Number(value) || 1));
+    clampAndSync();
+  }));
+  input.addEventListener('input', clampAndSync);
+  clampAndSync();
 
   batchButton.addEventListener('click', () => {
     const requested = Math.max(1, Math.min(maxCount, Math.floor(Number(input.value) || 1)));
