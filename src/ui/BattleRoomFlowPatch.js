@@ -2,12 +2,14 @@ import { BattleEngine } from '../battle/BattleEngine.js';
 import { TRAINING_STAGE_VALUE } from '../battle/BattleConfig.js';
 import { BattleView } from './BattleView.js';
 import { DeckSelectView } from './DeckSelectView.js';
+import { installRoomLifetimeClientPatch } from './RoomLifetimeClientPatch.js';
 
 let installed = false;
 
 export function installBattleRoomFlowPatch() {
   if (installed) return;
   installed = true;
+  installRoomLifetimeClientPatch();
 
   const originalRender = BattleView.prototype.render;
 
