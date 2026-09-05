@@ -4,6 +4,7 @@ import { getCraftMaterialImage } from './SmithyMaterialArtwork.js';
 import './EconomyGridUi.css';
 
 const PATCH_FLAG = Symbol.for('clbwzzz.guildWarehouseGrid20260905');
+const BAG_SLOT_COUNT = 60;
 const itemDb = new ItemDatabase();
 
 function esc(text) {
@@ -20,19 +21,23 @@ function itemName(id) {
 
 function iconMarkup(id, size = 48) {
   const src = getCraftMaterialImage(Number(id));
-  if (src) return `<img src="${src}" alt="" style="width:${size}px;height:${size}px" draggable="false">`;
+  if (src) return `<img class="bag-item-image" src="${src}" alt="" style="width:${size}px;height:${size}px" draggable="false">`;
   return `<span class="fallback-icon" style="width:${size}px;height:${size}px">${Number(id) || '?'}</span>`;
 }
 
-function slots(items, source) {
+function backpackSlots(items, source) {
   const rows = Array.isArray(items) ? items : [];
-  if (!rows.length) return '<div class="economy-empty">暂无可用物品</div>';
-  return rows.map((it) => `
-    <button type="button" class="economy-item-slot" data-economy-source="${source}" data-item-id="${Number(it.itemId)}" data-count="${Number(it.count) || 0}" title="${esc(itemName(it.itemId))}">
-      ${iconMarkup(it.itemId)}
-      <span class="name">${esc(itemName(it.itemId))}</span>
-      <span class="count">×${Number(it.count) || 0}</span>
-    </button>`).join('');
+  const size = Math.max(BAG_SLOT_COUNT, rows.length);
+  return Array.from({ length: size }, (_, index) => {
+    const it = rows[index];
+    if (!it) return '<span class="economy-item-slot bag-slot empty economy-empty-slot" aria-hidden="true"></span>';
+    return `
+      <button type="button" class="economy-item-slot bag-slot" data-economy-source="${source}" data-item-id="${Number(it.itemId)}" data-count="${Number(it.count) || 0}" title="${esc(itemName(it.itemId))}">
+        ${iconMarkup(it.itemId)}
+        <span class="name">${esc(itemName(it.itemId))}</span>
+        <span class="count">${Number(it.count) || 0}</span>
+      </button>`;
+  }).join('');
 }
 
 export function installGuildWarehouseGridPatch() {
@@ -48,32 +53,34 @@ export function installGuildWarehouseGridPatch() {
     const el = this.root.querySelector('#guild-detail');
     if (!el) return;
     let selected = null;
+    const myItems = Array.isArray(mine.items) ? mine.items : [];
+    const warehouseItems = Array.isArray(warehouse.items) ? warehouse.items : [];
 
     el.innerHTML = `
-      <section class="economy-grid-shell guild-warehouse-grid-shell">
+      <section class="economy-grid-shell guild-warehouse-grid-shell backpack-economy-ui">
         <h2 class="economy-grid-title">公会仓库</h2>
         <div class="economy-grid-workbench">
           <div class="economy-grid-panel">
-            <h3>我的背包 <span class="muted">点击物品准备存入（仅非绑定物品）</span></h3>
-            <div class="economy-item-grid" id="guild-my-item-grid">${slots(mine.items, 'bag')}</div>
+            <h3>我的背包 <span class="muted">${myItems.length}/${BAG_SLOT_COUNT} · 仅可存入非绑定物品</span></h3>
+            <div class="economy-item-grid bag-item-grid" id="guild-my-item-grid">${backpackSlots(myItems, 'bag')}</div>
           </div>
-          <div class="economy-grid-panel">
-            <h3 id="guild-transfer-title">待存入 / 取出</h3>
+          <div class="economy-grid-panel economy-transfer-panel">
+            <h3 id="guild-transfer-title">物品操作</h3>
             <div class="economy-transfer-card" id="guild-transfer-card">
               <div class="empty">从左侧背包选择要存入的物品，或从下方公会仓库选择要取出的物品。</div>
             </div>
           </div>
         </div>
         <div class="economy-grid-panel">
-          <h3>公会仓库 <span class="muted">点击格子可选择取出</span></h3>
-          <div class="economy-item-grid" id="guild-storage-grid">${slots(warehouse.items, 'warehouse')}</div>
+          <h3>公会仓库 <span class="muted">${warehouseItems.length}/${BAG_SLOT_COUNT} · 点击格子选择取出</span></h3>
+          <div class="economy-item-grid bag-item-grid" id="guild-storage-grid">${backpackSlots(warehouseItems, 'warehouse')}</div>
         </div>
       </section>`;
 
     const renderSelection = () => {
       const card = el.querySelector('#guild-transfer-card');
       if (!card) return;
-      el.querySelectorAll('.economy-item-slot').forEach((slot) => {
+      el.querySelectorAll('.economy-item-slot[data-item-id]').forEach((slot) => {
         slot.classList.toggle(
           'selected',
           selected
@@ -119,7 +126,7 @@ export function installGuildWarehouseGridPatch() {
       });
     };
 
-    el.querySelectorAll('.economy-item-slot').forEach((slot) => {
+    el.querySelectorAll('.economy-item-slot[data-item-id]').forEach((slot) => {
       slot.addEventListener('click', () => {
         selected = {
           source: slot.dataset.economySource,
