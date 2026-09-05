@@ -41,7 +41,9 @@ Object.defineProperty(globalThis, 'performance', {
 
 const { BattleRenderer } = await import('../src/battle/BattleRenderer.js');
 const { installBattleRenderLoadShedding20260905 } = await import('../src/ui/BattleRenderLoadShedding20260905.js');
+const { installBattleImpactSafetyFinal } = await import('../src/ui/BattleImpactSafetyFinal.js');
 installBattleRenderLoadShedding20260905();
+installBattleImpactSafetyFinal();
 
 function makeRenderer() {
   const renderer = Object.create(BattleRenderer.prototype);
@@ -173,6 +175,37 @@ function makeEngine(unitCount) {
   renderer.draw(engine);
   assert.equal(storageReads, 2, 'unit-name setting should still refresh on the next rendered frame');
   delete globalThis.localStorage;
+}
+
+{
+  // Missing/unsafe source impact animation used to fall back to a stroked ctx.arc,
+  // which is the visible small attack/debug circle reported in gameplay.  Runtime
+  // may omit that cosmetic impact, but it must never synthesize a debug-style ring.
+  const renderer = Object.create(BattleRenderer.prototype);
+  renderer.bulletAnims = new Map();
+  renderer.requestBulletAnim = () => Promise.resolve(false);
+  let arcCalls = 0;
+  let strokeCalls = 0;
+  const impactCtx = {
+    save() {},
+    restore() {},
+    beginPath() {},
+    arc() { arcCalls += 1; },
+    stroke() { strokeCalls += 1; },
+  };
+  renderer.drawImpactFx(impactCtx, {
+    impactFx: [{ lane: 1, col: 4, t: 0.1, res: 999999 }],
+  });
+  assert.equal(
+    arcCalls,
+    0,
+    'missing attack impact animation must not draw the synthetic small hit/debug circle',
+  );
+  assert.equal(
+    strokeCalls,
+    0,
+    'missing attack impact animation must not stroke a synthetic hit/debug ring',
+  );
 }
 
 console.log('High-star render-performance regression: OK');
