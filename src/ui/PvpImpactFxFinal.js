@@ -111,16 +111,9 @@ function drawOutsideGridImpact(renderer, ctx, fx) {
     void renderer.requestBulletAnim(fx.res);
   }
 
-  // 包首次仍在加载时，不让命中完全消失；只画很短的无裁剪冲击环。
-  const progress = Math.max(0, Math.min(1, (Number(fx.t) || 0) / 0.45));
-  ctx.save();
-  ctx.globalAlpha = Math.max(0, 0.85 * (1 - progress));
-  ctx.strokeStyle = '#f7e2a1';
-  ctx.lineWidth = Math.max(2, CELL_W * 0.045);
-  ctx.beginPath();
-  ctx.arc(cx, cy, CELL_W * (0.18 + progress * 0.36), 0, Math.PI * 2);
-  ctx.stroke();
-  ctx.restore();
+  // No synthetic fallback ring. If the real source impact animation is not
+  // available yet, omit this cosmetic frame rather than exposing a debug-like
+  // HIT circle during normal PVP/base attacks.
 }
 
 export function installPvpImpactFxFinal() {
@@ -172,5 +165,6 @@ export function installPvpImpactFxFinal() {
     authorityEventSync: true,
     impactDedupe: true,
     fullViewportBaseImpact: true,
+    syntheticFallbackRing: false,
   });
 }
