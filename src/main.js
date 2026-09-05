@@ -125,6 +125,10 @@ import { schedulePvpProjectileContinuity20260819 } from './ui/PvpProjectileConti
 import { installBattleUserRules20260903 } from './battle/BattleUserRules20260903.js';
 import { installBattleUserPresentation20260903 } from './ui/BattleUserPresentation20260903.js';
 import { installBattleChatOverlay } from './ui/BattleChatOverlay.js';
+import { installBattleCraftMaterialDrops20260905 } from './battle/BattleCraftMaterialDrops20260905.js';
+import { installGuildWarehouseGridPatch } from './ui/GuildWarehouseGridPatch.js';
+import { installAuctionGridPatch } from './ui/AuctionGridPatch.js';
+import { installSystemAnnouncementClient } from './ui/SystemAnnouncementClient.js';
 import { RoomUtilityOverlay } from './ui/RoomUtilityOverlay.js';
 import { App } from './ui/App.js';
 
@@ -208,6 +212,12 @@ installBattleRoomReference1826Authority();
 installBattleUserRules20260903();
 installBattleUserPresentation20260903();
 installBattleChatOverlay();
+
+// 2026-09-05 economy / announcement / loot completion patches.
+installBattleCraftMaterialDrops20260905();
+installGuildWarehouseGridPatch();
+installAuctionGridPatch();
+installSystemAnnouncementClient();
 
 const app = new App(document.getElementById('app'));
 const roomUtilityOverlay = new RoomUtilityOverlay(app);
