@@ -18,6 +18,7 @@ const __dirname = path.dirname(__filename);
 import { authRouter } from './routes/auth.js';
 import { playerRouter } from './routes/player.js';
 import { materialRefillRouter } from './routes/materialRefill.js';
+import { socialSearchFixRouter } from './routes/socialSearchFix20260905.js';
 import { socialRouter } from './routes/social.js';
 import { guildRouter } from './routes/guild.js';
 import { guildWarehouseGridRouter } from './routes/guildWarehouseGrid.js';
@@ -85,6 +86,8 @@ app.get('/api/health', (_req, res) => {
 app.use('/api/auth', authRouter);
 app.use('/api/player', playerRouter);
 app.use('/api/player', materialRefillRouter);
+// 新好友搜索优先处理 /search：支持 ID/昵称/账号，并避开旧 SQL ESCAPE 方言差异。
+app.use('/api/social', socialSearchFixRouter);
 app.use('/api/social', socialRouter);
 // 新仓库接口放在旧 guildRouter 前面，相同 deposit/withdraw 路径由新版非绑定物品规则优先处理。
 app.use('/api/guild', guildWarehouseGridRouter);
