@@ -346,32 +346,9 @@ function installFinalRenderer() {
     };
   };
 
-  BattleRenderer.prototype.drawDeployEffects = function drawNeutralDeployPulse(ctx, engine) {
-    const cellW = this.battleGridCellWidth?.() ?? 78;
-    const cellH = this.battleGridCellHeight?.() ?? 78;
-    for (const fx of engine?.deployEffects ?? []) {
-      const x = this.battleGridX?.(fx.col);
-      const y = this.battleGridY?.(fx.lane);
-      if (!Number.isFinite(x) || !Number.isFinite(y)) continue;
-      const maxLife = Math.max(0.001, finite(fx.maxLife, 0.28));
-      const progress = clamp(1 - finite(fx.life) / maxLife, 0, 1);
-      ctx.save();
-      ctx.globalAlpha = 0.42 * (1 - progress);
-      ctx.strokeStyle = '#dff8ff';
-      ctx.lineWidth = 1.8;
-      ctx.beginPath();
-      ctx.ellipse(
-        x,
-        y + cellH * 0.28,
-        cellW * (0.12 + progress * 0.16),
-        cellH * (0.035 + progress * 0.055),
-        0,
-        0,
-        Math.PI * 2,
-      );
-      ctx.stroke();
-      ctx.restore();
-    }
+  // 召唤瞬间的透明法阵细线已按用户要求移除，保留品质底座/闪光特效。
+  BattleRenderer.prototype.drawDeployEffects = function drawNoTransparentDeployLine() {
+    // no-op：不再合成透明部署椭圆线。
   };
 
   BattleRenderer.prototype.drawProjectiles = function drawStableHighArcProjectiles(ctx, engine) {
