@@ -129,6 +129,7 @@ import { installBattleCraftMaterialDrops20260905 } from './battle/BattleCraftMat
 import { installGuildWarehouseGridPatch } from './ui/GuildWarehouseGridPatch.js';
 import { installAuctionGridPatch } from './ui/AuctionGridPatch.js';
 import { installSystemAnnouncementClient } from './ui/SystemAnnouncementClient.js';
+import { installCardLoreDetailPatch } from './ui/CardLoreDetailPatch.js';
 import { RoomUtilityOverlay } from './ui/RoomUtilityOverlay.js';
 import { App } from './ui/App.js';
 
@@ -218,6 +219,7 @@ installBattleCraftMaterialDrops20260905();
 installGuildWarehouseGridPatch();
 installAuctionGridPatch();
 installSystemAnnouncementClient();
+installCardLoreDetailPatch();
 
 const app = new App(document.getElementById('app'));
 const roomUtilityOverlay = new RoomUtilityOverlay(app);
