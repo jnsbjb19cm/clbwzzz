@@ -1,19 +1,19 @@
 import { roomManager } from './RoomManager.js';
 
-/** 房间从创建起最多存在 2 小时。 */
+/** 房间从 createdAt 起最多存在 2 小时。 */
 export const ROOM_LIFETIME_MS = 2 * 60 * 60 * 1000;
-const SWEEP_INTERVAL_MS = 15_000;
+const ORPHAN_SWEEP_INTERVAL_MS = 15_000;
 
 function realMembersOf(room) {
   return [...(room?.members?.values?.() ?? [])].filter((member) => member?.isBot !== true);
 }
 
-/**
- * RoomManager.destroyRoom 旧实现只删 rooms Map；这里做完整销毁，避免 TTL 到期后
- * userRoom 仍残留，导致玩家被误判为“仍在其他房间中”。
- */
+/** 完整销毁，避免 userRoom 残留导致玩家被误判为仍在旧房间。 */
 function fullyDestroyRoom(room) {
   if (!room) return false;
+
+  if (room._lifetimeTimer) clearTimeout(room._lifetimeTimer);
+  room._lifetimeTimer = null;
 
   for (const member of room.members?.values?.() ?? []) {
     if (member?.disconnectTimer) clearTimeout(member.disconnectTimer);
@@ -26,12 +26,13 @@ function fullyDestroyRoom(room) {
 }
 
 /**
- * 启动房间寿命清理器。
- * - 创建满 2 小时：无论 waiting / starting / battling 都自动解散。
- * - 真人全部退出、只剩人机：自动回收，解决随机匹配后真人退出形成“死房间”。
+ * 房间生命周期：
+ * 1. 每个房间创建时设置精确的 2 小时 setTimeout，时间一到立即解散；
+ * 2. 另外每 15 秒回收“真人已经全部离开、只剩人机”的随机匹配死房间。
  */
 export function startRoomLifetimeService(io, { stopBattle } = {}) {
   let stopped = false;
+  const originalCreateRoom = roomManager.createRoom.bind(roomManager);
 
   const expire = (room, reason) => {
     const roomId = Number(room?.id);
@@ -51,45 +52,61 @@ export function startRoomLifetimeService(io, { stopBattle } = {}) {
     } catch {}
 
     try { stopBattle?.(roomId); } catch {}
-
     fullyDestroyRoom(room);
 
-    // 把仍订阅该 Socket.IO room 的成员/观战者移出，避免继续收到过期房间广播。
+    // 让成员和观战者从过期的 Socket.IO room 离开。
     try { io?.in?.(`room:${roomId}`)?.socketsLeave?.(`room:${roomId}`); } catch {}
+    try { io?.emit?.('rooms:list', roomManager.listRooms()); } catch {}
 
     console.log(`[clbwzzz][room-lifetime] destroyed room=${roomId} reason=${reason}`);
     return true;
   };
 
-  const sweep = () => {
+  const scheduleLifetime = (room) => {
+    if (!room || stopped) return;
+    if (room._lifetimeTimer) clearTimeout(room._lifetimeTimer);
+
+    const createdAt = Number(room.createdAt) || Date.now();
+    const remaining = Math.max(0, createdAt + ROOM_LIFETIME_MS - Date.now());
+    room.expiresAt = createdAt + ROOM_LIFETIME_MS;
+    room._lifetimeTimer = setTimeout(() => {
+      const current = roomManager.getRoom(room.id);
+      if (current) expire(current, 'lifetime');
+    }, remaining);
+    room._lifetimeTimer.unref?.();
+  };
+
+  // 给服务启动前已存在于内存中的房间补上寿命计时（通常为空，但逻辑完整）。
+  for (const room of roomManager.rooms.values()) scheduleLifetime(room);
+
+  // 包装创建房间：不改变原返回结构，只在创建完成后给真实 room 设置 2h 定时器。
+  roomManager.createRoom = function createRoomWithLifetime(args) {
+    const snapshot = originalCreateRoom(args);
+    const room = roomManager.getRoom(snapshot?.id);
+    if (room) scheduleLifetime(room);
+    return snapshot;
+  };
+
+  const sweepOrphans = () => {
     if (stopped) return;
-    const now = Date.now();
-    let changed = false;
-
     for (const room of [...roomManager.rooms.values()]) {
-      const createdAt = Number(room?.createdAt) || now;
-      if (now - createdAt >= ROOM_LIFETIME_MS) {
-        changed = expire(room, 'lifetime') || changed;
-        continue;
-      }
-
-      // 随机匹配补人机后，真人退出/断线宽限结束，只剩 bot 时立即回收。
       if ((room?.members?.size ?? 0) > 0 && realMembersOf(room).length === 0) {
-        changed = expire(room, 'bot-only') || changed;
+        expire(room, 'bot-only');
       }
-    }
-
-    if (changed) {
-      try { io?.emit?.('rooms:list', roomManager.listRooms()); } catch {}
     }
   };
 
-  const timer = setInterval(sweep, SWEEP_INTERVAL_MS);
-  timer.unref?.();
-  sweep();
+  const orphanTimer = setInterval(sweepOrphans, ORPHAN_SWEEP_INTERVAL_MS);
+  orphanTimer.unref?.();
+  sweepOrphans();
 
   return () => {
     stopped = true;
-    clearInterval(timer);
+    clearInterval(orphanTimer);
+    roomManager.createRoom = originalCreateRoom;
+    for (const room of roomManager.rooms.values()) {
+      if (room._lifetimeTimer) clearTimeout(room._lifetimeTimer);
+      room._lifetimeTimer = null;
+    }
   };
 }
