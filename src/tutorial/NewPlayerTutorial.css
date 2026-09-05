@@ -68,26 +68,37 @@
   border: 3px solid #ffe36e;
   border-radius: 12px;
   box-shadow:
-    0 0 0 9999px rgba(4, 12, 15, .56),
-    0 0 14px rgba(255, 229, 91, .95),
+    0 0 0 9999px rgba(4, 12, 15, .52),
+    0 0 18px rgba(255, 229, 91, .98),
     inset 0 0 12px rgba(255, 238, 137, .35);
-  transition: left .18s ease, top .18s ease, width .18s ease, height .18s ease;
+  transition: left .16s ease, top .16s ease, width .16s ease, height .16s ease;
   pointer-events: none;
 }
 
+/* 教程文案统一横向居中，避免一直压住左下角战线。 */
 .new-player-tutorial-panel {
   position: fixed;
   z-index: 2;
-  left: 24px;
-  bottom: 24px;
-  width: min(440px, calc(100vw - 48px));
-  padding: 16px 18px 15px;
+  left: 50%;
+  bottom: 22px;
+  transform: translateX(-50%);
+  width: min(560px, calc(100vw - 40px));
+  max-height: min(42vh, 390px);
+  overflow: auto;
+  padding: 16px 19px 14px;
   border: 2px solid #d8c76f;
   border-radius: 14px;
-  background: linear-gradient(180deg, rgba(25, 53, 43, .98), rgba(9, 27, 27, .98));
+  background:
+    radial-gradient(circle at 90% 0%, rgba(200, 235, 127, .12), transparent 34%),
+    linear-gradient(180deg, rgba(25, 53, 43, .985), rgba(9, 27, 27, .985));
   color: #f8f8e9;
-  box-shadow: 0 14px 36px rgba(0, 0, 0, .48);
+  box-shadow: 0 14px 38px rgba(0, 0, 0, .5);
   pointer-events: auto;
+}
+
+/* 技能教学时仍保持居中，但略抬高，给底部技能槽留出清晰高亮空间。 */
+.new-player-tutorial-panel.is-skill-step {
+  bottom: 104px;
 }
 
 .new-player-tutorial-progress {
@@ -119,6 +130,7 @@
   margin: 0 0 8px;
   color: #ffe77d;
   font-size: 21px;
+  line-height: 1.25;
 }
 
 .new-player-tutorial-text {
@@ -126,6 +138,10 @@
   color: #f2f5e9;
   font-size: 14px;
   line-height: 1.72;
+}
+
+.new-player-tutorial-text b {
+  color: #fff0a0;
 }
 
 .new-player-tutorial-hint {
@@ -139,11 +155,25 @@
   line-height: 1.55;
 }
 
+.new-player-tutorial-continue {
+  min-height: 18px;
+  margin-top: 8px;
+  color: rgba(255, 239, 164, .88);
+  font-size: 12px;
+  text-align: center;
+  animation: tutorialContinuePulse 1.25s ease-in-out infinite alternate;
+}
+
+@keyframes tutorialContinuePulse {
+  from { opacity: .48; }
+  to { opacity: 1; }
+}
+
 .new-player-tutorial-actions {
   display: flex;
   justify-content: flex-end;
   gap: 9px;
-  margin-top: 13px;
+  margin-top: 8px;
 }
 
 .new-player-tutorial-actions button {
@@ -173,12 +203,37 @@
   color: #c9f279;
 }
 
+.new-player-tutorial-panel.failure {
+  border-color: #e39975;
+}
+
+/* 暴风雪等“真正要点”的控件再加一圈自身高亮，避免只看到外层遮罩框。 */
+.tutorial-direct-highlight {
+  position: relative !important;
+  z-index: 10000030 !important;
+  outline: 4px solid #ffe36e !important;
+  outline-offset: 3px !important;
+  box-shadow:
+    0 0 0 4px rgba(72, 129, 221, .45),
+    0 0 26px 9px rgba(255, 225, 82, .82) !important;
+  animation: tutorialDirectPulse .72s ease-in-out infinite alternate;
+}
+
+@keyframes tutorialDirectPulse {
+  from { filter: brightness(1); transform: scale(1); }
+  to { filter: brightness(1.22); transform: scale(1.04); }
+}
+
 @media (max-width: 720px) {
   .new-player-tutorial-panel {
-    left: 12px;
-    bottom: 12px;
-    width: calc(100vw - 24px);
+    bottom: 10px;
+    width: calc(100vw - 20px);
+    max-height: 46vh;
     padding: 13px 14px;
+  }
+
+  .new-player-tutorial-panel.is-skill-step {
+    bottom: 82px;
   }
 
   .new-player-tutorial-title {
