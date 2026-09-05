@@ -1,0 +1,271 @@
+/* 游戏大厅 2026-09-05 微调：公告条、聊天频道、布局下移、降低同色相邻造成的“靠色”。 */
+
+/* 保留怀旧草绿色，但把大面积背景降一点饱和度，面板之间用明暗层级区分。 */
+.classic-game-hall .lobby-stage {
+  background: linear-gradient(180deg, #dbeeb1 0%, #c4df8c 58%, #afd070 100%);
+}
+
+.classic-game-hall .lobby-title-bar {
+  background: linear-gradient(180deg, #83bd3d 0%, #4c8219 100%);
+  border-bottom-color: #31560f;
+}
+
+.classic-game-hall .lobby-tabs {
+  top: 64px;
+}
+
+.classic-game-hall .lobby-tab {
+  color: #26450d;
+  background: linear-gradient(180deg, #d9ef9e, #a9d35b);
+  border-color: #50751f;
+  text-shadow: 0 1px rgba(255,255,255,.5);
+}
+
+.classic-game-hall .lobby-tab:hover {
+  background: linear-gradient(180deg, #f0f7bd, #badb6d);
+}
+
+.classic-game-hall .lobby-tab.active {
+  color: #5a3e00;
+  background: linear-gradient(180deg, #fff1a4, #e0b84c);
+  border-color: #8b6416;
+  box-shadow: inset 0 1px 3px rgba(255,255,255,.62), 0 0 0 2px rgba(103,76,12,.17);
+}
+
+/* 横向公告条：位于筛选栏和房间列表之间。 */
+.classic-game-hall .lobby-announcement {
+  left: 35px;
+  top: 111px;
+  width: calc(74% - 40px);
+  height: 34px;
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+  border: 1px solid #8a711f;
+  border-radius: 5px;
+  background: linear-gradient(180deg, #fff8cf, #e7d986);
+  box-shadow: inset 0 1px rgba(255,255,255,.72), 0 1px 3px rgba(55,72,19,.22);
+  color: #4b3b08;
+  font-size: 13px;
+}
+
+.classic-game-hall .lobby-announcement-label {
+  height: 100%;
+  min-width: 58px;
+  padding: 0 12px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  color: #fff6c6;
+  font-weight: 800;
+  letter-spacing: 2px;
+  background: linear-gradient(180deg, #8c6e22, #61480d);
+  border-right: 1px solid #4e390b;
+}
+
+.classic-game-hall .lobby-announcement-window {
+  min-width: 0;
+  flex: 1;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.classic-game-hall .lobby-announcement-track {
+  display: inline-block;
+  min-width: max-content;
+  padding-left: 100%;
+  animation: lobbyAnnouncementMarquee 26s linear infinite;
+}
+
+.classic-game-hall .lobby-announcement:hover .lobby-announcement-track {
+  animation-play-state: paused;
+}
+
+@keyframes lobbyAnnouncementMarquee {
+  from { transform: translateX(0); }
+  to { transform: translateX(-100%); }
+}
+
+/* 给公告条腾位置，同时不挤压分页区。 */
+.classic-game-hall .lobby-rooms {
+  top: 153px;
+  height: 487px;
+}
+
+.classic-game-hall .lobby-room-cell {
+  background: linear-gradient(180deg, #fffef8, #e7eadf);
+  border-color: #838c6f;
+  box-shadow: 0 2px 5px rgba(63,76,47,.22);
+}
+
+.classic-game-hall .lobby-room-cell:hover {
+  border-color: #56792a;
+  box-shadow: 0 2px 7px rgba(54,85,29,.3);
+}
+
+/* 右侧人物栏与草绿色底分开，避免整块绿色糊成一片。 */
+.classic-game-hall .lobby-player {
+  background: linear-gradient(180deg, rgba(224,244,169,.96), rgba(193,225,116,.9));
+  border-left-color: #537527;
+  border-bottom-color: #537527;
+}
+
+.classic-game-hall .lobby-player-rank {
+  background: rgba(245,250,205,.56);
+  border-bottom: 1px solid rgba(78,112,30,.24);
+}
+
+/* 聊天整体下移并稍微压低高度，给房间列表留出更干净的视觉空间。 */
+.classic-game-hall .lobby-chat {
+  left: 28px;
+  bottom: 16px;
+  width: 39.5%;
+  height: 194px;
+  padding: 7px 8px 8px;
+  background: linear-gradient(180deg, rgba(248,250,222,.95), rgba(220,236,171,.94));
+  border: 2px solid #526f2e;
+  border-radius: 9px;
+  box-shadow: 0 2px 7px rgba(40,58,21,.22), inset 0 1px rgba(255,255,255,.78);
+}
+
+.classic-game-hall .lobby-chat-head {
+  position: static;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 30px;
+  padding-bottom: 5px;
+  border-bottom: 1px solid rgba(73,100,40,.28);
+}
+
+.classic-game-hall .lobby-chat-title {
+  flex: 0 0 auto;
+  color: #35521b;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.classic-game-hall .lobby-chat-channels {
+  position: static;
+  display: flex;
+  gap: 4px;
+  flex: 0 0 auto;
+}
+
+.classic-game-hall .lobby-chat-channel {
+  position: static;
+  min-width: 45px;
+  height: 23px;
+  padding: 0 8px;
+  border: 1px solid #879b67;
+  border-radius: 5px;
+  background: linear-gradient(180deg, #f7f9e8, #d8e4b7);
+  color: #4b5e36;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.classic-game-hall .lobby-chat-channel:hover {
+  filter: brightness(1.03);
+}
+
+.classic-game-hall .lobby-chat-channel.active[data-channel='current'] {
+  color: #fff;
+  border-color: #4e712b;
+  background: linear-gradient(180deg, #83b64c, #5d8731);
+}
+
+.classic-game-hall .lobby-chat-channel.active[data-channel='world'] {
+  color: #fff;
+  border-color: #30718b;
+  background: linear-gradient(180deg, #59bdd7, #3488a5);
+}
+
+.classic-game-hall .lobby-chat-channel.active[data-channel='guild'] {
+  color: #fff;
+  border-color: #8b6722;
+  background: linear-gradient(180deg, #d6a842, #a77a25);
+}
+
+.classic-game-hall .lobby-chat-channel.active[data-channel='private'] {
+  color: #fff;
+  border-color: #70538e;
+  background: linear-gradient(180deg, #a983c4, #795a9a);
+}
+
+.classic-game-hall .lobby-chat-private-target {
+  position: static;
+  width: 98px;
+  height: 23px;
+  margin-left: auto;
+  padding: 0 6px;
+  border: 1px solid #765b8c;
+  border-radius: 5px;
+  background: #fffdf5;
+  color: #49365a;
+  font-size: 11px;
+}
+
+.classic-game-hall .lobby-chat-private-target[hidden] {
+  display: none;
+}
+
+.classic-game-hall .lobby-chat-list {
+  position: static;
+  flex: 1;
+  min-height: 0;
+  padding: 5px 3px 2px;
+  color: #2f461e;
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.classic-game-hall .lobby-chat-item {
+  position: static;
+  padding: 1px 0;
+  overflow-wrap: anywhere;
+}
+
+.classic-game-hall .lobby-chat-item.is-system {
+  color: #725914;
+}
+
+.classic-game-hall .lobby-chat-item.is-private {
+  color: #68477c;
+}
+
+.classic-game-hall .lobby-chat-input-row {
+  position: static;
+  margin-top: 4px;
+}
+
+.classic-game-hall .lobby-chat-input-row input {
+  background: #fffef7;
+  border-color: #778d56;
+  color: #29391c;
+}
+
+.classic-game-hall #lobby-chat-send {
+  border: 1px solid #567927;
+  background: linear-gradient(180deg, #85b84d, #5e8930);
+  color: #fff;
+  border-radius: 5px;
+  padding: 0 15px;
+}
+
+/* 快速加入原本与底色太接近，改为偏黄绿，和大厅草绿拉开明度。 */
+.classic-game-hall .lobby-btn-quick {
+  background: linear-gradient(180deg, #f0f6a2 0%, #a9cf45 52%, #78a72a 100%);
+  border-color: #4f7217;
+  box-shadow: inset 0 2px rgba(255,255,255,.55), 0 3px 6px rgba(55,74,16,.2);
+  color: #fff;
+  text-shadow: 0 1px 1px rgba(35,58,8,.55);
+}
+
+.classic-game-hall .lobby-btn-find,
+.classic-game-hall .lobby-btn-create {
+  box-shadow: inset 0 2px rgba(255,255,255,.42), 0 3px 6px rgba(55,74,16,.18);
+}
