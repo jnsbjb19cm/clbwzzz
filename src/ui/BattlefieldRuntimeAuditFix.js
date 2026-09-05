@@ -79,35 +79,6 @@ function pushRuntimeEffect(engine, effect) {
   }
 }
 
-function drawHitEffect(ctx, effect, progress, color) {
-  const x = fracColToCenterX(effect.col);
-  const y = cellCenterY(effect.lane);
-  const radius = 7 + progress * 25;
-  const alpha = 1 - progress;
-
-  ctx.save();
-  ctx.globalAlpha = alpha;
-  ctx.strokeStyle = color.main;
-  ctx.lineWidth = Math.max(1.5, 4 - progress * 2.4);
-  ctx.shadowColor = color.glow;
-  ctx.shadowBlur = 13;
-  ctx.beginPath();
-  ctx.arc(x, y, radius, 0, Math.PI * 2);
-  ctx.stroke();
-
-  const count = effect.kind === 'heal' ? 5 : 8;
-  for (let index = 0; index < count; index += 1) {
-    const angle = effect.seed + (index / count) * Math.PI * 2;
-    const inner = radius * 0.28;
-    const outer = radius * (0.78 + progress * 0.45);
-    ctx.beginPath();
-    ctx.moveTo(x + Math.cos(angle) * inner, y + Math.sin(angle) * inner);
-    ctx.lineTo(x + Math.cos(angle) * outer, y + Math.sin(angle) * outer);
-    ctx.stroke();
-  }
-  ctx.restore();
-}
-
 function drawSkillEffect(ctx, effect, progress, color) {
   const x = fracColToCenterX(effect.col);
   const y = cellCenterY(effect.lane);
@@ -145,11 +116,9 @@ function drawRuntimeEffects(renderer, engine) {
   for (const effect of effects) {
     const progress = 1 - clamp01(effect.life / Math.max(0.001, effect.maxLife));
     const color = effectColor(effect.effectKind ?? effect.kind);
-    if (effect.kind === 'hit' || effect.kind === 'heal') {
-      drawHitEffect(ctx, effect, progress, color);
-    } else {
-      drawSkillEffect(ctx, effect, progress, color);
-    }
+    // 用户已要求移除攻击/受击/治疗命中的小圈圈点特效，不再绘制 hit/heal。
+    if (effect.kind === 'hit' || effect.kind === 'heal') continue;
+    drawSkillEffect(ctx, effect, progress, color);
   }
 }
 

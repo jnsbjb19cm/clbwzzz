@@ -247,18 +247,6 @@ function safeImpactPack(pack, margin = 3) {
   });
 }
 
-function drawFallbackImpact(ctx, cx, cy, t, cellW) {
-  const progress = clamp(finite(t) / 0.45, 0, 1);
-  ctx.save();
-  ctx.globalAlpha = Math.max(0, 0.9 * (1 - progress));
-  ctx.strokeStyle = '#f7e2a1';
-  ctx.lineWidth = Math.max(2, cellW * 0.045);
-  ctx.beginPath();
-  ctx.arc(cx, cy, cellW * (0.16 + progress * 0.4), 0, Math.PI * 2);
-  ctx.stroke();
-  ctx.restore();
-}
-
 function targetOf(effect) {
   const nested = effect?.target ?? effect?.targetCell ?? {};
   return {
@@ -397,7 +385,7 @@ export function installBattlefieldVisibleGridMapFinal() {
           void this.requestBulletAnim(fx.res);
         }
       }
-      if (!usedSourceAnimation) drawFallbackImpact(ctx, point.x, point.y, fx.t, g.cellW);
+      // 不再合成 fallback 光圈；缺少源爆炸动画时直接不绘制命中圈。
       this._impactSafetyAudit.push({
         res: fx.res != null ? Number(fx.res) : null,
         col: fx.col,
@@ -417,15 +405,7 @@ export function installBattlefieldVisibleGridMapFinal() {
       const unit = [...(engine.units ?? [])].reverse().find((candidate) => candidate.alive && candidate.lane === fx.lane && Math.abs(candidate.col - fx.col) < 0.7);
       const layout = unit ? this.computeUnitLayout(engine, unit) : null;
       const point = layout ? { x: layout.cx, y: layout.footY } : gridPoint(this, fx.col, fx.lane);
-      const progress = 1 - finite(fx.life, 0) / Math.max(0.001, finite(fx.maxLife, 0.5));
-      ctx.save();
-      ctx.globalAlpha = Math.max(0, 0.55 * (1 - progress));
-      ctx.strokeStyle = '#d8fbff';
-      ctx.lineWidth = 2;
-      ctx.beginPath();
-      ctx.ellipse(point.x, point.y, g.cellW * (0.14 + progress * 0.28), g.cellH * (0.05 + progress * 0.12), 0, 0, Math.PI * 2);
-      ctx.stroke();
-      ctx.restore();
+      // 召唤瞬间的透明法阵细线已按用户要求移除，保留品质底座/闪光特效。
       this._runtimeCoordinateDeployAudit.push({ lane: fx.lane, col: fx.col, effectX: point.x, effectY: point.y, unitX: point.x, unitFootY: point.y });
     }
   };

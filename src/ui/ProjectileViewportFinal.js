@@ -77,13 +77,9 @@ function drawOutsideProjectile(renderer, ctx, p) {
     return;
   }
 
-  ctx.beginPath();
-  ctx.arc(drawX, drawY, 8, 0, Math.PI * 2);
-  ctx.fillStyle = p.color ?? '#f8fafc';
-  ctx.fill();
-  ctx.strokeStyle = '#fff';
-  ctx.lineWidth = 2;
-  ctx.stroke();
+  // Never synthesize a circular placeholder projectile. If both the source
+  // animation and image are still loading, omit this cosmetic frame until the
+  // real projectile asset is available.
 }
 
 export function installProjectileViewportFinal() {
@@ -117,5 +113,6 @@ export function installProjectileViewportFinal() {
     fullViewportCoordinates: true,
     laneUsesCellCenters: true,
     projectileRotationUsesRealFlightVector: true,
+    syntheticFallbackCircle: false,
   });
 }
