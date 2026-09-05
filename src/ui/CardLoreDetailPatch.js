@@ -22,7 +22,7 @@ function createSection(title, text, className) {
 function isCardBound(slot) {
   if (!slot) return false;
   const raw = slot.isBound ?? slot.bound;
-  // 当前卡牌数据还没有单独的绑定字段；旧卡与新卡默认都按绑定卡处理。
+  // 当前卡牌表尚未单独存 is_bound；历史卡和新手卡默认按绑定卡处理。
   if (raw == null) return true;
   return raw === true || raw === 1 || raw === '1';
 }
@@ -43,10 +43,13 @@ export function installCardLoreDetailPatch() {
 
   const originalRenderCardGrid = BagView.prototype.renderCardGrid;
   if (typeof originalRenderCardGrid === 'function') {
-    BagView.prototype.renderCardGrid = function patchedRenderCardGrid(root) {
-      const result = originalRenderCardGrid.call(this, root);
+    // BagView.renderCardGrid 的真实签名是 (root, grid)。
+    // 旧补丁只转发 root，导致 grid === undefined，切换“卡牌”页时直接在 grid.innerHTML 崩溃。
+    BagView.prototype.renderCardGrid = function patchedRenderCardGrid(root, grid) {
+      const result = originalRenderCardGrid.call(this, root, grid);
       const slots = this.cardInventory?.getSlots?.() ?? [];
-      root?.querySelectorAll?.('.bag-card-slot[data-index]').forEach((cell) => {
+      const scope = grid ?? root;
+      scope?.querySelectorAll?.('.card-bag-slot[data-index], .bag-card-slot[data-index]').forEach((cell) => {
         const slot = slots[Number(cell.dataset.index)];
         if (!isCardBound(slot) || cell.querySelector('.bag-card-bound-badge')) return;
         const badge = document.createElement('span');
