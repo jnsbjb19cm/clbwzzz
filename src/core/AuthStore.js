@@ -25,8 +25,8 @@ export class AuthStore {
     } catch {}
   }
 
-  async register({ username, password }) {
-    const data = await this.api.post('/auth/register', { username, password });
+  async register({ username, password, nickname }) {
+    const data = await this.api.post('/auth/register', { username, password, nickname });
     this.setToken(data.token);
     this.user = data.user;
     this.lastRecoveryCode = String(data.recoveryCode || '');
