@@ -2,6 +2,7 @@ import { ShopView } from './ShopView.js';
 
 const PATCH_FLAG = Symbol.for('clbwz.diamondShopExpansion20260905');
 
+// 固定钻石套餐：保留成“批量优惠包”，同时下方会为商城现有道具自动生成单独的钻石购买版本。
 const DIAMOND_PRODUCTS = Object.freeze([
   {
     key: 'gem-item:gold-box-10',
@@ -85,6 +86,18 @@ const DIAMOND_PRODUCTS = Object.freeze([
   },
 ]);
 
+// 部分常用功能道具给出明确的单件钻石价，让上面的批量包始终有批量优惠。
+const SINGLE_ITEM_GEM_PRICE = new Map([
+  [1, 3],
+  [9, 3],
+  [80, 8],
+  [81, 8],
+  [92, 18],
+  [50041, 4],
+  [50024, 2],
+  [50034, 2],
+]);
+
 function toProduct(entry) {
   return {
     key: entry.key,
@@ -100,6 +113,49 @@ function toProduct(entry) {
       effect: { type: 'inventory', realId: entry.realId, count: entry.count },
     },
   };
+}
+
+function diamondPriceForProduct(product) {
+  const itemId = Number(product?.data?.effect?.realId ?? product?.realId);
+  const fixedSinglePrice = SINGLE_ITEM_GEM_PRICE.get(itemId);
+  if (fixedSinglePrice != null) {
+    const count = Math.max(1, Math.floor(Number(product?.data?.effect?.count) || 1));
+    return Math.max(1, fixedSinglePrice * count);
+  }
+
+  // 其余金币道具统一折算为钻石价。最低2钻，避免低金币价格商品变成0钻石。
+  const goldPrice = Math.max(0, Number(product?.data?.price) || 0);
+  return Math.max(2, Math.ceil(goldPrice / 3000));
+}
+
+function toDiamondAlternative(product) {
+  const effect = product?.data?.effect;
+  return {
+    ...product,
+    key: `gem-alt:${product.key}`,
+    kind: 'gem-item',
+    name: `${product.name}（钻石）`,
+    desc: `钻石购买；${product.desc || '商城道具'}`,
+    data: {
+      gemPrice: diamondPriceForProduct(product),
+      effect: {
+        type: 'inventory',
+        realId: Number(effect.realId),
+        count: Math.max(1, Math.floor(Number(effect.count) || 1)),
+      },
+    },
+  };
+}
+
+function buildDiamondAlternatives(products) {
+  return products
+    .filter((product) => (
+      product?.kind === 'item'
+      && product?.category !== 'fashion'
+      && product?.data?.effect?.type === 'inventory'
+      && Number.isFinite(Number(product?.data?.effect?.realId))
+    ))
+    .map(toDiamondAlternative);
 }
 
 function hasInventoryCapacity(view, itemId, count) {
@@ -126,7 +182,8 @@ export function installDiamondShopExpansion20260905() {
   const previousGetClassicProducts = ShopView.prototype.getClassicProducts;
   ShopView.prototype.getClassicProducts = function getClassicProductsWithDiamondItems20260905() {
     const products = previousGetClassicProducts.call(this);
-    return [...products, ...DIAMOND_PRODUCTS.map(toProduct)];
+    const alternatives = buildDiamondAlternatives(products);
+    return [...products, ...DIAMOND_PRODUCTS.map(toProduct), ...alternatives];
   };
 
   const previousGetClassicVisibleProducts = ShopView.prototype.getClassicVisibleProducts;
@@ -193,5 +250,6 @@ export function installDiamondShopExpansion20260905() {
       itemId: entry.realId,
       count: entry.count,
     }));
+    window.__diamondShopAlternativePrice20260905 = (product) => diamondPriceForProduct(product);
   }
 }
