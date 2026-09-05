@@ -1,4 +1,4 @@
-/* 卡牌 / 道具绑定状态：背包格子与详情都明确显示。 */
+/* 卡牌 / 道具绑定状态：格子角标保持小巧，避免遮挡主体图。 */
 .card-bag-slot,
 .bag-card-slot,
 .bag-slot:not(.empty) {
@@ -8,22 +8,24 @@
 .bag-card-bound-badge,
 .bag-item-binding-badge {
   position: absolute;
-  left: 4px;
-  top: 4px;
+  right: 3px;
+  bottom: 3px;
+  left: auto;
+  top: auto;
   z-index: 12;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-width: 30px;
-  height: 18px;
-  padding: 0 5px;
+  min-width: 22px;
+  height: 14px;
+  padding: 0 3px;
   box-sizing: border-box;
   border: 1px solid rgba(255, 221, 135, .72);
-  border-radius: 5px;
-  background: linear-gradient(180deg, rgba(137, 71, 26, .96), rgba(91, 43, 17, .96));
-  box-shadow: 0 1px 3px rgba(0, 0, 0, .35);
+  border-radius: 4px;
+  background: linear-gradient(180deg, rgba(137, 71, 26, .94), rgba(91, 43, 17, .94));
+  box-shadow: 0 1px 2px rgba(0, 0, 0, .32);
   color: #fff0b7;
-  font-size: 10px;
+  font-size: 8px;
   line-height: 1;
   font-weight: 800;
   pointer-events: none;
