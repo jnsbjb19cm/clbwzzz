@@ -25,7 +25,12 @@ jobs:
       - name: Check syntax
         run: |
           node --check src/battle/BattleRenderer.js
+          node --check src/ui/BattleRenderLoadShedding20260905.js
           node --check scripts/verify-high-star-render-performance-20260905.mjs
+          node --check scripts/verify-authority-smooth-performance-20260905.mjs
 
-      - name: Run focused regression
+      - name: Run high-star focused regression
         run: node scripts/verify-high-star-render-performance-20260905.mjs
+
+      - name: Run existing authority smooth-performance regression
+        run: node scripts/verify-authority-smooth-performance-20260905.mjs
