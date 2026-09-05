@@ -304,7 +304,8 @@ function refineController(view, attempt = 0) {
   configureStep(controller, view);
 }
 
-if (!globalThis[PATCH_FLAG]) {
+export function installTutorialRefinementV4() {
+  if (globalThis[PATCH_FLAG]) return;
   globalThis[PATCH_FLAG] = true;
 
   // 教程说明步骤锁定摆卡；部署步骤仍由原 TutorialPlacementRule 精确限制卡牌/行列。
@@ -327,8 +328,10 @@ if (!globalThis[PATCH_FLAG]) {
   const previousRenderBattle = BattleView.prototype.renderBattle;
   BattleView.prototype.renderBattle = async function renderTutorialRefinementV4(root) {
     if (isTutorialView(this)) {
-      // 剧情新手教程固定使用 grassbg.png，不跟随自由练习的背景选择。
+      // 剧情新手教程固定使用 resources/background/grassbg.png，不跟随自由练习背景选择。
       this.trainingMap = 'grass';
+      // 控制器挂载前先锁住摆卡，彻底消除首帧抢操作窗口。
+      if (this.engine) this.engine.tutorialPlacementLocked = true;
     }
 
     const result = await previousRenderBattle.call(this, root);
@@ -338,3 +341,7 @@ if (!globalThis[PATCH_FLAG]) {
     return result;
   };
 }
+
+// main.js 会同步安装大量旧战斗补丁；延迟到本轮同步安装结束后再装 V4，避免被旧补丁覆盖。
+if (typeof queueMicrotask === 'function') queueMicrotask(() => installTutorialRefinementV4());
+else Promise.resolve().then(() => installTutorialRefinementV4());
