@@ -104,7 +104,7 @@ function bulletinMarkup() {
           <button type="button" data-trial-route="smithy">
             <b>补强化粉和制作材料位置</b>
             <span>主城 → <em>铁匠铺</em> → <em>强化</em> → 点击「<strong>补发道具</strong>」</span>
-            <small>包含强化粉1~5级、羊皮纸、宝石、保护符、DNA等；每次各100个，每天最多50次，全部绑定</small>
+            <small>包含强化粉1~5级、羊皮纸、宝石、保护符、DNA等；每次各100个，每天最多500次，全部绑定</small>
           </button>
         </div>
         ${FEATURE_GROUPS.map((group) => `
@@ -147,7 +147,7 @@ function injectMainCityBulletin(view, root) {
 function updateLobbyAnnouncement(view) {
   const track = view.root?.querySelector?.('.classic-game-hall .lobby-announcement-track');
   if (!track) return;
-  track.textContent = `${LOBBY_NOTICE_TEXT}　｜　补卡：主城 → 背包 → 卡牌 →「补全卡」　｜　补强化粉和制作材料：主城 → 铁匠铺 → 强化 →「补发道具」（每次各100个，每日最多50次，全部绑定）　｜　玩家交流群：QQ群 1060910192　｜　房间最长保留2小时，无真人玩家的房间会自动回收　｜　绑定材料制作出的产物一定绑定`;
+  track.textContent = `${LOBBY_NOTICE_TEXT}　｜　补卡：主城 → 背包 → 卡牌 →「补全卡」　｜　补强化粉和制作材料：主城 → 铁匠铺 → 强化 →「补发道具」（每次各100个，每日最多500次，全部绑定）　｜　玩家交流群：QQ群 1060910192　｜　房间最长保留2小时，无真人玩家的房间会自动回收　｜　绑定材料制作出的产物一定绑定`;
 }
 
 export function installMainCityTrialBulletin20260905() {
