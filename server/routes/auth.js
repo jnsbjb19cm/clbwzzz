@@ -70,6 +70,23 @@ async function issueRecoveryCodeIfMissing(userId) {
   return issueRecoveryCode(userId);
 }
 
+async function findLoginUser(identifier) {
+  // 账号精确匹配优先；这样昵称恰好与其他账号相同时不会抢占账号登录。
+  const byUsername = await db.get('SELECT * FROM users WHERE username=?', [identifier]);
+  if (byUsername) return { user: byUsername, ambiguousNickname: false };
+
+  const byNickname = await db.all(`
+    SELECT u.*
+    FROM users u
+    JOIN player_profiles p ON p.user_id=u.id
+    WHERE p.nickname=?
+    ORDER BY u.id ASC
+    LIMIT 2
+  `, [identifier]);
+  if (byNickname.length > 1) return { user: null, ambiguousNickname: true };
+  return { user: byNickname[0] ?? null, ambiguousNickname: false };
+}
+
 authRouter.post('/register', async (req, res) => {
   const username = String(req.body.username || '').trim();
   const password = String(req.body.password || '');
@@ -93,11 +110,19 @@ authRouter.post('/register', async (req, res) => {
 });
 
 authRouter.post('/login', async (req, res) => {
-  const username = String(req.body.username || '').trim();
+  const identifier = String(req.body.identifier ?? req.body.username ?? '').trim();
   const password = String(req.body.password || '');
-  const user = await db.get('SELECT * FROM users WHERE username=?', [username]);
+  if (!identifier || password.length < 1) {
+    return res.status(400).json({ message: '请输入账号或游戏昵称以及密码' });
+  }
+
+  const lookup = await findLoginUser(identifier);
+  if (lookup.ambiguousNickname) {
+    return res.status(409).json({ message: '该游戏昵称对应多个账号，请使用账号登录' });
+  }
+  const user = lookup.user;
   if (!user || !(await bcrypt.compare(password, user.password_hash))) {
-    return res.status(401).json({ message: '账号或密码错误' });
+    return res.status(401).json({ message: '账号/昵称或密码错误' });
   }
   await db.run('UPDATE users SET last_login=CURRENT_TIMESTAMP WHERE id=?', [user.id]);
 
