@@ -1,4 +1,4 @@
-/* 战斗内半透明聊天覆盖层：可展开/收起，不挡住战场操作。 */
+/* 战斗内聊天：左下角半透明面板 + 顶部系统横幅。 */
 .battle-chat-shell {
   position: fixed;
   left: 14px;
@@ -12,18 +12,83 @@
   user-select: none;
 }
 
+.battle-system-marquee {
+  position: fixed;
+  left: 50%;
+  top: 104px;
+  z-index: 980;
+  width: min(720px, 54vw);
+  height: 30px;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+  border: 1px solid rgba(238, 203, 81, 0.78);
+  border-radius: 8px;
+  background: linear-gradient(90deg, rgba(31, 55, 34, 0.18), rgba(10, 39, 25, 0.92) 16%, rgba(10, 39, 25, 0.92) 84%, rgba(31, 55, 34, 0.18));
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.36);
+  color: #fff3a0;
+  pointer-events: none;
+  opacity: 1;
+  transition: opacity 180ms ease;
+}
+
+.battle-system-marquee.hidden {
+  opacity: 0;
+  visibility: hidden;
+}
+
+.battle-system-marquee-title {
+  flex: 0 0 auto;
+  height: 100%;
+  display: inline-flex;
+  align-items: center;
+  padding: 0 11px;
+  border-right: 1px solid rgba(255, 230, 109, 0.28);
+  color: #ffe65f;
+  font-size: 12px;
+  font-weight: 800;
+  text-shadow: 0 1px 2px #000;
+}
+
+.battle-system-marquee-window {
+  min-width: 0;
+  flex: 1 1 auto;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.battle-system-marquee-text {
+  display: inline-block;
+  min-width: 100%;
+  padding-left: 100%;
+  box-sizing: content-box;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 30px;
+  text-shadow: 0 1px 2px #000;
+  animation: battle-system-marquee-scroll 12s linear infinite;
+}
+
+@keyframes battle-system-marquee-scroll {
+  from { transform: translateX(0); }
+  to { transform: translateX(-100%); }
+}
+
 .battle-chat-panel {
   pointer-events: auto;
+  position: relative;
   display: flex;
   flex-direction: column;
-  width: min(330px, calc(100vw - 28px));
-  max-height: min(220px, 40vh);
+  width: min(410px, calc(100vw - 28px));
+  height: min(238px, 42vh);
   overflow: hidden;
-  border: 1px solid rgba(168, 217, 91, 0.55);
-  border-radius: 12px;
+  border: 1px solid rgba(168, 217, 91, 0.58);
+  border-radius: 11px;
   background: rgba(6, 32, 17, 0.74);
   box-shadow: 0 6px 18px rgba(0, 0, 0, 0.42);
   color: #eafff2;
+  backdrop-filter: blur(2px);
 }
 
 .battle-chat-header {
@@ -31,7 +96,8 @@
   align-items: center;
   justify-content: space-between;
   gap: 8px;
-  padding: 5px 8px;
+  min-height: 30px;
+  padding: 4px 8px;
   background: rgba(0, 0, 0, 0.28);
   border-bottom: 1px solid rgba(255, 255, 255, 0.12);
 }
@@ -60,6 +126,38 @@
   background: rgba(255, 255, 255, 0.16);
 }
 
+.battle-chat-channels {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 3px;
+  padding: 4px 6px;
+  border-bottom: 1px solid rgba(255,255,255,.1);
+  background: rgba(2, 18, 10, .32);
+}
+
+.battle-chat-channels button {
+  min-width: 0;
+  height: 26px;
+  border: 1px solid rgba(155, 190, 91, .42);
+  border-radius: 5px;
+  background: rgba(33, 72, 40, .48);
+  color: #dce9d6;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.battle-chat-channels button:hover {
+  background: rgba(72, 111, 50, .66);
+}
+
+.battle-chat-channels button.active {
+  border-color: #e2c653;
+  background: linear-gradient(180deg, rgba(118, 123, 51, .9), rgba(66, 83, 36, .88));
+  color: #fff7b5;
+  box-shadow: inset 0 0 6px rgba(255, 228, 98, .22);
+}
+
 .battle-chat-log {
   flex: 1 1 auto;
   min-height: 0;
@@ -69,10 +167,7 @@
   line-height: 1.45;
 }
 
-.battle-chat-log::-webkit-scrollbar {
-  width: 6px;
-}
-
+.battle-chat-log::-webkit-scrollbar { width: 6px; }
 .battle-chat-log::-webkit-scrollbar-thumb {
   background: rgba(168, 217, 91, 0.5);
   border-radius: 999px;
@@ -84,17 +179,10 @@
   word-break: break-all;
 }
 
-.battle-chat-message b {
-  color: #d7ff9e;
-}
-
-.battle-chat-message.system {
-  color: #ffe66c;
-}
-
-.battle-chat-message.system b {
-  color: #ffe66c;
-}
+.battle-chat-message b { color: #d7ff9e; }
+.battle-chat-message.system,
+.battle-chat-message.system b { color: #ffe66c; }
+.battle-chat-message.spectator b { color: #9dd8ff; }
 
 .battle-chat-form {
   display: flex;
@@ -108,22 +196,20 @@
   min-width: 0;
   padding: 6px 8px;
   border: 1px solid rgba(168, 217, 91, 0.55);
-  border-radius: 8px;
+  border-radius: 7px;
   background: rgba(0, 0, 0, 0.38);
   color: #fff;
   font-size: 12px;
   outline: none;
 }
 
-.battle-chat-form input:focus {
-  border-color: #dbbd42;
-}
+.battle-chat-form input:focus { border-color: #dbbd42; }
 
 .battle-chat-form button {
   flex: 0 0 auto;
-  padding: 6px 10px;
+  padding: 6px 11px;
   border: 1px solid #a8d95b;
-  border-radius: 8px;
+  border-radius: 7px;
   background: linear-gradient(180deg, #85b83f, #4f7f2b);
   color: #fff;
   font-size: 12px;
@@ -131,11 +217,59 @@
   cursor: pointer;
 }
 
-.battle-chat-form button:disabled,
-.battle-chat-form input:disabled {
-  opacity: 0.55;
-  cursor: default;
+.battle-private-picker {
+  position: absolute;
+  inset: 58px 6px 42px 6px;
+  z-index: 4;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border: 1px solid rgba(171, 116, 255, .72);
+  border-radius: 8px;
+  background: rgba(10, 29, 18, .97);
+  box-shadow: 0 8px 20px rgba(0,0,0,.55);
 }
+
+.battle-private-picker-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 7px 9px;
+  color: #d5b8ff;
+  border-bottom: 1px solid rgba(255,255,255,.1);
+}
+
+.battle-private-picker-head button {
+  border: 0;
+  background: transparent;
+  color: #fff;
+  font-size: 18px;
+  cursor: pointer;
+}
+
+.battle-private-picker-list {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 5px;
+}
+
+.battle-private-picker-list > button {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 3px 0;
+  padding: 7px 9px;
+  border: 1px solid rgba(130, 166, 93, .35);
+  border-radius: 6px;
+  background: rgba(26, 52, 29, .78);
+  color: #fff;
+  cursor: pointer;
+}
+
+.battle-private-picker-list > button:hover { background: rgba(52, 80, 43, .9); }
+.battle-private-picker-list small { color: #a8b7a3; }
 
 .battle-chat-toggle {
   pointer-events: auto;
@@ -153,17 +287,9 @@
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35);
 }
 
-.battle-chat-toggle:hover {
-  background: rgba(16, 56, 28, 0.85);
-}
-
-.battle-chat-shell.minimized .battle-chat-panel {
-  display: none;
-}
-
-.battle-chat-shell.minimized .battle-chat-toggle {
-  display: inline-flex;
-}
+.battle-chat-toggle:hover { background: rgba(16, 56, 28, 0.85); }
+.battle-chat-shell.minimized .battle-chat-panel { display: none; }
+.battle-chat-shell.minimized .battle-chat-toggle { display: inline-flex; }
 
 .battle-chat-badge {
   display: none;
@@ -176,6 +302,15 @@
   text-align: center;
 }
 
-.battle-chat-badge.visible {
-  display: inline-block;
+.battle-chat-badge.visible { display: inline-block; }
+
+@media (max-width: 900px) {
+  .battle-system-marquee {
+    top: 86px;
+    width: 70vw;
+  }
+  .battle-chat-panel {
+    width: min(360px, calc(100vw - 24px));
+    height: min(220px, 42vh);
+  }
 }
