@@ -4,9 +4,13 @@ const TOKEN_KEY = 'clbwz_auth_token_v1';
 
 export class AuthStore {
   constructor() {
-    this.token = localStorage.getItem(TOKEN_KEY) || '';
+    // 登录态只保留在当前浏览器会话：刷新页面仍可继续，关闭标签页/浏览器后重新进入必须登录。
+    // 同时清掉旧版本留在 localStorage 的长期 token，避免升级后仍然自动登录。
+    try { localStorage.removeItem(TOKEN_KEY); } catch {}
+    try { this.token = sessionStorage.getItem(TOKEN_KEY) || ''; } catch { this.token = ''; }
     this.user = null;
     this.snapshot = null;
+    this.lastRecoveryCode = '';
     this.api = new ApiClient({ getToken: () => this.token });
   }
 
@@ -14,24 +18,39 @@ export class AuthStore {
 
   setToken(token) {
     this.token = String(token || '');
-    if (this.token) localStorage.setItem(TOKEN_KEY, this.token);
-    else localStorage.removeItem(TOKEN_KEY);
+    try {
+      localStorage.removeItem(TOKEN_KEY);
+      if (this.token) sessionStorage.setItem(TOKEN_KEY, this.token);
+      else sessionStorage.removeItem(TOKEN_KEY);
+    } catch {}
   }
 
-  async register({ username, password, nickname }) {
-    const data = await this.api.post('/auth/register', { username, password, nickname });
+  async register({ username, password }) {
+    const data = await this.api.post('/auth/register', { username, password });
     this.setToken(data.token);
     this.user = data.user;
+    this.lastRecoveryCode = String(data.recoveryCode || '');
     this.snapshot = await this.api.get('/player/snapshot');
-    return { user: this.user, snapshot: this.snapshot };
+    return { user: this.user, snapshot: this.snapshot, recoveryCode: this.lastRecoveryCode };
   }
 
   async login({ username, password }) {
     const data = await this.api.post('/auth/login', { username, password });
     this.setToken(data.token);
     this.user = data.user;
+    this.lastRecoveryCode = String(data.recoveryCode || '');
     this.snapshot = await this.api.get('/player/snapshot');
-    return { user: this.user, snapshot: this.snapshot };
+    return { user: this.user, snapshot: this.snapshot, recoveryCode: this.lastRecoveryCode };
+  }
+
+  async resetPassword({ username, recoveryCode, newPassword }) {
+    const data = await this.api.post('/auth/forgot-password/reset', {
+      username,
+      recoveryCode,
+      newPassword,
+    });
+    this.lastRecoveryCode = String(data.recoveryCode || '');
+    return data;
   }
 
   async restore() {
@@ -50,6 +69,7 @@ export class AuthStore {
     this.setToken('');
     this.user = null;
     this.snapshot = null;
+    this.lastRecoveryCode = '';
   }
 }
 
