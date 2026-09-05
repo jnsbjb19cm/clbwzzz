@@ -3,7 +3,6 @@ import { db, withTransaction } from '../database.js';
 import { requireAuth } from '../middleware/auth.js';
 
 export const socialFriendFixRouter = Router();
-socialFriendFixRouter.use(requireAuth);
 
 function asUserId(value) {
   const id = Number(value);
@@ -41,7 +40,7 @@ async function writeFriendPair(conn, a, b) {
  * 删除好友以后再次添加时直接 INSERT 会撞唯一键，表现为“搜得到但加不了”。
  * 这里复用历史记录而不是重复 INSERT，并处理反向待处理申请。
  */
-socialFriendFixRouter.post('/friends/request', async (req, res) => {
+socialFriendFixRouter.post('/friends/request', requireAuth, async (req, res) => {
   const senderId = asUserId(req.user?.id);
   const targetId = asUserId(req.body?.userId);
   if (!senderId || !targetId) return res.status(400).json({ message: '玩家参数无效' });
@@ -97,7 +96,7 @@ socialFriendFixRouter.post('/friends/request', async (req, res) => {
   return res.json({ ok: true, ...result, target });
 });
 
-socialFriendFixRouter.post('/friends/accept', async (req, res) => {
+socialFriendFixRouter.post('/friends/accept', requireAuth, async (req, res) => {
   const receiverId = asUserId(req.user?.id);
   const requestId = asUserId(req.body?.requestId);
   if (!receiverId || !requestId) return res.status(400).json({ message: '好友申请参数无效' });
@@ -123,7 +122,7 @@ socialFriendFixRouter.post('/friends/accept', async (req, res) => {
   return res.json(result);
 });
 
-socialFriendFixRouter.delete('/friends/:userId', async (req, res) => {
+socialFriendFixRouter.delete('/friends/:userId', requireAuth, async (req, res) => {
   const userId = asUserId(req.user?.id);
   const targetId = asUserId(req.params?.userId);
   if (!userId || !targetId) return res.status(400).json({ message: '参数无效' });
