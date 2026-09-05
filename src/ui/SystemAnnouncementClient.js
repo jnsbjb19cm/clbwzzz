@@ -15,6 +15,17 @@ function socket() {
   return socketClient;
 }
 
+function disconnectAnnouncements() {
+  try { unsubscribe?.(); } catch {}
+  unsubscribe = null;
+  try { socketClient?.disconnect?.(); } catch {}
+  socketClient = null;
+  queue.length = 0;
+  if (bannerTimer) window.clearTimeout(bannerTimer);
+  bannerTimer = null;
+  document.querySelector('#system-announcement-feed')?.remove();
+}
+
 function ensureBanner() {
   let root = document.querySelector('#system-announcement-feed');
   if (root) return root;
@@ -81,6 +92,12 @@ function reportPvpResult(won) {
 export function installSystemAnnouncementClient() {
   if (globalThis[PATCH_FLAG]) return;
   globalThis[PATCH_FLAG] = true;
+
+  const previousMount = App.prototype.mount;
+  App.prototype.mount = function mountWithAnnouncementAccountGuard(...args) {
+    if (!authStore.isLoggedIn()) disconnectAnnouncements();
+    return previousMount.apply(this, args);
+  };
 
   const previousBootstrap = App.prototype.bootstrap;
   App.prototype.bootstrap = function bootstrapWithAnnouncements(...args) {
