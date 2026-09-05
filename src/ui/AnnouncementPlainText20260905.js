@@ -23,6 +23,6 @@ export function installAnnouncementPlainText20260905() {
     characterData: true,
   });
 
-  window.addEventListener('clbwz:system-announcement', clean);
+  window.addEventListener('clbwz:system-announcement', () => clean());
   globalThis.__clbwzAnnouncementPlainTextObserver = observer;
 }
