@@ -1,10 +1,13 @@
 import { BattleRenderer } from '../battle/BattleRenderer.js';
 import { BattleView } from './BattleView.js';
+import {
+  UNIT_CORRECTION_RATE_20260905 as UNIT_CORRECTION_RATE,
+  UNIT_EXTRAPOLATE_SEC_20260905 as UNIT_EXTRAPOLATE_SEC,
+  UNIT_SNAP_DISTANCE_20260905 as UNIT_SNAP_DISTANCE,
+  predictAuthorityAxis20260905,
+} from './PvpAuthorityMotionMath20260905.js';
 
 const PATCH_FLAG = Symbol.for('clbwz.pvpAuthoritySmoothMotion20260905');
-const UNIT_EXTRAPOLATE_SEC = 0.1;
-const UNIT_CORRECTION_RATE = 28;
-const UNIT_SNAP_DISTANCE = 1.2;
 const MAX_UNIT_SPEED_COLS_PER_SEC = 8;
 const MAX_LANE_SPEED_PER_SEC = 8;
 
@@ -31,43 +34,6 @@ function stateLocksMovement(unit, state, engineTime) {
   if (finite(unit?.frozenUntil) > engineTime) return true;
   if (unit?._aerialLandingRequested) return true;
   return false;
-}
-
-export function predictAuthorityAxis20260905({
-  authoritative,
-  velocity = 0,
-  age = 0,
-  current,
-  frameDt = 1 / 60,
-  min = -Infinity,
-  max = Infinity,
-  locked = false,
-  forceSnap = false,
-  maxExtrapolate = UNIT_EXTRAPOLATE_SEC,
-  correctionRate = UNIT_CORRECTION_RATE,
-  snapDistance = UNIT_SNAP_DISTANCE,
-} = {}) {
-  const base = finite(authoritative, finite(current));
-  const elapsed = clamp(finite(age), 0, Math.max(0, finite(maxExtrapolate, UNIT_EXTRAPOLATE_SEC)));
-  const predicted = clamp(
-    base + (locked ? 0 : finite(velocity) * elapsed),
-    min,
-    max,
-  );
-  const from = finite(current, predicted);
-  const error = predicted - from;
-
-  if (forceSnap || Math.abs(error) >= Math.max(0.01, finite(snapDistance, UNIT_SNAP_DISTANCE))) {
-    return { value: predicted, predicted, error, snapped: true };
-  }
-
-  const alpha = 1 - Math.exp(-Math.max(0, finite(correctionRate, UNIT_CORRECTION_RATE)) * Math.max(0, finite(frameDt)));
-  return {
-    value: from + error * clamp(alpha, 0, 1),
-    predicted,
-    error,
-    snapped: false,
-  };
 }
 
 function seedUnit(unit, now) {
