@@ -92,7 +92,8 @@ export function installSystemAnnouncementService(io) {
         const member = room.members.get(userId);
         if (!member || member.isBot) throw new Error('PVP 成员状态无效');
 
-        const reportKey = `${room.id}:${userId}`;
+        // 房间号会复用，因此必须把 createdAt 放进幂等键；否则数小时后复用同一房间号会被误判重复结算。
+        const reportKey = `${room.id}:${Number(room.createdAt) || 0}:${userId}`;
         if (reportedPvpResult.has(reportKey)) {
           if (typeof ack === 'function') ack({ ok: true, duplicate: true });
           return;
