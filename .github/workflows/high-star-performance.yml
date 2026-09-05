@@ -30,6 +30,7 @@ jobs:
           node --check scripts/verify-authority-smooth-performance-20260905.mjs
           node --check scripts/verify-resource-regeneration-regression-20260905.mjs
           node --check scripts/verify-battle-sync-regression-20260905.mjs
+          node --check scripts/verify-battle-unit-visuals-20260905.mjs
 
       - name: Run high-star focused regression
         run: node scripts/verify-high-star-render-performance-20260905.mjs
@@ -42,3 +43,6 @@ jobs:
 
       - name: Run battle sync regression
         run: node scripts/verify-battle-sync-regression-20260905.mjs
+
+      - name: Run battle unit visual regression
+        run: node scripts/verify-battle-unit-visuals-20260905.mjs
