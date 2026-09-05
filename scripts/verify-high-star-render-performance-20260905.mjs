@@ -40,6 +40,8 @@ Object.defineProperty(globalThis, 'performance', {
 });
 
 const { BattleRenderer } = await import('../src/battle/BattleRenderer.js');
+const { installBattleRenderLoadShedding20260905 } = await import('../src/ui/BattleRenderLoadShedding20260905.js');
+installBattleRenderLoadShedding20260905();
 
 function makeRenderer() {
   const renderer = Object.create(BattleRenderer.prototype);
@@ -98,7 +100,7 @@ function makeEngine(unitCount) {
   assert.deepEqual(
     counts(),
     { clearCount: 2, unitPassCount: 2 },
-    '50-unit battle must draw every RAF frame; BattleRenderer must not internally force ~30 FPS',
+    '50-unit battle must draw every RAF frame; installed performance policy must neutralize internal ~30 FPS throttling',
   );
 }
 
