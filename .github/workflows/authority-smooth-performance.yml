@@ -29,6 +29,7 @@ jobs:
           node --check src/ui/BattleRenderLoadShedding20260905.js
           node --check src/ui/PvpAuthorityMotionMath20260905.js
           node --check src/ui/PvpAuthoritySmoothMotion20260905.js
+          node --check src/battle/BattleQueryPerformance20260905.js
           node --check src/battle/BattleRuntimePerformance20260905.js
 
       - name: Run focused regression
