@@ -17,6 +17,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 import { authRouter } from './routes/auth.js';
 import { playerRouter } from './routes/player.js';
+import { materialRefillRouter } from './routes/materialRefill.js';
 import { socialRouter } from './routes/social.js';
 import { guildRouter } from './routes/guild.js';
 import { guildWarehouseGridRouter } from './routes/guildWarehouseGrid.js';
@@ -83,6 +84,7 @@ app.get('/api/health', (_req, res) => {
 });
 app.use('/api/auth', authRouter);
 app.use('/api/player', playerRouter);
+app.use('/api/player', materialRefillRouter);
 app.use('/api/social', socialRouter);
 // 新仓库接口放在旧 guildRouter 前面，相同 deposit/withdraw 路径由新版非绑定物品规则优先处理。
 app.use('/api/guild', guildWarehouseGridRouter);
