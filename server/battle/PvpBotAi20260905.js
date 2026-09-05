@@ -30,7 +30,8 @@ function stateFor(battle, userId) {
   const id = Number(userId);
   if (!battle.__smartBotState.has(id)) {
     battle.__smartBotState.set(id, {
-      startedAt: (Number(battle.engine?.time) || 0) + 2.2 + Math.random() * 0.9,
+      // 开局先观察一会儿，不再 2 秒左右连续铺场。
+      startedAt: (Number(battle.engine?.time) || 0) + 4.0 + Math.random() * 1.5,
       thinkAt: 0,
       globalReadyAt: 0,
       cardReadyAt: new Map(),
@@ -45,6 +46,16 @@ function stateFor(battle, userId) {
 
 function teamOfMember(battle, userId) {
   return battle.teamBlue.some((member) => Number(member.userId) === Number(userId)) ? 'blue' : 'red';
+}
+
+function teamReadyAt(battle, team) {
+  battle.__smartBotTeamReadyAt ??= { blue: 0, red: 0 };
+  return Number(battle.__smartBotTeamReadyAt[team] || 0);
+}
+
+function setTeamReadyAt(battle, team, value) {
+  battle.__smartBotTeamReadyAt ??= { blue: 0, red: 0 };
+  battle.__smartBotTeamReadyAt[team] = Number(value) || 0;
 }
 
 function affordable(battle, userId, card) {
@@ -90,29 +101,25 @@ function chooseLane(battle, team, state, card) {
   const lanes = Array.from({ length: 5 }, (_, lane) => {
     const stats = laneStats(battle, team, lane);
     const recentHits = recent.filter((value) => value === lane).length;
-    const underused = Math.max(0, state.laneDeployCount[lane] - minDeployCount);
+    const overuse = Math.max(0, state.laneDeployCount[lane] - minDeployCount);
 
-    // 防守压力仍然优先，但不能无脑把所有兵堆到同一路。
+    // 防守压力优先，但压低最近刚出过兵/已经拥挤的线路，避免只堆第1路。
     let score = stats.enemy.length * 1.45
       + stats.enemyMovable * 0.65
       + stats.enemyNearBase * 2.75
       - stats.ownMovable * 0.95
       - stats.ownFixed * 0.30
       - recentHits * 2.35
-      - underused * 0.80
+      - overuse * 0.80
       + Math.random() * 1.35;
 
-    // 可移动卡更鼓励走兵少的线路，形成多路推进。
     if (movable) {
       if (stats.ownMovable === 0) score += 2.4;
       else if (stats.ownMovable === 1) score += 0.7;
       if (state.laneDeployCount[lane] === minDeployCount) score += 1.1;
     }
 
-    // 连续两次已经走同一路，第三次默认强烈避开；只有基地告急才允许继续补防。
     if (sameLaneTwice && lane === lastLane && stats.enemyNearBase < 2) score -= 8.0;
-
-    // 如果某一路已经明显拥挤，也要主动分流。
     if (stats.own.length >= 5 && stats.enemyNearBase === 0) score -= 4.5;
 
     return { lane, score, urgent: stats.enemyNearBase >= 2 };
@@ -122,7 +129,6 @@ function chooseLane(battle, team, state, card) {
   const best = lanes[0];
   if (!best) return Math.floor(Math.random() * 5);
 
-  // 非紧急状态在前 3 条候选路线里留一点随机性，避免每局路线完全固定。
   if (!best.urgent) {
     const top = lanes.slice(0, 3);
     const roll = Math.random();
@@ -143,7 +149,9 @@ function chooseCard(battle, userId, state) {
     .filter(isDirectDeployCard)
     .filter((card) => card.name !== '石巨人' && card.card_name !== '石巨人')
     .filter((card) => cardQuality(card) <= 4)
+    // 同一张卡必须等它自己的完整 card_cd 结束，不能再走 68%~78% 软冷却。
     .filter((card) => now + 1e-6 >= Number(state.cardReadyAt.get(Number(card.id)) || 0))
+    // 阳光/食物与真人共用 PvpBattle 的真实资源账本。
     .filter((card) => affordable(battle, userId, card));
 
   if (!legal.length) return null;
@@ -152,7 +160,6 @@ function chooseCard(battle, userId, state) {
   const preferMovable = ownMovableCount < 2 ? 0.94 : ownMovableCount < 5 ? 0.78 : 0.64;
   let pool = Math.random() < preferMovable && movable.length ? movable : fixed.length ? fixed : movable;
 
-  // 资源紧张时更偏向便宜卡，避免 AI 因连续抽到高费卡显得“发呆”。
   pool = [...pool].sort((a, b) => Number(a.cost || 0) - Number(b.cost || 0));
   const pickWindow = Math.max(1, Math.ceil(pool.length * 0.55));
   return pool[Math.floor(Math.random() * pickWindow)] ?? pool[0];
@@ -170,7 +177,6 @@ function recordLane(state, lane) {
   if (state.laneHistory.length > 8) state.laneHistory.splice(0, state.laneHistory.length - 8);
   state.laneDeployCount[lane] = Number(state.laneDeployCount[lane] || 0) + 1;
 
-  // 长局中缓慢衰减历史计数，避免早期选择永久影响后续路线。
   if (state.deployCount > 0 && state.deployCount % 16 === 0) {
     state.laneDeployCount = state.laneDeployCount.map((count) => Math.floor(Number(count) * 0.65));
   }
@@ -178,12 +184,19 @@ function recordLane(state, lane) {
 
 function trySmartDeploy(battle, userId, state) {
   const now = Number(battle.engine?.time) || 0;
-  if (now < state.startedAt || now < state.thinkAt || now < state.globalReadyAt) return false;
-  state.thinkAt = now + 0.42 + Math.random() * 0.38;
+  const team = teamOfMember(battle, userId);
+  if (
+    now < state.startedAt
+    || now < state.thinkAt
+    || now < state.globalReadyAt
+    || now < teamReadyAt(battle, team)
+  ) return false;
+
+  // 思考可以频繁一些，但真正放卡受到个人+阵营两层节流。
+  state.thinkAt = now + 0.70 + Math.random() * 0.45;
 
   const card = chooseCard(battle, userId, state);
   if (!card) return false;
-  const team = teamOfMember(battle, userId);
   const lane = chooseLane(battle, team, state, card);
   const cols = candidateCols(team, isMovable(card));
   const orderedCols = Math.random() < 0.35 ? [...cols].sort(() => Math.random() - 0.5) : cols;
@@ -195,7 +208,7 @@ function trySmartDeploy(battle, userId, state) {
       recordLane(state, lane);
       return true;
     } catch {
-      // 换一个合法落点继续尝试；资源/CD不足会在下一轮思考时再试。
+      // 资源、CD 或位置不满足时，不透支、不强放，等下一轮正常判断。
     } finally {
       state.smartDeployPermit = false;
     }
@@ -208,25 +221,28 @@ export function installPvpBotAi20260905() {
   globalThis[PATCH_FLAG] = true;
 
   const previousDeploy = PvpBattle.prototype.deploy;
-  PvpBattle.prototype.deploy = function deployWithBotSoftCooldown(userId, payload = {}) {
+  PvpBattle.prototype.deploy = function deployWithBotCooldown(userId, payload = {}) {
     if (!isBotUserId(userId)) return previousDeploy.call(this, userId, payload);
 
     const state = stateFor(this, userId);
-    // registerPvpAuthorityHandlers 里还保留旧随机 AI。只允许本智能 AI 发起 bot 部署，
-    // 这样不会出现“旧 AI + 新 AI”同时出兵、随机挤到同一路的问题。
     if (!state.smartDeployPermit) throw new Error('旧人机部署已由智能AI接管');
 
     const now = Number(this.engine?.time) || 0;
+    const team = teamOfMember(this, userId);
     const card = this.db?.getById?.(Number(payload.cardId));
     if (!card) throw new Error('人机卡牌不存在');
     if (now + 1e-6 < Number(state.globalReadyAt || 0)) throw new Error('人机部署间隔中');
+    if (now + 1e-6 < teamReadyAt(this, team)) throw new Error('人机阵营部署间隔中');
     if (now + 1e-6 < Number(state.cardReadyAt.get(Number(card.id)) || 0)) throw new Error('人机卡牌冷却中');
 
     const result = previousDeploy.call(this, userId, payload);
-    // 遵循真实资源；CD 使用原卡约 68%~78% 的软冷却，不锁得和真人完全一样。
-    const softCd = Math.max(1.05, cardCooldown(card) * (0.68 + Math.random() * 0.10));
-    state.cardReadyAt.set(Number(card.id), now + softCd);
-    state.globalReadyAt = now + 0.82 + Math.random() * 0.48;
+
+    // 同一张卡严格使用完整原始 CD；资源仍由 previousDeploy 真正扣除。
+    state.cardReadyAt.set(Number(card.id), now + cardCooldown(card));
+    // 单个人机放慢到约 3.0~4.6 秒一次。
+    state.globalReadyAt = now + 3.0 + Math.random() * 1.6;
+    // 3v3 时多个 bot 也不能同一瞬间一起铺场：同阵营约 1.7~2.5 秒最多一张。
+    setTeamReadyAt(this, team, now + 1.7 + Math.random() * 0.8);
     state.deployCount += 1;
     return result;
   };
