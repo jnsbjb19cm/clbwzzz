@@ -1,4 +1,5 @@
 import './CardBindingBadge20260905.css';
+import { installInventoryBindingPatch20260905 } from '../core/InventoryBindingPatch20260905.js';
 import { BagView } from './BagView.js';
 
 const PATCH_FLAG = Symbol.for('clbwzzz.cardLoreDetailPatch');
@@ -27,6 +28,14 @@ function isCardBound(slot) {
   return raw === true || raw === 1 || raw === '1';
 }
 
+function isItemBound(slot) {
+  if (!slot) return false;
+  const raw = slot.isBound ?? slot.bound;
+  // 旧本地背包没有绑定字段：按绑定处理；战斗掉落会明确写成 false。
+  if (raw == null) return true;
+  return raw === true || raw === 1 || raw === '1';
+}
+
 function appendBoundDetail(detail, slot) {
   if (!detail || !isCardBound(slot) || detail.querySelector('.bag-card-bound-detail')) return;
   const badge = document.createElement('span');
@@ -37,9 +46,51 @@ function appendBoundDetail(detail, slot) {
   else detail.prepend(badge);
 }
 
+function appendItemBindingDetail(detail, slot) {
+  if (!detail || !slot || detail.querySelector('.bag-item-binding-detail')) return;
+  const bound = isItemBound(slot);
+  const badge = document.createElement('span');
+  badge.className = `bag-item-binding-detail ${bound ? 'is-bound' : 'is-tradable'}`;
+  badge.textContent = bound ? '绑定' : '非绑定 · 可交易';
+  const title = detail.querySelector('h2, h3, .bag-detail-name');
+  if (title) title.insertAdjacentElement('afterend', badge);
+  else detail.prepend(badge);
+}
+
 export function installCardLoreDetailPatch() {
+  installInventoryBindingPatch20260905();
   if (BagView.prototype[PATCH_FLAG]) return;
   BagView.prototype[PATCH_FLAG] = true;
+
+  const originalRenderItemGrid = BagView.prototype.renderItemGrid;
+  if (typeof originalRenderItemGrid === 'function') {
+    BagView.prototype.renderItemGrid = function patchedRenderItemGrid(root, grid) {
+      const result = originalRenderItemGrid.call(this, root, grid);
+      const slots = this.inventory?.getSlots?.() ?? [];
+      const scope = grid ?? root;
+      scope?.querySelectorAll?.('.bag-slot:not(.empty)[data-index]').forEach((cell) => {
+        const slot = slots[Number(cell.dataset.index)];
+        if (!slot || cell.querySelector('.bag-item-binding-badge')) return;
+        const bound = isItemBound(slot);
+        const badge = document.createElement('span');
+        badge.className = `bag-item-binding-badge ${bound ? 'is-bound' : 'is-tradable'}`;
+        badge.textContent = bound ? '绑定' : '非绑定';
+        cell.append(badge);
+      });
+      return result;
+    };
+  }
+
+  const originalRenderItemDetail = BagView.prototype.renderItemDetail;
+  if (typeof originalRenderItemDetail === 'function') {
+    BagView.prototype.renderItemDetail = function patchedRenderItemDetail(root) {
+      const result = originalRenderItemDetail.call(this, root);
+      const slot = this.inventory?.getSlots?.()?.[this.selectedIndex];
+      const detail = root?.querySelector?.('#bag-detail');
+      appendItemBindingDetail(detail, slot);
+      return result;
+    };
+  }
 
   const originalRenderCardGrid = BagView.prototype.renderCardGrid;
   if (typeof originalRenderCardGrid === 'function') {
