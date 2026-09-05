@@ -1,58 +1,122 @@
+/* 公会仓库 / 拍卖行统一采用背包格子视觉。 */
 .economy-grid-shell {
-  color: #eef7eb;
-  background: rgba(14, 40, 31, .97);
-  border: 2px solid rgba(218, 186, 72, .8);
-  border-radius: 16px;
+  color: #29461d;
+  background: linear-gradient(180deg, rgba(226, 241, 176, .98), rgba(181, 210, 111, .98));
+  border: 2px solid #7d9b3d;
+  border-radius: 15px;
   padding: 16px;
   min-height: min(760px, calc(100vh - 90px));
   overflow: auto;
+  box-shadow: inset 0 0 0 2px rgba(255,255,255,.32), 0 8px 22px rgba(35, 57, 15, .25);
 }
-.economy-grid-title { margin: 0 0 12px; font-size: 28px; color: #fff; }
+.economy-grid-title { margin: 0 0 12px; font-size: 28px; color: #33561e; text-shadow: 0 1px #f5ffd8; }
 .economy-grid-workbench {
   display: grid;
-  grid-template-columns: minmax(360px, 1.2fr) minmax(320px, .8fr);
+  grid-template-columns: minmax(390px, 1.25fr) minmax(300px, .75fr);
   gap: 14px;
   margin-bottom: 16px;
 }
 .economy-grid-panel {
   min-width: 0;
-  border: 1px solid #476b42;
+  border: 1px solid #8aa651;
   border-radius: 12px;
-  background: rgba(7, 25, 15, .92);
+  background: linear-gradient(180deg, rgba(235, 246, 198, .92), rgba(204, 225, 143, .92));
   padding: 12px;
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,.35);
 }
-.economy-grid-panel h3 { margin: 0 0 9px; color: #e9f2df; font-size: 18px; }
-.economy-grid-panel .muted { color: #8da092; font-size: 12px; }
+.economy-grid-panel h3 { margin: 0 0 9px; color: #355824; font-size: 18px; }
+.economy-grid-panel .muted { color: #6a7c53; font-size: 12px; }
+
+/* 与真正背包一致：5 列、固定格高、至少显示 60 格，超过后滚动。 */
 .economy-item-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(82px, 1fr));
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  grid-auto-rows: 82px;
   gap: 8px;
-  max-height: 330px;
+  max-height: 442px;
   overflow-y: auto;
-  padding: 3px;
+  padding: 4px;
+  align-content: start;
+  scrollbar-gutter: stable;
 }
+.economy-item-grid::-webkit-scrollbar { width: 8px; }
+.economy-item-grid::-webkit-scrollbar-thumb { border-radius: 999px; background: rgba(85, 111, 45, .48); }
+
 .economy-item-slot {
   position: relative;
-  min-height: 90px;
-  border: 1px solid #52794a;
-  border-radius: 9px;
-  background: linear-gradient(180deg, #1d3422, #102318);
-  color: #eef7eb;
+  min-width: 0;
+  min-height: 0;
+  height: 82px;
+  box-sizing: border-box;
+  overflow: hidden;
+  border: 1px solid #93ac5c;
+  border-radius: 7px;
+  background: linear-gradient(150deg, #f0f6cf, #c9daa0);
+  box-shadow: inset 0 0 0 2px rgba(255,255,255,.35);
+  color: #304421;
   cursor: pointer;
-  padding: 6px;
+  padding: 5px 5px 16px;
   text-align: center;
-  transition: border-color .15s, transform .15s, box-shadow .15s;
+  transition: border-color .12s, transform .12s, box-shadow .12s;
 }
 .economy-item-slot:hover,
 .economy-item-slot.selected {
-  border-color: #ffe06c;
-  box-shadow: 0 0 0 2px rgba(255,224,108,.18), 0 4px 14px rgba(0,0,0,.28);
+  border-color: #d29b29;
+  box-shadow: inset 0 0 0 2px rgba(255,255,255,.4), 0 0 0 2px rgba(255,210,62,.55), 0 3px 9px rgba(72,81,30,.28);
   transform: translateY(-1px);
 }
-.economy-item-slot img { width: 48px; height: 48px; object-fit: contain; display: block; margin: 0 auto 3px; }
-.economy-item-slot .fallback-icon { width: 48px; height: 48px; display: grid; place-items: center; margin: 0 auto 3px; border-radius: 8px; background: #29432d; font-weight: 800; color: #b7d8aa; }
-.economy-item-slot .name { display: block; font-size: 11px; line-height: 1.15; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.economy-item-slot .count { position: absolute; right: 5px; bottom: 4px; padding: 1px 5px; border-radius: 8px; background: rgba(0,0,0,.7); color: #ffe081; font-size: 11px; }
+.economy-item-slot.empty {
+  cursor: default;
+  pointer-events: none;
+}
+.economy-item-slot.empty::after {
+  content: '';
+  position: absolute;
+  inset: 12px;
+  border-radius: 5px;
+  background: rgba(154, 95, 19, .25);
+  box-shadow: inset 0 1px 2px rgba(95, 54, 13, .18);
+}
+.economy-item-slot img {
+  width: 48px;
+  height: 48px;
+  object-fit: contain;
+  display: block;
+  margin: 0 auto 1px;
+  filter: drop-shadow(0 2px 1px rgba(64,53,17,.18));
+}
+.economy-item-slot .fallback-icon {
+  width: 48px;
+  height: 48px;
+  display: grid;
+  place-items: center;
+  margin: 0 auto 1px;
+  border-radius: 7px;
+  background: rgba(108, 135, 62, .25);
+  font-weight: 800;
+  color: #4c652e;
+}
+.economy-item-slot .name {
+  display: block;
+  font-size: 10px;
+  line-height: 1.1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.economy-item-slot .count {
+  position: absolute;
+  right: 4px;
+  bottom: 3px;
+  min-width: 16px;
+  padding: 1px 4px;
+  border-radius: 7px;
+  background: rgba(81, 54, 17, .78);
+  color: #fff3b3;
+  font-size: 10px;
+  font-weight: 700;
+}
+
 .economy-transfer-card {
   min-height: 180px;
   display: flex;
@@ -60,30 +124,64 @@
   align-items: center;
   justify-content: center;
   text-align: center;
-  border: 1px dashed #668b59;
+  border: 1px dashed #809f49;
   border-radius: 10px;
-  background: rgba(35, 57, 34, .45);
+  background: rgba(239, 247, 205, .66);
   padding: 14px;
+  color: #435933;
 }
 .economy-transfer-card img { width: 72px; height: 72px; object-fit: contain; }
-.economy-transfer-card .empty { color: #819384; }
-.economy-transfer-card strong { margin-top: 6px; color: #fff2b2; }
+.economy-transfer-card .empty { color: #70805e; }
+.economy-transfer-card strong { margin-top: 6px; color: #5d4216; }
 .economy-transfer-form { width: 100%; display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 10px; }
-.economy-transfer-form label { display: flex; flex-direction: column; gap: 4px; color: #a8b9a8; font-size: 12px; text-align: left; }
-.economy-transfer-form input { width: 100%; min-width: 0; padding: 8px; border: 1px solid #668b59; border-radius: 7px; background: #16291b; color: #fff; }
+.economy-transfer-form label { display: flex; flex-direction: column; gap: 4px; color: #657655; font-size: 12px; text-align: left; }
+.economy-transfer-form input {
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+  padding: 8px;
+  border: 1px solid #8aa653;
+  border-radius: 7px;
+  background: rgba(255,255,245,.94);
+  color: #304421;
+}
 .economy-transfer-actions { display: flex; gap: 8px; margin-top: 10px; width: 100%; }
-.economy-transfer-actions button { flex: 1; padding: 8px 10px; border: 0; border-radius: 7px; background: #4d7d3f; color: #fff; cursor: pointer; font-weight: 700; }
-.economy-transfer-actions button.alt { background: #7b6330; }
-.economy-market-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(185px, 1fr)); gap: 9px; }
-.economy-market-card { border: 1px solid #496b42; border-radius: 10px; background: #15291a; padding: 9px; }
-.economy-market-card .head { display: flex; align-items: center; gap: 8px; min-height: 48px; }
+.economy-transfer-actions button { flex: 1; padding: 8px 10px; border: 1px solid #5f7b37; border-radius: 7px; background: linear-gradient(180deg, #7cab45, #5f8a35); color: #fff; cursor: pointer; font-weight: 700; }
+.economy-transfer-actions button.alt { border-color: #8c6d2f; background: linear-gradient(180deg, #ae8b43, #806529); }
+
+/* 拍卖商品也使用同一套“背包格”材质，而不是旧的黑色信息卡。 */
+.economy-market-grid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 8px;
+  align-content: start;
+}
+.economy-market-card {
+  min-width: 0;
+  min-height: 128px;
+  box-sizing: border-box;
+  border: 1px solid #93ac5c;
+  border-radius: 8px;
+  background: linear-gradient(150deg, #f0f6cf, #c9daa0);
+  box-shadow: inset 0 0 0 2px rgba(255,255,255,.34);
+  padding: 8px;
+  color: #304421;
+}
+.economy-market-card .head { display: flex; align-items: center; gap: 6px; min-height: 44px; }
 .economy-market-card .head img { width: 42px; height: 42px; object-fit: contain; }
-.economy-market-card .price { color: #ffd86d; font-weight: 800; margin: 7px 0; }
-.economy-market-card small { color: #9dad9f; }
-.economy-market-card button { width: 100%; margin-top: 7px; padding: 6px; border: 0; border-radius: 6px; background: #4c7c3f; color: #fff; cursor: pointer; }
-.economy-empty { grid-column: 1/-1; min-height: 80px; display: grid; place-items: center; color: #809080; border: 1px dashed #38553b; border-radius: 9px; }
+.economy-market-card .head strong { color: #3d531f; }
+.economy-market-card .price { color: #8a5a0b; font-weight: 800; margin: 6px 0; }
+.economy-market-card small { color: #697655; }
+.economy-market-card button { width: 100%; margin-top: 7px; padding: 6px; border: 1px solid #5f7b37; border-radius: 6px; background: linear-gradient(180deg, #7cab45, #5f8a35); color: #fff; cursor: pointer; }
+.economy-empty { grid-column: 1/-1; min-height: 80px; display: grid; place-items: center; color: #71815f; border: 1px dashed #8ca65c; border-radius: 9px; background: rgba(242,248,213,.45); }
+
+/* 造卡页：木牌标签会遮住左上方的成功率文字，将成功概率区域整体下移。 */
+.classic-smithy-screen .smithy-craft-main .smithy-preview {
+  margin-top: 112px !important;
+}
 
 @media (max-width: 900px) {
   .economy-grid-workbench { grid-template-columns: 1fr; }
-  .economy-item-grid { max-height: 250px; }
+  .economy-item-grid { max-height: 330px; }
+  .economy-market-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
