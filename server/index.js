@@ -30,10 +30,12 @@ import { installPvpNeutralDamageOwnership20260903 } from './battle/PvpNeutralDam
 import { installCoopBossOwnerResourceFinal } from './battle/CoopBossOwnerResourceFinal.js';
 import { installAuthorityRuleConvergence20260830 } from './battle/AuthorityRuleConvergence20260830.js';
 import { installRoomBossRound2Fix } from './rooms/RoomBossRound2Fix.js';
+import { startRoomLifetimeService } from './rooms/RoomLifetimeService.js';
 import { registerSocketHandlers } from './socket/registerSocketHandlers.js';
 import {
   registerPvpAuthorityHandlers,
   stopAllPvpAuthorityBattles,
+  stopAuthorityBattleByRoom,
 } from './socket/registerPvpAuthorityHandlers.js';
 
 installPvpGameplayFinal();
@@ -117,12 +119,18 @@ const io = new Server(server, {
 registerSocketHandlers(io);
 registerPvpAuthorityHandlers(io, { cardDb: getPvpCardDb() });
 
+// 房间从创建起最多存在 2 小时；同时回收随机匹配后只剩人机的死房间。
+const stopRoomLifetimeService = startRoomLifetimeService(io, {
+  stopBattle: stopAuthorityBattleByRoom,
+});
+
 server.listen(config.port, () => {
   console.log(`[clbwzzz] server listening on http://localhost:${config.port}`);
 });
 
 function shutdown(signal) {
   console.log(`[clbwzzz] ${signal} received, shutting down...`);
+  stopRoomLifetimeService?.();
   stopAllPvpAuthorityBattles();
   server.close(() => process.exit(0));
   // 兜底：5 秒内未关闭则强制退出。
