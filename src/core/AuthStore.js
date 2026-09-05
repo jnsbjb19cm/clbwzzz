@@ -1,6 +1,7 @@
 import { ApiClient } from '../network/ApiClient.js';
 
 const TOKEN_KEY = 'clbwz_auth_token_v1';
+const NEW_PLAYER_TUTORIAL_PROMPT_KEY = 'clbwz_new_player_tutorial_prompt_v1';
 
 export class AuthStore {
   constructor() {
@@ -31,6 +32,7 @@ export class AuthStore {
     this.user = data.user;
     this.lastRecoveryCode = String(data.recoveryCode || '');
     this.snapshot = await this.api.get('/player/snapshot');
+    try { sessionStorage.setItem(NEW_PLAYER_TUTORIAL_PROMPT_KEY, '1'); } catch {}
     return { user: this.user, snapshot: this.snapshot, recoveryCode: this.lastRecoveryCode };
   }
 
@@ -73,4 +75,5 @@ export class AuthStore {
   }
 }
 
+export { NEW_PLAYER_TUTORIAL_PROMPT_KEY };
 export const authStore = new AuthStore();
