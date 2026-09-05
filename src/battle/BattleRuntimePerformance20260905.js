@@ -1,5 +1,6 @@
 import { BattleEngine } from './BattleEngine.js';
 import { roundBattleAmount } from './BattleConfig.js';
+import { installBattleQueryPerformance20260905 } from './BattleQueryPerformance20260905.js';
 
 const PATCH_FLAG = Symbol.for('clbwz.battleRuntimePerformance20260905');
 
@@ -145,6 +146,7 @@ function installClientPerformancePatches() {
 export function installBattleRuntimePerformance20260905() {
   if (globalThis[PATCH_FLAG]) return;
   globalThis[PATCH_FLAG] = true;
+  installBattleQueryPerformance20260905();
   installFloatBudget();
   installImpactBudget();
   installSmallFxBudgets();
