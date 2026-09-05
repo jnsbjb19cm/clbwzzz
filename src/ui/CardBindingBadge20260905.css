@@ -1,13 +1,16 @@
-/* 卡牌绑定状态：背包格子与详情都明确显示“绑定”。 */
-.bag-card-slot {
+/* 卡牌 / 道具绑定状态：背包格子与详情都明确显示。 */
+.card-bag-slot,
+.bag-card-slot,
+.bag-slot:not(.empty) {
   position: relative !important;
 }
 
-.bag-card-bound-badge {
+.bag-card-bound-badge,
+.bag-item-binding-badge {
   position: absolute;
   left: 4px;
   top: 4px;
-  z-index: 8;
+  z-index: 12;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -27,7 +30,14 @@
   text-shadow: 0 1px rgba(0, 0, 0, .45);
 }
 
-.bag-card-bound-detail {
+.bag-item-binding-badge.is-tradable {
+  border-color: rgba(151, 242, 176, .9);
+  background: linear-gradient(180deg, rgba(44, 131, 69, .97), rgba(24, 86, 45, .97));
+  color: #eaffde;
+}
+
+.bag-card-bound-detail,
+.bag-item-binding-detail {
   display: inline-flex;
   align-items: center;
   width: max-content;
@@ -39,4 +49,10 @@
   color: #7a3d1d;
   font-size: 12px;
   font-weight: 800;
+}
+
+.bag-item-binding-detail.is-tradable {
+  border-color: rgba(48, 139, 73, .45);
+  background: rgba(48, 139, 73, .12);
+  color: #286d3b;
 }
