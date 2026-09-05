@@ -35,6 +35,7 @@ globalThis.document = {
 let nowMs = 0;
 Object.defineProperty(globalThis, 'performance', {
   configurable: true,
+  writable: true,
   value: { now: () => nowMs },
 });
 
