@@ -5,4 +5,4 @@ import { installEconomyInventoryPersistence20260905 } from './ui/EconomyInventor
 installEconomyInventoryRules20260905();
 installEconomyInventoryPersistence20260905();
 
-await import('./main.js');
+void import('./main.js');
