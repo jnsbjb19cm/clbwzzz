@@ -56,7 +56,6 @@ function mapAsset(view, side) {
   if (bossId === 'boss_ice') {
     return `/battle/background/${side === 'right' ? 'rightice' : 'leftice'}-column.png`;
   }
-  // 场景优先：房间 dice 随机选择（pvp.mapScene）→ 默认黄沙（PVP 轮换核心）
   const chosen = view?.pvp?.mapScene
     ?? ({ '2': 'grass', '4': 'ice', '7': 'rock' }[String(view?.pvp?.mapId ?? '')]);
   const scene = chosen === 'ice' || chosen === 'grass' ? chosen : 'rock';
@@ -92,14 +91,9 @@ function ensureColumns(view) {
   const wrap = view.viewRoot?.querySelector?.('.battle-game-wrap');
   if (!wrap) return;
   wrap.querySelectorAll('[data-pvp-authority-column]').forEach((node) => node.remove());
-
-  // 经典战场的 bg-layer 左右柱与 pvp-authority-column 会形成“每侧两根”，这里直接隐藏，
-  // 保证 PVP/BOSS 只保留 pvp-authority-column 这一套侧柱。
   wrap.querySelectorAll('.bg-layer-left-column, .bg-layer-right-column').forEach((node) => {
     node.style.setProperty('display', 'none', 'important');
   });
-
-  // BOSS 只创建左侧柱（右侧不显示）；PVP 创建左右两侧，每侧唯一。
   for (const side of (isBossBattle(view) ? ['left'] : ['left', 'right'])) {
     const column = document.createElement('div');
     column.className = `pvp-authority-column ${side}`;
@@ -151,7 +145,6 @@ function updateUnitFromSnapshot(view, unit, data, immediate) {
   unit.strengthLv = Math.max(0, Math.round(finite(data.strengthLv, unit.strengthLv || 0)));
   unit.star = unit.strengthLv;
   unit.customName = sanitizeCustomCardName(data.customName);
-  // 状态时间按快照战斗时间(t)基准对齐；与本地值取 max（保留本地引擎减速/冰冻）
   const snapshot = view.__pvpLatestSnapshot;
   const timeOffset = Number(engine.time) - Number(snapshot?.t || engine.time);
   unit.slowedUntil = Math.max(Number(unit.slowedUntil || 0), Math.max(0, finite(data.slowedUntil) + timeOffset));
@@ -257,9 +250,7 @@ function buildOrUpdateProjectile(view, existing, data, immediate, snapshotDt) {
   projectile.hitLane = finite(data.hitLane, data.lane);
   projectile.hitCol = hitCol;
   projectile.resolveCol = resolveCol;
-  if (data.targetLayerMask != null) {
-    projectile.targetLayerMask = Number(data.targetLayerMask) & 3;
-  }
+  if (data.targetLayerMask != null) projectile.targetLayerMask = Number(data.targetLayerMask) & 3;
   projectile.targetBase = localBase(view, data.targetBase);
   projectile.attackerCol = attackerCol;
   projectile.attackerLane = finite(data.attackerLane, data.lane);
@@ -292,8 +283,6 @@ function applySnapshot(view, snapshot, { force = false } = {}) {
   view.__pvpAuthoritySnapshotTime = nextSnapshotTime;
   const firstSnapshot = !view.__pvpHasAuthoritySnapshot;
   view.__pvpHasAuthoritySnapshot = true;
-  // 快照切换引擎时间时，把本地引擎设置的状态时间(减速/冰冻/眩晕)按偏移平移，
-  // 否则本地减速(本地时间基准)会被快照时间覆盖后立刻失效 → PVP 减速特效不显示。
   const previousEngineTime = engine.time;
   const timeShift = nextSnapshotTime - previousEngineTime;
   if (firstSnapshot || Math.abs(timeShift) > 0.0001) {
@@ -340,9 +329,6 @@ function applySnapshot(view, snapshot, { force = false } = {}) {
     view.renderer?.requestSprite?.(card.spriteRes);
     view.renderer?.requestBullet?.(card.spriteRes);
   }
-  // A death packet can be lost between two snapshots. Never let a unit simply
-  // disappear: synthesize the death window locally and retain explicit dead
-  // units until their animation has completed.
   for (const [uid, unit] of existingUnits) {
     if (incomingUnitIds.has(uid)) continue;
     if (unit.alive !== false) {
@@ -360,15 +346,19 @@ function applySnapshot(view, snapshot, { force = false } = {}) {
     createdAt: finite(drop.createdAt),
   }));
 
-  const existingProjectiles = new Map((engine.projectiles ?? []).map((item) => [Number(item.id), item]));
-  engine.projectiles = (snapshot.projectiles ?? []).map((data) =>
-    buildOrUpdateProjectile(
-      view,
-      existingProjectiles.get(Number(data.id)),
-      data,
-      firstSnapshot || force,
-      snapshotDt,
-    ));
+  // 周期压缩快照可以省略 projectiles；此时绝不能清空客户端正在按
+  // projectile-spawn/despawn 时间轴播放的子弹。只有加入/恢复快照明确带了数组时才重建。
+  if (Array.isArray(snapshot.projectiles)) {
+    const existingProjectiles = new Map((engine.projectiles ?? []).map((item) => [Number(item.id), item]));
+    engine.projectiles = snapshot.projectiles.map((data) =>
+      buildOrUpdateProjectile(
+        view,
+        existingProjectiles.get(Number(data.id)),
+        data,
+        firstSnapshot || force,
+        snapshotDt,
+      ));
+  }
 
   const ownTeam = String(view.pvp?.team || 'blue');
   const enemyTeam = ownTeam === 'red' ? 'blue' : 'red';
@@ -387,8 +377,6 @@ function applySnapshot(view, snapshot, { force = false } = {}) {
   engine.waveNumber = 0;
   engine.totalWaves = 0;
 
-  // 权威快照只替换权威状态，不能抹掉客户端尚未播放完的视觉反馈。
-  // floats/deploy/impact/bump 由各自真实时间生命周期自行清理。
   engine.floats ??= [];
   engine.deployEffects ??= [];
   engine.impactFx ??= [];
@@ -422,7 +410,6 @@ function advanceAuthorityVisuals(view, dt) {
     let targetY = finite(projectile.__authorityTargetY, projectile.y)
       + finite(projectile.__authorityVy) * age;
 
-    // 视觉外推不能越过服务器给出的实际命中点。
     const endX = finite(projectile.hitCol, targetX);
     const vx = finite(projectile.__authorityVx);
     if (vx > 0) targetX = Math.min(targetX, endX);
@@ -437,7 +424,6 @@ function advanceAuthorityVisuals(view, dt) {
 function syncAuthorityUi(view) {
   if (!view.viewRoot) return;
   if (view.pvp?.spectator) {
-    // 观战不需要手牌/技能/部署 UI，只同步基地血量与时间。
     view.syncHud(view.viewRoot);
     return;
   }
@@ -453,9 +439,7 @@ function authorityOutroRemaining(view) {
   if (!engine) return 0;
   let remaining = 0;
   for (const unit of engine.units ?? []) {
-    if (unit.alive === false) {
-      remaining = Math.max(remaining, finite(unit._deathUntil) - engine.time);
-    }
+    if (unit.alive === false) remaining = Math.max(remaining, finite(unit._deathUntil) - engine.time);
   }
   for (const fx of engine.skillFx ?? engine.skillEffects ?? []) {
     remaining = Math.max(remaining, finite(fx.duration) - finite(fx.t));
@@ -516,9 +500,6 @@ function catchUpAuthorityPresentation(view, elapsedSeconds) {
   view.engine.updateFloats?.(elapsed);
   view.engine.updateDeployEffects?.(elapsed);
   view.engine.updateFx?.(elapsed);
-
-  // The renderer owns the normal-frame visual clock. Reset it after the explicit
-  // wall-clock catch-up so the first resumed draw cannot age the queues twice.
   if (view.renderer) view.renderer.__pvpVisualClockMs = performance.now();
 }
 
@@ -719,6 +700,7 @@ export function installPvpAuthoritySyncFinal() {
       projectileExtrapolateSec: PROJECTILE_EXTRAPOLATE_SEC,
       uiSyncInterval: UI_SYNC_INTERVAL,
       preservesVisualQueues: true,
+      preservesTimelineProjectilesOnCompactSnapshots: true,
     };
   };
 }
