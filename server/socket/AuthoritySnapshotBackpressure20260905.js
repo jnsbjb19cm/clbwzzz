@@ -3,9 +3,9 @@ const lastSnapshotAt = new Map();
 
 function snapshotIntervalMs(payload) {
   const unitCount = Array.isArray(payload?.units) ? payload.units.length : 0;
-  if (unitCount >= 48) return 145; // ~7Hz，重场景优先保最新状态
-  if (unitCount >= 24) return 110; // ~9Hz
-  return 80; // ~12.5Hz
+  if (unitCount >= 48) return 80; // 12.5Hz，极重场景仍保持可平滑预测的更新频率
+  if (unitCount >= 24) return 66; // ~15Hz
+  return 50; // 20Hz
 }
 
 function keyOf(target) {
@@ -16,9 +16,12 @@ function keyOf(target) {
 
 /**
  * Socket.IO 默认会把所有普通 emit 排队；当客户端网络慢或服务器瞬间繁忙时，
- * 30Hz 世界快照会越积越多，玩家看到的就是“服务器延迟越来越大”。
- * 世界快照本身是可替代状态：旧的一帧没有价值，所以改为 volatile + 自适应限频。
+ * 世界快照会越积越多，玩家看到的就是“服务器延迟越来越大”。
+ * 世界快照本身是可替代状态：旧的一帧没有价值，所以保留 volatile + 自适应限频。
  * 技能、子弹生成/命中、聊天、结算等事件仍然可靠发送，不做丢弃。
+ *
+ * 关键原则：重负载时降低数据压力，但不能把位置快照降到 7~9Hz，
+ * 否则即使客户端做平滑，也只能不断追逐过旧的位置而产生明显视觉滞后。
  */
 export function installAuthoritySnapshotBackpressure20260905(io) {
   if (!io || globalThis[PATCH_FLAG]) return;
@@ -58,7 +61,7 @@ export function installAuthoritySnapshotBackpressure20260905(io) {
 }
 
 export const AUTHORITY_SNAPSHOT_BACKPRESSURE_20260905 = Object.freeze({
-  normalIntervalMs: 80,
-  heavyIntervalMs: 110,
-  veryHeavyIntervalMs: 145,
+  normalIntervalMs: 50,
+  heavyIntervalMs: 66,
+  veryHeavyIntervalMs: 80,
 });
