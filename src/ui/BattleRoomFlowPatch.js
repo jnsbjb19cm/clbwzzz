@@ -47,13 +47,21 @@ export function installBattleRoomFlowPatch() {
     this.deckSlots = deckSlots;
     this.stageId = stageId;
     this.trainingMode = trainingMode;
-    DeckSelectView.saveDeck(deckSlots, this.cardInventory);
+
+    // 训练营（尤其是剧情教程的 6 张临时卡）绝不能覆盖玩家保存的正式战团。
+    if (!trainingMode) {
+      DeckSelectView.saveDeck(deckSlots, this.cardInventory);
+    }
+
     this.phase = 'fighting';
     this.engine = new BattleEngine(this.db, stageId, deckSlots, this.cardInventory, {
       skillLoadout: this.heroSkills?.getLoadout() ?? [],
       heroMpMax: this.heroSkills?.getMpMax() ?? 100,
       trainingMode,
+      trainingFreeRes: this.trainingFreeRes,
       boss,
+      pvp: Boolean(this.pvp),
+      talentBonus: this.talentBonusForBattle?.() ?? null,
     });
     await this.renderBattle(this.viewRoot);
   };
