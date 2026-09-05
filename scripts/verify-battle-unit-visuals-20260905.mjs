@@ -28,7 +28,7 @@ Object.defineProperty(globalThis, 'navigator', {
   value: { userAgent: 'node' },
 });
 
-const { drawCraftQualityPedestal } = await import('../src/ui/BattleUnitHaloFinal.js');
+const { drawCraftQualityPedestal } = await import('../src/ui/BattleUnitHaloGeometry20260905.js');
 
 function makeCtx() {
   const ellipses = [];
