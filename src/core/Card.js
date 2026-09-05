@@ -3,9 +3,14 @@ import {
   isMonsterCard,
   isPlantCard,
 } from '../battle/BattleConfig.js';
+import cardLoreJson from '../data/cardLore.json';
 import { ATK_STYLE, CARD_QUALITY, CARD_TYPE, VIEW_TYPE } from './constants.js';
 
 export const EXPERIENCE_CARD_IDS = new Set([122, 123, 124]);
+
+const CARD_LORE_BY_ID = new Map(
+  cardLoreJson.map((entry) => [Number(entry.card_id), entry]),
+);
 
 /**
  * 卡牌实体 - 对应原 card.xml 单条记录
@@ -15,6 +20,14 @@ export class Card {
     Object.assign(this, raw);
     this.id = raw.card_id;
     this.name = raw.card_name;
+
+    const lore = CARD_LORE_BY_ID.get(this.id);
+    // desc 保留原始战斗功能说明；trait 与 intro 明确拆开。
+    this.trait = String(raw.desc ?? '').trim();
+    this.intro = String(lore?.intro ?? '').trim();
+    // 兼容现有 UI 中已经使用的 flavor 字段。
+    this.flavor = this.intro;
+
     this.atk = this.id === 56 ? 18 : raw.card_atk;
     this.hp = this.id === 56 ? 180 : raw.card_hp;
     this.cost = raw.cost_a;
@@ -99,6 +112,9 @@ export class Card {
       card_category: this.category,
       type: this.type,
       desc: this.desc,
+      trait: this.trait,
+      intro: this.intro,
+      flavor: this.flavor,
       cooldown: this.cooldown,
       atkStyle: this.atkStyle,
       viewType: this.viewType,
