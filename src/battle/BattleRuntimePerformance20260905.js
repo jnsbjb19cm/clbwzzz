@@ -121,19 +121,24 @@ function installPeriodicCleanup() {
   };
 }
 
-function installClientRenderLoadShedding() {
+function installClientPerformancePatches() {
   // PvpBattle 的 Node 无头环境会伪造 window/document 供共用战斗引擎加载，
   // 所以不能仅用 typeof window 判断。真实浏览器必须同时具有 navigator + RAF。
   const realBrowser = typeof window !== 'undefined'
     && typeof navigator !== 'undefined'
     && typeof window.requestAnimationFrame === 'function';
   if (!realBrowser) return;
-  void import('../ui/BattleRenderLoadShedding20260905.js')
-    .then(({ installBattleRenderLoadShedding20260905 }) => {
-      installBattleRenderLoadShedding20260905?.();
+
+  void Promise.all([
+    import('../ui/BattleRenderLoadShedding20260905.js'),
+    import('../ui/PvpAuthoritySmoothMotion20260905.js'),
+  ])
+    .then(([renderPatch, smoothMotionPatch]) => {
+      renderPatch.installBattleRenderLoadShedding20260905?.();
+      smoothMotionPatch.installPvpAuthoritySmoothMotion20260905?.();
     })
     .catch((error) => {
-      console.warn('[clbwz] battle render load-shedding patch failed to load', error);
+      console.warn('[clbwz] battle client performance patches failed to load', error);
     });
 }
 
@@ -144,7 +149,7 @@ export function installBattleRuntimePerformance20260905() {
   installImpactBudget();
   installSmallFxBudgets();
   installPeriodicCleanup();
-  installClientRenderLoadShedding();
+  installClientPerformancePatches();
 }
 
 export const BATTLE_RUNTIME_PERFORMANCE_20260905 = Object.freeze({
