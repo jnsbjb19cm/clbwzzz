@@ -73,8 +73,12 @@ async function issueRecoveryCodeIfMissing(userId) {
 authRouter.post('/register', async (req, res) => {
   const username = String(req.body.username || '').trim();
   const password = String(req.body.password || '');
+  const nickname = String(req.body.nickname || '').trim();
   if (username.length < 3 || password.length < 6) {
     return res.status(400).json({ message: '账号或密码长度错误' });
+  }
+  if (nickname.length < 1 || nickname.length > 20) {
+    return res.status(400).json({ message: '游戏昵称长度必须为1到20个字符' });
   }
   const exists = await db.get('SELECT id FROM users WHERE username=?', [username]);
   if (exists) return res.status(409).json({ message: '用户名已存在' });
@@ -82,11 +86,10 @@ authRouter.post('/register', async (req, res) => {
   const hash = await bcrypt.hash(password, config.bcryptRounds);
   const result = await db.run('INSERT INTO users(username,password_hash) VALUES(?,?)', [username, hash]);
   const userId = Number(result.lastInsertRowid);
-  // 不再要求单独填写名字；游戏昵称默认就是账号名，之后可在人物资料里改名。
-  await createPlayerData(userId, username);
+  await createPlayerData(userId, nickname);
   const recoveryCode = await issueRecoveryCode(userId);
-  const user = { id: userId, username };
-  return res.json({ token: token(user), user, recoveryCode });
+  const user = { id: userId, username, nickname };
+  return res.json({ token: token(user), user, recoveryCode, isNewAccount: true });
 });
 
 authRouter.post('/login', async (req, res) => {
@@ -100,9 +103,10 @@ authRouter.post('/login', async (req, res) => {
 
   // 老账号升级到新版本时，如果还没有恢复码，只在这一次登录时发一个给用户保存。
   const recoveryCode = await issueRecoveryCodeIfMissing(user.id);
+  const profile = await db.get('SELECT nickname FROM player_profiles WHERE user_id=?', [user.id]);
   return res.json({
     token: token(user),
-    user: { id: user.id, username: user.username },
+    user: { id: user.id, username: user.username, nickname: profile?.nickname ?? user.username },
     ...(recoveryCode ? { recoveryCode } : {}),
   });
 });
