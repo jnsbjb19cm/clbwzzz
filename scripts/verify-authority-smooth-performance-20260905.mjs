@@ -183,6 +183,79 @@ await check('authority unit presentation extrapolates briefly but stops while mo
   assert.equal(discontinuity.value, 7, 'large authoritative discontinuities should snap instead of dragging behind');
 });
 
+await check('single-pass lane query preserves the previous target-set and distance semantics', async () => {
+  const { collectEnemiesInLaneSinglePass20260905 } = await import('../src/battle/BattleQueryPerformance20260905.js');
+
+  const gridCol = (unit) => Math.max(0, Math.min(11, Math.round(Number(unit.col) || 0)));
+  const normalize = (entries) => [...entries]
+    .map((entry) => [Number(entry.unit.uid), Math.round(Number(entry.dist) * 1000) / 1000])
+    .sort((a, b) => a[0] - b[0]);
+
+  const oldReference = (engine, unit, lane) => {
+    const dir = engine.getMoveDir(unit);
+    const unitGridCol = engine.getUnitGridCol(unit);
+    const found = [];
+    const add = (target, dist) => {
+      if (!found.some((entry) => entry.unit.uid === target.uid)) found.push({ unit: target, dist });
+    };
+    const getUnitsAt = (queryLane, col) => {
+      const queryCol = Math.max(0, Math.min(11, Math.round(col)));
+      return engine.units.filter((target) => (
+        target.alive !== false
+        && target.lane === queryLane
+        && engine.getUnitGridCol(target) === queryCol
+      ));
+    };
+
+    for (const target of getUnitsAt(lane, unitGridCol)) {
+      if (engine.isValidEnemyTarget(unit, target)) add(target, 0);
+    }
+
+    for (const target of engine.units) {
+      if (target.lane !== lane || !engine.isValidEnemyTarget(unit, target)) continue;
+      const signedDistance = (Number(target.col) - Number(unit.col)) * dir;
+      if (signedDistance < 0 && signedDistance >= -1.1) add(target, Math.abs(signedDistance));
+    }
+
+    for (let distance = 1; distance <= unit.range; distance += 1) {
+      const col = unitGridCol + dir * distance;
+      if (col < 0 || col >= 12) break;
+      for (const target of getUnitsAt(lane, col)) {
+        if (engine.isValidEnemyTarget(unit, target)) add(target, distance);
+      }
+    }
+    return found;
+  };
+
+  const runCase = (dir) => {
+    const attacker = { uid: 1, lane: 2, col: dir > 0 ? 5 : 6, range: 3 };
+    const forward = dir > 0 ? 1 : -1;
+    const units = [
+      { uid: 2, lane: 2, col: attacker.col + 0.2 * forward, alive: true, valid: true },
+      { uid: 3, lane: 2, col: attacker.col - 0.6 * forward, alive: true, valid: true },
+      { uid: 4, lane: 2, col: attacker.col + 1.2 * forward, alive: true, valid: true },
+      { uid: 5, lane: 2, col: attacker.col + 2.9 * forward, alive: true, valid: true },
+      { uid: 6, lane: 2, col: attacker.col + 4.1 * forward, alive: true, valid: true },
+      { uid: 7, lane: 1, col: attacker.col + 1.1 * forward, alive: true, valid: true },
+      { uid: 8, lane: 2, col: attacker.col + 2.1 * forward, alive: true, valid: false },
+      { uid: 9, lane: 2, col: attacker.col + 1.1 * forward, alive: false, valid: true },
+    ];
+    const engine = {
+      units,
+      getMoveDir: () => dir,
+      getUnitGridCol: gridCol,
+      isValidEnemyTarget: (_attacker, target) => target.alive !== false && target.valid !== false,
+    };
+
+    const expected = normalize(oldReference(engine, attacker, attacker.lane));
+    const actual = normalize(collectEnemiesInLaneSinglePass20260905(engine, attacker, attacker.lane));
+    assert.deepEqual(actual, expected, `lane query changed semantics for dir=${dir}`);
+  };
+
+  runCase(1);
+  runCase(-1);
+});
+
 if (failures.length) {
   console.error('\nAuthority smooth-performance regression failures:');
   for (const failure of failures) console.error(`- ${failure}`);
