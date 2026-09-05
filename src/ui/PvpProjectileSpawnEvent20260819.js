@@ -51,9 +51,12 @@ function latestSnapshotAlreadyRemoved(view, payload, projectileId) {
   const eventT = finite(payload?.t, Number.POSITIVE_INFINITY);
   const snapshotT = finite(view.__pvpAuthoritySnapshotTime, Number.NEGATIVE_INFINITY);
   if (snapshotT + 1e-6 < eventT) return false;
-  return !(view.__pvpLatestSnapshot?.projectiles ?? []).some(
-    (entry) => Number(entry?.id) === projectileId,
-  );
+
+  // 新的周期状态快照会故意省略 projectiles 来降低带宽/序列化开销。
+  // 只有“明确携带完整 projectile 数组”的加入/恢复快照，才有资格根据缺失推断该弹已消失。
+  const snapshotProjectiles = view.__pvpLatestSnapshot?.projectiles;
+  if (!Array.isArray(snapshotProjectiles)) return false;
+  return !snapshotProjectiles.some((entry) => Number(entry?.id) === projectileId);
 }
 
 function createProjectile(view, data) {
@@ -115,7 +118,6 @@ function applyLaunchPayload(view, projectile, payload) {
   projectile.launched = data.launched !== false;
   projectile.done = false;
 
-  // These four values are the server Projectile's immutable launch solution.
   projectile.flightStartCol = path.startCol;
   projectile.flightStartLane = path.startLane;
   projectile.flightEndCol = path.endCol;
