@@ -3,6 +3,7 @@ import { CoopBossBattle } from './CoopBossBattle.js';
 
 const PATCH_FLAG = Symbol.for('clbwz.authorityPerformance20260905');
 const AUTHORITY_SIM_STEP = 1 / 30;
+const MAX_AUTHORITY_CATCHUP_STEPS = 3;
 const MAX_PRESENTATION_DOT_KINDS = 6;
 
 function finite(value, fallback = 0) {
@@ -45,13 +46,35 @@ function patchBattleClass(BattleClass) {
 
   const previousTick = proto.tick;
   if (typeof previousTick === 'function') {
-    proto.tick = function tickAt30Hz20260905(dt) {
-      this.__authorityPerfAccum20260905 = finite(this.__authorityPerfAccum20260905) + Math.max(0, finite(dt));
-      if (this.__authorityPerfAccum20260905 + 1e-9 < AUTHORITY_SIM_STEP) return;
-      const runDt = Math.min(0.1, this.__authorityPerfAccum20260905);
-      this.__authorityPerfAccum20260905 = 0;
-      const result = previousTick.call(this, runDt);
-      markSnapshotDirty(this);
+    proto.tick = function tickAtFixed30Hz20260905(dt) {
+      const incoming = Math.min(0.1, Math.max(0, finite(dt)));
+      this.__authorityPerfAccum20260905 = Math.min(
+        0.1,
+        finite(this.__authorityPerfAccum20260905) + incoming,
+      );
+
+      let result;
+      let steps = 0;
+      while (
+        this.__authorityPerfAccum20260905 + 1e-9 >= AUTHORITY_SIM_STEP
+        && steps < MAX_AUTHORITY_CATCHUP_STEPS
+      ) {
+        result = previousTick.call(this, AUTHORITY_SIM_STEP);
+        this.__authorityPerfAccum20260905 -= AUTHORITY_SIM_STEP;
+        if (this.__authorityPerfAccum20260905 < 1e-9) this.__authorityPerfAccum20260905 = 0;
+        markSnapshotDirty(this);
+        steps += 1;
+      }
+
+      // 单次卡顿最多追 3 个固定步；若仍落后一整个逻辑步，丢弃旧的整步 backlog，
+      // 但保留不足 1/30 秒的余量，避免“聚合大 dt + 清零”造成移动/攻击时序抖动。
+      if (
+        steps >= MAX_AUTHORITY_CATCHUP_STEPS
+        && this.__authorityPerfAccum20260905 >= AUTHORITY_SIM_STEP
+      ) {
+        this.__authorityPerfAccum20260905 %= AUTHORITY_SIM_STEP;
+      }
+
       return result;
     };
   }
@@ -117,5 +140,7 @@ export function installAuthorityPerformance20260905() {
 
 export const AUTHORITY_PERFORMANCE_20260905 = Object.freeze({
   simulationHz: 30,
+  simulationStep: AUTHORITY_SIM_STEP,
+  maxCatchupSteps: MAX_AUTHORITY_CATCHUP_STEPS,
   maxPresentationDotKinds: MAX_PRESENTATION_DOT_KINDS,
 });
