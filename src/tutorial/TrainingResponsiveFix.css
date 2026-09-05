@@ -1,0 +1,183 @@
+/* 训练营：固定在当前视口内，卡牌区内部滚动，避免 24 张卡把整页撑出屏幕。 */
+.training-page {
+  width: min(1500px, 100%);
+  max-width: none;
+  height: 100dvh;
+  min-height: 0;
+  margin: 0 auto;
+  padding: clamp(10px, 1.4vh, 18px) clamp(12px, 2vw, 28px);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.training-header {
+  flex: 0 0 auto;
+  margin-bottom: 10px;
+  min-height: 42px;
+}
+
+.training-header p {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* 新手教程 / 自由练习 / 卡牌教学在宽屏上一行排完，避免第三块掉到下一行占掉半屏。 */
+.training-body {
+  flex: 0 0 auto;
+  display: grid;
+  grid-template-columns: minmax(430px, 1.35fr) minmax(330px, 1fr) minmax(260px, .82fr);
+  gap: 12px;
+  margin-bottom: 10px;
+  align-items: stretch;
+}
+
+.training-card {
+  min-width: 0;
+  padding: 12px 14px;
+}
+
+.training-card h2 {
+  margin-bottom: 5px;
+}
+
+.training-card p {
+  margin: 6px 0;
+  line-height: 1.45;
+}
+
+.training-tutorial-goals {
+  margin: 6px 0 8px;
+  line-height: 1.45;
+}
+
+.training-starter-deck {
+  gap: 6px;
+  margin: 7px 0 9px;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: thin;
+}
+
+.training-starter-card {
+  flex: 0 0 62px;
+  width: 62px;
+  padding: 4px;
+}
+
+.training-starter-card img {
+  width: 50px;
+  height: 50px;
+}
+
+.training-detail {
+  flex: 0 0 auto;
+  max-height: 25dvh;
+  overflow: auto;
+  margin-bottom: 10px;
+  padding: 10px 12px;
+}
+
+/* 卡牌一览占据剩余高度，只滚动这一块。 */
+.training-list {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.training-list h3 {
+  flex: 0 0 auto;
+  margin: 4px 0 5px;
+}
+
+.training-grid {
+  flex: 1 1 auto;
+  min-height: 0;
+  margin: 4px 0 7px;
+  padding-right: 4px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  align-content: start;
+  grid-template-columns: repeat(8, minmax(86px, 1fr));
+  gap: 8px;
+  scrollbar-width: thin;
+}
+
+.training-card-item {
+  min-width: 0;
+  min-height: 0;
+  padding: 5px;
+}
+
+.training-card-item img {
+  display: block;
+  width: 100%;
+  height: clamp(58px, 8.5vh, 92px);
+  aspect-ratio: auto;
+  object-fit: contain;
+}
+
+.training-card-item span {
+  margin-top: 2px;
+  line-height: 1.2;
+}
+
+.training-pager {
+  flex: 0 0 auto;
+  min-height: 32px;
+  padding-bottom: 2px;
+}
+
+@media (max-width: 1180px) {
+  .training-page {
+    overflow-y: auto;
+    height: 100dvh;
+  }
+
+  .training-body {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .training-card.training-new-player {
+    grid-column: 1 / -1;
+  }
+
+  .training-list {
+    min-height: 430px;
+    overflow: visible;
+  }
+
+  .training-grid {
+    grid-template-columns: repeat(6, minmax(82px, 1fr));
+    max-height: 52dvh;
+  }
+}
+
+@media (max-width: 760px) {
+  .training-header {
+    align-items: flex-start;
+    flex-wrap: wrap;
+  }
+
+  .training-header p {
+    width: 100%;
+    white-space: normal;
+  }
+
+  .training-body {
+    grid-template-columns: 1fr;
+  }
+
+  .training-card.training-new-player {
+    grid-column: auto;
+  }
+
+  .training-grid {
+    grid-template-columns: repeat(3, minmax(82px, 1fr));
+  }
+}
