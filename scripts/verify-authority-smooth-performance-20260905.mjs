@@ -9,7 +9,10 @@ globalThis.Audio = class {
   load() {}
 };
 globalThis.window = globalThis;
-globalThis.navigator = { userAgent: 'node' };
+Object.defineProperty(globalThis, 'navigator', {
+  configurable: true,
+  value: { userAgent: 'node' },
+});
 globalThis.requestAnimationFrame = () => 1;
 globalThis.cancelAnimationFrame = () => {};
 globalThis.Image = class {
