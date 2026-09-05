@@ -121,4 +121,58 @@ function makeEngine(unitCount) {
   );
 }
 
+{
+  const { renderer } = makeRenderer();
+  const engine = makeEngine(8);
+  for (const unit of engine.units) {
+    unit.strengthLv = 5;
+    unit.craftQuality = 4;
+  }
+
+  nowMs = 200;
+  renderer.draw(engine);
+
+  assert.equal(renderer.__perfHighTierUnits20260905, 8, 'expected all eight 4/5-level cards to be counted as high tier');
+  assert.equal(renderer.__perfSkipHalos20260905, true, 'eight high-tier cards should disable expensive decorative halos');
+  assert.equal(renderer.__perfHeavyVisuals20260905, false, 'high-tier halo shedding alone must not force the whole unit renderer into low quality');
+}
+
+{
+  let storageReads = 0;
+  globalThis.localStorage = {
+    getItem(key) {
+      assert.equal(key, 'clbwz_show_unit_names');
+      storageReads += 1;
+      return null;
+    },
+  };
+
+  const { renderer } = makeRenderer();
+  const engine = makeEngine(6);
+  nowMs = 300;
+  renderer.draw(engine);
+  assert.equal(storageReads, 1, 'unit-name setting should be read once per rendered battle frame, not once per unit');
+
+  let measureCalls = 0;
+  const nameCtx = {
+    font: '',
+    textAlign: '',
+    fillStyle: '',
+    measureText() {
+      measureCalls += 1;
+      return { width: 30 };
+    },
+    fillRect() {},
+    fillText() {},
+  };
+  renderer.drawUnitName(nameCtx, 0, 0, 80, '五星花生', 'player');
+  renderer.drawUnitName(nameCtx, 0, 0, 80, '五星花生', 'player');
+  assert.equal(measureCalls, 1, 'same unit-name label width should be measured once and reused');
+
+  nowMs = 316;
+  renderer.draw(engine);
+  assert.equal(storageReads, 2, 'unit-name setting should still refresh on the next rendered frame');
+  delete globalThis.localStorage;
+}
+
 console.log('High-star render-performance regression: OK');
