@@ -1,13 +1,30 @@
-/* 游戏大厅 2026-09-05 微调：公告条、聊天频道、布局下移、降低同色相邻造成的“靠色”。 */
+/* 游戏大厅 2026-09-05 微调：顶栏玻璃公告、聊天频道、聊天框真正贴底、降低相邻区域靠色。 */
 
-/* 保留怀旧草绿色，但把大面积背景降一点饱和度，面板之间用明暗层级区分。 */
 .classic-game-hall .lobby-stage {
   background: linear-gradient(180deg, #dbeeb1 0%, #c4df8c 58%, #afd070 100%);
 }
 
+/* 顶栏保留怀旧绿，但公告改为中性玻璃层，避免绿挨绿。 */
 .classic-game-hall .lobby-title-bar {
+  position: absolute;
   background: linear-gradient(180deg, #83bd3d 0%, #4c8219 100%);
   border-bottom-color: #31560f;
+  overflow: hidden;
+}
+
+.classic-game-hall .lobby-title {
+  position: absolute;
+  left: 20px;
+  top: 0;
+  z-index: 3;
+  width: 156px;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  white-space: nowrap;
+  font-size: 25px;
+  letter-spacing: 4px;
 }
 
 .classic-game-hall .lobby-tabs {
@@ -32,25 +49,32 @@
   box-shadow: inset 0 1px 3px rgba(255,255,255,.62), 0 0 0 2px rgba(103,76,12,.17);
 }
 
-/* 横向公告条：位于筛选栏和房间列表之间。 */
-.classic-game-hall .lobby-announcement {
-  left: 35px;
-  top: 111px;
-  width: calc(74% - 40px);
-  height: 34px;
-  z-index: 5;
+/* 公告放进“游戏大厅”同一条顶栏，不再占筛选栏与房间列表之间的位置。 */
+.classic-game-hall .lobby-title-bar .lobby-announcement,
+.classic-game-hall .lobby-announcement-in-title {
+  position: absolute !important;
+  left: 188px !important;
+  right: 24px !important;
+  top: 10px !important;
+  width: auto !important;
+  height: 38px !important;
+  z-index: 2;
   display: flex;
   align-items: center;
   overflow: hidden;
-  border: 1px solid #8a711f;
-  border-radius: 5px;
-  background: linear-gradient(180deg, #fff8cf, #e7d986);
-  box-shadow: inset 0 1px rgba(255,255,255,.72), 0 1px 3px rgba(55,72,19,.22);
-  color: #4b3b08;
+  border: 1px solid rgba(255,255,255,.18);
+  border-radius: 7px;
+  background: rgba(18, 24, 27, .30);
+  box-shadow: inset 0 1px rgba(255,255,255,.10), 0 1px 4px rgba(12,20,13,.14);
+  -webkit-backdrop-filter: blur(4px);
+  backdrop-filter: blur(4px);
+  color: rgba(255,255,255,.92);
   font-size: 13px;
+  text-shadow: 0 1px 2px rgba(0,0,0,.35);
 }
 
 .classic-game-hall .lobby-announcement-label {
+  position: static !important;
   height: 100%;
   min-width: 58px;
   padding: 0 12px;
@@ -58,14 +82,15 @@
   align-items: center;
   justify-content: center;
   flex: 0 0 auto;
-  color: #fff6c6;
+  color: #fff4bd;
   font-weight: 800;
   letter-spacing: 2px;
-  background: linear-gradient(180deg, #8c6e22, #61480d);
-  border-right: 1px solid #4e390b;
+  background: rgba(70, 53, 18, .46);
+  border-right: 1px solid rgba(255,232,153,.18);
 }
 
 .classic-game-hall .lobby-announcement-window {
+  position: static !important;
   min-width: 0;
   flex: 1;
   overflow: hidden;
@@ -73,6 +98,7 @@
 }
 
 .classic-game-hall .lobby-announcement-track {
+  position: static !important;
   display: inline-block;
   min-width: max-content;
   padding-left: 100%;
@@ -88,10 +114,10 @@
   to { transform: translateX(-100%); }
 }
 
-/* 给公告条腾位置，同时不挤压分页区。 */
+/* 公告已经搬到顶栏，房间区恢复原高度。 */
 .classic-game-hall .lobby-rooms {
-  top: 153px;
-  height: 487px;
+  top: 130px;
+  height: 510px;
 }
 
 .classic-game-hall .lobby-room-cell {
@@ -105,9 +131,8 @@
   box-shadow: 0 2px 7px rgba(54,85,29,.3);
 }
 
-/* 右侧人物栏与草绿色底分开，避免整块绿色糊成一片。 */
 .classic-game-hall .lobby-player {
-  background: linear-gradient(180deg, rgba(224,244,169,.96), rgba(193,225,116,.9));
+  background: linear-gradient(180deg, rgba(224,244,169,.96), rgba(193,225,116,.90));
   border-left-color: #537527;
   border-bottom-color: #537527;
 }
@@ -117,52 +142,61 @@
   border-bottom: 1px solid rgba(78,112,30,.24);
 }
 
-/* 聊天整体下移并稍微压低高度，给房间列表留出更干净的视觉空间。 */
+/* 关键修正：同时清掉可能遗留的 top/transform，强制聊天框以大厅底边为锚点。 */
+.classic-game-hall .lobby-stage > .lobby-chat,
 .classic-game-hall .lobby-chat {
-  left: 28px;
-  bottom: 16px;
-  width: 39.5%;
-  height: 194px;
+  position: absolute !important;
+  left: 28px !important;
+  right: auto !important;
+  top: auto !important;
+  bottom: 4px !important;
+  transform: none !important;
+  margin: 0 !important;
+  width: 39.5% !important;
+  height: 184px !important;
+  z-index: 9;
   padding: 7px 8px 8px;
-  background: linear-gradient(180deg, rgba(248,250,222,.95), rgba(220,236,171,.94));
-  border: 2px solid #526f2e;
+  background: linear-gradient(180deg, rgba(250,250,235,.95), rgba(223,232,192,.93));
+  border: 2px solid #536448;
   border-radius: 9px;
-  box-shadow: 0 2px 7px rgba(40,58,21,.22), inset 0 1px rgba(255,255,255,.78);
+  box-shadow: 0 2px 7px rgba(40,48,35,.18), inset 0 1px rgba(255,255,255,.78);
 }
 
 .classic-game-hall .lobby-chat-head {
-  position: static;
+  position: static !important;
   display: flex;
   align-items: center;
   gap: 8px;
-  min-height: 30px;
+  min-height: 29px;
   padding-bottom: 5px;
-  border-bottom: 1px solid rgba(73,100,40,.28);
+  border-bottom: 1px solid rgba(73,90,62,.25);
 }
 
-.classic-game-hall .lobby-chat-title {
+.classic-game-hall .lobby-chat-title,
+.classic-game-hall .lobby-chat-head > b {
+  position: static !important;
   flex: 0 0 auto;
-  color: #35521b;
+  color: #374434;
   font-size: 13px;
   font-weight: 800;
 }
 
 .classic-game-hall .lobby-chat-channels {
-  position: static;
+  position: static !important;
   display: flex;
   gap: 4px;
   flex: 0 0 auto;
 }
 
 .classic-game-hall .lobby-chat-channel {
-  position: relative;
+  position: relative !important;
   min-width: 45px;
   height: 23px;
   padding: 0 8px;
-  border: 1px solid #879b67;
+  border: 1px solid #87917d;
   border-radius: 5px;
-  background: linear-gradient(180deg, #f7f9e8, #d8e4b7);
-  color: #4b5e36;
+  background: linear-gradient(180deg, #f7f7ef, #dcded1);
+  color: #4b5447;
   font-size: 11px;
   font-weight: 700;
   cursor: pointer;
@@ -185,74 +219,92 @@
   box-shadow: 0 1px 2px rgba(0,0,0,.28);
 }
 
-.classic-game-hall .lobby-chat-channel.active[data-channel='current'] {
+.classic-game-hall .lobby-chat-channel.active[data-channel='current'],
+.classic-game-hall .lobby-chat-channel.active[data-lobby-chat-channel='current'] {
   color: #fff;
-  border-color: #4e712b;
-  background: linear-gradient(180deg, #83b64c, #5d8731);
+  border-color: #4d6850;
+  background: linear-gradient(180deg, #78957b, #536e57);
 }
 
-.classic-game-hall .lobby-chat-channel.active[data-channel='world'] {
+.classic-game-hall .lobby-chat-channel.active[data-channel='world'],
+.classic-game-hall .lobby-chat-channel.active[data-lobby-chat-channel='world'] {
   color: #fff;
-  border-color: #30718b;
-  background: linear-gradient(180deg, #59bdd7, #3488a5);
+  border-color: #3d6f82;
+  background: linear-gradient(180deg, #6ba8bb, #467f93);
 }
 
-.classic-game-hall .lobby-chat-channel.active[data-channel='guild'] {
+.classic-game-hall .lobby-chat-channel.active[data-channel='guild'],
+.classic-game-hall .lobby-chat-channel.active[data-lobby-chat-channel='guild'] {
   color: #fff;
-  border-color: #8b6722;
-  background: linear-gradient(180deg, #d6a842, #a77a25);
+  border-color: #7f672e;
+  background: linear-gradient(180deg, #b99b55, #8d753b);
 }
 
-.classic-game-hall .lobby-chat-channel.active[data-channel='private'] {
+.classic-game-hall .lobby-chat-channel.active[data-channel='private'],
+.classic-game-hall .lobby-chat-channel.active[data-lobby-chat-channel='private'] {
   color: #fff;
-  border-color: #70538e;
-  background: linear-gradient(180deg, #a983c4, #795a9a);
+  border-color: #6d5e7c;
+  background: linear-gradient(180deg, #9a88a8, #756682);
 }
 
 .classic-game-hall .lobby-chat-private-target {
-  position: static;
-  width: 98px;
-  height: 23px;
+  position: static !important;
   margin-left: auto;
-  padding: 0 6px;
-  border: 1px solid #765b8c;
-  border-radius: 5px;
-  background: #fffdf5;
-  color: #49365a;
+  min-height: 23px;
+  color: #493f50;
   font-size: 11px;
 }
 
+.classic-game-hall input.lobby-chat-private-target {
+  width: 98px;
+  height: 23px;
+  padding: 0 6px;
+  border: 1px solid #74677c;
+  border-radius: 5px;
+  background: #fffdf8;
+}
+
+.classic-game-hall .lobby-chat-private-target.hidden,
 .classic-game-hall .lobby-chat-private-target[hidden] {
-  display: none;
+  display: none !important;
+}
+
+.classic-game-hall .lobby-chat-private-target select {
+  height: 23px;
+  max-width: 130px;
+  border: 1px solid #74677c;
+  border-radius: 5px;
+  background: #fffdf8;
+  color: #493f50;
 }
 
 .classic-game-hall .lobby-chat-list {
-  position: static;
+  position: static !important;
   flex: 1;
   min-height: 0;
   padding: 5px 3px 2px;
-  color: #2f461e;
+  color: #303b2d;
   font-size: 12px;
   line-height: 1.45;
 }
 
 .classic-game-hall .lobby-chat-item {
-  position: static;
+  position: static !important;
   padding: 1px 0;
   overflow-wrap: anywhere;
 }
 
 .classic-game-hall .lobby-chat-item.is-system {
-  color: #725914;
+  color: #6b5c2f;
 }
 
 .classic-game-hall .lobby-chat-item.is-private {
-  color: #68477c;
+  color: #684f72;
 }
 
 .classic-game-hall .lobby-chat-sender,
 .classic-game-hall .lobby-chat-sender-static {
-  position: static;
+  position: static !important;
   display: inline;
   padding: 0;
   border: 0;
@@ -270,29 +322,28 @@
 }
 
 .classic-game-hall .lobby-chat-sender:hover {
-  color: #6c4a88;
+  color: #65516f;
 }
 
 .classic-game-hall .lobby-chat-input-row {
-  position: static;
+  position: static !important;
   margin-top: 4px;
 }
 
 .classic-game-hall .lobby-chat-input-row input {
-  background: #fffef7;
-  border-color: #778d56;
-  color: #29391c;
+  background: #fffef9;
+  border-color: #7b8572;
+  color: #293126;
 }
 
 .classic-game-hall #lobby-chat-send {
-  border: 1px solid #567927;
-  background: linear-gradient(180deg, #85b84d, #5e8930);
+  border: 1px solid #566958;
+  background: linear-gradient(180deg, #7f997f, #5d735f);
   color: #fff;
   border-radius: 5px;
   padding: 0 15px;
 }
 
-/* 快速加入原本与底色太接近，改为偏黄绿，和大厅草绿拉开明度。 */
 .classic-game-hall .lobby-btn-quick {
   background: linear-gradient(180deg, #f0f6a2 0%, #a9cf45 52%, #78a72a 100%);
   border-color: #4f7217;
