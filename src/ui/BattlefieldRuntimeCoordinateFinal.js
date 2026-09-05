@@ -338,16 +338,7 @@ function drawImpactFxPure(ctx, engine) {
       }
       void this.requestBulletAnim(fx.res);
     }
-
-    const progress = clamp(finite(fx.t) / 0.45, 0, 1);
-    ctx.save();
-    ctx.globalAlpha = Math.max(0, 0.85 * (1 - progress));
-    ctx.strokeStyle = '#f7e2a1';
-    ctx.lineWidth = Math.max(2, CELL_W * 0.045);
-    ctx.beginPath();
-    ctx.arc(cx, cy, CELL_W * (0.18 + progress * 0.36), 0, Math.PI * 2);
-    ctx.stroke();
-    ctx.restore();
+    // 不再合成 fallback 光圈；源爆炸动画缺失/不安全时直接不绘制命中圈。
   }
 }
 

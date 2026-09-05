@@ -285,19 +285,6 @@ function impactPackIsSafe(pack, margin = 3) {
   });
 }
 
-function drawFallbackImpact(ctx, x, y, cellW, t) {
-  const progress = clamp(finite(t) / 0.32, 0, 1);
-  if (progress >= 1) return;
-  ctx.save();
-  ctx.globalAlpha = 0.82 * (1 - progress);
-  ctx.strokeStyle = '#f6e3a4';
-  ctx.lineWidth = Math.max(2, cellW * 0.045);
-  ctx.beginPath();
-  ctx.arc(x, y, cellW * (0.16 + progress * 0.34), 0, Math.PI * 2);
-  ctx.stroke();
-  ctx.restore();
-}
-
 function installFinalRenderer() {
   // VisibleGridMap 早期曾被 UnitAnimationViewportFinal 间接安装，随后又被旧的
   // RuntimeCoordinate/SkillPosition/ImpactSafety 覆盖。这里在 main 的同步 installer
@@ -485,7 +472,7 @@ function installFinalRenderer() {
           void this.requestBulletAnim(fx.res);
         }
       }
-      if (!drawn) drawFallbackImpact(ctx, x, y, cellW, fx.t);
+      // 不再合成 fallback 光圈；缺少源爆炸动画时直接不绘制命中圈。
     }
   };
 

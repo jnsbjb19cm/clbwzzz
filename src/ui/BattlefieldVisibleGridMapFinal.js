@@ -247,18 +247,6 @@ function safeImpactPack(pack, margin = 3) {
   });
 }
 
-function drawFallbackImpact(ctx, cx, cy, t, cellW) {
-  const progress = clamp(finite(t) / 0.45, 0, 1);
-  ctx.save();
-  ctx.globalAlpha = Math.max(0, 0.9 * (1 - progress));
-  ctx.strokeStyle = '#f7e2a1';
-  ctx.lineWidth = Math.max(2, cellW * 0.045);
-  ctx.beginPath();
-  ctx.arc(cx, cy, cellW * (0.16 + progress * 0.4), 0, Math.PI * 2);
-  ctx.stroke();
-  ctx.restore();
-}
-
 function targetOf(effect) {
   const nested = effect?.target ?? effect?.targetCell ?? {};
   return {
@@ -397,7 +385,7 @@ export function installBattlefieldVisibleGridMapFinal() {
           void this.requestBulletAnim(fx.res);
         }
       }
-      if (!usedSourceAnimation) drawFallbackImpact(ctx, point.x, point.y, fx.t, g.cellW);
+      // 不再合成 fallback 光圈；缺少源爆炸动画时直接不绘制命中圈。
       this._impactSafetyAudit.push({
         res: fx.res != null ? Number(fx.res) : null,
         col: fx.col,
