@@ -3,6 +3,7 @@ import { roomManager } from '../rooms/RoomManager.js';
 
 const STREAK_BROADCAST_MIN = 2;
 const recentStrengthen = new Map();
+const recentCraftAscend = new Map();
 const reportedPvpResult = new Set();
 
 async function ensureTables() {
@@ -13,7 +14,6 @@ async function ensureTables() {
       updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
     )
   `).catch(async () => {
-    // SQLite 对 BIGINT/TIMESTAMP 同样可接受；兜底保留更宽松定义。
     await db.run(`
       CREATE TABLE IF NOT EXISTS pvp_win_streaks (
         user_id INTEGER PRIMARY KEY,
@@ -44,13 +44,24 @@ function emitAnnouncement(io, payload) {
   io.emit('system:announcement', {
     id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
     at: Date.now(),
+    channel: 'system',
     ...payload,
   });
 }
 
+function rateLimited(map, userId, waitMs = 1200) {
+  const id = Number(userId);
+  const now = Date.now();
+  const last = Number(map.get(id)) || 0;
+  if (now - last < waitMs) return true;
+  map.set(id, now);
+  return false;
+}
+
 /**
- * 世界播报：
+ * 世界系统播报：
  * - 卡牌强化到 6 星及以上；
+ * - 做卡触发升变；
  * - PVP 2 连胜起播报；
  * - 2 连胜及以上被打断时播报连胜中断。
  */
@@ -62,11 +73,9 @@ export function installSystemAnnouncementService(io) {
       try {
         const star = Math.max(0, Math.min(15, Math.floor(Number(payload.star) || 0)));
         if (star < 6) return typeof ack === 'function' && ack({ ok: true, announced: false });
-
-        const now = Date.now();
-        const last = recentStrengthen.get(Number(socket.user.id)) || 0;
-        if (now - last < 1200) return typeof ack === 'function' && ack({ ok: true, announced: false });
-        recentStrengthen.set(Number(socket.user.id), now);
+        if (rateLimited(recentStrengthen, socket.user.id)) {
+          return typeof ack === 'function' && ack({ ok: true, announced: false });
+        }
 
         const cardName = String(payload.cardName || `卡牌#${Number(payload.cardId) || '?'}`).trim().slice(0, 32);
         const nickname = String(socket.user.nickname || socket.user.username || '勇士').slice(0, 24);
@@ -84,6 +93,28 @@ export function installSystemAnnouncementService(io) {
       }
     });
 
+    socket.on('system:announce:craft-ascend', (payload = {}, ack) => {
+      try {
+        if (rateLimited(recentCraftAscend, socket.user.id)) {
+          return typeof ack === 'function' && ack({ ok: true, announced: false });
+        }
+        const fromName = String(payload.fromCardName || '目标卡牌').trim().slice(0, 32);
+        const resultName = String(payload.resultName || payload.cardName || '稀有卡牌').trim().slice(0, 48);
+        const nickname = String(socket.user.nickname || socket.user.username || '勇士').slice(0, 24);
+        emitAnnouncement(io, {
+          kind: 'craft-ascend',
+          title: '造卡升变',
+          text: `恭喜 ${nickname} 制作「${fromName}」时触发升变，获得「${resultName}」！`,
+          userId: Number(socket.user.id),
+          cardId: Number(payload.cardId) || null,
+          craftQuality: Number(payload.craftQuality) || null,
+        });
+        if (typeof ack === 'function') ack({ ok: true, announced: true });
+      } catch (error) {
+        if (typeof ack === 'function') ack({ ok: false, message: error.message || '播报失败' });
+      }
+    });
+
     socket.on('pvp:result-report', async (payload = {}, ack) => {
       try {
         const userId = Number(socket.user.id);
@@ -92,7 +123,6 @@ export function installSystemAnnouncementService(io) {
         const member = room.members.get(userId);
         if (!member || member.isBot) throw new Error('PVP 成员状态无效');
 
-        // 房间号会复用，因此必须把 createdAt 放进幂等键；否则数小时后复用同一房间号会被误判重复结算。
         const reportKey = `${room.id}:${Number(room.createdAt) || 0}:${userId}`;
         if (reportedPvpResult.has(reportKey)) {
           if (typeof ack === 'function') ack({ ok: true, duplicate: true });
