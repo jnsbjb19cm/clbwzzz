@@ -36,6 +36,17 @@ function sourceFromActiveSkill(engine) {
   });
 }
 
+function sideFromRoomTeam(team) {
+  return team === 'red' ? 'enemy' : team === 'blue' ? 'player' : null;
+}
+
+function flipCombatSide(team) {
+  if (team === 'player') return 'enemy';
+  if (team === 'enemy') return 'player';
+  // neutral / special / future side values must never be rewritten by perspective conversion.
+  return team;
+}
+
 function withDamageSource(source, callback) {
   const previous = activeDamageSource;
   const normalized = normalizeSource(source);
@@ -78,6 +89,58 @@ export function installPvpNeutralDamageOwnership20260903() {
   if (globalThis[PATCH_FLAG]) return;
   globalThis[PATCH_FLAG] = true;
 
+  // 修复 PvpBattle 原始视角转换的一个关键问题：旧实现把任何非 player 阵营都改成 player，
+  // 因而红方施放任意技能时，neutral 障碍会被临时改成 player，回切后甚至可能永久变成 enemy。
+  // 这会让“真正由 A 技能完成击杀，但精灵却算到 B 方”的现象在所有技能上随机出现。
+  // 新实现只翻转 player <-> enemy，neutral 永远保持 neutral；技能期间新生成的普通战斗单位仍正常回切。
+  PvpBattle.prototype.withTeamPerspective = function withTeamPerspectivePreservingNeutral(team, callback) {
+    if (team === 'blue') return callback();
+    const engine = this.engine;
+    for (const unit of engine.units ?? []) {
+      unit.team = flipCombatSide(unit.team);
+    }
+
+    const blueHp = engine.heroHp;
+    const redHp = engine.enemyHeroHp;
+    const blueMaxHp = engine.heroMaxHp;
+    const redMaxHp = engine.enemyHeroMaxHp;
+    engine.heroHp = redHp;
+    engine.enemyHeroHp = blueHp;
+    engine.heroMaxHp = redMaxHp;
+    engine.enemyHeroMaxHp = blueMaxHp;
+
+    try {
+      return callback();
+    } finally {
+      const nextRedHp = engine.heroHp;
+      const nextBlueHp = engine.enemyHeroHp;
+      const nextRedMaxHp = engine.heroMaxHp;
+      const nextBlueMaxHp = engine.enemyHeroMaxHp;
+      engine.heroHp = nextBlueHp;
+      engine.enemyHeroHp = nextRedHp;
+      engine.heroMaxHp = nextBlueMaxHp;
+      engine.enemyHeroMaxHp = nextRedMaxHp;
+      for (const unit of engine.units ?? []) {
+        unit.team = flipCombatSide(unit.team);
+      }
+    }
+  };
+
+  // 不再依赖其它补丁“顺便”把 userId 补到 pending cast。
+  // 每次技能进入 pending 后，在最终权威层再次写死施法者和阵营，房主/非房主完全同一规则。
+  const previousCastSkill = PvpBattle.prototype.castSkill;
+  PvpBattle.prototype.castSkill = function castSkillWithAuthoritativeOwner(userId, payload = {}) {
+    const result = previousCastSkill.call(this, userId, payload);
+    const state = this.skillStateOf(userId);
+    const pending = state?.pending?.at?.(-1);
+    if (pending) {
+      pending.userId = Number(userId);
+      pending.sourceUserId = Number(userId);
+      pending.sourceTeam = this.teamOf(userId) ?? pending.team;
+    }
+    return result;
+  };
+
   // 最低层只在真正扣到血时写入归属。这样“先红方打过、后蓝方造成致死伤害”
   // 不会继续沿用红方的旧 last-hit 元数据。
   const previousTakeDamage = BattleUnit.prototype.takeDamage;
@@ -109,6 +172,11 @@ export function installPvpNeutralDamageOwnership20260903() {
   const previousHitUnit = BattleSkillSystem.prototype.hitUnit;
   BattleSkillSystem.prototype.hitUnit = function hitUnitWithNeutralOwnership(unit, damage) {
     const source = sourceFromActiveSkill(this.engine) ?? activeDamageSource;
+    // onUnitDeath 会在 hitUnit 返回前执行，因此必须在致死结算前写入当前技能来源。
+    // takeDamage 仍会在“确实扣血”后再次确认一次，形成前后双保险。
+    if (source && isNeutralBarrier(unit) && Number(damage) > 0) {
+      stampBarrierDamage(unit, source, this.engine?.time);
+    }
     return withDamageSource(source, () => previousHitUnit.call(this, unit, damage));
   };
 
@@ -154,22 +222,37 @@ export function installPvpNeutralDamageOwnership20260903() {
     }
   };
 
-  // PvpBattle 的持续火墙字段在施放结束后才逐帧结算，补上施法者归属。
+  // applySkillCast 最外层再次建立“本次技能”的施法者上下文。
+  // 即使后续新增技能不走 hitUnit，而是直接 takeDamage，也会继承正确 A/B 归属。
   const previousApplySkillCast = PvpBattle.prototype.applySkillCast;
   PvpBattle.prototype.applySkillCast = function applySkillCastWithFieldOwnership(cast) {
-    const before = this.skillFields?.length ?? 0;
-    const result = previousApplySkillCast.call(this, cast);
+    const ownerUserId = Number(cast?.userId ?? cast?.sourceUserId) || null;
+    const roomTeam = this.teamOf(ownerUserId) ?? cast?.sourceTeam ?? cast?.team;
     const source = normalizeSource({
-      team: cast?.team === 'red' ? 'enemy' : cast?.team === 'blue' ? 'player' : null,
-      ownerUserId: cast?.userId,
+      team: sideFromRoomTeam(roomTeam),
+      ownerUserId,
     });
+    const engine = this.engine;
+    const previousSide = engine.__pvpActiveSkillSide;
+    const previousOwner = engine.__pvpActiveSkillOwnerUserId;
     if (source) {
-      for (const field of (this.skillFields ?? []).slice(before)) {
-        field.__pvpSourceTeam = source.team;
-        field.__pvpSourceOwnerUserId = source.ownerUserId;
-      }
+      engine.__pvpActiveSkillSide = source.team;
+      engine.__pvpActiveSkillOwnerUserId = source.ownerUserId;
     }
-    return result;
+
+    const before = this.skillFields?.length ?? 0;
+    try {
+      return withDamageSource(source, () => previousApplySkillCast.call(this, cast));
+    } finally {
+      if (source) {
+        for (const field of (this.skillFields ?? []).slice(before)) {
+          field.__pvpSourceTeam = source.team;
+          field.__pvpSourceOwnerUserId = source.ownerUserId;
+        }
+      }
+      engine.__pvpActiveSkillSide = previousSide;
+      engine.__pvpActiveSkillOwnerUserId = previousOwner;
+    }
   };
 
   PvpBattle.prototype.tickSkillFields = function tickSkillFieldsWithNeutralOwnership(dt) {
