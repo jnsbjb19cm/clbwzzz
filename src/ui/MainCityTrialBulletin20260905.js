@@ -5,6 +5,7 @@ import { RoomView } from './RoomView.js';
 const PATCH_FLAG = Symbol.for('clbwz.mainCityTrialBulletin20260905');
 const NOTICE_TEXT = '完成日常任务「强化能手」后领取奖励即可满级';
 const REFILL_NOTICE_TEXT = '补卡：背包 → 卡牌 → 补全卡；补强化粉和制作材料：铁匠铺 → 强化 → 补发道具';
+const QQ_GROUP_TEXT = '玩家交流群：QQ群 1060910192';
 const LOBBY_NOTICE_TEXT = `公告提示：${NOTICE_TEXT}`;
 
 const FEATURE_GROUPS = Object.freeze([
@@ -70,7 +71,10 @@ function applyIdleTrialAnnouncement() {
     bar.classList.remove('is-idle');
     const label = bar.querySelector('.classic-broadcast-label');
     if (label) label.textContent = '公告提示';
-    setClassicTrack(bar.querySelector('.classic-broadcast-track'), `${NOTICE_TEXT}　｜　${REFILL_NOTICE_TEXT}`);
+    setClassicTrack(
+      bar.querySelector('.classic-broadcast-track'),
+      `${NOTICE_TEXT}　｜　${REFILL_NOTICE_TEXT}　｜　${QQ_GROUP_TEXT}`,
+    );
   }
 }
 
@@ -87,6 +91,11 @@ function bulletinMarkup() {
           <b>${NOTICE_TEXT}</b>
           <small>点击前往任务</small>
         </button>
+        <div class="trial-bulletin-important trial-bulletin-qq" aria-label="玩家交流群">
+          <span>玩家交流</span>
+          <b>QQ群：1060910192</b>
+          <small>问题反馈、联机交流与试玩讨论可加入该群</small>
+        </div>
         <div class="trial-bulletin-refill-guide" aria-label="试玩补发位置">
           <button type="button" data-trial-route="bag">
             <b>补卡位置</b>
@@ -138,7 +147,7 @@ function injectMainCityBulletin(view, root) {
 function updateLobbyAnnouncement(view) {
   const track = view.root?.querySelector?.('.classic-game-hall .lobby-announcement-track');
   if (!track) return;
-  track.textContent = `${LOBBY_NOTICE_TEXT}　｜　补卡：主城 → 背包 → 卡牌 →「补全卡」　｜　补强化粉和制作材料：主城 → 铁匠铺 → 强化 →「补发道具」（每次各100个，每日最多50次，全部绑定）　｜　房间最长保留2小时，无真人玩家的房间会自动回收　｜　绑定材料制作出的产物一定绑定`;
+  track.textContent = `${LOBBY_NOTICE_TEXT}　｜　补卡：主城 → 背包 → 卡牌 →「补全卡」　｜　补强化粉和制作材料：主城 → 铁匠铺 → 强化 →「补发道具」（每次各100个，每日最多50次，全部绑定）　｜　玩家交流群：QQ群 1060910192　｜　房间最长保留2小时，无真人玩家的房间会自动回收　｜　绑定材料制作出的产物一定绑定`;
 }
 
 export function installMainCityTrialBulletin20260905() {
@@ -174,6 +183,7 @@ export function installMainCityTrialBulletin20260905() {
       bulletin: Boolean(document.querySelector('[data-trial-bulletin]')),
       notice: NOTICE_TEXT,
       refillGuide: REFILL_NOTICE_TEXT,
+      qqGroup: QQ_GROUP_TEXT,
       lobbyNotice: document.querySelector('.lobby-announcement-track')?.textContent ?? '',
     });
   }
