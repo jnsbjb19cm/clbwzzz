@@ -4,7 +4,26 @@ import './TutorialPlacementRule.js';
 export const NEW_PLAYER_TUTORIAL_MARKER = '__clbwz_new_player_tutorial_v1__';
 export const NEW_PLAYER_TUTORIAL_STORAGE_KEY = 'clbwz_new_player_tutorial_completed_v1';
 
-const PREFERRED_TUTORIAL_CARD_IDS = [1, 2, 4, 15, 19, 25, 22, 17, 11, 3];
+/** 剧情教程固定卡组：按实际教学顺序排列。 */
+export const TUTORIAL_CARD_IDS = Object.freeze({
+  PEANUT: 1,
+  WALNUT: 2,
+  RUNNER: 3,
+  CACTUS: 4,
+  SLIME: 6,
+  SPIKE: 15,
+  SCARECROW: 19,
+  BLIZZARD: 503,
+});
+
+const PREFERRED_TUTORIAL_CARD_IDS = [
+  TUTORIAL_CARD_IDS.PEANUT,
+  TUTORIAL_CARD_IDS.WALNUT,
+  TUTORIAL_CARD_IDS.RUNNER,
+  TUTORIAL_CARD_IDS.SPIKE,
+  TUTORIAL_CARD_IDS.CACTUS,
+  TUTORIAL_CARD_IDS.SCARECROW,
+];
 
 function cardCategory(card) {
   const value = Number(card?.card_category ?? card?.category);
@@ -28,7 +47,6 @@ function isBattleUnitCard(card) {
 export function getTutorialDeckCards(db, limit = 6) {
   const all = (db?.cards ?? []).filter(isBattleUnitCard);
   const byId = new Map(all.map((card) => [Number(card.id), card]));
-  const preferred = PREFERRED_TUTORIAL_CARD_IDS.map((id) => byId.get(id)).filter(Boolean);
 
   const selected = [];
   const used = new Set();
@@ -39,16 +57,12 @@ export function getTutorialDeckCards(db, limit = 6) {
     selected.push(card);
   };
 
-  // 教学卡组优先保证有能向前推进的单位，再补固定/远程单位。
-  preferred.filter((card) => moveSpeed(card) > 0).slice(0, 3).forEach(add);
-  preferred.filter((card) => moveSpeed(card) <= 0).slice(0, 3).forEach(add);
-  preferred.forEach(add);
+  // 先严格按剧情顺序发 6 张教学卡；缺失时才使用普通战斗卡兜底。
+  PREFERRED_TUTORIAL_CARD_IDS.map((id) => byId.get(id)).filter(Boolean).forEach(add);
 
   all
-    .filter((card) => moveSpeed(card) > 0)
     .sort((a, b) => cardQuality(a) - cardQuality(b) || Number(a.id) - Number(b.id))
     .forEach(add);
-  all.forEach(add);
 
   return selected.slice(0, limit);
 }
