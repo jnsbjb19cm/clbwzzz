@@ -60,7 +60,10 @@ function patchBattleClass(BattleClass) {
   if (typeof previousPublicUnit === 'function') {
     proto.publicUnit = function publicUnitCached20260905(unit) {
       const now = finite(this.engine?.time);
-      if (unit?.__authorityPublicUnitTime20260905 === now && unit.__authorityPublicUnitCache20260905) {
+      const revision = finite(this.__authorityPerfRevision20260905);
+      if (unit?.__authorityPublicUnitTime20260905 === now
+        && unit?.__authorityPublicUnitRevision20260905 === revision
+        && unit.__authorityPublicUnitCache20260905) {
         return unit.__authorityPublicUnitCache20260905;
       }
       const result = previousPublicUnit.call(this, unit);
@@ -69,6 +72,7 @@ function patchBattleClass(BattleClass) {
       }
       if (unit) {
         unit.__authorityPublicUnitTime20260905 = now;
+        unit.__authorityPublicUnitRevision20260905 = revision;
         unit.__authorityPublicUnitCache20260905 = result;
       }
       return result;
