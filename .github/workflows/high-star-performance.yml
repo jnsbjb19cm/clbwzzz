@@ -1,0 +1,31 @@
+name: High Star Battle Performance
+
+on:
+  push:
+    branches:
+      - perf/high-star-load-20260905
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: high-star-performance-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  regression:
+    name: High-star render regression
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Check syntax
+        run: |
+          node --check src/battle/BattleRenderer.js
+          node --check scripts/verify-high-star-render-performance-20260905.mjs
+
+      - name: Run focused regression
+        run: node scripts/verify-high-star-render-performance-20260905.mjs
