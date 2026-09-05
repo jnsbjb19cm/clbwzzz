@@ -7,7 +7,8 @@
   height: 238px !important;
   box-sizing: border-box !important;
   display: grid !important;
-  grid-template-rows: 38px minmax(0, 1fr) 44px !important;
+  /* 私聊对象不再浮在消息区上方；隐藏时该行自动收为 0。 */
+  grid-template-rows: 38px minmax(0, 1fr) auto 44px !important;
   overflow: hidden !important;
   padding: 0 !important;
   border: 2px solid rgba(108, 139, 37, .9) !important;
@@ -19,6 +20,8 @@
 }
 
 .classic-game-hall .lobby-chat-head {
+  min-width: 0;
+  box-sizing: border-box;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -36,14 +39,17 @@
 }
 
 .classic-game-hall .lobby-chat-channels {
+  min-width: 0;
   display: flex;
   align-items: center;
+  justify-content: flex-end;
   gap: 4px;
 }
 
 .classic-game-hall .lobby-chat-channel {
   min-width: 58px;
   height: 27px;
+  box-sizing: border-box;
   padding: 0 9px;
   border: 1px solid rgba(77, 113, 31, .58);
   border-radius: 7px;
@@ -95,6 +101,7 @@
 .classic-game-hall .lobby-chat-item.is-world { color: #28516c !important; }
 
 .classic-game-hall .lobby-chat-input-row {
+  box-sizing: border-box !important;
   display: grid !important;
   grid-template-columns: minmax(0, 1fr) 78px !important;
   align-items: center !important;
@@ -139,29 +146,33 @@
 }
 
 .classic-game-hall .lobby-chat-private-target {
-  position: absolute;
-  right: 10px;
-  bottom: 48px;
-  z-index: 5;
+  position: static !important;
+  z-index: auto !important;
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 38px;
   display: flex;
   align-items: center;
-  gap: 5px;
-  max-width: 300px;
-  padding: 5px 7px;
-  border: 1px solid rgba(93, 65, 126, .6);
-  border-radius: 7px;
-  background: rgba(244, 235, 255, .96);
+  justify-content: flex-end;
+  gap: 7px;
+  padding: 4px 9px;
+  border: 0;
+  border-top: 1px solid rgba(76, 111, 23, .30);
+  background: rgba(244, 235, 255, .72);
   color: #4b3267;
   font-size: 12px;
-  box-shadow: 0 4px 12px rgba(40, 31, 48, .22);
+  box-shadow: none;
 }
 
-.classic-game-hall .lobby-chat-private-target.hidden { display: none; }
+.classic-game-hall .lobby-chat-private-target.hidden { display: none !important; }
 .classic-game-hall .lobby-chat-private-target select {
-  max-width: 190px;
-  height: 27px;
+  width: 190px;
+  max-width: 45%;
+  height: 28px;
+  box-sizing: border-box;
   border: 1px solid #8b70a5;
   border-radius: 5px;
   background: #fff;
   color: #3d2a50;
+  padding: 0 6px;
 }
