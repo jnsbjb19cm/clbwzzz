@@ -53,28 +53,47 @@ const PVP_SCENE_POOL = ['grass', 'rock', 'ice'];
 
 /**
  * @param {object} stage
- * @param {{ trainingMode?: boolean, pvpMode?: boolean, useMap?: boolean, bossId?: string }} opts
+ * @param {{ trainingMode?: boolean, pvpMode?: boolean, useMap?: boolean, bossId?: string, trainingMap?: string }} opts
  */
 export function resolveBattleBackground(
   stage,
   { trainingMode = false, pvpMode = false, useMap = true, bossId = null, trainingMap = null } = {},
 ) {
   const isBoss = Boolean(bossId) || stage?.stage_type === 2;
-  // 训练营换背景：trainingMap 指定固定场景（grass/rock/ice）优先
+
+  // 训练营换背景：trainingMap 指定固定场景（grass/rock/ice）优先。
+  // 必须返回与普通场景完全相同的字段名；旧代码只返回 columnLeftUrl/columnRightUrl，
+  // BattleView 实际读取 leftColumnUrl/rightColumnUrl + showRightColumn，导致训练营左右基地柱子消失。
   if (trainingMap && SCENE_SETS[trainingMap]) {
     const scene = SCENE_SETS[trainingMap];
     const isGrass = trainingMap === 'grass';
+    const baseUrl = isGrass
+      ? PROVIDED_GRASS_BACKGROUND_URL
+      : `/battle/background/${scene.base}`;
+    const leftColumnUrl = `/battle/background/${scene.left}`;
+    const rightColumnUrl = `/battle/background/${scene.right}`;
+
     return {
-      baseUrl: isGrass ? PROVIDED_GRASS_BACKGROUND_URL : `/battle/background/${scene.base}`,
-      grassUrl: isGrass ? PROVIDED_GRASS_BACKGROUND_URL : `/battle/background/${scene.base}`,
+      baseUrl,
+      grassUrl: baseUrl,
       grassCorridorUrl: '/battle/background/grassbg.png',
       useMap: false,
-      leftUrl: `/battle/background/${scene.left}`,
-      rightUrl: `/battle/background/${scene.right}`,
-      columnLeftUrl: `/battle/background/${scene.left}`,
-      columnRightUrl: `/battle/background/${scene.right}`,
-      label: scene.label,
+      mapUrl: baseUrl,
       sceneKey: trainingMap,
+      sceneLabel: scene.label,
+      label: scene.label,
+      leftColumnUrl,
+      rightColumnUrl,
+      // 兼容旧调用名。
+      leftUrl: leftColumnUrl,
+      rightUrl: rightColumnUrl,
+      columnLeftUrl: leftColumnUrl,
+      columnRightUrl: rightColumnUrl,
+      showLeftColumn: true,
+      showRightColumn: true,
+      columnRightW: COLUMN_RIGHT_W,
+      mapIndex: 1,
+      isBoss: false,
     };
   }
 
