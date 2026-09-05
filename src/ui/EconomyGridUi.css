@@ -1,0 +1,89 @@
+.economy-grid-shell {
+  color: #eef7eb;
+  background: rgba(14, 40, 31, .97);
+  border: 2px solid rgba(218, 186, 72, .8);
+  border-radius: 16px;
+  padding: 16px;
+  min-height: min(760px, calc(100vh - 90px));
+  overflow: auto;
+}
+.economy-grid-title { margin: 0 0 12px; font-size: 28px; color: #fff; }
+.economy-grid-workbench {
+  display: grid;
+  grid-template-columns: minmax(360px, 1.2fr) minmax(320px, .8fr);
+  gap: 14px;
+  margin-bottom: 16px;
+}
+.economy-grid-panel {
+  min-width: 0;
+  border: 1px solid #476b42;
+  border-radius: 12px;
+  background: rgba(7, 25, 15, .92);
+  padding: 12px;
+}
+.economy-grid-panel h3 { margin: 0 0 9px; color: #e9f2df; font-size: 18px; }
+.economy-grid-panel .muted { color: #8da092; font-size: 12px; }
+.economy-item-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(82px, 1fr));
+  gap: 8px;
+  max-height: 330px;
+  overflow-y: auto;
+  padding: 3px;
+}
+.economy-item-slot {
+  position: relative;
+  min-height: 90px;
+  border: 1px solid #52794a;
+  border-radius: 9px;
+  background: linear-gradient(180deg, #1d3422, #102318);
+  color: #eef7eb;
+  cursor: pointer;
+  padding: 6px;
+  text-align: center;
+  transition: border-color .15s, transform .15s, box-shadow .15s;
+}
+.economy-item-slot:hover,
+.economy-item-slot.selected {
+  border-color: #ffe06c;
+  box-shadow: 0 0 0 2px rgba(255,224,108,.18), 0 4px 14px rgba(0,0,0,.28);
+  transform: translateY(-1px);
+}
+.economy-item-slot img { width: 48px; height: 48px; object-fit: contain; display: block; margin: 0 auto 3px; }
+.economy-item-slot .fallback-icon { width: 48px; height: 48px; display: grid; place-items: center; margin: 0 auto 3px; border-radius: 8px; background: #29432d; font-weight: 800; color: #b7d8aa; }
+.economy-item-slot .name { display: block; font-size: 11px; line-height: 1.15; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.economy-item-slot .count { position: absolute; right: 5px; bottom: 4px; padding: 1px 5px; border-radius: 8px; background: rgba(0,0,0,.7); color: #ffe081; font-size: 11px; }
+.economy-transfer-card {
+  min-height: 180px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  border: 1px dashed #668b59;
+  border-radius: 10px;
+  background: rgba(35, 57, 34, .45);
+  padding: 14px;
+}
+.economy-transfer-card img { width: 72px; height: 72px; object-fit: contain; }
+.economy-transfer-card .empty { color: #819384; }
+.economy-transfer-card strong { margin-top: 6px; color: #fff2b2; }
+.economy-transfer-form { width: 100%; display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 10px; }
+.economy-transfer-form label { display: flex; flex-direction: column; gap: 4px; color: #a8b9a8; font-size: 12px; text-align: left; }
+.economy-transfer-form input { width: 100%; min-width: 0; padding: 8px; border: 1px solid #668b59; border-radius: 7px; background: #16291b; color: #fff; }
+.economy-transfer-actions { display: flex; gap: 8px; margin-top: 10px; width: 100%; }
+.economy-transfer-actions button { flex: 1; padding: 8px 10px; border: 0; border-radius: 7px; background: #4d7d3f; color: #fff; cursor: pointer; font-weight: 700; }
+.economy-transfer-actions button.alt { background: #7b6330; }
+.economy-market-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(185px, 1fr)); gap: 9px; }
+.economy-market-card { border: 1px solid #496b42; border-radius: 10px; background: #15291a; padding: 9px; }
+.economy-market-card .head { display: flex; align-items: center; gap: 8px; min-height: 48px; }
+.economy-market-card .head img { width: 42px; height: 42px; object-fit: contain; }
+.economy-market-card .price { color: #ffd86d; font-weight: 800; margin: 7px 0; }
+.economy-market-card small { color: #9dad9f; }
+.economy-market-card button { width: 100%; margin-top: 7px; padding: 6px; border: 0; border-radius: 6px; background: #4c7c3f; color: #fff; cursor: pointer; }
+.economy-empty { grid-column: 1/-1; min-height: 80px; display: grid; place-items: center; color: #809080; border: 1px dashed #38553b; border-radius: 9px; }
+
+@media (max-width: 900px) {
+  .economy-grid-workbench { grid-template-columns: 1fr; }
+  .economy-item-grid { max-height: 250px; }
+}
