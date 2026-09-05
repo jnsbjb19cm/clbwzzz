@@ -122,7 +122,12 @@ function installPeriodicCleanup() {
 }
 
 function installClientRenderLoadShedding() {
-  if (typeof window === 'undefined') return;
+  // PvpBattle 的 Node 无头环境会伪造 window/document 供共用战斗引擎加载，
+  // 所以不能仅用 typeof window 判断。真实浏览器必须同时具有 navigator + RAF。
+  const realBrowser = typeof window !== 'undefined'
+    && typeof navigator !== 'undefined'
+    && typeof window.requestAnimationFrame === 'function';
+  if (!realBrowser) return;
   void import('../ui/BattleRenderLoadShedding20260905.js')
     .then(({ installBattleRenderLoadShedding20260905 }) => {
       installBattleRenderLoadShedding20260905?.();
