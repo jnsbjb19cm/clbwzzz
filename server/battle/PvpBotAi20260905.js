@@ -19,6 +19,12 @@ function cardCooldown(card) {
   return Math.max(0.8, Number(card?.cooldown ?? card?.card_cd) || 2.5);
 }
 
+function isDirectDeployCard(card) {
+  if (!card) return false;
+  if (card.isActiveSkill?.()) return false;
+  return Number(card.type ?? card.card_type) !== 4;
+}
+
 function stateFor(battle, userId) {
   battle.__smartBotState ??= new Map();
   const id = Number(userId);
@@ -77,7 +83,7 @@ function chooseCard(battle, userId, state) {
 
   const legal = BOT_DECK_IDS
     .map((id) => battle.db?.getById?.(id))
-    .filter(Boolean)
+    .filter(isDirectDeployCard)
     .filter((card) => card.name !== '石巨人' && card.card_name !== '石巨人')
     .filter((card) => cardQuality(card) <= 4)
     .filter((card) => now + 1e-6 >= Number(state.cardReadyAt.get(Number(card.id)) || 0))
