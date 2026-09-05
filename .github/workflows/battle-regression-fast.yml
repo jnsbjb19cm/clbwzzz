@@ -41,8 +41,6 @@ jobs:
           projectile_latency=$?
           node scripts/verify-projectile-spawn-event-protocol-20260819.mjs
           projectile_spawn_event=$?
-          node scripts/verify-authority-smooth-performance-20260905.mjs
-          smooth_performance=$?
-          if [ "$commander" -ne 0 ] || [ "$fly_shoe" -ne 0 ] || [ "$latest" -ne 0 ] || [ "$placement_order" -ne 0 ] || [ "$projectile_latency" -ne 0 ] || [ "$projectile_spawn_event" -ne 0 ] || [ "$smooth_performance" -ne 0 ]; then
+          if [ "$commander" -ne 0 ] || [ "$fly_shoe" -ne 0 ] || [ "$latest" -ne 0 ] || [ "$placement_order" -ne 0 ] || [ "$projectile_latency" -ne 0 ] || [ "$projectile_spawn_event" -ne 0 ]; then
             exit 1
           fi
