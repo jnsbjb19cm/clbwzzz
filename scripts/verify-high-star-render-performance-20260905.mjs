@@ -244,4 +244,21 @@ function makeEngine(unitCount) {
   );
 }
 
+{
+  // Older viewport/presentation fallbacks also drew round placeholder bullets and
+  // round impact markers. They remain on the active renderer chain for some paths,
+  // so production implementations must not contain Canvas arc placeholders.
+  for (const relativePath of [
+    '../src/ui/BattlefieldCombatPresentationFinal.js',
+    '../src/ui/ProjectileViewportFinal.js',
+  ]) {
+    const source = readFileSync(new URL(relativePath, import.meta.url), 'utf8');
+    assert.doesNotMatch(
+      source,
+      /ctx\.arc\s*\(/,
+      `${relativePath} must not synthesize round projectile/HIT fallback markers`,
+    );
+  }
+}
+
 console.log('High-star render-performance regression: OK');
