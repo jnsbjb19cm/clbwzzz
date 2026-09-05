@@ -1,8 +1,12 @@
 import './LobbyChatPatch20260905.js';
-import { authStore } from '../core/AuthStore.js';
+import { authStore, NEW_PLAYER_TUTORIAL_PROMPT_KEY } from '../core/AuthStore.js';
 import { SocketClient } from '../network/SocketClient.js';
 import { StarUpgradeSystem } from '../systems/StarUpgradeSystem.js';
 import { CardCraftSystem } from '../systems/CardCraftSystem.js';
+import {
+  NEW_PLAYER_TUTORIAL_MARKER,
+  getTutorialDeckSlots,
+} from '../tutorial/TutorialConfig.js';
 import { App } from './App.js';
 
 const PATCH_FLAG = Symbol.for('clbwzzz.systemAnnouncementClient20260905');
@@ -119,6 +123,71 @@ function publishWelcomeOnce() {
   }, { ttl: 9000 });
 }
 
+function consumeNewPlayerTutorialPrompt() {
+  try {
+    if (sessionStorage.getItem(NEW_PLAYER_TUTORIAL_PROMPT_KEY) !== '1') return false;
+    sessionStorage.removeItem(NEW_PLAYER_TUTORIAL_PROMPT_KEY);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+function showNewPlayerTutorialPrompt(app) {
+  if (!app?.root || app.root.querySelector('.new-player-tutorial-choice')) return;
+  const nickname = String(
+    authStore.snapshot?.profile?.nickname
+      ?? authStore.user?.nickname
+      ?? '勇士',
+  ).trim();
+
+  const overlay = document.createElement('section');
+  overlay.className = 'new-player-tutorial-choice';
+  overlay.setAttribute('role', 'dialog');
+  overlay.setAttribute('aria-modal', 'true');
+  overlay.setAttribute('aria-labelledby', 'new-player-tutorial-title');
+  overlay.innerHTML = `
+    <div class="new-player-tutorial-choice__card">
+      <div class="new-player-tutorial-choice__leaf">🌿</div>
+      <h2 id="new-player-tutorial-title">欢迎来到魔幻森林</h2>
+      <p>勇士${nickname ? `「${nickname}」` : ''}，第一次来到这里，要先跟随埃尔夫族完成新手教程吗？</p>
+      <p class="new-player-tutorial-choice__hint">教程会带你学习放置卡牌、前后排、防御、技能、MP 与胜负规则。暂时跳过也没关系，之后仍可以从「训练营 → 新手教程」重新进入。</p>
+      <div class="new-player-tutorial-choice__actions">
+        <button type="button" data-action="skip">暂时跳过</button>
+        <button type="button" data-action="start" class="primary">开始新手教程</button>
+      </div>
+    </div>`;
+
+  const style = document.createElement('style');
+  style.textContent = `
+    .new-player-tutorial-choice{position:fixed;inset:0;z-index:30000;display:grid;place-items:center;padding:24px;background:rgba(5,25,14,.58);backdrop-filter:blur(3px)}
+    .new-player-tutorial-choice__card{width:min(520px,calc(100vw - 40px));padding:28px 30px 24px;border:2px solid #d7c15b;border-radius:20px;background:linear-gradient(180deg,#173c2d,#0c281e);box-shadow:0 18px 50px rgba(0,0,0,.38);color:#eef7de;text-align:center}
+    .new-player-tutorial-choice__leaf{font-size:34px;margin-bottom:4px}
+    .new-player-tutorial-choice h2{margin:0 0 14px;color:#ffe26f;font-size:28px}
+    .new-player-tutorial-choice p{margin:8px 0;line-height:1.75;font-size:16px}
+    .new-player-tutorial-choice__hint{color:#b8d2ae;font-size:14px!important}
+    .new-player-tutorial-choice__actions{display:flex;justify-content:center;gap:14px;margin-top:22px}
+    .new-player-tutorial-choice button{min-width:132px;padding:10px 18px;border:1px solid #76935e;border-radius:10px;background:#314d3b;color:#eef7de;font-weight:700;cursor:pointer}
+    .new-player-tutorial-choice button.primary{border-color:#f0c84f;background:linear-gradient(#ffd85e,#e7a92e);color:#3d2c05}
+    .new-player-tutorial-choice button:hover{filter:brightness(1.08)}
+  `;
+  overlay.append(style);
+
+  const close = () => overlay.remove();
+  overlay.querySelector('[data-action="skip"]')?.addEventListener('click', close);
+  overlay.querySelector('[data-action="start"]')?.addEventListener('click', () => {
+    close();
+    app.navigate('battle', {
+      training: true,
+      trainingFreeRes: false,
+      trainingMap: 'grass',
+      deckSlots: getTutorialDeckSlots(app.db, 6),
+      tryUsage: NEW_PLAYER_TUTORIAL_MARKER,
+    });
+  });
+  app.root.append(overlay);
+}
+
 function announceStrengthen({ cardId, cardName, star }) {
   if (!authStore.isLoggedIn() || Number(star) < 6) return;
   socket().emitAck('system:announce:strengthen', {
@@ -158,7 +227,10 @@ export function installSystemAnnouncementClient() {
     const result = previousBootstrap.apply(this, args);
     connectAnnouncements();
     publishWelcomeOnce();
-    queueMicrotask(() => applyAnnouncementToClassicBars());
+    queueMicrotask(() => {
+      applyAnnouncementToClassicBars();
+      if (consumeNewPlayerTutorialPrompt()) showNewPlayerTutorialPrompt(this);
+    });
     return result;
   };
 
