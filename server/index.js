@@ -10,6 +10,7 @@ import { installBattleMeleeContactFinal } from '../src/battle/BattleMeleeContact
 import { installBattleMushroomProjectileFinal } from '../src/battle/BattleMushroomProjectileFinal.js';
 import { installBattleRuleConvergence20260830 } from '../src/battle/BattleRuleConvergence20260830.js';
 import { installBattleUserRules20260903 } from '../src/battle/BattleUserRules20260903.js';
+import { installBattleRuntimePerformance20260905 } from '../src/battle/BattleRuntimePerformance20260905.js';
 import { config } from './config.js';
 import './database.js';
 
@@ -19,6 +20,7 @@ import { authRouter } from './routes/auth.js';
 import { playerRouter } from './routes/player.js';
 import { materialRefillRouter } from './routes/materialRefill.js';
 import { socialSearchFixRouter } from './routes/socialSearchFix20260905.js';
+import { socialFriendFixRouter } from './routes/socialFriendFix20260905.js';
 import { socialRouter } from './routes/social.js';
 import { guildRouter } from './routes/guild.js';
 import { guildWarehouseGridRouter } from './routes/guildWarehouseGrid.js';
@@ -33,12 +35,14 @@ import { installPvpNeutralDamageOwnership20260903 } from './battle/PvpNeutralDam
 import { installCoopBossOwnerResourceFinal } from './battle/CoopBossOwnerResourceFinal.js';
 import { installAuthorityRuleConvergence20260830 } from './battle/AuthorityRuleConvergence20260830.js';
 import { installPvpBotAi20260905 } from './battle/PvpBotAi20260905.js';
+import { installAuthorityPerformance20260905 } from './battle/AuthorityPerformance20260905.js';
 import { installRoomBossRound2Fix } from './rooms/RoomBossRound2Fix.js';
 import { startRoomLifetimeService } from './rooms/RoomLifetimeService.js';
 import { startRandomMatchBotService } from './rooms/RandomMatchBotService.js';
 import { registerSocketHandlers } from './socket/registerSocketHandlers.js';
 import { installBattleChatService } from './socket/BattleChatService.js';
 import { installSystemAnnouncementService } from './socket/SystemAnnouncementService.js';
+import { installAuthoritySnapshotBackpressure20260905 } from './socket/AuthoritySnapshotBackpressure20260905.js';
 import {
   registerPvpAuthorityHandlers,
   stopAllPvpAuthorityBattles,
@@ -63,6 +67,10 @@ installBattleUserRules20260903();
 installPvpNeutralDamageOwnership20260903();
 // 人机只改 PVP 行为：遵循真实资源与软 CD，同时提高可移动卡/前线判断权重。
 installPvpBotAi20260905();
+// 高单位/高特效场景限制纯视觉队列，避免服务端无头引擎也维护无限视觉对象。
+installBattleRuntimePerformance20260905();
+// 权威战斗实际重逻辑改为30Hz聚合推进，并缓存同一时刻重复快照/单位序列化。
+installAuthorityPerformance20260905();
 
 const app = express();
 app.disable('x-powered-by');
@@ -86,6 +94,8 @@ app.get('/api/health', (_req, res) => {
 app.use('/api/auth', authRouter);
 app.use('/api/player', playerRouter);
 app.use('/api/player', materialRefillRouter);
+// 新好友接口优先：修复历史申请唯一键导致“搜得到但无法重新添加”。
+app.use('/api/social', socialFriendFixRouter);
 // 新好友搜索优先处理 /search：支持 ID/昵称/账号，并避开旧 SQL ESCAPE 方言差异。
 app.use('/api/social', socialSearchFixRouter);
 app.use('/api/social', socialRouter);
@@ -129,6 +139,8 @@ const io = new Server(server, {
   cors: { origin: socketCorsOrigin, credentials: true },
   transports: ['websocket', 'polling'],
 });
+// 周期世界快照是可替代状态：网络忙时只保最新帧，避免旧快照排队形成秒级延迟。
+installAuthoritySnapshotBackpressure20260905(io);
 registerSocketHandlers(io);
 registerPvpAuthorityHandlers(io, { cardDb: getPvpCardDb() });
 installBattleChatService(io);
