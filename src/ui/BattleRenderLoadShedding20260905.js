@@ -31,14 +31,19 @@ export function installBattleRenderLoadShedding20260905() {
     this.__perfTargetFrameMs20260905 = 0;
     this.__perfHeavyVisuals20260905 = units >= 20 || effects >= 28;
 
-    // 不再通过跳过整帧把 60FPS 主动降成 30/24/20FPS。
-    // 重负载时只降低纯装饰层质量，让单位位移、攻击动画和子弹仍跟随 RAF 刷新。
+    // BattleRenderer 自身历史上仍保留了 >=24 单位/全屏技能时的 30FPS 整帧节流。
+    // 每次进入原 draw 前清掉其节流时间戳，确保真正按 RAF 刷新；性能压力只通过
+    // 低画质装饰层和 effect cap 消化，绝不跳过单位位移、攻击表现与子弹整帧。
+    this._lastHeavyDrawAt = null;
+
     const previousForceLowQuality = this.forceLowQuality;
     if (this.__perfHeavyVisuals20260905) this.forceLowQuality = true;
     try {
       return previousDraw.call(this, engine);
     } finally {
       this.forceLowQuality = previousForceLowQuality;
+      // 原 draw 在重负载帧末会重新写入当前时间；再次清空，避免下一 RAF 被它挡掉。
+      this._lastHeavyDrawAt = null;
     }
   };
 
@@ -54,7 +59,7 @@ export function installBattleRenderLoadShedding20260905() {
     window.__battleRenderLoadShedding20260905 = () => ({
       enabled: true,
       policy: {
-        renderCadence: 'requestAnimationFrame; no whole-frame throttling',
+        renderCadence: 'requestAnimationFrame; internal 30FPS throttle neutralized',
         heavyVisuals: '>=20 units or >=28 effects -> low-quality decoration',
         decorativeHaloDisabledAt: '>=20 units or >=28 effects',
       },
