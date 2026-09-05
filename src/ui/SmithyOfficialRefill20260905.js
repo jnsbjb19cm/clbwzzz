@@ -17,7 +17,7 @@ function installSmithyRefillButton() {
     // 直接克隆替换，移除旧事件，再接入正式服务器补发接口。
     const button = oldButton.cloneNode(true);
     button.textContent = '补发道具';
-    button.title = '每个账号每天最多50次；每次强化粉、羊皮纸、宝石、保护符、DNA等各100个，全部绑定';
+    button.title = '每个账号每天最多500次；每次强化粉、羊皮纸、宝石、保护符、DNA等各100个，全部绑定';
     oldButton.replaceWith(button);
 
     button.addEventListener('click', async () => {
