@@ -31,3 +31,6 @@ jobs:
 
       - name: Verify room chat lifecycle
         run: node scripts/verify-room-chat-lifecycle-20260906.mjs
+
+      - name: Verify room invite and guild approval
+        run: node scripts/verify-room-invite-guild-approval-20260906.mjs
