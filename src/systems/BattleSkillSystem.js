@@ -110,13 +110,18 @@ export class BattleSkillSystem {
     this.engine.skillTargetError = '';
 
     this.showEffect(skillId, effect, target);
-    this.pendingCasts.push({
-      at: this.engine.time + getSkillResolutionDelay(skillId, 0.9),
-      skillId,
-      effect,
-      target: target ? { lane: target.lane, col: target.col } : null,
-      card,
-    });
+    const resolutionDelay = getSkillResolutionDelay(skillId, 0.9);
+    if (resolutionDelay <= 0) {
+      this.applyEffect(skillId, effect, target, card);
+    } else {
+      this.pendingCasts.push({
+        at: this.engine.time + resolutionDelay,
+        skillId,
+        effect,
+        target: target ? { lane: target.lane, col: target.col } : null,
+        card,
+      });
+    }
     audio.playSkill(skillId);
     this.engine.pushLog('skill cast');
     return { ok: true, message: 'skill cast' };
@@ -315,6 +320,29 @@ export class BattleSkillSystem {
           u.invulnUntil = t + effect.duration;
         }
         break;
+      case 'base_invulnerable': {
+        const duration = Math.max(0, Number(effect.duration) || 0);
+        eng.heroBaseInvulnerableUntil = Math.max(
+          Number(eng.heroBaseInvulnerableUntil) || 0,
+          t + duration,
+        );
+        // Keep the existing BattleEngine damage path authoritative. Install one
+        // per-engine guard so only player-base damage is suppressed while active.
+        if (!eng._heroBaseDamageGuardInstalled && typeof eng.damageBase === 'function') {
+          const rawDamageBase = eng.damageBase.bind(eng);
+          eng.damageBase = (side, amount) => {
+            if (
+              side === 'player' &&
+              eng.time < (Number(eng.heroBaseInvulnerableUntil) || 0)
+            ) {
+              return 0;
+            }
+            return rawDamageBase(side, amount);
+          };
+          eng._heroBaseDamageGuardInstalled = true;
+        }
+        break;
+      }
       case 'buff_atk_allies':
         for (const u of eng.units) {
           if (!u.alive || u.team !== 'player') continue;
