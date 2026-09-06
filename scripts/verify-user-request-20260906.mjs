@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import fs from 'node:fs';
 
 // Node verification does not play audio, but BattleSkillSystem imports the browser audio manager.
 globalThis.Audio = class {
@@ -144,4 +145,107 @@ assert.equal(getSkillResolutionDelay(527), 2, '雷鳴之箭 should resolve exact
   assert.equal(engine.heroHp, 50, 'player base should take damage again after 铁壳功 expires');
 }
 
-console.log('PASS user request 20260906: skill timing semantics');
+// Card-instance mutations made by functional items/strengthening must be persisted to the
+// authenticated player's server card library, not just localStorage.
+{
+  const memory = new Map();
+  globalThis.localStorage = {
+    getItem(key) { return memory.has(key) ? memory.get(key) : null; },
+    setItem(key, value) { memory.set(key, String(value)); },
+    removeItem(key) { memory.delete(key); },
+  };
+
+  const { CardInventoryStore } = await import('../src/core/CardInventoryStore.js');
+  const fakeDb = {
+    getById(id) {
+      return {
+        id: Number(id),
+        quality: 1,
+        isCollectible() { return true; },
+        isInventoryCard() { return true; },
+      };
+    },
+    getCollectibleCards() { return []; },
+  };
+  const store = new CardInventoryStore(fakeDb);
+
+  assert.equal(
+    typeof store.bindRemotePersistence,
+    'function',
+    'CardInventoryStore needs an authenticated remote persistence seam',
+  );
+  assert.equal(
+    typeof store.applyServerSnapshot,
+    'function',
+    'CardInventoryStore needs to restore authoritative server card state',
+  );
+  assert.equal(
+    typeof store.flushRemotePersistence,
+    'function',
+    'CardInventoryStore needs a deterministic way to flush queued remote saves',
+  );
+
+  const pushed = [];
+  store.bindRemotePersistence(async (payload) => { pushed.push(structuredClone(payload)); });
+  store.state = {
+    slotCount: 200,
+    slots: Array.from({ length: 200 }, (_, index) => index === 0 ? {
+      cardId: 23,
+      star: 2,
+      strengthLv: 2,
+      craftQuality: 2,
+      exp: 10,
+      customName: null,
+      awakened: false,
+      attributeRoll: null,
+      powderSpent: {},
+    } : null),
+  };
+
+  assert.equal(store.updateSlot(0, {
+    star: 5,
+    strengthLv: 5,
+    craftQuality: 4,
+    exp: 345,
+    customName: '飞鞋一号',
+    awakened: true,
+    attributeRoll: { atk: 12, hp: -3, cd: 7 },
+    powderSpent: { 10001: 8, 10002: 4 },
+  }), true);
+  await store.flushRemotePersistence();
+
+  assert.equal(pushed.length, 1, 'one local mutation should produce one authoritative card-library save');
+  const saved = pushed[0].cards.find((card) => card.slotIndex === 0);
+  assert.deepEqual(saved, {
+    slotIndex: 0,
+    cardId: 23,
+    star: 5,
+    craftQuality: 4,
+    exp: 345,
+    customName: '飞鞋一号',
+    awakened: true,
+    attributeRoll: { atk: 12, hp: -3, cd: 7 },
+    powderSpent: { 10001: 8, 10002: 4 },
+  });
+
+  const reloaded = new CardInventoryStore(fakeDb);
+  reloaded.applyServerSnapshot({ slotCount: 200, cards: [saved] });
+  const restored = reloaded.getSlots()[0];
+  assert.equal(restored.cardId, 23);
+  assert.equal(restored.strengthLv, 5);
+  assert.equal(restored.craftQuality, 4);
+  assert.equal(restored.exp, 345);
+  assert.equal(restored.customName, '飞鞋一号');
+  assert.equal(restored.awakened, true);
+  assert.deepEqual(restored.attributeRoll, { atk: 12, hp: -3, cd: 7 });
+  assert.deepEqual(restored.powderSpent, { 10001: 8, 10002: 4 });
+
+  const playerRouteSource = fs.readFileSync(new URL('../server/routes/player.js', import.meta.url), 'utf8');
+  assert.match(
+    playerRouteSource,
+    /playerRouter\.put\(['"]\/card-inventory['"]/,
+    'server must expose a normal authenticated card-inventory update endpoint',
+  );
+}
+
+console.log('PASS user request 20260906: skill timing + authoritative card persistence');
