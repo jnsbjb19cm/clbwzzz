@@ -42,7 +42,9 @@ export function installBattleMeleeContactFinal() {
     if (isRangeOneMovingMelee(unit) && !hasRealContact(this, unit)) {
       const gridCol = this.getUnitGridCol(unit);
       const aheadCol = gridCol + this.getMoveDir(unit);
-      if (Number(col) === Number(aheadCol)) return false;
+      // 尚未真正接触(<0.75)前，当前格/下一格都不视为阻挡，继续靠近；
+      // 否则两个近战在相邻格中心距离≈1.0 时会被同格阻挡卡住，永远无法进入攻击距离。
+      if (Number(col) === Number(aheadCol) || Number(col) === Number(gridCol)) return false;
     }
     return previousHasBlockingEnemyInCell.call(this, unit, col);
   };
