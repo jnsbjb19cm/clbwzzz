@@ -1,5 +1,9 @@
 import { SocketClient } from '../network/SocketClient.js';
 import { RoomView } from './RoomView.js';
+import {
+  mergeRoomChatHistory20260906,
+  replayRoomChatHistory20260906,
+} from './RoomChatPersistence20260906.js';
 import './RoomChatChannelFix20260906.css';
 
 const PATCH_FLAG = Symbol.for('clbwz.roomChatChannelFix20260906');
@@ -44,6 +48,20 @@ function syncComposer(room) {
   }
 }
 
+function refreshVisibleChannel(view) {
+  const room = view?.root?.querySelector?.('.game-room.room-exact');
+  if (!room) return false;
+  syncComposer(room);
+  return replayRoomChatHistory20260906(view);
+}
+
+function hydratePublicRoomHistory(view, room) {
+  if (!view || !room) return;
+  // room.chat is intentionally public/current-channel history only. Team chat is never
+  // stored in the public snapshot on the server, so reconnect cannot leak enemy team chat.
+  mergeRoomChatHistory20260906(view, Array.isArray(room.chat) ? room.chat : []);
+}
+
 function installComposerUi(view) {
   if (!view?.root) return;
   const room = view.root.querySelector?.('.game-room.room-exact');
@@ -53,7 +71,7 @@ function installComposerUi(view) {
   if (!view._roomChatChannelUiClick20260906) {
     view._roomChatChannelUiClick20260906 = (event) => {
       if (!event.target?.closest?.('.exact-room-chat-tabs button')) return;
-      queueMicrotask(() => syncComposer(view.root?.querySelector?.('.game-room.room-exact')));
+      queueMicrotask(() => refreshVisibleChannel(view));
     };
     view.root.addEventListener('click', view._roomChatChannelUiClick20260906);
   }
@@ -96,10 +114,32 @@ export function installRoomChatChannelFix20260906() {
     window.addEventListener('clbwz:room-chat-send', this.chatSendHandler);
 
     if (!this._roomChatChannelReady20260906) {
-      this._roomChatChannelReady20260906 = () => installComposerUi(this);
+      this._roomChatChannelReady20260906 = () => {
+        installComposerUi(this);
+        refreshVisibleChannel(this);
+      };
       this.root?.addEventListener?.('clbwz:room-exact-ready', this._roomChatChannelReady20260906);
     }
     installComposerUi(this);
+    refreshVisibleChannel(this);
+    return result;
+  };
+
+  const previousEnterRoom = RoomView.prototype.enterRoom;
+  RoomView.prototype.enterRoom = function enterRoomWithChatHydration20260906(room, ...args) {
+    hydratePublicRoomHistory(this, room);
+    const result = previousEnterRoom.call(this, room, ...args);
+    installComposerUi(this);
+    refreshVisibleChannel(this);
+    return result;
+  };
+
+  const previousRefreshRoom = RoomView.prototype.refreshRoom;
+  RoomView.prototype.refreshRoom = function refreshRoomWithChatHydration20260906(room, ...args) {
+    hydratePublicRoomHistory(this, room || this.room);
+    const result = previousRefreshRoom.call(this, room, ...args);
+    installComposerUi(this);
+    refreshVisibleChannel(this);
     return result;
   };
 
