@@ -1,6 +1,10 @@
 import { authStore } from '../core/AuthStore.js';
 import { ItemDatabase } from '../core/ItemDatabase.js';
 import { getCraftMaterialImage } from './SmithyMaterialArtwork.js';
+import {
+  canApproveGuildJoin20260906,
+  normalizeGuildRole20260906,
+} from './GuildPermissionPolicy20260906.js';
 
 const itemDb = new ItemDatabase();
 
@@ -77,17 +81,22 @@ export class GuildView {
   renderGuild(g) {
     const el = this.root.querySelector('#guild-main');
     const bonus = Math.round((g.craftStrengthBonus ?? 0) * 100);
+    const normalizedRole = normalizeGuildRole20260906(g.role);
+    // 新服务端直接返回 canApprove；旧服务端/滚动发布期间则用同一规范化角色规则兜底。
+    const canApprove = typeof g.canApprove === 'boolean'
+      ? g.canApprove
+      : canApproveGuildJoin20260906(normalizedRole);
     el.innerHTML = `
       <div style="background:#101d10;border:1px solid #3a5a3a;border-radius:12px;padding:14px;margin-bottom:12px;">
         <div style="display:flex;justify-content:space-between;align-items:center;">
           <h3 style="margin:0;">${esc(g.guildName)} <small style="color:#888;">Lv.${g.level}</small></h3>
           <span style="color:#8bff9b;">合成/强化概率+${bonus}%</span>
         </div>
-        <p style="color:#bbb;">你的职位：${ROLE_LABEL[g.role] || g.role}</p>
+        <p style="color:#bbb;">你的职位：${ROLE_LABEL[normalizedRole] || normalizedRole || g.role}</p>
         <button id="guild-members-btn" type="button" style="padding:6px 12px;border-radius:6px;border:0;background:#3a5a3a;color:#fff;cursor:pointer;">成员</button>
         <button id="guild-warehouse-btn" type="button" style="padding:6px 12px;border-radius:6px;border:0;background:#3a5a3a;color:#fff;cursor:pointer;">仓库</button>
-        ${['president', 'vice_president'].includes(g.role) ? `<button id="guild-approve-btn" type="button" style="padding:6px 12px;border-radius:6px;border:0;background:#5a4a8a;color:#fff;cursor:pointer;">审批</button>` : ''}
-        ${g.role === 'president' && g.level < 5 ? `<button id="guild-upgrade-btn" type="button" style="padding:6px 12px;border-radius:6px;border:0;background:#6a5a2a;color:#fff;cursor:pointer;">升级公会</button>` : ''}
+        ${canApprove ? `<button id="guild-approve-btn" type="button" style="padding:6px 12px;border-radius:6px;border:0;background:#5a4a8a;color:#fff;cursor:pointer;">审批</button>` : ''}
+        ${normalizedRole === 'president' && g.level < 5 ? `<button id="guild-upgrade-btn" type="button" style="padding:6px 12px;border-radius:6px;border:0;background:#6a5a2a;color:#fff;cursor:pointer;">升级公会</button>` : ''}
         <button id="guild-leave-btn" type="button" style="padding:6px 12px;border-radius:6px;border:0;background:#6a3a3a;color:#fff;cursor:pointer;">退出公会</button>
       </div>
       <div id="guild-detail"></div>`;
