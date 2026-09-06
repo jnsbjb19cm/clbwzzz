@@ -54,9 +54,16 @@ export function getSkillVisualDuration(skillId, fallback = 0.9) {
   return onePass;
 }
 
-/** Damage for Meteor Rain and Firebird resolves only after the visual ends. */
+/**
+ * Gameplay resolution timing is independent from visual playback timing.
+ * - 527 雷鳴之箭: requested 2-second cast delay.
+ * - 518 圣盾术 / 547 铁壳功: true instant effects.
+ * Other skills retain the established animation-linked timing.
+ */
 export function getSkillResolutionDelay(skillId, fallback = 0.9) {
   const id = Number(skillId);
+  if (id === 527) return 2;
+  if (id === 518 || id === 547) return 0;
   if (id === 517 || id === 537) return getSkillVisualDuration(id, fallback);
   return getSkillAnimationDuration(id, fallback) * 0.42;
 }
