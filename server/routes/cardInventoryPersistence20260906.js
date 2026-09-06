@@ -1,9 +1,4 @@
-import { Router } from 'express';
 import { db, getPlayerSnapshot, withTransaction } from '../database.js';
-import { requireAuth } from '../middleware/auth.js';
-
-export const cardInventoryRouter = Router();
-cardInventoryRouter.use(requireAuth);
 
 const MIN_SLOTS = 200;
 const MAX_SLOTS = 500;
@@ -80,7 +75,7 @@ function sameCardCollection(left, right) {
   return true;
 }
 
-async function readCardInventory(userId) {
+export async function readCardInventory(userId) {
   const snapshot = await getPlayerSnapshot(userId);
   if (!snapshot) return null;
   const extras = await db.all(`
@@ -103,13 +98,13 @@ async function readCardInventory(userId) {
   return { slotCount: snapshot.cardInventory.slotCount, cards };
 }
 
-cardInventoryRouter.get('/card-inventory', async (req, res) => {
+export async function getCardInventoryHandler(req, res) {
   const cardInventory = await readCardInventory(req.user.id);
   if (!cardInventory) return res.status(404).json({ message: '玩家数据不存在' });
   return res.json(cardInventory);
-});
+}
 
-cardInventoryRouter.put('/card-inventory', async (req, res) => {
+export async function putCardInventoryHandler(req, res) {
   const slotCount = Math.max(MIN_SLOTS, Math.min(MAX_SLOTS, Math.floor(Number(req.body?.slotCount) || MIN_SLOTS)));
   if (!Array.isArray(req.body?.cards) || req.body.cards.length > MAX_CARDS) {
     return res.status(400).json({ message: '卡牌背包数据无效' });
@@ -152,4 +147,4 @@ cardInventoryRouter.put('/card-inventory', async (req, res) => {
   });
 
   return res.json(await readCardInventory(req.user.id));
-});
+}
