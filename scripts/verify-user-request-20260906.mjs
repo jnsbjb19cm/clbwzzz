@@ -1,7 +1,6 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 
-// Node verification does not play audio, but BattleSkillSystem imports the browser audio manager.
 globalThis.Audio = class {
   constructor() { this.paused = true; this.volume = 1; this.currentTime = 0; }
   cloneNode() { return new globalThis.Audio(); }
@@ -89,7 +88,6 @@ function makeUnit({ team, lane = 2, col = 4, hp = 200 } = {}) {
   };
 }
 
-// Contract requested on 2026-09-06: 雷鳴之箭 resolves exactly 2 seconds after cast.
 assert.equal(getSkillResolutionDelay(527), 2, '雷鳴之箭 should resolve exactly 2 seconds after release');
 
 {
@@ -115,7 +113,6 @@ assert.equal(getSkillResolutionDelay(527), 2, '雷鳴之箭 should resolve exact
   assert.equal(enemy.hp, 80, '雷鳴之箭 must resolve only once');
 }
 
-// 圣盾术 is truly instant: same resolveCast call must update allies, not wait for the next battle tick.
 {
   const engine = makeEngine();
   const ally = makeUnit({ team: 'player', hp: 100 });
@@ -127,7 +124,6 @@ assert.equal(getSkillResolutionDelay(527), 2, '雷鳴之箭 should resolve exact
   assert.equal(skills.pendingCasts.some((entry) => Number(entry.skillId) === 518), false, '圣盾术 must not wait in pending casts');
 }
 
-// 铁壳功 is also instant and protects the player base from damage during its duration.
 {
   const engine = makeEngine();
   const skills = new BattleSkillSystem(engine, { getById: (id) => CARDS.get(Number(id)) ?? null });
@@ -145,8 +141,6 @@ assert.equal(getSkillResolutionDelay(527), 2, '雷鳴之箭 should resolve exact
   assert.equal(engine.heroHp, 50, 'player base should take damage again after 铁壳功 expires');
 }
 
-// Card-instance mutations made by functional items/strengthening must be persisted to the
-// authenticated player's server card library, not just localStorage.
 {
   const memory = new Map();
   globalThis.localStorage = {
@@ -155,6 +149,8 @@ assert.equal(getSkillResolutionDelay(527), 2, '雷鳴之箭 should resolve exact
     removeItem(key) { memory.delete(key); },
   };
 
+  const { installCardInventoryRemotePatch20260906 } = await import('../src/core/CardInventoryRemotePatch20260906.js');
+  installCardInventoryRemotePatch20260906();
   const { CardInventoryStore } = await import('../src/core/CardInventoryStore.js');
   const fakeDb = {
     getById(id) {
@@ -169,21 +165,9 @@ assert.equal(getSkillResolutionDelay(527), 2, '雷鳴之箭 should resolve exact
   };
   const store = new CardInventoryStore(fakeDb);
 
-  assert.equal(
-    typeof store.bindRemotePersistence,
-    'function',
-    'CardInventoryStore needs an authenticated remote persistence seam',
-  );
-  assert.equal(
-    typeof store.applyServerSnapshot,
-    'function',
-    'CardInventoryStore needs to restore authoritative server card state',
-  );
-  assert.equal(
-    typeof store.flushRemotePersistence,
-    'function',
-    'CardInventoryStore needs a deterministic way to flush queued remote saves',
-  );
+  assert.equal(typeof store.bindRemotePersistence, 'function', 'CardInventoryStore needs an authenticated remote persistence seam');
+  assert.equal(typeof store.applyServerSnapshot, 'function', 'CardInventoryStore needs to restore authoritative server card state');
+  assert.equal(typeof store.flushRemotePersistence, 'function', 'CardInventoryStore needs a deterministic way to flush queued remote saves');
 
   const pushed = [];
   store.bindRemotePersistence(async (payload) => { pushed.push(structuredClone(payload)); });
