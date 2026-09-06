@@ -3,7 +3,7 @@ name: Projectile Regression Fast
 on:
   push:
     branches:
-      - fix/pvp-wilderness-room-20260805
+      - fix/pvp-boss-visual-sync-20260906
   pull_request:
     branches:
       - main
@@ -31,17 +31,11 @@ jobs:
           node-version: 20
           cache: npm
 
+      - name: Verify projectile authority protocol and timeline
+        run: node scripts/verify-projectile-runtime-contract-20260906.mjs
+
       - name: Install dependencies
         run: npm ci
-
-      - name: Verify server timeline protocol
-        run: node scripts/verify-projectile-spawn-event-protocol-20260819.mjs
-
-      - name: Verify frame-rate independent projectile timeline
-        run: node scripts/verify-projectile-server-timeline-20260819.mjs
-
-      - name: Verify authority cadence no longer uses 20Hz projectile motion
-        run: node scripts/verify-authority-projectile-release-latency-20260819.mjs
 
       - name: Install Chromium browser only
         run: npx playwright install chromium
