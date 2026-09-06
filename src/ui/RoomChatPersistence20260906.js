@@ -11,11 +11,23 @@ function normalizeRoomChatMessage20260906(view, message = {}) {
     id = `local-${view._roomChatSyntheticId20260906}`;
   }
 
+  const rawChannel = String(message.channel ?? '').toLowerCase();
+  const channel = message.system || rawChannel === 'system'
+    ? 'system'
+    : rawChannel === 'team'
+      ? 'team'
+      : 'current';
+  const rawTeam = String(message.team ?? '').toLowerCase();
+  const team = ['blue', 'red'].includes(rawTeam) ? rawTeam : null;
+
   return {
     ...message,
     id,
     nickname: String(message.nickname ?? message.username ?? message.sender ?? '玩家'),
     text,
+    channel,
+    team,
+    system: Boolean(message.system || channel === 'system'),
   };
 }
 
@@ -53,11 +65,14 @@ export function mergeRoomChatHistory20260906(view, messages = []) {
 
 function createRoomChatRow20260906(message) {
   const row = document.createElement('div');
-  row.className = `exact-room-chat-message${message.system ? ' system' : ''}`;
+  const channel = message.system ? 'system' : (message.channel || 'current');
+  const teamClass = message.team === 'blue' || message.team === 'red' ? ` team-${message.team}` : '';
+  row.className = `exact-room-chat-message channel-${channel}${teamClass}${message.system ? ' system' : ''}`;
 
   const name = document.createElement('b');
   const spectatorPrefix = message.spectator ? '[观战] ' : '';
-  name.append(document.createTextNode(`${spectatorPrefix}${message.nickname || '玩家'}：`));
+  const channelPrefix = channel === 'team' ? '[队伍] ' : channel === 'system' ? '[系统] ' : '';
+  name.append(document.createTextNode(`${channelPrefix}${spectatorPrefix}${message.nickname || '玩家'}：`));
   row.append(name, document.createTextNode(String(message.text ?? '')));
   return row;
 }
