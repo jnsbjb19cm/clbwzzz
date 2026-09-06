@@ -312,29 +312,7 @@ function drawBumpDeployVfx(ctx, fx) {
     const flash = 1 - progress / 0.18;
     drawBumpEllipse(ctx, cx, footY, baseW * 0.42, baseH * 0.42, '#ffffff', flash * 0.72);
   }
-
-  // 召唤法阵：双圆环 + 八角符文线（降低 alpha，保留下方椭圆扩散烟雾可见）
-  ctx.save();
-  const R = CELL_W * (0.3 + progress * 0.5);
-  const a = Math.max(0, remain * 0.5);
-  ctx.strokeStyle = color;
-  ctx.lineWidth = Math.max(2, CELL_W * 0.045 * (1 - progress * 0.4));
-  ctx.globalAlpha = a;
-  ctx.beginPath();
-  ctx.arc(cx, footY, R, 0, Math.PI * 2);
-  ctx.stroke();
-  ctx.beginPath();
-  ctx.arc(cx, footY, R * 0.62, 0, Math.PI * 2);
-  ctx.stroke();
-  // 八角符文放射线
-  for (let i = 0; i < 8; i += 1) {
-    const ang = (Math.PI / 4) * i + progress * 0.6;
-    ctx.beginPath();
-    ctx.moveTo(cx + Math.cos(ang) * R * 0.62, footY + Math.sin(ang) * R * 0.62);
-    ctx.lineTo(cx + Math.cos(ang) * R, footY + Math.sin(ang) * R);
-    ctx.stroke();
-  }
-  ctx.restore();
+  // 召唤瞬间的透明法阵细线已按用户要求移除；保留品质底座/椭圆扩散/中心闪白。
 }
 
 export class BattleRenderer {

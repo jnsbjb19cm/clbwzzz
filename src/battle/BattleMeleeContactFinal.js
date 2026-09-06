@@ -1,7 +1,7 @@
 import { BattleEngine } from './BattleEngine.js';
 
 const PATCH_FLAG = Symbol.for('clbwzzz.battleMeleeContactFinal');
-// 实际命中盒略放宽：0.62 在单位跨格连续位移时容易让同格近战“概率性”不触发。
+// 真实碰撞距离只用于“是否停止继续前进”；攻击距离仍以 BattleUnit.range=1 为权威。
 const CONTACT_COL_DISTANCE = 0.75;
 
 function isRangeOneMovingMelee(unit) {
@@ -21,22 +21,19 @@ function hasRealContact(engine, unit) {
 }
 
 /**
- * 12x5 是寻路/放置逻辑网格，不是近战命中盒。
- * 射程 1 的可移动近战只有真正靠到 fractional-col 接触距离后才能开打；
- * 同时不能因为“下一格里有敌人”就提前停在当前格中心。
+ * 12x5 是寻路/放置逻辑网格，fractional col 才是连续移动坐标。
+ * 可移动近战的攻击权威仍是 BattleUnit.range=1：进入相邻一格即可正常出手；
+ * CONTACT_COL_DISTANCE 只控制移动阻挡，避免单位因为“下一格有敌人”过早停在格子中心。
  */
 export function installBattleMeleeContactFinal() {
   if (globalThis[PATCH_FLAG]) return;
   globalThis[PATCH_FLAG] = true;
 
-  const previousTryAttack = BattleEngine.prototype.tryAttack;
-  BattleEngine.prototype.tryAttack = function tryAttackAfterRealMeleeContact(unit) {
-    if (isRangeOneMovingMelee(unit) && !hasRealContact(this, unit)) return false;
-    return previousTryAttack.call(this, unit);
-  };
+  // 不再二次收窄 tryAttack() 的一格近战射程。
+  // 旧包装要求中心距离 <0.75，导致 0.75~1 格内已被 BattleEngine 合法锁定的近战目标无法攻击。
 
   // 这是战斗热路径，安装时只包装一次原型方法。
-  // 旧实现会在每个 movement tick 临时覆写实例方法再还原，持续创建闭包并触发 setter/GC。
+  // 仅移动阻挡需要真实接触距离；攻击仍完全交给 BattleEngine.tryAttack/chooseTarget。
   const previousHasBlockingEnemyInCell = BattleEngine.prototype.hasBlockingEnemyInCell;
   BattleEngine.prototype.hasBlockingEnemyInCell = function hasBlockingEnemyInCellAfterRealContact(unit, col) {
     if (isRangeOneMovingMelee(unit) && !hasRealContact(this, unit)) {

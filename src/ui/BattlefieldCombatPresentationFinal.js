@@ -220,13 +220,9 @@ export function installBattlefieldCombatPresentationFinal() {
           return;
         }
 
-        ctx.beginPath();
-        ctx.arc(drawX, drawY, 8, 0, Math.PI * 2);
-        ctx.fillStyle = projectile.color;
-        ctx.fill();
-        ctx.strokeStyle = '#fff';
-        ctx.lineWidth = 2;
-        ctx.stroke();
+        // Never draw the old round placeholder projectile. The logical
+        // projectile still exists and keeps moving; rendering resumes as soon as
+        // its real animation/image is ready.
       });
     }
   };
@@ -287,20 +283,9 @@ export function installBattlefieldCombatPresentationFinal() {
       }
 
       if (drawn) continue;
-      const progress = clamp01((Number(effect.t) || 0) / 0.38);
-      const radius = CELL_W * (0.18 + progress * 0.52);
-      ctx.save();
-      ctx.globalAlpha = Math.max(0, 1 - progress);
-      ctx.strokeStyle = '#fff3b0';
-      ctx.fillStyle = 'rgba(255,176,74,.34)';
-      ctx.lineWidth = 3;
-      ctx.shadowColor = 'rgba(255,113,54,.86)';
-      ctx.shadowBlur = 14;
-      ctx.beginPath();
-      ctx.arc(cx, cy, radius, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.stroke();
-      ctx.restore();
+      // Missing impact assets no longer fall back to a generated glow/ring.
+      // Damage and authority state are unchanged; only the debug-looking
+      // placeholder is omitted until a real source animation exists.
     }
   };
 
@@ -342,6 +327,8 @@ export function installBattlefieldCombatPresentationFinal() {
       enemyBase: rect(enemy),
       overscan: canvas?.dataset.overscanLogical ?? null,
       unitVisualScale: UNIT_VISUAL_SCALE,
+      syntheticProjectileCircle: false,
+      syntheticImpactCircle: false,
     };
   };
 }

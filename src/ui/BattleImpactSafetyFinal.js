@@ -28,18 +28,6 @@ function animationHasSafeFrameMargin(pack, name, margin = 3) {
   });
 }
 
-function drawFallbackImpact(ctx, cx, cy, t) {
-  const progress = clamp(finite(t) / 0.45, 0, 1);
-  ctx.save();
-  ctx.globalAlpha = Math.max(0, 0.9 * (1 - progress));
-  ctx.strokeStyle = '#f7e2a1';
-  ctx.lineWidth = Math.max(2, CELL_W * 0.045);
-  ctx.beginPath();
-  ctx.arc(cx, cy, CELL_W * (0.16 + progress * 0.4), 0, Math.PI * 2);
-  ctx.stroke();
-  ctx.restore();
-}
-
 export function installBattleImpactSafetyFinal() {
   if (globalThis[PATCH_FLAG]) return;
   globalThis[PATCH_FLAG] = true;
@@ -85,7 +73,9 @@ export function installBattleImpactSafetyFinal() {
         }
       }
 
-      if (!usedSourceAnimation) drawFallbackImpact(ctx, cx, cy, fx.t);
+      // Do not synthesize a fallback ctx.arc/stroke ring when the source impact
+      // animation is missing or unsafe. That ring was a diagnostic-looking HIT
+      // marker visible during normal attacks and must never appear in gameplay.
       this._impactSafetyAudit.push({
         res: fx.res != null ? Number(fx.res) : null,
         col: fx.col,

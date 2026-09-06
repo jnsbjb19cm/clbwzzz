@@ -1,4 +1,5 @@
 import { installTrainingBaseThreatFix20260905 } from './battle/TrainingBaseThreatFix20260905.js';
+import { installBaseAttackRenderStability20260906 } from './battle/BaseAttackRenderStability20260906.js';
 import { installEconomyInventoryRules20260905 } from './ui/EconomyInventoryRules20260905.js';
 import { installEconomyInventoryPersistence20260905 } from './ui/EconomyInventoryPersistence20260905.js';
 import { installCraftBindingSafety20260905 } from './ui/CraftBindingSafety20260905.js';
@@ -39,6 +40,8 @@ if (typeof document !== 'undefined' && !document.querySelector('#smithy-craft-pr
 
 // 战斗规则修复要在创建 BattleEngine 实例前安装。
 installTrainingBaseThreatFix20260905();
+// 左右基地/PVP：攻击时锁定渲染锚点，消除攻击帧结束后的回弹位移。
+installBaseAttackRenderStability20260906();
 // 必须在 App 创建 InventoryStore / LoginView / SmithyView / RoomView 实例之前安装。
 installEconomyInventoryRules20260905();
 installEconomyInventoryPersistence20260905();
