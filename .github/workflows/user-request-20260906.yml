@@ -34,3 +34,6 @@ jobs:
 
       - name: Verify room invite and guild approval
         run: node scripts/verify-room-invite-guild-approval-20260906.mjs
+
+      - name: Verify loot icons deck switching and base attack stability
+        run: node scripts/verify-battle-user-regressions-20260906.mjs
