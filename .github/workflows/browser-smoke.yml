@@ -37,8 +37,14 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Audit dependency vulnerabilities
+      # Report dev/build-tool advisories without preventing the browser suite
+      # from exercising the product. Runtime dependencies remain blocking.
+      - name: Report all dependency vulnerabilities
+        continue-on-error: true
         run: npm audit --audit-level=moderate
+
+      - name: Audit production dependency vulnerabilities
+        run: npm audit --omit=dev --audit-level=moderate
 
       - name: Build production bundle
         run: npm run build
