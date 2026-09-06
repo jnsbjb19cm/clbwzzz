@@ -61,6 +61,30 @@ export class SocketClient {
     return this.emitAck('room:join', { roomId, team }).then((r) => r.room);
   }
 
+  /** 显式同步当前所在界面，供“邀请大厅玩家”服务做服务端候选人校验。 */
+  setLobbyPresence(state) {
+    return this.emitAck('lobby:presence', { state }).then((r) => r.state);
+  }
+
+  listRoomInviteCandidates() {
+    return this.emitAck('room:invite:list').then((r) => r.players ?? []);
+  }
+
+  sendRoomInvite(targetUserId) {
+    return this.emitAck('room:invite:send', { targetUserId }).then((r) => ({
+      invite: r.invite,
+      target: r.target,
+      duplicated: Boolean(r.duplicated),
+    }));
+  }
+
+  respondRoomInvite(inviteId, accept) {
+    return this.emitAck('room:invite:respond', { inviteId, accept: Boolean(accept) }).then((r) => ({
+      accepted: Boolean(r.accepted),
+      room: r.room ?? null,
+    }));
+  }
+
   /** 观战：订阅房间快照/开始事件（不入成员、不可部署） */
   watchRoom(roomId) {
     return this.emitAck('room:watch', { roomId }).then((r) => r.room);
