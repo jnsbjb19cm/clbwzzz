@@ -1,4 +1,5 @@
 const MAX_ROOM_CHAT_MESSAGES_20260906 = 50;
+export const ROOM_CHAT_STORAGE_KEY = 'clbwz_room_chat_history_20260906';
 
 function normalizeRoomChatMessage20260906(view, message = {}) {
   const text = String(message.text ?? message.message ?? '').trim();
@@ -79,3 +80,52 @@ export function replayRoomChatHistory20260906(view) {
 }
 
 export const ROOM_CHAT_HISTORY_LIMIT_20260906 = MAX_ROOM_CHAT_MESSAGES_20260906;
+
+// Compatibility exports for the interrupted first implementation. The active runtime patch below
+// uses structured per-RoomView history, but keeping these names prevents an older loaded UI patch
+// from breaking during a rolling client update.
+const hydratedContainers = new WeakSet();
+
+function resolveStorage(storage) {
+  if (storage) return storage;
+  try { return globalThis.localStorage ?? null; } catch { return null; }
+}
+
+function readStoredRows(storage, storageKey) {
+  if (!storage) return [];
+  try {
+    const parsed = JSON.parse(storage.getItem(storageKey) || '[]');
+    return Array.isArray(parsed) ? parsed.filter((row) => typeof row === 'string').slice(-50) : [];
+  } catch {
+    return [];
+  }
+}
+
+export function appendRoomChatMessage({ storage = null, storageKey = ROOM_CHAT_STORAGE_KEY, messageHtml = '', container = null } = {}) {
+  const target = resolveStorage(storage);
+  const rows = readStoredRows(target, storageKey);
+  const html = String(messageHtml || '');
+  if (html) rows.push(html);
+  while (rows.length > 50) rows.shift();
+  try { target?.setItem(storageKey, JSON.stringify(rows)); } catch {}
+
+  if (container && typeof container.insertAdjacentHTML === 'function') {
+    if (!hydratedContainers.has(container)) {
+      for (const row of rows) container.insertAdjacentHTML('beforeend', row);
+      hydratedContainers.add(container);
+    } else if (html) {
+      container.insertAdjacentHTML('beforeend', html);
+    }
+    try { container.scrollTop = container.scrollHeight; } catch {}
+  }
+  return rows.length;
+}
+
+export function hydrateRoomChatHistory({ storage = null, storageKey = ROOM_CHAT_STORAGE_KEY, container = null } = {}) {
+  return appendRoomChatMessage({ storage, storageKey, container, messageHtml: '' });
+}
+
+export function clearRoomChatOnSessionExit({ storage = null, storageKey = ROOM_CHAT_STORAGE_KEY } = {}) {
+  const target = resolveStorage(storage);
+  try { target?.removeItem(storageKey); } catch {}
+}
