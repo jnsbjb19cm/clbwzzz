@@ -63,8 +63,8 @@ function emitTeamChat(io, room, team, event, entry) {
  * 战斗“本局”聊天 + 准备房频道聊天。
  * 世界/公会/私聊继续走 lobby:chat。
  * room:chat:v2 支持：
- * - current：房间全员
- * - team：仅同队玩家
+ * - current：房间全员，可进入公开 room.chat 历史
+ * - team：仅同队玩家，不进入公开 room.chat，避免后续 room:snapshot 泄漏给敌方
  * - system：只读，客户端不得伪造系统消息
  */
 export function installBattleChatService(io) {
@@ -88,11 +88,13 @@ export function installBattleChatService(io) {
         if (channel === 'team' && !member.team) throw new Error('当前没有可用队伍频道');
 
         const entry = roomChatEntry(socket, room, text, { channel, spectator: false });
-        pushRoomChat(room, entry);
 
         if (channel === 'team') {
+          // Team chat is intentionally ephemeral on the server. Persisting it in room.chat
+          // would leak it to the opposite team through the next public room snapshot.
           emitTeamChat(io, room, member.team, 'room:chat', entry);
         } else {
+          pushRoomChat(room, entry);
           io.to(`room:${room.id}`).emit('room:chat', entry);
         }
         ackOk(ack, { message: entry, roomId: room.id, channel });
