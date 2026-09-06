@@ -1,0 +1,124 @@
+.game-room.room-exact .room-lobby-invite-btn-20260906 {
+  position: absolute;
+  top: 1.05em;
+  right: 9.2em;
+  z-index: 32;
+  min-width: 8.8em;
+  padding: .42em .9em;
+  border: .12em solid #755019;
+  border-radius: .55em;
+  background: linear-gradient(180deg, #ffe77f, #d59d2b);
+  color: #402a05;
+  font-weight: 700;
+  text-shadow: 0 1px rgba(255,255,255,.45);
+  box-shadow: 0 .14em .3em rgba(0,0,0,.34), inset 0 .08em rgba(255,255,255,.5);
+  cursor: pointer;
+}
+
+.game-room.room-exact .room-lobby-invite-btn-20260906:hover {
+  filter: brightness(1.07);
+}
+
+.room-invite-panel-20260906 {
+  position: absolute;
+  top: 4.3em;
+  right: 2.1em;
+  z-index: 90;
+  width: 22em;
+  max-height: 30em;
+  overflow: hidden;
+  border: .16em solid #7b5a24;
+  border-radius: .7em;
+  background: rgba(24, 46, 29, .97);
+  color: #f7f5df;
+  box-shadow: 0 .35em 1.1em rgba(0,0,0,.5), inset 0 0 0 .08em rgba(232,207,105,.25);
+}
+
+.room-invite-panel-20260906 header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: .7em .85em;
+  background: linear-gradient(180deg, #55713f, #30492f);
+  border-bottom: .1em solid #8a7a43;
+}
+
+.room-invite-panel-20260906 header strong { color: #ffe782; }
+.room-invite-panel-20260906 .room-invite-close {
+  width: 1.8em;
+  height: 1.8em;
+  border: 0;
+  border-radius: 50%;
+  background: #7b3928;
+  color: #fff;
+  font-size: 1.05em;
+  cursor: pointer;
+}
+
+.room-invite-status-20260906,
+.room-invite-status {
+  padding: .62em .85em;
+  color: #d7e8cf;
+  border-bottom: 1px solid rgba(210,225,166,.14);
+}
+
+.room-invite-player-list {
+  max-height: 20em;
+  overflow-y: auto;
+  padding: .35em .6em;
+}
+
+.room-invite-player-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: .8em;
+  padding: .58em .55em;
+  border-bottom: 1px solid rgba(255,255,255,.1);
+}
+
+.room-invite-player-meta { display: flex; flex-direction: column; min-width: 0; }
+.room-invite-player-meta strong { color: #fff; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.room-invite-player-meta span { margin-top: .15em; color: #b9cdb2; font-size: .86em; }
+.room-invite-send-btn {
+  flex: none;
+  padding: .32em .72em;
+  border: .1em solid #6e5a20;
+  border-radius: .45em;
+  background: linear-gradient(180deg, #f6d665, #c99727);
+  color: #3c2a08;
+  font-weight: 700;
+  cursor: pointer;
+}
+.room-invite-send-btn:disabled { opacity: .7; cursor: default; }
+.room-invite-panel-20260906 footer { padding: .55em .8em .7em; color: #9fb39a; font-size: .8em; }
+
+.room-invite-prompt-20260906 {
+  position: absolute;
+  left: 50%;
+  top: 16%;
+  transform: translateX(-50%);
+  z-index: 120;
+  width: 25em;
+  padding: 1em 1.1em;
+  border: .16em solid #85652a;
+  border-radius: .8em;
+  background: rgba(27, 47, 31, .98);
+  color: #f8f6e8;
+  box-shadow: 0 .45em 1.4em rgba(0,0,0,.55), inset 0 0 0 .08em rgba(255,230,125,.18);
+  text-align: center;
+}
+.room-invite-prompt-20260906 > strong { color: #ffe37a; font-size: 1.15em; }
+.room-invite-prompt-20260906 p { margin: .75em 0 .4em; line-height: 1.5; }
+.room-invite-prompt-20260906 small { color: #c4cfb8; }
+.room-invite-prompt-actions { display: flex; gap: .8em; justify-content: center; margin-top: .85em; }
+.room-invite-prompt-actions button {
+  min-width: 6.3em;
+  padding: .42em .8em;
+  border-radius: .5em;
+  font-weight: 700;
+  cursor: pointer;
+}
+.room-invite-reject-btn { border: .1em solid #75473f; background: #70423b; color: #fff2ed; }
+.room-invite-accept-btn { border: .1em solid #55752a; background: linear-gradient(180deg, #b9da5b, #6f9f32); color: #20310b; }
+.room-invite-prompt-actions button:disabled { opacity: .6; cursor: default; }
