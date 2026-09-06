@@ -10,9 +10,9 @@ import { installPlayerQoL20260905 } from './ui/PlayerQoL20260905.js';
 import { installDiamondShopExpansion20260905 } from './ui/DiamondShopExpansion20260905.js';
 import { installBaseAttackRenderStability20260906 } from './battle/BaseAttackRenderStability20260906.js';
 import { installBattleUnitPresentation20260906 } from './ui/BattleUnitPresentation20260906.js';
+import { installCardInventoryRemotePatch20260906 } from './core/CardInventoryRemotePatch20260906.js';
+import { authStore } from './core/AuthStore.js';
 
-// 铁匠铺造卡：木牌会覆盖左侧概率信息，直接给整个概率面板内容预留顶部空间。
-// 放在 bootstrap 里以高优先级注入，避免后续 ClassicCityChrome 的旧布局把它顶回去。
 if (typeof document !== 'undefined' && !document.querySelector('#smithy-craft-probability-offset-20260905')) {
   const style = document.createElement('style');
   style.id = 'smithy-craft-probability-offset-20260905';
@@ -39,27 +39,20 @@ if (typeof document !== 'undefined' && !document.querySelector('#smithy-craft-pr
   document.head.appendChild(style);
 }
 
-// 战斗规则修复要在创建 BattleEngine 实例前安装。
 installTrainingBaseThreatFix20260905();
-// 必须在 App 创建 InventoryStore / LoginView / SmithyView / RoomView 实例之前安装。
 installEconomyInventoryRules20260905();
 installEconomyInventoryPersistence20260905();
 installCraftBindingSafety20260905();
 installLobbyUiPolish20260905();
-// 正式补发入口统一为“铁匠铺 → 强化 → 补发道具”，账号每天最多500次。
 installSmithyOfficialRefill20260905();
-// 必须排在大厅微调之后，这样可在其横向公告栏上追加试玩公告。
 installMainCityTrialBulletin20260905();
-// 公告采用纯文字样式，不使用表情符号装饰。
 installAnnouncementPlainText20260905();
-// 背包批量使用 + 好友搜索入口提示。
 installPlayerQoL20260905();
-// 商城增加钻石购买的金币箱子、功能道具和高阶材料。
 installDiamondShopExpansion20260905();
+// 登录成功后以服务器卡库为权威；旧版本仅存本地的强化/洗练实例状态会做一次兼容迁移。
+installCardInventoryRemotePatch20260906({ authStore });
 
 void import('./main.js').then(() => {
-  // 必须最后安装：保留 main 中已有攻击时序/单位动画补丁，同时修复左右基地攻击锚点回弹。
   installBaseAttackRenderStability20260906();
-  // PVP/BOSS 单位最终视觉权限：品质光圈/底座、血条和星级样式覆盖 legacy 视觉尾补丁。
   installBattleUnitPresentation20260906();
 });
