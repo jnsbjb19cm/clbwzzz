@@ -1,6 +1,13 @@
 const MAX_ROOM_CHAT_MESSAGES_20260906 = 50;
 export const ROOM_CHAT_STORAGE_KEY = 'clbwz_room_chat_history_20260906';
 
+function normalizeRoomChatChannel20260906(value) {
+  const raw = String(value ?? '').trim().toLowerCase();
+  if (raw === 'team' || raw === '队伍') return 'team';
+  if (raw === 'system' || raw === '系统') return 'system';
+  return 'current';
+}
+
 function normalizeRoomChatMessage20260906(view, message = {}) {
   const text = String(message.text ?? message.message ?? '').trim();
   if (!text) return null;
@@ -11,12 +18,9 @@ function normalizeRoomChatMessage20260906(view, message = {}) {
     id = `local-${view._roomChatSyntheticId20260906}`;
   }
 
-  const rawChannel = String(message.channel ?? '').toLowerCase();
-  const channel = message.system || rawChannel === 'system'
+  const channel = message.system
     ? 'system'
-    : rawChannel === 'team'
-      ? 'team'
-      : 'current';
+    : normalizeRoomChatChannel20260906(message.channel);
   const rawTeam = String(message.team ?? '').toLowerCase();
   const team = ['blue', 'red'].includes(rawTeam) ? rawTeam : null;
 
@@ -29,6 +33,15 @@ function normalizeRoomChatMessage20260906(view, message = {}) {
     team,
     system: Boolean(message.system || channel === 'system'),
   };
+}
+
+function getActiveRoomChatChannel20260906(view) {
+  const chat = view?.root?.querySelector?.('.exact-room-chat');
+  if (chat?.dataset?.activeChannel) {
+    return normalizeRoomChatChannel20260906(chat.dataset.activeChannel);
+  }
+  const active = view?.root?.querySelector?.('.exact-room-chat-tabs button.active');
+  return normalizeRoomChatChannel20260906(active?.dataset?.channel);
 }
 
 /**
@@ -78,7 +91,8 @@ function createRoomChatRow20260906(message) {
 }
 
 /**
- * Replay the cached structured messages after BattleRoomExact replaces the room DOM.
+ * Replay only the selected channel after BattleRoomExact replaces the room DOM.
+ * Each tab is a real channel view: current/team/system never visually bleed into each other.
  * Returns false while the exact chat log is not mounted yet, allowing the ready event to retry.
  */
 export function replayRoomChatHistory20260906(view) {
@@ -86,8 +100,13 @@ export function replayRoomChatHistory20260906(view) {
   if (!log || typeof document === 'undefined') return false;
 
   if (!Array.isArray(view._roomChatHistory20260906)) view._roomChatHistory20260906 = [];
+  const activeChannel = getActiveRoomChatChannel20260906(view);
   log.replaceChildren();
   for (const message of view._roomChatHistory20260906) {
+    const messageChannel = message?.system
+      ? 'system'
+      : normalizeRoomChatChannel20260906(message?.channel);
+    if (messageChannel !== activeChannel) continue;
     log.append(createRoomChatRow20260906(message));
   }
   try { log.scrollTop = log.scrollHeight; } catch {}
