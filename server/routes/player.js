@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { db, getPlayerSnapshot, withTransaction } from '../database.js';
 import { requireAuth } from '../middleware/auth.js';
+import { getCardInventoryHandler, putCardInventoryHandler } from './cardInventoryPersistence20260906.js';
 
 export const playerRouter = Router();
 playerRouter.use(requireAuth);
@@ -16,6 +17,9 @@ playerRouter.get('/snapshot', async (req, res) => {
   if (!snapshot) return res.status(404).json({ message: '玩家数据不存在' });
   return res.json(snapshot);
 });
+
+playerRouter.get('/card-inventory', getCardInventoryHandler);
+playerRouter.put('/card-inventory', putCardInventoryHandler);
 
 playerRouter.put('/settings', async (req, res) => {
   const musicVolume = clampInt(req.body.musicVolume, 0, 100);
@@ -85,6 +89,8 @@ playerRouter.post('/stage-result', async (req, res) => {
   if (!stageId && !drops.length) return res.json({ ok: true, recorded: false });
 
   let honorGain = 0;
+  let clearCount = 0;
+  let newBestTime = 0;
   if (stageId) {
     const durationMs = clampInt(req.body.durationMs, 0, 3_600_000);
     const bestStars = clampInt(req.body.bestStars ?? 1, 0, 3);
@@ -92,8 +98,8 @@ playerRouter.post('/stage-result', async (req, res) => {
       'SELECT * FROM player_stage_progress WHERE user_id=? AND stage_id=?',
       [req.user.id, stageId],
     );
-    const clearCount = (existing?.clear_count ?? 0) + 1;
-    const newBestTime = existing?.best_time_ms
+    clearCount = (existing?.clear_count ?? 0) + 1;
+    newBestTime = existing?.best_time_ms
       ? Math.min(Number(existing.best_time_ms), durationMs)
       : durationMs;
     const newBestStars = Math.max(Number(existing?.best_stars ?? 0), bestStars);
@@ -111,12 +117,10 @@ playerRouter.post('/stage-result', async (req, res) => {
       `, [req.user.id, stageId, newBestStars, clearCount, newBestTime]);
     }
 
-    // 荣誉值奖励：通关 +10，首次通关额外 +40
     honorGain = existing ? 10 : 50;
     await db.run(`UPDATE player_profiles SET honor=honor+?, updated_at=CURRENT_TIMESTAMP WHERE user_id=?`, [honorGain, req.user.id]);
   }
 
-  // 战斗掉落：写为“非绑定”道具，可上架拍卖行
   if (drops.length) {
     await withTransaction(async (conn) => {
       for (const drop of drops) {
