@@ -1,0 +1,30 @@
+name: User Request 20260906
+
+on:
+  push:
+    branches:
+      - fix/pvp-boss-visual-sync-20260906
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: user-request-20260906-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify-request:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 20
+
+      - name: Verify requested skill timing
+        run: node scripts/verify-user-request-20260906.mjs
