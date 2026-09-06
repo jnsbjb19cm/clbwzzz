@@ -1,0 +1,108 @@
+.game-room.room-exact .exact-room-chat {
+  background: rgba(20, 42, 27, .94) !important;
+  box-shadow:
+    inset 0 0 0 .1em rgba(205, 230, 118, .5),
+    0 .12em .24em rgba(20, 18, 8, .28) !important;
+}
+
+.game-room.room-exact .exact-room-chat-log {
+  color: #f7f8e9 !important;
+  background: rgba(10, 28, 18, .82) !important;
+  scrollbar-color: #d6b64a #183523 !important;
+}
+
+.game-room.room-exact .exact-room-chat-message {
+  margin: .05em 0;
+  padding-left: .32em;
+  border-left: .18em solid transparent;
+  color: #f5f7e7;
+  text-shadow: 0 .08em .08em rgba(0, 0, 0, .92) !important;
+}
+
+.game-room.room-exact .exact-room-chat-message.channel-current {
+  border-left-color: #e7c85c;
+}
+.game-room.room-exact .exact-room-chat-message.channel-current b {
+  color: #9fe6ff !important;
+}
+
+.game-room.room-exact .exact-room-chat-message.channel-team {
+  border-left-color: #60c7ff;
+  color: #d9f5ff;
+}
+.game-room.room-exact .exact-room-chat-message.channel-team b {
+  color: #70d3ff !important;
+}
+.game-room.room-exact .exact-room-chat-message.channel-team.team-blue b {
+  color: #6fd7ff !important;
+}
+.game-room.room-exact .exact-room-chat-message.channel-team.team-red b {
+  color: #ff9b91 !important;
+}
+
+.game-room.room-exact .exact-room-chat-message.channel-system,
+.game-room.room-exact .exact-room-chat-message.system {
+  border-left-color: #ffb341;
+  color: #ffe9a5 !important;
+}
+.game-room.room-exact .exact-room-chat-message.channel-system b,
+.game-room.room-exact .exact-room-chat-message.system b {
+  color: #ffd15c !important;
+}
+
+.game-room.room-exact .exact-room-chat-tabs button[data-channel='当前'].active {
+  color: #3c2c05 !important;
+  border-color: #8a5b12 !important;
+  background: linear-gradient(180deg, #ffe57d, #c79225) !important;
+}
+.game-room.room-exact .exact-room-chat-tabs button[data-channel='队伍'].active {
+  color: #07344d !important;
+  border-color: #14658d !important;
+  background: linear-gradient(180deg, #9be8ff, #43add9) !important;
+}
+.game-room.room-exact .exact-room-chat-tabs button[data-channel='系统'].active {
+  color: #522600 !important;
+  border-color: #9d5714 !important;
+  background: linear-gradient(180deg, #ffd77b, #e89235) !important;
+}
+
+.game-room.room-exact .exact-room-chat[data-active-channel='current'] .exact-room-chat-current {
+  color: #463307 !important;
+  background: #e3c45b !important;
+  border-color: #8f681b !important;
+}
+.game-room.room-exact .exact-room-chat[data-active-channel='team'] .exact-room-chat-current {
+  color: #07364f !important;
+  background: #82dfff !important;
+  border-color: #24769c !important;
+}
+.game-room.room-exact .exact-room-chat[data-active-channel='system'] .exact-room-chat-current {
+  color: #592a00 !important;
+  background: #ffc766 !important;
+  border-color: #9a5917 !important;
+}
+
+.game-room.room-exact .exact-room-chat-form input {
+  color: #ffffff !important;
+  background: rgba(6, 24, 14, .96) !important;
+  border-color: #80904c !important;
+  caret-color: #ffffff;
+}
+.game-room.room-exact .exact-room-chat-form input::placeholder {
+  color: #c8d2b1 !important;
+  opacity: 1;
+}
+.game-room.room-exact .exact-room-chat-form input:focus {
+  border-color: #f3cf5f !important;
+  box-shadow: 0 0 0 .08em rgba(243, 207, 95, .35);
+}
+.game-room.room-exact .exact-room-chat-form input:disabled {
+  color: #d6cfae !important;
+  background: rgba(52, 43, 24, .92) !important;
+  cursor: not-allowed;
+}
+.game-room.room-exact .exact-room-chat-form button:disabled {
+  filter: grayscale(.65) brightness(.82);
+  cursor: not-allowed;
+  opacity: .76;
+}
