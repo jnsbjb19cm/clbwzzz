@@ -400,7 +400,12 @@ async function awardAuthorityBattleDrops(room, entry) {
   if (entry._dropsAwarded) return;
   entry._dropsAwarded = true;
 
-  const members = [...room.members.values()].filter((m) => Number.isFinite(Number(m.userId)));
+  // 机器人使用负数 userId（例如 -100001），并不存在于 users 表。
+  // 权威战斗掉落只写入真实数据库玩家，避免 player_items 外键失败并回滚整批真人奖励。
+  const members = [...room.members.values()].filter((member) => {
+    const userId = Number(member?.userId);
+    return Number.isInteger(userId) && userId > 0;
+  });
   if (!members.length) return;
 
   const grants = members.map((member) => {
