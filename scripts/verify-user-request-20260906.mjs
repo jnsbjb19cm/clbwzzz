@@ -56,6 +56,9 @@ function makeEngine() {
     getUnitsAt(lane, col) {
       return this.units.filter((unit) => unit.alive && unit.lane === lane && Math.round(unit.col) === Math.round(col));
     },
+    damageBase(side, amount) {
+      return BattleEngine.prototype.damageBase.call(this, side, amount);
+    },
   };
 }
 
@@ -132,11 +135,12 @@ assert.equal(getSkillResolutionDelay(527), 2, '雷鳴之箭 should resolve exact
   assert.equal(engine.heroBaseInvulnerableUntil, 10, '铁壳功 should protect the player base immediately for 10 seconds');
   assert.equal(skills.pendingCasts.some((entry) => Number(entry.skillId) === 547), false, '铁壳功 must not wait in pending casts');
 
-  BattleEngine.prototype.damageBase.call(engine, 'player', 50);
+  engine.damageBase('player', 50);
   assert.equal(engine.heroHp, 100, '铁壳功 should block player-base damage while active');
 
   engine.time = 10.001;
-  BattleEngine.prototype.damageBase.call(engine, 'player', 50);
+  engine.trainingMode = false;
+  engine.damageBase('player', 50);
   assert.equal(engine.heroHp, 50, 'player base should take damage again after 铁壳功 expires');
 }
 
