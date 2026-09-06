@@ -65,6 +65,9 @@ assert.match(serverIndexSource, /installRoomInviteService20260906\(io\)/, 'room 
 assert.match(inviteRuntimeSource, /setLobbyPresence\('lobby'\)/, 'room lobby runtime must publish lobby presence');
 assert.match(inviteRuntimeSource, /setLobbyPresence\('room'\)/, 'room entry must publish room presence');
 assert.match(inviteRuntimeSource, /setLobbyPresence\('battle'\)/, 'battle entry must publish battle presence');
+assert.match(inviteRuntimeSource, /RoomView\.prototype\.enterSpectatorBattle/, 'active spectators must leave lobby presence');
+assert.match(inviteRuntimeSource, /RoomView\.prototype\.exitSpectatorBattle/, 'spectator exit must restore lobby presence');
+assert.match(inviteRuntimeSource, /view\.roomBattleView/, 'invite prompts must not appear over an active battle/spectator battle');
 assert.match(inviteRuntimeSource, /邀请大厅玩家/, 'room UI must provide an explicit lobby-player invite entry');
 assert.match(inviteRuntimeSource, /room:invite/, 'lobby client must receive room invitation events');
 assert.match(inviteRuntimeSource, /接受/, 'invite prompt must expose accept action');
