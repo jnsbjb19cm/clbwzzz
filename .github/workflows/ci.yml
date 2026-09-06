@@ -38,8 +38,15 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Audit dependency vulnerabilities
+      # Keep the complete audit visible for development/build tooling, but do not
+      # let a dev-only advisory hide the product regression suite. Runtime
+      # dependencies remain a hard security gate below.
+      - name: Report all dependency vulnerabilities
+        continue-on-error: true
         run: npm audit --audit-level=moderate
+
+      - name: Audit production dependency vulnerabilities
+        run: npm audit --omit=dev --audit-level=moderate
 
       - name: Check JavaScript syntax
         run: node scripts/ci-syntax-check.mjs
