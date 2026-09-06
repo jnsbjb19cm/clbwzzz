@@ -41,6 +41,7 @@ import { startRoomLifetimeService } from './rooms/RoomLifetimeService.js';
 import { startRandomMatchBotService } from './rooms/RandomMatchBotService.js';
 import { registerSocketHandlers } from './socket/registerSocketHandlers.js';
 import { installBattleChatService } from './socket/BattleChatService.js';
+import { installRoomInviteService20260906 } from './socket/RoomInviteService20260906.js';
 import { installSystemAnnouncementService } from './socket/SystemAnnouncementService.js';
 import { installAuthoritySnapshotBackpressure20260905 } from './socket/AuthoritySnapshotBackpressure20260905.js';
 import {
@@ -144,6 +145,7 @@ installAuthoritySnapshotBackpressure20260905(io);
 registerSocketHandlers(io);
 registerPvpAuthorityHandlers(io, { cardDb: getPvpCardDb() });
 installBattleChatService(io);
+installRoomInviteService20260906(io);
 installSystemAnnouncementService(io);
 
 // 随机匹配：先给真人 10 秒匹配窗口，超时仍有空位再补人机。
