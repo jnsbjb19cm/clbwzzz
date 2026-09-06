@@ -5,6 +5,7 @@ import { installCraftBindingSafety20260905 } from './ui/CraftBindingSafety202609
 import { installLobbyUiPolish20260905 } from './ui/LobbyUiPolish20260905.js';
 import { installRoomChatRuntimePatch20260906 } from './ui/RoomChatRuntimePatch20260906.js';
 import { installRoomChatChannelFix20260906 } from './ui/RoomChatChannelFix20260906.js';
+import { installRoomInviteRuntime20260906 } from './ui/RoomInviteRuntime20260906.js';
 import { installSmithyOfficialRefill20260905 } from './ui/SmithyOfficialRefill20260905.js';
 import { installMainCityTrialBulletin20260905 } from './ui/MainCityTrialBulletin20260905.js';
 import { installAnnouncementPlainText20260905 } from './ui/AnnouncementPlainText20260905.js';
@@ -51,6 +52,9 @@ installRoomChatRuntimePatch20260906();
 // Channel authority must run after the persistence patch so it can replace the legacy
 // send listener while retaining message replay across room rerenders.
 installRoomChatChannelFix20260906();
+// Invite runtime shares RoomView lifecycle with room chat; install it after chat patches so
+// lobby/room/battle presence and invitation UI wrap the final RoomView methods.
+installRoomInviteRuntime20260906();
 installSmithyOfficialRefill20260905();
 installMainCityTrialBulletin20260905();
 installAnnouncementPlainText20260905();
