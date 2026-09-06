@@ -15,6 +15,8 @@ Object.defineProperty(globalThis, 'navigator', {
 });
 globalThis.requestAnimationFrame = () => 1;
 globalThis.cancelAnimationFrame = () => {};
+globalThis.addEventListener = () => {};
+globalThis.removeEventListener = () => {};
 globalThis.Image = class {
   addEventListener() {}
   set src(_value) {}
