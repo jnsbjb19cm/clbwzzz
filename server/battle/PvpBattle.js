@@ -63,7 +63,8 @@ function round2(value) {
 
 function normalizeInstance(payload = {}) {
   const craftQuality = Math.max(1, Math.min(5, Math.round(Number(payload.craftQuality) || 1)));
-  const strengthLv = Math.max(0, Math.min(6, Math.round(Number(payload.strengthLv ?? payload.star) || 0)));
+  // 与普通 PVE 的 BattleUnit 保持一致：星级只做非负整数规范化，不截断 8+ 星。
+  const strengthLv = Math.max(0, Math.round(Number(payload.strengthLv ?? payload.star) || 0));
   const attributeRoll = payload.attributeRoll && typeof payload.attributeRoll === 'object'
     ? {
         atk: Math.max(-20, Math.min(20, Number(payload.attributeRoll.atk) || 0)),

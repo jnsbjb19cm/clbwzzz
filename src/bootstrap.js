@@ -8,6 +8,8 @@ import { installMainCityTrialBulletin20260905 } from './ui/MainCityTrialBulletin
 import { installAnnouncementPlainText20260905 } from './ui/AnnouncementPlainText20260905.js';
 import { installPlayerQoL20260905 } from './ui/PlayerQoL20260905.js';
 import { installDiamondShopExpansion20260905 } from './ui/DiamondShopExpansion20260905.js';
+import { installBaseAttackRenderStability20260906 } from './battle/BaseAttackRenderStability20260906.js';
+import { installBattleUnitPresentation20260906 } from './ui/BattleUnitPresentation20260906.js';
 
 // 铁匠铺造卡：木牌会覆盖左侧概率信息，直接给整个概率面板内容预留顶部空间。
 // 放在 bootstrap 里以高优先级注入，避免后续 ClassicCityChrome 的旧布局把它顶回去。
@@ -55,4 +57,9 @@ installPlayerQoL20260905();
 // 商城增加钻石购买的金币箱子、功能道具和高阶材料。
 installDiamondShopExpansion20260905();
 
-void import('./main.js');
+void import('./main.js').then(() => {
+  // 必须最后安装：保留 main 中已有攻击时序/单位动画补丁，同时修复左右基地攻击锚点回弹。
+  installBaseAttackRenderStability20260906();
+  // PVP/BOSS 单位最终视觉权限：品质光圈/底座、血条和星级样式覆盖 legacy 视觉尾补丁。
+  installBattleUnitPresentation20260906();
+});

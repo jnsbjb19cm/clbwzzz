@@ -4,6 +4,7 @@ import './PvpBattle.js';
 const { BattleEngine } = await import('../../src/battle/BattleEngine.js');
 const { unitAnimPlayer } = await import('../../src/battle/UnitAnimPlayer.js');
 const { installBattleAttackTimingFix } = await import('../../src/ui/BattleAttackTimingFix.js');
+const { installBattleMeleeContactFinal } = await import('../../src/battle/BattleMeleeContactFinal.js');
 const { installBattleRound3Rules } = await import('../../src/battle/BattleRound3Rules.js');
 const { installProjectileImpactAlignmentFinal } = await import('../../src/battle/ProjectileImpactAlignmentFinal.js');
 const { CoopBossBattle } = await import('./CoopBossBattle.js');
@@ -122,6 +123,8 @@ export function installPvpGameplayFinal() {
   installAuthoritativeAnimationStartTracking();
   installFlyShoeHeadlessSpecialRule();
   installBattleAttackTimingFix();
+  // 与客户端 main 的安装顺序保持一致：PVP/BOSS 权威 BattleEngine 也必须使用真实近战接触补丁。
+  installBattleMeleeContactFinal();
   installProjectileImpactAlignmentFinal();
   installBossCommanderOnlyRule();
   // PvpBattle 用 trainingMode 关闭 PVE 波次，但 PVP 双方基地必须仍可对称受伤。

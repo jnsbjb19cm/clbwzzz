@@ -4,6 +4,7 @@ import {
   UNIT_CORRECTION_RATE_20260905 as UNIT_CORRECTION_RATE,
   UNIT_EXTRAPOLATE_SEC_20260905 as UNIT_EXTRAPOLATE_SEC,
   UNIT_SNAP_DISTANCE_20260905 as UNIT_SNAP_DISTANCE,
+  UNIT_MAX_CORRECTION_SPEED_20260906 as UNIT_MAX_CORRECTION_SPEED,
   predictAuthorityAxis20260905,
 } from './PvpAuthorityMotionMath20260905.js';
 
@@ -45,8 +46,15 @@ function seedUnit(unit, now) {
   unit.__pvpSmoothReceivedAt20260905 = now;
   unit.__pvpSmoothHasSample20260905 = true;
   unit.__pvpSmoothForceSnap20260905 = false;
+  unit.__pvpSmoothDisplayCol20260906 = finite(unit.col);
+  unit.__pvpSmoothDisplayLane20260906 = finite(unit.lane);
 }
 
+/**
+ * PvpAuthoritySyncFinal 会先把服务端目标写到 __authorityTarget*；旧逻辑在误差 >2.5 格时
+ * 还会直接覆盖 unit.col。这个监听器安装在 authority sync 之后，因此可把既有单位恢复到
+ * 上一帧展示坐标，再由 draw() 渐进追向新目标。新部署单位仍直接在真实出生点出现。
+ */
 function captureSnapshotMotion(view, snapshot) {
   if (!view?.engine || !Array.isArray(snapshot?.units)) return;
 
@@ -61,6 +69,9 @@ function captureSnapshotMotion(view, snapshot) {
     const unit = byUid.get(Number(data?.uid));
     if (!unit) continue;
 
+    const hadSample = Boolean(unit.__pvpSmoothHasSample20260905);
+    const displayCol = finite(unit.__pvpSmoothDisplayCol20260906, unit.col);
+    const displayLane = finite(unit.__pvpSmoothDisplayLane20260906, unit.lane);
     const targetCol = finite(unit.__authorityTargetCol, unit.col);
     const targetLane = finite(unit.__authorityTargetLane, unit.lane);
     const previousCol = finite(unit.__pvpSmoothTargetCol20260905, targetCol);
@@ -69,13 +80,16 @@ function captureSnapshotMotion(view, snapshot) {
     const deltaLane = targetLane - previousLane;
     const state = data?.animState || data?.state || '';
     const locked = stateLocksMovement(unit, state, finite(view.engine.time));
-    const discontinuity = Math.abs(deltaCol) > UNIT_SNAP_DISTANCE || Math.abs(deltaLane) > 0.75;
-    const hasSample = Boolean(unit.__pvpSmoothHasSample20260905);
 
-    unit.__pvpSmoothVelocityCol20260905 = (!hasSample || locked || discontinuity)
+    // 横向大误差通常来自拥挤时的快照延迟，不再视为“传送”。只有真实跨路/显式 warp 才硬切。
+    const discontinuity = Math.abs(deltaLane) > 0.75
+      || data?.teleport === true
+      || data?.warp === true;
+
+    unit.__pvpSmoothVelocityCol20260905 = (!hadSample || locked || discontinuity)
       ? 0
       : clamp(deltaCol / snapshotDt, -MAX_UNIT_SPEED_COLS_PER_SEC, MAX_UNIT_SPEED_COLS_PER_SEC);
-    unit.__pvpSmoothVelocityLane20260905 = (!hasSample || locked || discontinuity)
+    unit.__pvpSmoothVelocityLane20260905 = (!hadSample || locked || discontinuity)
       ? 0
       : clamp(deltaLane / snapshotDt, -MAX_LANE_SPEED_PER_SEC, MAX_LANE_SPEED_PER_SEC);
     unit.__pvpSmoothTargetCol20260905 = targetCol;
@@ -84,6 +98,20 @@ function captureSnapshotMotion(view, snapshot) {
     unit.__pvpSmoothHasSample20260905 = true;
     unit.__pvpSmoothForceSnap20260905 = discontinuity;
     unit.__pvpSmoothState20260905 = state;
+
+    if (hadSample && !discontinuity) {
+      // 抵消 PvpAuthoritySyncFinal 的大误差硬纠正；逻辑目标仍保存在 __authorityTarget*。
+      unit.col = displayCol;
+      unit.lane = displayLane;
+      unit.renderX = displayCol;
+      unit.renderY = displayLane;
+      unit.__pvpSmoothDisplayCol20260906 = displayCol;
+      unit.__pvpSmoothDisplayLane20260906 = displayLane;
+    } else {
+      // 首次出现/真正跨路时从权威位置建立展示基准，不制造“从旧不存在位置滑入”的假象。
+      unit.__pvpSmoothDisplayCol20260906 = finite(unit.col, targetCol);
+      unit.__pvpSmoothDisplayLane20260906 = finite(unit.lane, targetLane);
+    }
   }
 }
 
@@ -145,36 +173,42 @@ function advancePresentation(renderer, engine) {
     );
     const locked = stateLocksMovement(unit, unit.__pvpSmoothState20260905, engineTime);
     const forceSnap = Boolean(unit.__pvpSmoothForceSnap20260905);
+    const displayCol = finite(unit.__pvpSmoothDisplayCol20260906, unit.col);
+    const displayLane = finite(unit.__pvpSmoothDisplayLane20260906, unit.lane);
 
     const x = predictAuthorityAxis20260905({
       authoritative: finite(unit.__pvpSmoothTargetCol20260905, unit.__authorityTargetCol),
       velocity: unit.__pvpSmoothVelocityCol20260905,
       age,
-      current: unit.col,
+      current: displayCol,
       frameDt,
       min: 0,
       max: 11,
       locked,
       forceSnap,
+      maxCorrectionSpeed: UNIT_MAX_CORRECTION_SPEED,
     });
     const y = predictAuthorityAxis20260905({
       authoritative: finite(unit.__pvpSmoothTargetLane20260905, unit.__authorityTargetLane),
       velocity: unit.__pvpSmoothVelocityLane20260905,
       age,
-      current: unit.lane,
+      current: displayLane,
       frameDt,
       min: 0,
       max: 4,
       locked,
       forceSnap,
       snapDistance: 0.75,
+      maxCorrectionSpeed: UNIT_MAX_CORRECTION_SPEED,
     });
 
-    unit._prevRenderX = unit.col;
+    unit._prevRenderX = displayCol;
     unit.col = x.value;
     unit.lane = y.value;
     unit.renderX = unit.col;
     unit.renderY = unit.lane;
+    unit.__pvpSmoothDisplayCol20260906 = unit.col;
+    unit.__pvpSmoothDisplayLane20260906 = unit.lane;
     unit.__pvpSmoothForceSnap20260905 = false;
   }
 }
@@ -208,7 +242,9 @@ export function installPvpAuthoritySmoothMotion20260905() {
       unitExtrapolateSec: UNIT_EXTRAPOLATE_SEC,
       correctionRate: UNIT_CORRECTION_RATE,
       snapDistance: UNIT_SNAP_DISTANCE,
+      maxCorrectionSpeed: UNIT_MAX_CORRECTION_SPEED,
       maxUnitSpeedColsPerSec: MAX_UNIT_SPEED_COLS_PER_SEC,
+      networkErrorPolicy: 'smooth; only explicit warp/lane discontinuity snaps',
     });
   }
 }
@@ -217,5 +253,6 @@ export const PVP_AUTHORITY_SMOOTH_MOTION_20260905 = Object.freeze({
   unitExtrapolateSec: UNIT_EXTRAPOLATE_SEC,
   correctionRate: UNIT_CORRECTION_RATE,
   snapDistance: UNIT_SNAP_DISTANCE,
+  maxCorrectionSpeed: UNIT_MAX_CORRECTION_SPEED,
   maxUnitSpeedColsPerSec: MAX_UNIT_SPEED_COLS_PER_SEC,
 });
