@@ -15,7 +15,7 @@ const BGM = {
   city: '/assets/sound/music/scene.mp3',
   battle: '/assets/sound/music/battle.mp3',
   boss: '/assets/sound/music/fireBoss.mp3',
-  room: '/assets/sound/background/gameRoom.mp3',
+  room: '/sound/background/gameRoom.mp3',
 };
 
 const SFX = {
