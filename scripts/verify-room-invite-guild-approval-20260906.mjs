@@ -40,9 +40,9 @@ assert.equal(canApproveGuildJoin20260906('elite'), false);
 assert.equal(canApproveGuildJoin20260906('member'), false);
 
 const socketClientSource = fs.readFileSync(new URL('../src/network/SocketClient.js', import.meta.url), 'utf8');
-const roomViewSource = fs.readFileSync(new URL('../src/ui/RoomView.js', import.meta.url), 'utf8');
 const inviteRuntimeSource = fs.readFileSync(new URL('../src/ui/RoomInviteRuntime20260906.js', import.meta.url), 'utf8');
 const inviteServiceSource = fs.readFileSync(new URL('../server/socket/RoomInviteService20260906.js', import.meta.url), 'utf8');
+const inviteCssSource = fs.readFileSync(new URL('../src/ui/RoomInviteRuntime20260906.css', import.meta.url), 'utf8');
 const serverIndexSource = fs.readFileSync(new URL('../server/index.js', import.meta.url), 'utf8');
 const guildViewSource = fs.readFileSync(new URL('../src/ui/GuildView.js', import.meta.url), 'utf8');
 const guildRouteSource = fs.readFileSync(new URL('../server/routes/guild.js', import.meta.url), 'utf8');
@@ -59,18 +59,23 @@ assert.match(inviteServiceSource, /room:invite:respond/, 'server must validate a
 assert.match(inviteServiceSource, /socketsForUser/, 'server must deliver invitation to all target player sockets');
 assert.match(inviteServiceSource, /roomManager\.joinRoom/, 'accepted invitation must reuse normal authoritative room join rules');
 assert.match(inviteServiceSource, /ROOM_INVITE_TTL_MS_20260906/, 'server invitations must expire');
+assert.match(inviteServiceSource, /room\.status !== 'waiting'/, 'server must reject invitations after the room starts');
 assert.match(serverIndexSource, /installRoomInviteService20260906\(io\)/, 'room invite service must be installed on server');
 
-assert.match(roomViewSource, /setLobbyPresence\('lobby'\)/, 'room lobby must publish lobby presence');
+assert.match(inviteRuntimeSource, /setLobbyPresence\('lobby'\)/, 'room lobby runtime must publish lobby presence');
+assert.match(inviteRuntimeSource, /setLobbyPresence\('room'\)/, 'room entry must publish room presence');
+assert.match(inviteRuntimeSource, /setLobbyPresence\('battle'\)/, 'battle entry must publish battle presence');
 assert.match(inviteRuntimeSource, /邀请大厅玩家/, 'room UI must provide an explicit lobby-player invite entry');
 assert.match(inviteRuntimeSource, /room:invite/, 'lobby client must receive room invitation events');
 assert.match(inviteRuntimeSource, /接受/, 'invite prompt must expose accept action');
 assert.match(inviteRuntimeSource, /拒绝/, 'invite prompt must expose reject action');
+assert.match(inviteCssSource, /room-lobby-invite-btn-20260906/, 'invite entry must have dedicated room styling');
 assert.match(bootstrapSource, /installRoomInviteRuntime20260906\(\)/, 'room invite runtime must be installed before RoomView use');
 
 assert.match(guildViewSource, /canApproveGuildJoin20260906/, 'guild approval button visibility must use shared role policy');
 assert.match(guildViewSource, /guild-approve-btn/, 'guild approval button must exist for authorized roles');
 assert.match(guildRouteSource, /canApproveGuildJoinRole20260906/, 'guild approval API must use normalized authoritative role policy');
-assert.match(guildRouteSource, /canApprove/, 'guild /my payload must expose explicit approval permission');
+assert.match(guildRouteSource, /canApprove:/, 'guild /my payload must expose explicit approval permission');
+assert.doesNotMatch(guildViewSource, /\['president', 'vice_president'\]\.includes\(g\.role\)/, 'guild approval button must not depend on the old fragile raw role comparison');
 
 console.log('PASS room invite + guild approval regression 20260906');
