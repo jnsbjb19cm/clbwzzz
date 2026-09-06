@@ -22,19 +22,33 @@ function ackError(ack, error) {
   }
 }
 
-function effectivePresence(userId) {
+function socketHasRoomSubscription20260906(io, socketId) {
+  const targetSocket = io?.sockets?.sockets?.get?.(socketId);
+  if (!targetSocket?.rooms) return false;
+  for (const joined of targetSocket.rooms) {
+    if (/^room:\d+$/.test(String(joined))) return true;
+  }
+  return false;
+}
+
+function effectivePresence(io, userId) {
   const id = Number(userId);
   if (roomManager.getRoomByUser(id)) return 'room';
+  const onlineSockets = socketsForUser(id);
+  // A waiting-room watcher or battle spectator has no RoomManager membership, but its socket is
+  // subscribed to room:<id>. Such a player is not physically in the lobby and must not be invited.
+  if (onlineSockets.some((socketId) => socketHasRoomSubscription20260906(io, socketId))) return 'room';
+
   let hasLobby = false;
   let hasBattle = false;
   for (const [socketId, record] of presenceBySocket) {
     if (Number(record.userId) !== id) continue;
-    if (!socketsForUser(id).includes(socketId)) continue;
+    if (!onlineSockets.includes(socketId)) continue;
     if (record.state === 'lobby') hasLobby = true;
     if (record.state === 'battle') hasBattle = true;
   }
-  if (hasLobby) return 'lobby';
   if (hasBattle) return 'battle';
+  if (hasLobby) return 'lobby';
   return 'offline';
 }
 
@@ -82,12 +96,12 @@ function assertInviterRoom(socket) {
   return room;
 }
 
-function targetEligible(inviterUserId, targetUserId) {
+function targetEligible(io, inviterUserId, targetUserId) {
   return canInviteLobbyPlayer20260906({
     inviterUserId,
     targetUserId,
     targetOnline: isOnline(targetUserId),
-    targetPresence: effectivePresence(targetUserId),
+    targetPresence: effectivePresence(io, targetUserId),
     targetHasRoom: Boolean(roomManager.getRoomByUser(targetUserId)),
   });
 }
@@ -137,7 +151,7 @@ export function installRoomInviteService20260906(io) {
       try {
         assertInviterRoom(socket);
         purgeExpiredInvites();
-        const ids = onlineUserIds().filter((targetId) => targetEligible(userId, targetId));
+        const ids = onlineUserIds().filter((targetId) => targetEligible(io, userId, targetId));
         const profiles = (await Promise.all(ids.map((id) => loadCandidateProfile(id))))
           .filter(Boolean)
           .sort((a, b) => Number(b.level || 0) - Number(a.level || 0) || Number(a.userId) - Number(b.userId));
@@ -151,7 +165,7 @@ export function installRoomInviteService20260906(io) {
       try {
         const room = assertInviterRoom(socket);
         const targetUserId = Number(payload.targetUserId);
-        if (!targetEligible(userId, targetUserId)) {
+        if (!targetEligible(io, userId, targetUserId)) {
           throw new Error('该玩家已不在大厅或当前不可邀请');
         }
 
@@ -206,7 +220,9 @@ export function installRoomInviteService20260906(io) {
           return ackOk(ack, { accepted: false });
         }
 
-        if (!targetEligible(invite.inviterUserId, userId)) {
+        // Re-check at click time. A player who started watching another room after the invite was
+        // sent is no longer a lobby target and therefore cannot join through a stale invitation.
+        if (!targetEligible(io, invite.inviterUserId, userId)) {
           deleteInvite(invite);
           throw new Error('你当前已经不在大厅或不能加入房间');
         }
