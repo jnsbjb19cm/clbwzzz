@@ -3,7 +3,6 @@ name: Battle Regression Fast
 on:
   push:
     branches:
-      - fix/pvp-wilderness-room-20260805
       - fix/pvp-boss-visual-sync-20260906
   pull_request:
     branches:
@@ -26,20 +25,5 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v6
 
-      - name: Commander targeting
-        run: node scripts/verify-boss-commander-targeting-20260819.mjs
-
-      - name: Fly shoe first-contact stun
-        run: node scripts/verify-fly-shoe-regression.mjs
-
-      - name: Battle rules continuation
-        run: node scripts/verify-battle-rules-continuation-20260831.mjs
-
-      - name: Production placement install order
-        run: node scripts/verify-production-placement-install-order-20260819.mjs
-
-      - name: Authority projectile release latency
-        run: node scripts/verify-authority-projectile-release-latency-20260819.mjs
-
-      - name: Projectile spawn event protocol
-        run: node scripts/verify-projectile-spawn-event-protocol-20260819.mjs
+      - name: Verify commander, fly-shoe and production battle rules
+        run: node scripts/verify-battle-runtime-contract-20260906.mjs
