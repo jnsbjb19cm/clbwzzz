@@ -98,7 +98,7 @@ function ensureInviteButton(view) {
 }
 
 function showInvitePrompt(view, invite = {}) {
-  if (!view?.root || view.room || !invite.inviteId) return;
+  if (!view?.root || view.room || view.roomBattleView || !invite.inviteId) return;
   removeInvitePrompt(view, invite.inviteId);
   const host = view.root.querySelector('.lobby-fullscreen') || view.root;
   const prompt = document.createElement('section');
@@ -209,6 +209,22 @@ export function installRoomInviteRuntime20260906() {
     removeInvitePanel(this);
     removeInvitePrompt(this);
     return previousEnterBattle.apply(this, args);
+  };
+
+  // 观战中的用户并不属于“大厅可邀请玩家”。等待房间的只读观察仍可视为在大厅，
+  // 但真正进入观战战场后必须切成 battle，退出观战后再恢复 lobby。
+  const previousEnterSpectatorBattle = RoomView.prototype.enterSpectatorBattle;
+  RoomView.prototype.enterSpectatorBattle = function enterSpectatorInvitePresence20260906(...args) {
+    this.socket.setLobbyPresence('battle').catch(() => {});
+    removeInvitePrompt(this);
+    return previousEnterSpectatorBattle.apply(this, args);
+  };
+
+  const previousExitSpectatorBattle = RoomView.prototype.exitSpectatorBattle;
+  RoomView.prototype.exitSpectatorBattle = function exitSpectatorInvitePresence20260906(...args) {
+    const result = previousExitSpectatorBattle.apply(this, args);
+    this.socket.setLobbyPresence('lobby').catch(() => {});
+    return result;
   };
 
   const previousDestroy = RoomView.prototype.destroy;
