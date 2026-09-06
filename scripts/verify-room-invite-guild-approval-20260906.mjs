@@ -60,6 +60,8 @@ assert.match(inviteServiceSource, /socketsForUser/, 'server must deliver invitat
 assert.match(inviteServiceSource, /roomManager\.joinRoom/, 'accepted invitation must reuse normal authoritative room join rules');
 assert.match(inviteServiceSource, /ROOM_INVITE_TTL_MS_20260906/, 'server invitations must expire');
 assert.match(inviteServiceSource, /room\.status !== 'waiting'/, 'server must reject invitations after the room starts');
+assert.match(inviteServiceSource, /socketHasRoomSubscription20260906/, 'server must detect room watchers/spectators even without RoomManager membership');
+assert.match(inviteServiceSource, /\^room:\\d\+\$/, 'server must recognize active room socket subscriptions');
 assert.match(serverIndexSource, /installRoomInviteService20260906\(io\)/, 'room invite service must be installed on server');
 
 assert.match(inviteRuntimeSource, /setLobbyPresence\('lobby'\)/, 'room lobby runtime must publish lobby presence');
