@@ -26,5 +26,8 @@ jobs:
         with:
           node-version: 20
 
-      - name: Verify requested skill timing
+      - name: Verify requested skill timing and card persistence
         run: node scripts/verify-user-request-20260906.mjs
+
+      - name: Verify room chat lifecycle
+        run: node scripts/verify-room-chat-lifecycle-20260906.mjs
