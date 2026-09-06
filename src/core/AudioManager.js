@@ -60,6 +60,26 @@ export class AudioManager {
     this._summonWindow = 0;
     this._summonBurst = 0;
     this._smithResultPlayer = null;
+    this._unlockBound = false;
+    this._bindAudioUnlock();
+  }
+
+  /** 浏览器自动播放限制：首次用户手势后恢复被拦截的 BGM。 */
+  _bindAudioUnlock() {
+    if (this._unlockBound || typeof window === 'undefined') return;
+    this._unlockBound = true;
+    const unlock = () => {
+      if (this.muted) return;
+      if (this.bgm?.paused) {
+        this.bgm.play().catch(() => {});
+      } else if (this.desiredBgmKey && !this.bgmKey) {
+        this.playBgm(this.desiredBgmKey, { fade: true });
+      }
+      window.removeEventListener('pointerdown', unlock);
+      window.removeEventListener('keydown', unlock);
+    };
+    window.addEventListener('pointerdown', unlock, { once: true, capture: true });
+    window.addEventListener('keydown', unlock, { once: true, capture: true });
   }
 
   _get(src) {
