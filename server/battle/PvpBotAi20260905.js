@@ -2,6 +2,11 @@ import { PvpBattle } from './PvpBattle.js';
 
 const PATCH_FLAG = Symbol.for('clbwzzz.pvpBotAi20260905');
 const BOT_DECK_IDS = Object.freeze([1, 2, 3, 4, 5, 6, 8, 9, 11, 15, 17, 19, 20, 21, 22, 25, 26, 30, 31, 32, 33, 35, 36, 37, 38]);
+const BOT_DEPLOY_TIME_SCALE_20260906 = 2;
+
+function scaledDeployDelay(seconds) {
+  return Math.max(0, Number(seconds) || 0) * BOT_DEPLOY_TIME_SCALE_20260906;
+}
 
 function isBotUserId(userId) {
   return Number(userId) < 0;
@@ -30,8 +35,9 @@ function stateFor(battle, userId) {
   const id = Number(userId);
   if (!battle.__smartBotState.has(id)) {
     battle.__smartBotState.set(id, {
-      // 开局先观察一会儿，不再 2 秒左右连续铺场。
-      startedAt: (Number(battle.engine?.time) || 0) + 4.0 + Math.random() * 1.5,
+      // 人机放卡节奏整体减半：开局观察时间也按同一倍率延长。
+      startedAt: (Number(battle.engine?.time) || 0)
+        + scaledDeployDelay(4.0 + Math.random() * 1.5),
       thinkAt: 0,
       globalReadyAt: 0,
       cardReadyAt: new Map(),
@@ -103,7 +109,6 @@ function chooseLane(battle, team, state, card) {
     const recentHits = recent.filter((value) => value === lane).length;
     const overuse = Math.max(0, state.laneDeployCount[lane] - minDeployCount);
 
-    // 防守压力优先，但压低最近刚出过兵/已经拥挤的线路，避免只堆第1路。
     let score = stats.enemy.length * 1.45
       + stats.enemyMovable * 0.65
       + stats.enemyNearBase * 2.75
@@ -149,9 +154,7 @@ function chooseCard(battle, userId, state) {
     .filter(isDirectDeployCard)
     .filter((card) => card.name !== '石巨人' && card.card_name !== '石巨人')
     .filter((card) => cardQuality(card) <= 4)
-    // 同一张卡必须等它自己的完整 card_cd 结束，不能再走 68%~78% 软冷却。
     .filter((card) => now + 1e-6 >= Number(state.cardReadyAt.get(Number(card.id)) || 0))
-    // 阳光/食物与真人共用 PvpBattle 的真实资源账本。
     .filter((card) => affordable(battle, userId, card));
 
   if (!legal.length) return null;
@@ -192,7 +195,7 @@ function trySmartDeploy(battle, userId, state) {
     || now < teamReadyAt(battle, team)
   ) return false;
 
-  // 思考可以频繁一些，但真正放卡受到个人+阵营两层节流。
+  // 判断频率保持较快，保证人机仍会响应战线变化；真正出卡由下方两层节流减半。
   state.thinkAt = now + 0.70 + Math.random() * 0.45;
 
   const card = chooseCard(battle, userId, state);
@@ -239,10 +242,10 @@ export function installPvpBotAi20260905() {
 
     // 同一张卡严格使用完整原始 CD；资源仍由 previousDeploy 真正扣除。
     state.cardReadyAt.set(Number(card.id), now + cardCooldown(card));
-    // 单个人机放慢到约 3.0~4.6 秒一次。
-    state.globalReadyAt = now + 3.0 + Math.random() * 1.6;
-    // 3v3 时多个 bot 也不能同一瞬间一起铺场：同阵营约 1.7~2.5 秒最多一张。
-    setTeamReadyAt(this, team, now + 1.7 + Math.random() * 0.8);
+    // 原 3.0~4.6 秒一次 -> 6.0~9.2 秒一次，严格至少减半。
+    state.globalReadyAt = now + scaledDeployDelay(3.0 + Math.random() * 1.6);
+    // 多个人机同阵营也减半：原 1.7~2.5 秒 -> 3.4~5.0 秒最多一张。
+    setTeamReadyAt(this, team, now + scaledDeployDelay(1.7 + Math.random() * 0.8));
     state.deployCount += 1;
     return result;
   };
@@ -261,3 +264,10 @@ export function installPvpBotAi20260905() {
     return result;
   };
 }
+
+export const PVP_BOT_AI_TIMING_20260906 = Object.freeze({
+  deployTimeScale: BOT_DEPLOY_TIME_SCALE_20260906,
+  openingDelaySec: [8.0, 11.0],
+  personalDeployDelaySec: [6.0, 9.2],
+  teamDeployDelaySec: [3.4, 5.0],
+});

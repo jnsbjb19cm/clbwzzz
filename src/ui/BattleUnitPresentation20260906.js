@@ -9,7 +9,11 @@ const PRESENTATION_FLAG = '__pvpBossUnitPresentation20260906';
 const HP_BAR_HEIGHT = 5;
 const HP_BAR_RADIUS = 4;
 const HP_BAR_WIDTH_RATIO = 0.78;
-const QUALITY_PLATE_HEIGHT = 11;
+const PEDESTAL_MIN_W = 38;
+const PEDESTAL_MAX_W = 66;
+const PEDESTAL_ASPECT = 0.27;
+const PEDESTAL_CACHE_LIMIT = 36;
+const STAR_PEDESTAL_OFFSET = 13;
 
 function clamp(value, min, max) {
   return Math.max(min, Math.min(max, value));
@@ -57,78 +61,156 @@ function isPvpOrBossRenderer(renderer) {
   return renderer?.[PRESENTATION_FLAG] === true;
 }
 
-function drawSoftQualityHalo(renderer, ctx, unit, layout) {
-  if (layout.isDying) return;
-  const quality = resolveCraftQuality(normalizeCraftQuality(unit.craftQuality));
-  const color = quality.color;
-  const { cx, footY, circleSize } = layout;
-  const lowQuality = Boolean(renderer._lowQuality);
+function createPedestalSurface(width, height, color, lowQuality) {
+  let surface = null;
+  if (typeof OffscreenCanvas === 'function') {
+    surface = new OffscreenCanvas(width, height);
+  } else if (typeof document !== 'undefined' && document.createElement) {
+    surface = document.createElement('canvas');
+    surface.width = width;
+    surface.height = height;
+  }
+  if (!surface) return null;
 
-  ctx.save();
-  // 软填充椭圆，不再使用硬描边大圈。完美/精良只换品质色，几何保持一致。
-  const layers = lowQuality
-    ? [[0.94, 0.22]]
-    : [[1.18, 0.10], [0.96, 0.18], [0.76, 0.27]];
-  for (const [scale, alpha] of layers) {
-    ctx.fillStyle = rgba(color, alpha);
+  const ctx = surface.getContext?.('2d');
+  if (!ctx) return null;
+
+  const cx = width / 2;
+  const cy = height * 0.49;
+  const outerRx = width * 0.43;
+  const outerRy = height * 0.28;
+  const ringRx = width * 0.38;
+  const ringRy = height * 0.215;
+  const innerRx = width * 0.29;
+  const innerRy = height * 0.115;
+
+  // 参考软泥怪脚下底座：贴地扁圆，外圈发光，中央透暗，不做“品质文字牌”。
+  ctx.clearRect(0, 0, width, height);
+
+  if (!lowQuality) {
+    ctx.fillStyle = rgba(color, 0.10);
+    ctx.beginPath();
+    ctx.ellipse(cx, cy, outerRx * 1.13, outerRy * 1.45, 0, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.fillStyle = rgba(color, 0.18);
+    ctx.beginPath();
+    ctx.ellipse(cx, cy, outerRx * 1.02, outerRy * 1.18, 0, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  // 地面阴影让人物像真正站在圆环上，而不是悬在发光贴纸上。
+  ctx.fillStyle = 'rgba(5,8,12,0.34)';
+  ctx.beginPath();
+  ctx.ellipse(cx, cy + height * 0.035, ringRx, ringRy, 0, 0, Math.PI * 2);
+  ctx.fill();
+
+  // 品质色主环。
+  ctx.strokeStyle = rgba(color, lowQuality ? 0.78 : 0.96);
+  ctx.lineWidth = lowQuality ? 2 : 2.8;
+  ctx.beginPath();
+  ctx.ellipse(cx, cy, ringRx, ringRy, 0, 0, Math.PI * 2);
+  ctx.stroke();
+
+  // 第二层内圈，让底座有软泥怪参考图里的“双层圆盘”质感。
+  if (!lowQuality) {
+    ctx.strokeStyle = rgba(color, 0.52);
+    ctx.lineWidth = 1.4;
+    ctx.beginPath();
+    ctx.ellipse(cx, cy + 0.4, ringRx * 0.86, ringRy * 0.73, 0, 0, Math.PI * 2);
+    ctx.stroke();
+  }
+
+  // 中央只轻微压暗，保持“圆环”而不是实心色块。
+  ctx.fillStyle = 'rgba(7,10,16,0.18)';
+  ctx.beginPath();
+  ctx.ellipse(cx, cy + 0.6, innerRx, innerRy, 0, 0, Math.PI * 2);
+  ctx.fill();
+
+  // 上沿白亮反光，模拟参考图粉/蓝底座的高亮边。
+  if (!lowQuality) {
+    ctx.strokeStyle = 'rgba(255,255,255,0.58)';
+    ctx.lineWidth = 1.05;
     ctx.beginPath();
     ctx.ellipse(
       cx,
-      footY + circleSize * 0.04,
-      circleSize * 0.64 * scale,
-      circleSize * 0.205 * scale,
+      cy - 0.25,
+      ringRx * 0.88,
+      ringRy * 0.82,
       0,
-      0,
-      Math.PI * 2,
+      Math.PI * 1.08,
+      Math.PI * 1.92,
     );
-    ctx.fill();
+    ctx.stroke();
   }
-  ctx.restore();
 
-  // 正常画质始终保留原品质光效包，不再按“单位数>=N”删除；显式低画质才省略动画层。
-  if (!lowQuality) {
-    const now = performance.now() / 1000;
-    renderer.drawGlobalFxPack(
-      ctx,
-      'qualityLightCircle',
-      cx,
-      footY - circleSize * 0.14,
-      circleSize * 1.42,
-      now,
-    );
-  }
+  return surface;
 }
 
-function drawQualityPedestal(ctx, unit, layout) {
-  const quality = resolveCraftQuality(normalizeCraftQuality(unit.craftQuality));
-  const color = quality.color;
-  const width = clamp(layout.circleSize * 1.08, 42, 68);
-  const height = QUALITY_PLATE_HEIGHT;
-  const x = layout.cx - width / 2;
-  const y = layout.footY + 1;
+function pedestalSurface(renderer, craftQuality, width, lowQuality) {
+  const cq = normalizeCraftQuality(craftQuality);
+  const quality = resolveCraftQuality(cq);
+  const widthBucket = Math.round(width / 4) * 4;
+  const height = Math.max(14, Math.round(widthBucket * PEDESTAL_ASPECT));
+  const key = `${cq}:${widthBucket}:${lowQuality ? 1 : 0}`;
 
+  renderer.__qualityPedestalCache20260906 ??= new Map();
+  const cache = renderer.__qualityPedestalCache20260906;
+  if (cache.has(key)) return { image: cache.get(key), width: widthBucket, height };
+
+  const image = createPedestalSurface(widthBucket, height, quality.color, lowQuality);
+  if (image) {
+    if (cache.size >= PEDESTAL_CACHE_LIMIT) cache.clear();
+    cache.set(key, image);
+  }
+  return { image, width: widthBucket, height };
+}
+
+function drawPedestalFallback(ctx, color, cx, cy, width, height, lowQuality) {
   ctx.save();
-  ctx.shadowColor = rgba(color, 0.72);
-  ctx.shadowBlur = 7;
-  roundedRectPath(ctx, x, y, width, height, 5);
-  ctx.fillStyle = 'rgba(7,10,15,0.88)';
+  if (!lowQuality) {
+    ctx.fillStyle = rgba(color, 0.12);
+    ctx.beginPath();
+    ctx.ellipse(cx, cy, width * 0.51, height * 0.54, 0, 0, Math.PI * 2);
+    ctx.fill();
+  }
+  ctx.fillStyle = 'rgba(5,8,12,0.30)';
+  ctx.beginPath();
+  ctx.ellipse(cx, cy, width * 0.39, height * 0.25, 0, 0, Math.PI * 2);
   ctx.fill();
-
-  ctx.shadowBlur = 0;
-  roundedRectPath(ctx, x, y, width, height, 5);
-  ctx.strokeStyle = rgba(color, 0.96);
-  ctx.lineWidth = 1.25;
+  ctx.strokeStyle = rgba(color, lowQuality ? 0.78 : 0.96);
+  ctx.lineWidth = lowQuality ? 2 : 2.8;
+  ctx.beginPath();
+  ctx.ellipse(cx, cy, width * 0.39, height * 0.25, 0, 0, Math.PI * 2);
   ctx.stroke();
-
-  // 中央品质标签沿用项目实际 1~5 制作品质名称：劣质/普通/优秀/精良/完美。
-  ctx.font = 'bold 7px "Microsoft YaHei", sans-serif';
-  ctx.textAlign = 'center';
-  ctx.textBaseline = 'middle';
-  ctx.fillStyle = '#ffffff';
-  ctx.fillText(quality.name, layout.cx, y + height / 2 + 0.25);
   ctx.restore();
+}
 
-  return { x, y, width, height };
+function drawQualityPedestalRing(renderer, ctx, unit, layout) {
+  if (layout.isDying) return;
+  const cq = normalizeCraftQuality(unit.craftQuality);
+  const quality = resolveCraftQuality(cq);
+  const lowQuality = Boolean(renderer._lowQuality);
+  const targetWidth = clamp(layout.circleSize * 0.98, PEDESTAL_MIN_W, PEDESTAL_MAX_W);
+  const cached = pedestalSurface(renderer, cq, targetWidth, lowQuality);
+  const width = cached.width || targetWidth;
+  const height = cached.height || Math.max(14, width * PEDESTAL_ASPECT);
+  const x = layout.cx - width / 2;
+  const y = layout.footY - height * 0.46;
+
+  if (cached.image) {
+    ctx.drawImage(cached.image, x, y, width, height);
+  } else {
+    drawPedestalFallback(
+      ctx,
+      quality.color,
+      layout.cx,
+      layout.footY + height * 0.02,
+      width,
+      height,
+      lowQuality,
+    );
+  }
 }
 
 function drawHpBar(ctx, unit, layout) {
@@ -169,7 +251,6 @@ function drawAuthorityStars(renderer, ctx, unit, cx, footY, circleSize) {
   const level = Math.max(0, Math.floor(Number(unit.strengthLv ?? unit.star) || 0));
   if (level <= 0) return;
 
-  // 每行最多 7 星；8+ 自动换第二行，15+ 继续换行，绝不截断真实强化等级。
   const rows = [];
   let remainingLevel = level;
   while (remainingLevel > 0) {
@@ -178,9 +259,8 @@ function drawAuthorityStars(renderer, ctx, unit, cx, footY, circleSize) {
     remainingLevel -= row;
   }
 
-  // 保持之前确定的星级视觉尺寸，不因单位数变化：9~12px，随单位底座轻微缩放。
   const starSize = clamp(circleSize * 0.135, 9, 12);
-  const firstY = footY + QUALITY_PLATE_HEIGHT + 3;
+  const firstY = footY + STAR_PEDESTAL_OFFSET;
 
   rows.forEach((rowStars, rowIndex) => {
     let remaining = rowStars;
@@ -209,14 +289,17 @@ export function installBattleUnitPresentation20260906() {
 
   const previousDestroy = BattleView.prototype.destroy;
   BattleView.prototype.destroy = function destroyPvpBossUnitPresentation20260906(...args) {
-    if (this.renderer) this.renderer[PRESENTATION_FLAG] = false;
+    if (this.renderer) {
+      this.renderer[PRESENTATION_FLAG] = false;
+      this.renderer.__qualityPedestalCache20260906?.clear?.();
+    }
     return previousDestroy.apply(this, args);
   };
 
   const previousHalo = BattleRenderer.prototype.drawUnitHalo;
-  BattleRenderer.prototype.drawUnitHalo = function drawPvpBossQualityHalo20260906(ctx, unit, layout) {
+  BattleRenderer.prototype.drawUnitHalo = function drawPvpBossQualityPedestal20260906(ctx, unit, layout) {
     if (!isPvpOrBossRenderer(this)) return previousHalo.call(this, ctx, unit, layout);
-    return drawSoftQualityHalo(this, ctx, unit, layout);
+    return drawQualityPedestalRing(this, ctx, unit, layout);
   };
 
   const previousStars = BattleRenderer.prototype.drawStrengthStars;
@@ -240,8 +323,7 @@ export function installBattleUnitPresentation20260906() {
     );
 
     drawHpBar(ctx, unit, layout);
-    drawQualityPedestal(ctx, unit, layout);
-    // 星级只在“用户明确开启低画质”时省略；单位多本身绝不会触发低画质。
+    // 底座已在 drawUnitHalo 阶段绘制，保证它永远位于单位脚下而不是盖住角色。
     if (!this._lowQuality) {
       this.drawStrengthStars(ctx, unit, layout.cx, layout.footY, layout.circleSize);
     }
@@ -252,8 +334,9 @@ export function installBattleUnitPresentation20260906() {
     window.__verifyBattleUnitPresentation20260906 = () => ({
       enabled: true,
       scope: 'PVP/BOSS only',
-      qualityPedestal: 'thin dark rounded plate + quality border/glow + label',
-      halo: 'soft filled quality glow; animated pack preserved at normal quality',
+      qualityPedestal: 'flat cached oval ring under the feet; quality-colored rim + dark translucent center; no text plate',
+      pedestalRendering: 'pre-rendered offscreen cache by quality/size bucket',
+      animatedQualityPackPerUnit: false,
       hpBar: {
         widthRatio: HP_BAR_WIDTH_RATIO,
         height: HP_BAR_HEIGHT,
