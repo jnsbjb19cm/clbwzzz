@@ -394,7 +394,8 @@ export function resolveUnitAnimState(unit, engine) {
   // 眩晕(击晕)状态：烘焙包含 'stun' 动画时优先播放(问题7)
   if (unit.stunnedUntil && engine.time < unit.stunnedUntil) return 'stun';
   if (unit._burrowTargetCol != null) return 'underMoving';
-  if (unit.attackingBase) return 'attacking';
+  // attackingBase 只锁定战斗位置，不代表整段攻击冷却都处于攻击动画。
+  // 仅真正出手的动画窗口进入 attacking，避免 PVE/PVP 两侧基地攻击时末帧→首帧反复“回弹”。
   if (unit._attackAnimUntil && engine.time < unit._attackAnimUntil) return 'attacking';
   if (unit._jumpUntil && engine.time < unit._jumpUntil) return 'jump';
   if (unit.isMovable?.()) {
@@ -923,11 +924,11 @@ export class UnitAnimPlayer {
     }
 
     // 完整帧可能超出画布顶部/左缘(lane0/col0 的蘑菇法杖/法阵)：
-    // 攻击完整帧按人物脚锚定时 dy 会为负(法杖伸到画布外被裁)。clamp 进画布保证完整显示。
+    // 非基地单位仍 clamp 进画布；攻击基地时保持统一锚点，允许动作自然伸出边缘，避免回弹。
     if (!Number.isFinite(dx)) dx = boxX;
     if (!Number.isFinite(dy)) dy = boxY;
     if (dy < 0) dy = 0;
-    if (dx < 0) dx = 0;
+    if (dx < 0 && !unit.attackingBase) dx = 0;
     const anchorOffsetX = resolveFrameAnchorOffset(unit.res, state, fr, flipX);
     const shiftedDx = dx + anchorOffsetX * scale;
 
