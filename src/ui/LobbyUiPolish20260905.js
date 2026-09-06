@@ -1,7 +1,14 @@
 import './LobbyUiPolish20260905.css';
+import { authStore } from '../core/AuthStore.js';
 import { RoomView } from './RoomView.js';
+import {
+  appendRoomChatMessage,
+  clearRoomChatOnSessionExit,
+  hydrateRoomChatHistory,
+} from './RoomChatPersistence20260906.js';
 
 const PATCH_FLAG = Symbol.for('clbwz.lobbyUiPolish20260905');
+const LOGOUT_PATCH_FLAG = Symbol.for('clbwz.roomChatLogoutPatch20260906');
 const CHAT_CHANNELS = Object.freeze([
   { id: 'current', label: '当前' },
   { id: 'world', label: '世界' },
@@ -167,9 +174,36 @@ function enhanceLobbyShell(view) {
   insertChatChannels(view);
 }
 
+function roomChatMessageHtml(view, msg = {}) {
+  const nickname = view.escapeHtml(msg.nickname || msg.username || msg.sender || '玩家');
+  const text = view.escapeHtml(msg.text || msg.message || '');
+  if (!text) return '';
+  const systemClass = msg.system ? ' system' : '';
+  return `<div class="exact-room-chat-message${systemClass}"><b>${nickname}：</b><span>${text}</span></div>`;
+}
+
+function hydrateVisibleRoomChat(view) {
+  const container = view.root?.querySelector?.('.exact-room-chat-log');
+  if (!container) return;
+  hydrateRoomChatHistory({ container });
+}
+
+function installRoomChatSessionCleanup() {
+  // Loading the unauthenticated start screen starts a fresh chat session.
+  if (!authStore.isLoggedIn()) clearRoomChatOnSessionExit();
+  if (globalThis[LOGOUT_PATCH_FLAG]) return;
+  globalThis[LOGOUT_PATCH_FLAG] = true;
+  const originalLogout = authStore.logout.bind(authStore);
+  authStore.logout = (...args) => {
+    clearRoomChatOnSessionExit();
+    return originalLogout(...args);
+  };
+}
+
 export function installLobbyUiPolish20260905() {
   if (globalThis[PATCH_FLAG]) return;
   globalThis[PATCH_FLAG] = true;
+  installRoomChatSessionCleanup();
 
   const originalRenderShell = RoomView.prototype.renderShell;
   RoomView.prototype.renderShell = function renderShellLobbyPolish20260905(...args) {
@@ -206,8 +240,20 @@ export function installLobbyUiPolish20260905() {
   };
 
   const originalAppendChat = RoomView.prototype.appendChat;
-  RoomView.prototype.appendChat = function appendChannelChat20260905(msg) {
-    if (this.room || !msg?.channel) return originalAppendChat.call(this, msg);
+  RoomView.prototype.appendChat = function appendChannelChat20260905(msg = {}) {
+    // Room messages are persisted before touching the DOM. Snapshot-driven room re-renders
+    // can therefore destroy/recreate the chat panel without destroying the conversation.
+    if (this.room) {
+      const messageHtml = roomChatMessageHtml(this, msg);
+      if (!messageHtml) return;
+      appendRoomChatMessage({
+        messageHtml,
+        container: this.root?.querySelector?.('.exact-room-chat-log') ?? null,
+      });
+      return;
+    }
+
+    if (!msg?.channel) return originalAppendChat.call(this, msg);
     ensureLobbyChatState(this);
     const channel = CHAT_CHANNELS.some((entry) => entry.id === msg.channel) ? msg.channel : 'current';
     this.lobbyChatMessages.push({ ...msg, channel });
@@ -217,5 +263,24 @@ export function installLobbyUiPolish20260905() {
       this.root?.querySelector(`.lobby-chat-channel[data-channel="${channel}"], .lobby-chat-channel[data-lobby-chat-channel="${channel}"]`)?.classList.add('has-unread');
     }
     renderLobbyMessages(this);
+  };
+
+  const originalBindRoomChat = RoomView.prototype.bindRoomChat;
+  RoomView.prototype.bindRoomChat = function bindPersistentRoomChat20260906(...args) {
+    const result = originalBindRoomChat.apply(this, args);
+    if (!this.__persistentRoomChatReadyHandler) {
+      this.__persistentRoomChatReadyHandler = () => hydrateVisibleRoomChat(this);
+      this.root?.addEventListener?.('clbwz:room-exact-ready', this.__persistentRoomChatReadyHandler);
+    }
+    return result;
+  };
+
+  const originalDestroy = RoomView.prototype.destroy;
+  RoomView.prototype.destroy = function destroyPersistentRoomChat20260906(...args) {
+    if (this.__persistentRoomChatReadyHandler) {
+      this.root?.removeEventListener?.('clbwz:room-exact-ready', this.__persistentRoomChatReadyHandler);
+      this.__persistentRoomChatReadyHandler = null;
+    }
+    return originalDestroy.apply(this, args);
   };
 }
