@@ -3,6 +3,7 @@ import { installEconomyInventoryRules20260905 } from './ui/EconomyInventoryRules
 import { installEconomyInventoryPersistence20260905 } from './ui/EconomyInventoryPersistence20260905.js';
 import { installCraftBindingSafety20260905 } from './ui/CraftBindingSafety20260905.js';
 import { installLobbyUiPolish20260905 } from './ui/LobbyUiPolish20260905.js';
+import { installRoomChatRuntimePatch20260906 } from './ui/RoomChatRuntimePatch20260906.js';
 import { installSmithyOfficialRefill20260905 } from './ui/SmithyOfficialRefill20260905.js';
 import { installMainCityTrialBulletin20260905 } from './ui/MainCityTrialBulletin20260905.js';
 import { installAnnouncementPlainText20260905 } from './ui/AnnouncementPlainText20260905.js';
@@ -44,6 +45,8 @@ installEconomyInventoryRules20260905();
 installEconomyInventoryPersistence20260905();
 installCraftBindingSafety20260905();
 installLobbyUiPolish20260905();
+// Must run after the lobby patch because it owns the final in-room append/replay behavior.
+installRoomChatRuntimePatch20260906();
 installSmithyOfficialRefill20260905();
 installMainCityTrialBulletin20260905();
 installAnnouncementPlainText20260905();
