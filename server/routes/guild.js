@@ -15,6 +15,18 @@ const ROLE_LABEL = {
   member: '会员',
 };
 
+function normalizeGuildRole20260906(value) {
+  return String(value ?? '')
+    .trim()
+    .toLowerCase()
+    .replace(/[\s-]+/g, '_');
+}
+
+function canApproveGuildJoinRole20260906(role) {
+  const normalized = normalizeGuildRole20260906(role);
+  return normalized === 'president' || normalized === 'vice_president';
+}
+
 function clampInt(value, min, max) {
   const n = Number(value);
   if (!Number.isFinite(n)) return min;
@@ -46,10 +58,13 @@ guildRouter.get('/list', async (req, res) => {
 guildRouter.get('/my', async (req, res) => {
   const my = await getUserMember(req.user.id);
   if (!my) return res.json({ ok: true, guild: null });
+  const role = normalizeGuildRole20260906(my.role);
   return res.json({
     ok: true,
     guild: {
       ...my,
+      role,
+      canApprove: canApproveGuildJoinRole20260906(role),
       craftStrengthBonus: GUILD_BONUS[Math.min(Math.max(my.level, 1), 5) - 1] ?? 0,
     },
   });
@@ -97,7 +112,7 @@ guildRouter.post('/join', async (req, res) => {
 guildRouter.get('/:guildId/requests', async (req, res) => {
   const guildId = Number(req.params.guildId);
   const my = await getUserMember(req.user.id);
-  if (!my || my.guildId !== guildId || !['president', 'vice_president'].includes(my.role)) {
+  if (!my || my.guildId !== guildId || !canApproveGuildJoinRole20260906(my.role)) {
     return res.status(403).json({ message: '只有会长/副会长可以审批申请' });
   }
   const rows = await db.all(`
@@ -114,7 +129,7 @@ guildRouter.get('/:guildId/requests', async (req, res) => {
 guildRouter.post('/:guildId/approve', async (req, res) => {
   const guildId = Number(req.params.guildId);
   const my = await getUserMember(req.user.id);
-  if (!my || my.guildId !== guildId || !['president', 'vice_president'].includes(my.role)) {
+  if (!my || my.guildId !== guildId || !canApproveGuildJoinRole20260906(my.role)) {
     return res.status(403).json({ message: '只有会长/副会长可以审批申请' });
   }
   const userId = clampInt(req.body.userId, 1, 2_000_000_000);
@@ -138,7 +153,7 @@ guildRouter.post('/:guildId/approve', async (req, res) => {
 guildRouter.post('/leave', async (req, res) => {
   const my = await getUserMember(req.user.id);
   if (!my) return res.status(404).json({ message: '你不在公会中' });
-  if (my.role === 'president') {
+  if (normalizeGuildRole20260906(my.role) === 'president') {
     const members = await db.all(
       'SELECT user_id AS userId FROM guild_members WHERE guild_id=? AND role!=\'president\' ORDER BY joined_at LIMIT 1',
       [my.guildId],
@@ -170,7 +185,7 @@ const GUILD_UPGRADE_COST = {
 guildRouter.post('/upgrade', async (req, res) => {
   const my = await getUserMember(req.user.id);
   if (!my) return res.status(404).json({ message: '你不在公会中' });
-  if (my.role !== 'president') return res.status(403).json({ message: '只有会长可以升级公会' });
+  if (normalizeGuildRole20260906(my.role) !== 'president') return res.status(403).json({ message: '只有会长可以升级公会' });
   if (my.level >= 5) return res.status(400).json({ message: '公会已满级' });
   const nextLevel = my.level + 1;
   const cost = GUILD_UPGRADE_COST[nextLevel];
@@ -203,22 +218,26 @@ guildRouter.get('/:guildId/members', async (req, res) => {
   `, [guildId]);
   return res.json({
     ok: true,
-    members: rows.map((row) => ({
-      ...row,
-      roleLabel: ROLE_LABEL[row.role] || row.role,
-      online: isOnline(row.userId),
-    })),
+    members: rows.map((row) => {
+      const role = normalizeGuildRole20260906(row.role);
+      return {
+        ...row,
+        role,
+        roleLabel: ROLE_LABEL[role] || role,
+        online: isOnline(row.userId),
+      };
+    }),
   });
 });
 
 guildRouter.post('/:guildId/promote', async (req, res) => {
   const guildId = Number(req.params.guildId);
   const my = await getUserMember(req.user.id);
-  if (!my || my.guildId !== guildId || my.role !== 'president') {
+  if (!my || my.guildId !== guildId || normalizeGuildRole20260906(my.role) !== 'president') {
     return res.status(403).json({ message: '只有会长可以调整职位' });
   }
   const userId = clampInt(req.body.userId, 1, 2_000_000_000);
-  const role = String(req.body.role || 'member');
+  const role = normalizeGuildRole20260906(req.body.role || 'member');
   if (!ROLES.has(role)) return res.status(400).json({ message: '职位无效' });
   if (role === 'president') return res.status(400).json({ message: '请用转让会长的逻辑' });
   const target = await db.get('SELECT user_id FROM guild_members WHERE guild_id=? AND user_id=?', [guildId, userId]);
