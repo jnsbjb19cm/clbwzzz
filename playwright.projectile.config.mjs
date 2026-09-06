@@ -2,11 +2,7 @@ import { defineConfig } from '@playwright/test';
 
 export default defineConfig({
   testDir: './tests',
-  testMatch: [
-    '**/pvp-projectile-continuity-20260819.spec.mjs',
-    '**/pvp-projectile-cadence-20260819.spec.mjs',
-    '**/pvp-projectile-onset-event-20260819.spec.mjs',
-  ],
+  testMatch: ['**/pvp-projectile-timeline-20260906.spec.mjs'],
   timeout: 30_000,
   expect: { timeout: 8_000 },
   fullyParallel: false,
