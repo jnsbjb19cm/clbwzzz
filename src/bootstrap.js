@@ -14,6 +14,7 @@ import { installDiamondShopExpansion20260905 } from './ui/DiamondShopExpansion20
 import { installBaseAttackRenderStability20260906 } from './battle/BaseAttackRenderStability20260906.js';
 import { installBattleUnitPresentation20260906 } from './ui/BattleUnitPresentation20260906.js';
 import { installBattleUserRegressionFix20260907 } from './ui/BattleUserRegressionFix20260907.js';
+import { installDeckInventoryAuthorityFix20260907 } from './ui/DeckInventoryAuthorityFix20260907.js';
 import { installCardInventoryRemotePatch20260906 } from './core/CardInventoryRemotePatch20260906.js';
 import { authStore } from './core/AuthStore.js';
 
@@ -68,5 +69,7 @@ void import('./main.js').then(() => {
   installBaseAttackRenderStability20260906();
   // 用户本轮三项回归：四套战团权威切换 + 实物掉落图标预载。
   installBattleUserRegressionFix20260907();
+  // 必须位于旧战团运行时补丁之后：把 team1/2/3 接回服务器战团，并让“补全卡”走专用权威接口。
+  installDeckInventoryAuthorityFix20260907();
   installBattleUnitPresentation20260906();
 });
