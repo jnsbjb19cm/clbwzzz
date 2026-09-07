@@ -72,6 +72,9 @@ jobs:
       - name: Verify economy, smithy and guild authority
         run: node scripts/verify-economy-smithy-guild-20260907.mjs
 
+      - name: Verify 2026-09-08 user regressions
+        run: node scripts/verify-user-regressions-20260908.mjs
+
       - name: Verify debug hit circles stay removed
         run: node scripts/verify-remove-hit-debug-circles-20260905.mjs
 
