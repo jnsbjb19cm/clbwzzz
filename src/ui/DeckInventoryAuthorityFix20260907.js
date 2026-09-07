@@ -67,11 +67,12 @@ function updateSnapshotDeck(deckNo, cardIds) {
 }
 
 function queueDeckSave(deckNo, cardIds) {
-  if (!authStore?.isLoggedIn?.() || deckNo < 1 || deckNo > 3 || !cardIds.length) return;
+  if (!authStore?.isLoggedIn?.() || deckNo < 1 || deckNo > 3) return;
   const key = deckCacheKey(deckNo);
-  const signature = cardIds.join(',');
-  const state = DECK_PENDING.get(key) ?? { signature: '', queue: Promise.resolve(), cardIds: null };
-  state.cardIds = [...cardIds];
+  const requestedIds = [...cardIds];
+  const signature = requestedIds.join(',');
+  const state = DECK_PENDING.get(key) ?? { signature: null, queue: Promise.resolve(), cardIds: null };
+  state.cardIds = [...requestedIds];
   if (state.signature === signature) {
     DECK_PENDING.set(key, state);
     return;
@@ -81,12 +82,14 @@ function queueDeckSave(deckNo, cardIds) {
     .catch(() => {})
     .then(async () => {
       try {
-        const result = await authStore.api.put(`/player/decks/${deckNo}`, { cards: cardIds });
-        const savedIds = Array.isArray(result?.cards) ? result.cards.map(Number).filter(Number.isInteger) : cardIds;
+        const result = await authStore.api.put(`/player/decks/${deckNo}`, { cards: requestedIds });
+        const savedIds = Array.isArray(result?.cards)
+          ? result.cards.map(Number).filter(Number.isInteger)
+          : requestedIds;
         updateSnapshotDeck(deckNo, savedIds);
         state.cardIds = [...savedIds];
       } catch (error) {
-        state.signature = '';
+        state.signature = null;
         state.cardIds = null;
         console.warn(`[deck] 战团${deckNo}保存失败`, error);
       }
@@ -109,7 +112,7 @@ function installDeckServerPersistence() {
       const cardIds = pending ?? snapshotDeckIds(deckNo);
       if (Array.isArray(cardIds)) {
         const selected = reconcileCardIds(cardIds, cardInventory);
-        if (selected?.length) return selected;
+        if (Array.isArray(selected)) return selected;
       }
     }
     return priorLoadSavedDeck(cardInventory, db, normalized);
@@ -121,7 +124,6 @@ function installDeckServerPersistence() {
     const deckNo = deckGroupToNumber20260906(normalized);
     if (deckNo < 1 || deckNo > 3) return;
     const cardIds = cardIdsFromSelection(selected, cardInventory);
-    if (!cardIds.length) return;
     queueDeckSave(deckNo, cardIds);
   };
 }
