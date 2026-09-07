@@ -6,7 +6,7 @@ on:
       - main
       - fix/fullscreen-battle-20260803
       - fix/pvp-wilderness-room-20260805
-      - '202691最新版'
+      - fix/pvp-boss-visual-sync-20260906
   pull_request:
     branches:
       - main
@@ -21,7 +21,7 @@ concurrency:
 
 jobs:
   syntax-and-build:
-    name: Syntax and Vite build
+    name: Syntax, current regressions and Vite build
     runs-on: ubuntu-latest
     timeout-minutes: 30
 
@@ -38,9 +38,6 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      # Keep the complete audit visible for development/build tooling, but do not
-      # let a dev-only advisory hide the product regression suite. Runtime
-      # dependencies remain a hard security gate below.
       - name: Report all dependency vulnerabilities
         continue-on-error: true
         run: npm audit --audit-level=moderate
@@ -51,80 +48,35 @@ jobs:
       - name: Check JavaScript syntax
         run: node scripts/ci-syntax-check.mjs
 
-      - name: Verify all card special attacks
-        run: npm run verify:card-specials
+      # The repository's permanent battle checks were consolidated on 2026-09-05/06.
+      # Do not call the removed August verify scripts: they are stale package.json
+      # entries and cannot provide a red/green signal on the current codebase.
+      - name: Verify battle runtime contract
+        run: node scripts/verify-battle-runtime-contract-20260906.mjs
 
-      - name: Verify fly-shoe first-contact special
-        run: npm run verify:fly-shoe
+      - name: Verify projectile runtime contract
+        run: node scripts/verify-projectile-runtime-contract-20260906.mjs
 
-      - name: Verify multiplayer fly-shoe authority special
-        run: node scripts/verify-pvp-fly-shoe-authority.mjs
+      - name: Verify latest user battle regressions
+        run: node scripts/verify-battle-user-regressions-20260906.mjs
 
-      - name: Verify projectile appears at the animation release frame
-        run: node scripts/verify-attack-release-regression-20260811.mjs
+      - name: Verify current user request contract
+        run: node scripts/verify-user-request-20260906.mjs
 
-      - name: Verify projectile server timeline protocol
-        run: node scripts/verify-projectile-spawn-event-protocol-20260819.mjs
+      - name: Verify room chat lifecycle
+        run: node scripts/verify-room-chat-lifecycle-20260906.mjs
 
-      - name: Verify frame-rate independent projectile timeline
-        run: node scripts/verify-projectile-server-timeline-20260819.mjs
+      - name: Verify room invite and guild approval
+        run: node scripts/verify-room-invite-guild-approval-20260906.mjs
 
-      - name: Verify projectile authority cadence
-        run: node scripts/verify-authority-projectile-release-latency-20260819.mjs
+      - name: Verify debug hit circles stay removed
+        run: node scripts/verify-remove-hit-debug-circles-20260905.mjs
 
-      - name: Verify range-one melee contact
-        run: npm run verify:melee-contact
+      - name: Verify authority smoothing performance
+        run: node scripts/verify-authority-smooth-performance-20260905.mjs
 
-      - name: Verify mushroom toxic projectile
-        run: npm run verify:mushroom-projectile
+      - name: Verify high-star render performance contract
+        run: node scripts/verify-high-star-render-performance-20260905.mjs
 
-      - name: Verify projectile full-viewport travel
-        run: npm run verify:projectile-viewport
-
-      - name: Verify battle hot-loop does not rebind methods
-        run: npm run verify:hot-loop
-
-      - name: Verify reported runtime regressions
-        run: node scripts/verify-battle-runtime-regressions-20260810.mjs
-
-      - name: Verify original card sound mappings
-        run: npm run verify:sounds
-
-      - name: Verify functional shop items
-        run: npm run verify:functional-items
-
-      - name: Verify PVP server authority
-        run: npm run verify:pvp-authority
-
-      - name: Verify PVP combat polish
-        run: npm run verify:pvp-combat-polish
-
-      - name: Verify PVP round-two gameplay
-        run: npm run verify:pvp-round2
-
-      - name: Verify PVP round-three placement and pacing
-        run: npm run verify:pvp-round3
-
-      - name: Verify cooperative BOSS authority
-        run: npm run verify:coop-boss
-
-      - name: Verify latest multiplayer and BOSS battle rules
-        run: npm run verify:user-rules-20260819
-
-      - name: Verify BOSS commander never hijacks normal targeting
-        run: node scripts/verify-boss-commander-targeting-20260819.mjs
-
-      # Match the production start path. Runtime sprite assets are committed and
-      # have their own dedicated audits below; CI should not rebake the entire
-      # animation corpus just to prove the deploy bundle can be produced.
       - name: Build production bundle
         run: npm run build:deploy
-
-      - name: Verify calibrated parabola release frames
-        run: npm run verify:parabola-release
-
-      - name: Audit every rebaked unit animation frame
-        run: npm run verify:unit-animation-bounds
-
-      - name: Audit every projectile impact animation frame
-        run: npm run verify:bullet-animation-bounds
