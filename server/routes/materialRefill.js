@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { db, withTransaction } from '../database.js';
 import { requireAuth } from '../middleware/auth.js';
+import { smithyAuthorityRouter20260907 } from './smithyAuthority20260907.js';
 
 export const materialRefillRouter = Router();
 materialRefillRouter.use(requireAuth);
@@ -139,3 +140,6 @@ materialRefillRouter.post('/material-refill', async (req, res) => {
     items: REFILL_ITEM_IDS.map((itemId) => ({ itemId, count: GRANT_PER_ITEM, bound: true })),
   });
 });
+
+// 所有铁匠铺状态变更都复用 /api/player 前缀；这里挂载后实际路径为 /api/player/smithy/*。
+materialRefillRouter.use('/smithy', smithyAuthorityRouter20260907);
