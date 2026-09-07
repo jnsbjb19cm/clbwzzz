@@ -75,6 +75,25 @@ function sameCardCollection(left, right) {
   return true;
 }
 
+async function readInstanceRows(userId) {
+  const rows = await db.all(`
+    SELECT pc.slot_index AS slotIndex, pc.card_id AS cardId, pc.star,
+           pc.craft_quality AS craftQuality, ps.state_json AS stateJson
+    FROM player_cards pc
+    LEFT JOIN player_card_instance_state ps
+      ON ps.user_id=pc.user_id AND ps.slot_index=pc.slot_index
+    WHERE pc.user_id=?
+    ORDER BY pc.slot_index
+  `, [userId]);
+  return rows.map((row) => ({
+    slotIndex: Number(row.slotIndex),
+    cardId: Number(row.cardId),
+    star: Math.max(0, Math.floor(Number(row.star) || 0)),
+    craftQuality: Math.max(1, Math.min(5, Math.floor(Number(row.craftQuality) || 1))),
+    extra: safeJsonParse(row.stateJson),
+  }));
+}
+
 export async function readCardInventory(userId) {
   const snapshot = await getPlayerSnapshot(userId);
   if (!snapshot) return null;
@@ -93,6 +112,7 @@ export async function readCardInventory(userId) {
       awakened: Boolean(extra.awakened),
       attributeRoll: normalizeAttributeRoll(extra.attributeRoll),
       powderSpent: normalizePowderSpent(extra.powderSpent),
+      bound: Boolean(extra.bound),
     };
   });
   return { slotCount: snapshot.cardInventory.slotCount, cards };
@@ -116,18 +136,37 @@ export async function putCardInventoryHandler(req, res) {
     return res.status(400).json({ message: '卡牌槽位重复' });
   }
 
-  const current = await db.all(
-    'SELECT card_id AS cardId FROM player_cards WHERE user_id=? ORDER BY slot_index',
-    [req.user.id],
-  );
-  if (!sameCardCollection(current.map((row) => Number(row.cardId)), cards.map((card) => card.cardId))) {
+  const currentInstances = await readInstanceRows(req.user.id);
+  if (!sameCardCollection(currentInstances.map((row) => row.cardId), cards.map((card) => card.cardId))) {
     return res.status(409).json({ message: '卡牌新增或移除必须通过掉落、打造或合成系统完成' });
   }
+
+  // 客户端可以调整槽位，但星级、制作品质、绑定状态和粉末投入量都属于服务器权威数据。
+  // 优先沿用同槽同卡实例；卡牌被拖到新槽位时，再从同 cardId 的未使用实例中匹配。
+  const unused = new Set(currentInstances.map((_, index) => index));
+  const authoritativeCards = cards.map((card) => {
+    let matchIndex = currentInstances.findIndex((row, index) => (
+      unused.has(index) && row.slotIndex === card.slotIndex && row.cardId === card.cardId
+    ));
+    if (matchIndex < 0) {
+      matchIndex = currentInstances.findIndex((row, index) => unused.has(index) && row.cardId === card.cardId);
+    }
+    if (matchIndex < 0) throw new Error('卡牌实例匹配失败');
+    unused.delete(matchIndex);
+    const server = currentInstances[matchIndex];
+    return {
+      ...card,
+      star: server.star,
+      craftQuality: server.craftQuality,
+      powderSpent: normalizePowderSpent(server.extra.powderSpent),
+      bound: Boolean(server.extra.bound),
+    };
+  });
 
   await withTransaction(async (conn) => {
     await conn.run('DELETE FROM player_cards WHERE user_id=?', [req.user.id]);
     await conn.run('DELETE FROM player_card_instance_state WHERE user_id=?', [req.user.id]);
-    for (const card of cards) {
+    for (const card of authoritativeCards) {
       await conn.run(
         'INSERT INTO player_cards(user_id,slot_index,card_id,star,craft_quality) VALUES(?,?,?,?,?)',
         [req.user.id, card.slotIndex, card.cardId, card.star, card.craftQuality],
@@ -140,6 +179,7 @@ export async function putCardInventoryHandler(req, res) {
           awakened: card.awakened,
           attributeRoll: card.attributeRoll,
           powderSpent: card.powderSpent,
+          bound: card.bound,
         })],
       );
     }
