@@ -21,7 +21,7 @@ export class CardCraftSystem {
   }
 
   isSmithyCraftable(card) {
-    return Boolean(card?.isExperienceCard || isCraftableCard(card));
+    return Boolean(isCraftableCard(card));
   }
 
   getTierRule(quality) {
@@ -255,10 +255,18 @@ export class CardCraftSystem {
 
   getCraftQualityWeights(useCharm = false) {
     const highQualityMult = useCharm ? 1 + this.rules.charmBonus.qualityWeight : 1;
-    return this.rules.craftQualityWeights.map((w) => ({
-      ...w,
-      // 保护符只提高优秀及以上底座权重；给所有档位同乘系数不会改变概率。
-      weight: w.weight * (w.id >= 2 ? highQualityMult : 1),
-    }));
+    return this.rules.craftQualityWeights.map((raw) => {
+      // craftRules 的历史 id 是 0..4；游戏实例品质统一使用 1..5。
+      const id = Math.max(1, Math.min(5, Number(raw.id) + 1));
+      const canonical = resolveCraftQuality(id);
+      return {
+        ...raw,
+        id,
+        name: canonical.name,
+        color: canonical.color,
+        // 交换后“优秀”为品质4(蓝色)，所以保护符从品质4及以上开始提高权重。
+        weight: raw.weight * (id >= 4 ? highQualityMult : 1),
+      };
+    });
   }
 }
