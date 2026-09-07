@@ -37,6 +37,7 @@ import { installAuthorityRuleConvergence20260830 } from './battle/AuthorityRuleC
 import { installPvpBotAi20260905 } from './battle/PvpBotAi20260905.js';
 import { installAuthorityPerformance20260905 } from './battle/AuthorityPerformance20260905.js';
 import { installRoomBossRound2Fix } from './rooms/RoomBossRound2Fix.js';
+import { installRoomDeckSelection20260907 } from './rooms/RoomDeckSelection20260907.js';
 import { startRoomLifetimeService } from './rooms/RoomLifetimeService.js';
 import { startRandomMatchBotService } from './rooms/RandomMatchBotService.js';
 import { registerSocketHandlers } from './socket/registerSocketHandlers.js';
@@ -59,6 +60,8 @@ installBattleMeleeContactFinal();
 installBattleMushroomProjectileFinal();
 installCoopBossOwnerResourceFinal();
 installRoomBossRound2Fix();
+// 房间战团选择协议：默认=0，战团1/2/3=1/2/3；必须在 socket handlers 开始接收请求前安装。
+installRoomDeckSelection20260907();
 // 业务权威收口必须最后安装：只覆盖仍冲突的语义，不回退 Round2/Round3 已修好的规则。
 installBattleRuleConvergence20260830();
 installAuthorityRuleConvergence20260830();
