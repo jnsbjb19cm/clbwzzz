@@ -31,14 +31,21 @@ function groupForInventory(cardInventory, requestedGroup) {
   return normalizeDeckGroup20260906(cardInventory?.__activeDeckGroup20260907 ?? 'default');
 }
 
+function fallbackDeckForGroup(cardInventory, db, group) {
+  return groupForInventory(cardInventory, group) === 'default'
+    ? DeckSelectView.defaultDeckSlots(cardInventory, db)
+    : [];
+}
+
 function readDeckGroup(cardInventory, db, group) {
   if (!cardInventory) return null;
   const normalized = groupForInventory(cardInventory, group);
   try {
     const raw = localStorage.getItem(storageKeyForDeckGroup20260906(normalized));
-    if (raw) {
+    if (raw != null) {
       const parsed = JSON.parse(raw);
-      if (Array.isArray(parsed) && parsed.length) {
+      if (Array.isArray(parsed)) {
+        if (parsed.length === 0) return [];
         const reconciled = DeckSelectView.reconcileFingerprints(parsed, cardInventory);
         if (reconciled.length) return reconciled;
       }
@@ -83,7 +90,7 @@ function installDeckGroupRuntime() {
   DeckSelectView.loadSavedDeck = function loadSavedDeckByGroup(cardInventory, db, group) {
     const normalized = groupForInventory(cardInventory, group);
     const grouped = readDeckGroup(cardInventory, db, normalized);
-    if (grouped?.length) return grouped;
+    if (grouped !== null) return grouped;
     if (normalized === 'default') return originalLoadSavedDeck(cardInventory, db);
     return null;
   };
@@ -146,15 +153,28 @@ function installDeckGroupRuntime() {
     if (options.cardInventory) options.cardInventory.__activeDeckGroup20260907 = group;
 
     const saved = DeckSelectView.loadSavedDeck(options.cardInventory, options.db, group);
+    const fallback = fallbackDeckForGroup(options.cardInventory, options.db, group);
     const selectedForGroup = roomState
-      ? (saved ?? DeckSelectView.defaultDeckSlots(options.cardInventory, options.db))
-      : (options.deckSlots ?? saved ?? DeckSelectView.defaultDeckSlots(options.cardInventory, options.db));
+      ? (saved ?? fallback)
+      : (group === 'default' ? (options.deckSlots ?? saved ?? fallback) : (saved ?? fallback));
+    const preserveExplicitEmptyDeck = group !== 'default'
+      && Array.isArray(selectedForGroup)
+      && selectedForGroup.length === 0;
 
     const result = originalDeckRender.call(this, root, {
       ...options,
       roomState,
       deckSlots: selectedForGroup,
     });
+
+    // 旧 DeckSelectView 会把任何空数组自动替换成 STARTER_DECK。team1/2/3 的空数组
+    // 是合法、明确的编辑状态，必须在同一同步渲染周期内恢复为空，避免闪回默认战团。
+    if (preserveExplicitEmptyDeck && this._selected.length) {
+      this._selected = [];
+      this._activeSwapSlot = null;
+      this._renderDeckSlots(root);
+      this._renderDrawer(root);
+    }
     syncDeckTabs(root, group);
 
     if (this.__deckGroupCaptureRoot && this.__deckGroupCaptureHandler) {
@@ -177,7 +197,7 @@ function installDeckGroupRuntime() {
       this._deckTab = nextGroup;
       if (this._cardInventory) this._cardInventory.__activeDeckGroup20260907 = nextGroup;
       this._selected = DeckSelectView.loadSavedDeck(this._cardInventory, this._db, nextGroup)
-        ?? DeckSelectView.defaultDeckSlots(this._cardInventory, this._db);
+        ?? fallbackDeckForGroup(this._cardInventory, this._db, nextGroup);
       this._activeSwapSlot = null;
       this._renderDeckSlots(root);
       this._renderDrawer(root);
@@ -227,7 +247,7 @@ function installDeckGroupRuntime() {
         : deckNumberToGroup20260906(selectedDeckNo);
       this.cardInventory.__activeDeckGroup20260907 = group;
       this.deckSlots = DeckSelectView.loadSavedDeck(this.cardInventory, this.db, group)
-        ?? DeckSelectView.defaultDeckSlots(this.cardInventory, this.db);
+        ?? fallbackDeckForGroup(this.cardInventory, this.db, group);
     }
     return originalBattleRender.call(this, root);
   };
