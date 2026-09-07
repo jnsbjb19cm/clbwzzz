@@ -8,6 +8,7 @@ import { installRoomChatChannelFix20260906 } from './ui/RoomChatChannelFix202609
 import { installRoomInviteRuntime20260906 } from './ui/RoomInviteRuntime20260906.js';
 import { installSmithyOfficialRefill20260905 } from './ui/SmithyOfficialRefill20260905.js';
 import { installSmithyServerAuthority20260907 } from './ui/SmithyServerAuthority20260907.js';
+import { installSmithyStrengthenLayoutFix20260908 } from './ui/SmithyStrengthenLayoutFix20260908.js';
 import { installPlayerSnapshotAuthority20260908 } from './ui/PlayerSnapshotAuthority20260908.js';
 import { installMainCityTrialBulletin20260905 } from './ui/MainCityTrialBulletin20260905.js';
 import { installAnnouncementPlainText20260905 } from './ui/AnnouncementPlainText20260905.js';
@@ -69,6 +70,8 @@ installDiamondShopExpansion20260905();
 installCardInventoryRemotePatch20260906({ authStore });
 // 登录/刷新后金币和道具统一使用数据库快照，localStorage 只做显示缓存。
 installPlayerSnapshotAuthority20260908();
+// 强化界面固定为“左信息 / 中央强化台 / 右选卡”，禁止中央操作台被响应式规则挤入右侧选卡区。
+installSmithyStrengthenLayoutFix20260908();
 // 铁匠铺制造/强化/加工/拆解统一改为服务器事务权威；必须在 SmithyView 真正使用前安装。
 installSmithyServerAuthority20260907();
 
