@@ -19,9 +19,11 @@ const __dirname = path.dirname(__filename);
 import { authRouter } from './routes/auth.js';
 import { playerRouter } from './routes/player.js';
 import { materialRefillRouter } from './routes/materialRefill.js';
+import { smithyAuthorityRouter20260907 } from './routes/smithyAuthority20260907.js';
 import { socialSearchFixRouter } from './routes/socialSearchFix20260905.js';
 import { socialFriendFixRouter } from './routes/socialFriendFix20260905.js';
 import { socialRouter } from './routes/social.js';
+import { guildUpgradeAuthorityRouter20260907 } from './routes/guildUpgradeAuthority20260907.js';
 import { guildRouter } from './routes/guild.js';
 import { guildWarehouseGridRouter } from './routes/guildWarehouseGrid.js';
 import { auctionRouter } from './routes/auction.js';
@@ -96,6 +98,8 @@ app.get('/api/health', (_req, res) => {
   res.json({ ok: true, service: 'clbwzzz-server', time: new Date().toISOString() });
 });
 app.use('/api/auth', authRouter);
+// 铁匠铺新增/移除卡牌与材料消耗必须先走服务器权威路由，客户端只接收快照。
+app.use('/api/player/smithy', smithyAuthorityRouter20260907);
 app.use('/api/player', playerRouter);
 app.use('/api/player', materialRefillRouter);
 // 新好友接口优先：修复历史申请唯一键导致“搜得到但无法重新添加”。
@@ -103,6 +107,8 @@ app.use('/api/social', socialFriendFixRouter);
 // 新好友搜索优先处理 /search：支持 ID/昵称/账号，并避开旧 SQL ESCAPE 方言差异。
 app.use('/api/social', socialSearchFixRouter);
 app.use('/api/social', socialRouter);
+// 公会升级必须优先走数据库条件扣款事务，避免旧路由先读余额造成不同步/并发重复扣款。
+app.use('/api/guild', guildUpgradeAuthorityRouter20260907);
 // 新仓库接口放在旧 guildRouter 前面，相同 deposit/withdraw 路径由新版非绑定物品规则优先处理。
 app.use('/api/guild', guildWarehouseGridRouter);
 app.use('/api/guild', guildRouter);
