@@ -61,7 +61,7 @@ export const TALENT_NODES = [
   { id: 'rock_break', name: '岩破术', branch: 'east', x: 90, y: 50, cost: 1, prerequisites: ['meteor_rain'], skillId: 529, desc: '对单格內的所有敌方单位造成65点伤害,且攻击正在减速状态下的卡牌威力提高25%（主动技能）。' },
   { id: 'war_cry', name: '恐惧咆哮', branch: 'east', x: 80, y: 66, cost: 1, prerequisites: ['firebird'], skillId: 541, desc: '瞬间提高己方所有单位的攻击力30点,持续15秒（主动技能）。' },
   { id: 'thunder_arrow', name: '雷鸣之箭', branch: 'south', x: 40, y: 80, cost: 1, prerequisites: ['thunderbolt'], skillId: 526, desc: '对单格內的所有敌方单位造成75点伤害攻击，且正在冰冻状态的卡牌威力提高30%（主动技能）。' },
-  { id: 'magic_arrow', name: '魔刺突袭', branch: 'south', x: 66, y: 76, cost: 1, prerequisites: ['lightning_hammer'], skillId: 533, desc: '对3*3范围內的所有敌方单位造成60点伤害（主动技能）。' },
+  { id: 'magic_arrow', name: '魔刺突袭', branch: 'south', x: 66, y: 76, cost: 1, prerequisites: ['lightning_hammer'], skillId: 532, desc: '对3*3范围內的所有敌方单位造成60点伤害（主动技能）。' },
   { id: 'illusion', name: '幻之境', branch: 'west', x: 10, y: 28, cost: 1, prerequisites: ['fatal_curse'], skillId: 550, desc: '令敌方的3-5张卡牌暂时消失10秒,技能结束后回归原位置，但同时恢复至血量最大值（主动技能）。' },
   { id: 'iron_body', name: '铁壳功', branch: 'west', x: 10, y: 72, cost: 1, prerequisites: ['guardian_shield'], skillId: 547, desc: '使己方基地在10秒内不受到任何伤害（主动技能）' },
 ];

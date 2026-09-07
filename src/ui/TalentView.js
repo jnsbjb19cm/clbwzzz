@@ -8,6 +8,31 @@ import {
   SKILL_HOTKEYS,
 } from '../core/SkillRegistry.js';
 
+/** 小天赋/被动天赋图标：HP 类统一用 519，MP 类统一用 521。 */
+const TALENT_HP_ICON_RES = 519;
+const TALENT_MP_ICON_RES = 521;
+
+/** 特殊小技能/被动技能的图标覆盖。 */
+const TALENT_ICON_OVERRIDES = new Map([
+  ['passive_will', 508],
+  ['passive_strong', 509],
+  ['passive_endure', 509],
+  ['passive_gamble', 513],
+  ['passive_tough', 513],
+  ['passive_slay', 515],
+  ['passive_war', 516],
+  ['passive_gift', 516],
+]);
+
+function talentNodeIcon(node) {
+  if (!node || node.id === 'core') return '✦';
+  const override = TALENT_ICON_OVERRIDES.get(node.id);
+  if (override != null) return getSkillIcon({ res: override });
+  if (node.hpBonus > 0) return getSkillIcon({ res: TALENT_HP_ICON_RES });
+  if (node.mpBonus > 0) return getSkillIcon({ res: TALENT_MP_ICON_RES });
+  return '◆';
+}
+
 export class TalentView {
   constructor(cardDb, heroSkills, player = null, { onPlayerUpdate, onNavigate } = {}) {
     this.cardDb = cardDb;
@@ -113,7 +138,7 @@ export class TalentView {
       + (node.kind === 'minor' ? ' minor' : '')
       + ` branch-${node.branch}`;
     const skill = node.skillId ? this.cardDb.getById(node.skillId) : null;
-    const icon = skill ? getSkillIcon(skill) : node.id === 'core' ? '✦' : '◆';
+    const icon = skill ? getSkillIcon(skill) : talentNodeIcon(node);
     const prereqNames = node.prerequisites
       .filter((id) => !this.heroSkills.isTalentUnlocked(id))
       .map((id) => TALENT_NODE_MAP.get(id)?.name)

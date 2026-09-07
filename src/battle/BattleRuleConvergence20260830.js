@@ -59,6 +59,10 @@ export function installAlienSentinelGroundRule20260830() {
     unit._abductUntil = finite(this.time) + 5;
     unit._abductVictimUids = victims.map((victim) => victim.uid);
     for (const victim of victims) {
+      if (this.isDebuffImmune?.(victim)) {
+        this.pushLog?.(`【${unit.name}】吸走失败：${victim.name} 免疫负面效果`);
+        continue;
+      }
       victim.frozenUntil = Math.max(finite(victim.frozenUntil), finite(this.time) + 5);
       this.pushLog?.(`【${unit.name}】吸走 ${victim.name}，吸收中…`);
     }
@@ -203,7 +207,15 @@ function installSkillSemanticRules() {
       this.pushLog?.(`${side === 'player' ? '己方' : '敌方'}基地处于无敌状态`);
       return 0;
     }
-    return previousDamageBase.call(this, side, amount);
+    const result = previousDamageBase.call(this, side, amount);
+    // 圣光术：己方基地锁血，8 秒内不会降到 10 以下。
+    const floorUntil = finite(this.__heroHpFloorUntil20260830?.[side]);
+    if (side === 'player' && finite(this.time) < floorUntil) {
+      const floor = Math.max(1, finite(this.__heroHpFloor20260830?.[side], 10));
+      if (finite(this.heroHp) < floor) this.heroHp = floor;
+      this.pushLog?.('圣咏生效：基地血量锁定');
+    }
+    return result;
   };
 }
 

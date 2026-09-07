@@ -23,6 +23,17 @@ function isHostileSkillTarget(unit, engine = null, skillId = null) {
   return true;
 }
 
+/** 圣盾术等“免疫负面效果”判定：debuffImmuneUntil 未到期时跳过负面状态施加。 */
+function isDebuffImmune(unit, engine = null) {
+  const now = Number(engine?.time) || 0;
+  return Boolean(unit?.alive && unit.debuffImmuneUntil && now < unit.debuffImmuneUntil);
+}
+
+function finite(value, fallback = 0) {
+  const number = Number(value);
+  return Number.isFinite(number) ? number : fallback;
+}
+
 export class BattleSkillSystem {
   constructor(engine, db) {
     this.engine = engine;
@@ -168,14 +179,14 @@ export class BattleSkillSystem {
 
     switch (effect.kind) {
       case 'aoe_damage':
-        this.damageInRadius(target.lane, target.col, effect.radius, effect.damage, skillId);
+        this.damageInRadius(target.lane, target.col, effect.radius, effect.damage, skillId, effect);
         break;
       case 'cell_damage': {
-        this.damageInRadius(target.lane, target.col, 0, effect.damage, skillId);
+        this.damageInRadius(target.lane, target.col, 0, effect.damage, skillId, effect);
         if (effect.freezeSec) {
           const cell = this.engine.getUnitsAt(target.lane, Math.round(target.col));
           for (const u of cell) {
-            if (!isHostileSkillTarget(u, eng, skillId)) continue;
+            if (!isHostileSkillTarget(u, eng, skillId) || isDebuffImmune(u, eng)) continue;
             u.frozenUntil = Math.max(u.frozenUntil || 0, this.engine.time + effect.freezeSec);
           }
         }
@@ -188,22 +199,29 @@ export class BattleSkillSystem {
         for (const unit of [...eng.units]) {
           if (!isHostileSkillTarget(unit, eng, skillId) || unit.lane !== target.lane) continue;
           this.hitUnit(unit, effect.damage);
-          if (unit.alive) unit.stunnedUntil = Math.max(unit.stunnedUntil ?? 0, t + effect.stunSec);
+          if (unit.alive && !isDebuffImmune(unit, eng)) {
+            unit.stunnedUntil = Math.max(unit.stunnedUntil ?? 0, t + effect.stunSec);
+          }
         }
         break;
       case 'thunderstorm': {
-        const enemies = eng.units.filter((unit) => isHostileSkillTarget(unit, eng, skillId));
-        const highestHp = [...enemies].sort((a, b) => b.hp - a.hp)[0];
-        const combined = effect.damage * enemies.length;
-        for (const unit of [...enemies]) this.hitUnit(unit, effect.damage);
-        if (highestHp?.alive && combined > 0) this.hitUnit(highestHp, combined);
+        // 按卡牌描述：2 秒内对全体敌方持续造成 10 点总伤害并累计，结束后对最高血量单位追加累计伤害。
+        const duration = Math.max(0.5, Number(effect.duration) || 2);
+        eng.activeFields.push({
+          kind: 'thunderstorm',
+          skillId: Number(skillId),
+          damage: Number(effect.damage) || 10,
+          duration,
+          until: t + duration,
+          total: 0,
+        });
         break;
       }
       case 'firebird':
         for (const unit of [...eng.units]) {
           if (!isHostileSkillTarget(unit, eng, skillId)) continue;
           this.hitUnit(unit, effect.damage);
-          if (!unit.alive) continue;
+          if (!unit.alive || isDebuffImmune(unit, eng)) continue;
           unit.dots = unit.dots ?? [];
           unit.dots.push({ dps: effect.burnDps, until: t + effect.burnSec, every: 1, kind: 'burn' });
         }
@@ -224,7 +242,7 @@ export class BattleSkillSystem {
         break;
       case 'fatal_curse':
         for (const unit of eng.units) {
-          if (!isHostileSkillTarget(unit, eng, skillId)) continue;
+          if (!isHostileSkillTarget(unit, eng, skillId) || isDebuffImmune(unit, eng)) continue;
           unit.dots = unit.dots ?? [];
           unit.dots.push({ dps: effect.dps, until: t + effect.duration, every: 1, kind: 'curse' });
           unit.damageTakenBonus = Math.max(unit.damageTakenBonus ?? 0, effect.vulnerability);
@@ -299,6 +317,19 @@ export class BattleSkillSystem {
           );
           const healed = roundBattleAmount(eng.heroHp - before);
           if (healed > 0) eng.spawnFloat(2, eng.getOpponentBaseEdgeCol('enemy'), healed);
+          // 圣光术：8 秒内己方基地血量不会降到 10 以下。
+          if (effect.heroHpFloorSec) {
+            eng.__heroHpFloorUntil20260830 ??= {};
+            eng.__heroHpFloor20260830 ??= {};
+            eng.__heroHpFloorUntil20260830.player = Math.max(
+              finite(eng.__heroHpFloorUntil20260830.player),
+              t + Number(effect.heroHpFloorSec),
+            );
+            eng.__heroHpFloor20260830.player = Math.max(
+              finite(eng.__heroHpFloor20260830.player, 0),
+              Number(effect.heroHpFloor) || 10,
+            );
+          }
         }
         break;
       case 'damage_all_enemies':
@@ -309,7 +340,7 @@ export class BattleSkillSystem {
         break;
       case 'freeze_all_enemies':
         for (const u of eng.units) {
-          if (!isHostileSkillTarget(u, eng, skillId)) continue;
+          if (!isHostileSkillTarget(u, eng, skillId) || isDebuffImmune(u, eng)) continue;
           u.frozenUntil = t + effect.freezeSec;
           u.slowedUntil = t + effect.freezeSec + effect.slowSec;
         }
@@ -318,6 +349,7 @@ export class BattleSkillSystem {
         for (const u of eng.units) {
           if (!u.alive || u.team !== 'player') continue;
           u.invulnUntil = t + effect.duration;
+          if (effect.debuffImmune) u.debuffImmuneUntil = t + effect.duration;
         }
         break;
       case 'base_invulnerable': {
@@ -384,7 +416,8 @@ export class BattleSkillSystem {
     }
   }
 
-  damageInRadius(centerLane, centerCol, radius, damage, skillId = null) {
+  damageInRadius(centerLane, centerCol, radius, damage, skillId = null, effect = null) {
+    const t = this.engine.time;
     for (const u of [...this.engine.units]) {
       if (!isHostileSkillTarget(u, this.engine, skillId)) continue;
       const unitCol = this.engine.getUnitGridCol(u);
@@ -392,9 +425,33 @@ export class BattleSkillSystem {
         Math.abs(u.lane - centerLane) <= radius &&
         Math.abs(unitCol - centerCol) <= radius
       ) {
-        this.hitUnit(u, damage);
+        let nextDamage = Number(damage);
+        if (effect?.bonusBurningPct && this.isUnitBurning(u, t)) {
+          nextDamage *= 1 + Number(effect.bonusBurningPct) / 100;
+        }
+        if (effect?.bonusFrozenPct && this.isUnitFrozen(u, t)) {
+          nextDamage *= 1 + Number(effect.bonusFrozenPct) / 100;
+        }
+        if (effect?.bonusSlowedPct && this.isUnitSlowed(u, t)) {
+          nextDamage *= 1 + Number(effect.bonusSlowedPct) / 100;
+        }
+        this.hitUnit(u, roundBattleAmount(nextDamage));
       }
     }
+  }
+
+  isUnitFrozen(unit, now) {
+    return Boolean(unit?.frozenUntil && Number(now) < unit.frozenUntil);
+  }
+
+  isUnitSlowed(unit, now) {
+    return Boolean(unit?.slowedUntil && Number(now) < unit.slowedUntil);
+  }
+
+  isUnitBurning(unit, now) {
+    return Boolean(
+      unit?.dots?.some((dot) => dot?.kind === 'burn' && Number(dot.until) > Number(now)),
+    );
   }
 
   damageRow(lane, damage, skillId = null) {
@@ -407,7 +464,7 @@ export class BattleSkillSystem {
   poisonInRadius(centerLane, centerCol, radius, dps, duration, skillId = null) {
     const until = this.engine.time + duration;
     for (const u of this.engine.units) {
-      if (!isHostileSkillTarget(u, this.engine, skillId)) continue;
+      if (!isHostileSkillTarget(u, this.engine, skillId) || isDebuffImmune(u, this.engine)) continue;
       const unitCol = this.engine.getUnitGridCol(u);
       if (
         Math.abs(u.lane - centerLane) <= radius &&
@@ -496,16 +553,35 @@ export class BattleSkillSystem {
   tickFields(dt) {
     const t = this.engine.time;
     this.engine.activeFields = (this.engine.activeFields ?? []).filter((f) => {
-      if (t >= f.until) return false;
       if (f.kind === 'fire_wall') {
+        if (t >= f.until) return false;
         for (const u of [...this.engine.units]) {
           if (!isHostileSkillTarget(u, this.engine, f.skillId)) continue;
           if (Math.abs(u.col - f.col) < 0.55) {
             this.applyContinuousDamage(u, f.dps * dt);
           }
         }
+        return true;
       }
-      return true;
+      if (f.kind === 'thunderstorm') {
+        const enemies = this.engine.units.filter((u) => isHostileSkillTarget(u, this.engine, f.skillId));
+        if (t >= f.until) {
+          const highestHp = [...enemies].sort((a, b) => b.hp - a.hp)[0];
+          if (highestHp?.alive && (f.total || 0) > 0) {
+            this.hitUnit(highestHp, roundBattleAmount(f.total));
+            this.engine.pushLog?.('【雷霆风暴】对最高血量单位追加记录伤害');
+          }
+          return false;
+        }
+        const duration = Math.max(0.001, Number(f.duration) || 2);
+        const perEnemyDamage = Math.max(0, Number(f.damage) || 10) * dt / duration;
+        for (const u of enemies) {
+          const applied = this.hitUnit(u, perEnemyDamage);
+          f.total = (f.total || 0) + applied;
+        }
+        return true;
+      }
+      return t < f.until;
     });
   }
 

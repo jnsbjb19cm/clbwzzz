@@ -66,7 +66,7 @@ export class AudioManager {
 
   /** 浏览器自动播放限制：首次用户手势后恢复被拦截的 BGM。 */
   _bindAudioUnlock() {
-    if (this._unlockBound || typeof window === 'undefined') return;
+    if (this._unlockBound || typeof window === 'undefined' || typeof window.addEventListener !== 'function') return;
     this._unlockBound = true;
     const unlock = () => {
       if (this.muted) return;

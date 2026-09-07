@@ -242,6 +242,10 @@ export class BattleEngine {
     return projectileCanHitTargetLayer(projectile, target);
   }
 
+  isDebuffImmune(unit) {
+    return Boolean(unit?.alive && unit.debuffImmuneUntil && this.time < unit.debuffImmuneUntil);
+  }
+
   isValidEnemyTarget(attacker, enemy) {
     if (enemy.team === attacker.team || !enemy.alive) return false;
     if (enemy.isLowTarget()) return false;
@@ -1037,9 +1041,13 @@ export class BattleEngine {
       Math.max(1, unit.atk + this.getAuraBonus(unit) + (unit.tempAtkBonus ?? 0)) * 1.8,
     );
     for (const v of victims) {
-      v.stunnedUntil = Math.max(v.stunnedUntil ?? 0, this.time + 2.5);
+      if (!this.isDebuffImmune(v)) {
+        v.stunnedUntil = Math.max(v.stunnedUntil ?? 0, this.time + 2.5);
+        this.pushLog(`【${unit.name}】碰到 ${v.name}，立刻击晕 2.5 秒并造成 ${dmg} 伤害`);
+      } else {
+        this.pushLog(`【${unit.name}】碰到 ${v.name}，但对方免疫负面效果`);
+      }
       this.resolveMeleeImpact(unit, v, dmg);
-      this.pushLog(`【${unit.name}】碰到 ${v.name}，立刻击晕 2.5 秒并造成 ${dmg} 伤害`);
     }
     return true;
   }
@@ -1051,6 +1059,10 @@ export class BattleEngine {
     if (!victims.length) return false;
     unit._swallowCdUntil = this.time + 2;
     for (const v of victims) {
+      if (this.isDebuffImmune(v)) {
+        this.pushLog(`【${unit.name}】吸入失败：${v.name} 免疫负面效果`);
+        continue;
+      }
       v.frozenUntil = Math.max(v.frozenUntil ?? 0, this.time + 10);
       v.dots = v.dots ?? [];
       v.dots.push({ kind: 'swallow', dps: Math.max(1, v.maxHp / 10), until: this.time + 10, every: 1 });
@@ -1070,6 +1082,10 @@ export class BattleEngine {
     unit._abductUntil = this.time + 5;
     unit._abductVictimUids = victims.map((victim) => victim.uid);
     for (const v of victims) {
+      if (this.isDebuffImmune(v)) {
+        this.pushLog(`【${unit.name}】吸走失败：${v.name} 免疫负面效果`);
+        continue;
+      }
       v.frozenUntil = Math.max(v.frozenUntil ?? 0, this.time + 5);
       this.pushLog(`【${unit.name}】吸走 ${v.name}，吸收中…`);
     }
@@ -1099,6 +1115,10 @@ export class BattleEngine {
     unit._charmCdUntil = this.time + 2;
     audio.playSfx('sound/effect/fire/c53.mp3', { tier: 'subtle' });
     for (const v of victims) {
+      if (this.isDebuffImmune(v)) {
+        this.pushLog(`【${unit.name}】魅惑失败：${v.name} 免疫负面效果`);
+        continue;
+      }
       v.team = unit.team;
       v._charmed = true;
       this.pushLog(`【${unit.name}】魅惑 ${v.name} → 加入我方`);
@@ -1113,6 +1133,10 @@ export class BattleEngine {
     if (!victims.length) return false;
     unit._iceShieldCdUntil = this.time + 2;
     for (const v of victims) {
+      if (this.isDebuffImmune(v)) {
+        this.pushLog(`【${unit.name}】冰冻失败：${v.name} 免疫负面效果`);
+        continue;
+      }
       v.frozenUntil = Math.max(v.frozenUntil ?? 0, this.time + 1.5);
       v.slowedUntil = Math.max(v.slowedUntil ?? 0, this.time + 4);
       this.pushLog(`【${unit.name}】冰冻 ${v.name}`);
@@ -1997,25 +2021,25 @@ export class BattleEngine {
       if (this.food < MAX_RESOURCE) this.food += 1;
     }
 
-    if (traits.poisonChance && Math.random() < traits.poisonChance) {
+    if (traits.poisonChance && Math.random() < traits.poisonChance && !this.isDebuffImmune(vic)) {
       vic.dots = vic.dots ?? [];
       vic.dots.push({ kind: 'poison', dps: traits.poisonDps || 3, until: t + (traits.poisonSec || 5), every: 1 });
     }
-    if (traits.stunChance && Math.random() < traits.stunChance) {
+    if (traits.stunChance && Math.random() < traits.stunChance && !this.isDebuffImmune(vic)) {
       vic.stunnedUntil = Math.max(vic.stunnedUntil || 0, t + (traits.stunSec || 1.5));
     }
     // 超级小麦：定身
-    if (traits.rootChance && Math.random() < traits.rootChance) {
+    if (traits.rootChance && Math.random() < traits.rootChance && !this.isDebuffImmune(vic)) {
       vic.stunnedUntil = Math.max(vic.stunnedUntil || 0, t + (traits.rootSec || 2.5));
     }
     // 极寒大法师：冻结
-    if (traits.freezeChance && Math.random() < traits.freezeChance) {
+    if (traits.freezeChance && Math.random() < traits.freezeChance && !this.isDebuffImmune(vic)) {
       vic.frozenUntil = Math.max(vic.frozenUntil || 0, t + (traits.freezeSec || 1.5));
     }
-    if (traits.slowSec) {
+    if (traits.slowSec && !this.isDebuffImmune(vic)) {
       vic.slowedUntil = Math.max(vic.slowedUntil || 0, t + traits.slowSec);
     }
-    if (traits.burnDps && traits.burnSec) {
+    if (traits.burnDps && traits.burnSec && !this.isDebuffImmune(vic)) {
       vic.dots = vic.dots ?? [];
       vic.dots.push({ kind: 'burn', dps: traits.burnDps, until: t + traits.burnSec, every: 1 });
     }
@@ -2033,7 +2057,7 @@ export class BattleEngine {
       if (!attacker.alive) this.onUnitDeath(attacker);
     }
     // 火图腾：被近战攻击时使攻击者灼烧
-    if (!ranged && vicTraits.burnMelee && attacker.alive) {
+    if (!ranged && vicTraits.burnMelee && attacker.alive && !this.isDebuffImmune(attacker)) {
       attacker.dots = attacker.dots ?? [];
       attacker.dots.push({ kind: 'burn', dps: vicTraits.burnDps || 3, until: t + (vicTraits.burnSec || 5), every: 1 });
     }
