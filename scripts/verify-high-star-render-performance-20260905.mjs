@@ -136,8 +136,17 @@ function makeEngine(unitCount) {
   renderer.draw(engine);
 
   assert.equal(renderer.__perfHighTierUnits20260905, 8, 'expected all eight 4/5-level cards to be counted as high tier');
-  assert.equal(renderer.__perfSkipHalos20260905, true, 'eight high-tier cards should disable expensive decorative halos');
-  assert.equal(renderer.__perfHeavyVisuals20260905, false, 'high-tier halo shedding alone must not force the whole unit renderer into low quality');
+  assert.equal(
+    renderer.__perfSkipHalos20260905,
+    false,
+    'high-tier unit count must not automatically remove quality halos; only explicit low-quality mode may reduce them',
+  );
+  assert.equal(
+    renderer._lowQuality,
+    false,
+    'eight high-tier cards must stay in normal visual quality when forceLowQuality is not enabled',
+  );
+  assert.equal(renderer.__perfHeavyVisuals20260905, false, 'high-tier diagnostics alone must not force the whole unit renderer into low quality');
 }
 
 {
