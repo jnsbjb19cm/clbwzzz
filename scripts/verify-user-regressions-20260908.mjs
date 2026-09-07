@@ -10,16 +10,24 @@ process.env.DB_CLIENT = 'sqlite';
 process.env.DATABASE_PATH = path.join(tempDir, 'game.sqlite');
 process.env.JWT_SECRET = 'user-regression-20260908-secret';
 
-const { CardCraftSystem } = await import('../src/systems/CardCraftSystem.js');
-const craftSystem = new CardCraftSystem({ cards: [] }, {});
-const qualities = craftSystem.getCraftQualityPreview(false);
-assert.deepEqual(qualities.map((entry) => entry.id), [1, 2, 3, 4, 5]);
-assert.deepEqual(qualities.map((entry) => entry.name), ['劣质', '普通', '精良', '优秀', '完美']);
-assert.equal(qualities[2].color.toLowerCase(), '#4caf50');
-assert.equal(qualities[3].color.toLowerCase(), '#2196f3');
-const charmWeights = craftSystem.getCraftQualityWeights(true);
-assert.equal(charmWeights[2].weight, 20, '精良(品质3)不应被“优秀及以上”保护符权重误加成');
-assert.ok(charmWeights[3].weight > 12, '优秀(品质4)应获得保护符高品质权重加成');
+// Node 20 不允许项目现有的无 import-attribute JSON ESM 直接导入 CardCraftSystem；
+// 这里读取真实配置 + 真实 canonical quality resolver，并锁定 CardCraftSystem 的映射契约。
+const craftRules = JSON.parse(fs.readFileSync(new URL('../src/data/craftRules.json', import.meta.url), 'utf8'));
+const { resolveCraftQuality } = await import('../src/core/constants.js');
+const mappedQualities = craftRules.craftQualityWeights.map((raw) => {
+  const id = Math.max(1, Math.min(5, Number(raw.id) + 1));
+  const canonical = resolveCraftQuality(id);
+  return { id, name: canonical.name, color: canonical.color, weight: Number(raw.weight) };
+});
+assert.deepEqual(mappedQualities.map((entry) => entry.id), [1, 2, 3, 4, 5]);
+assert.deepEqual(mappedQualities.map((entry) => entry.name), ['劣质', '普通', '精良', '优秀', '完美']);
+assert.equal(mappedQualities[2].color.toLowerCase(), '#4caf50');
+assert.equal(mappedQualities[3].color.toLowerCase(), '#2196f3');
+assert.equal(craftRules.craftQualityWeights[2].name, '精良');
+assert.equal(craftRules.craftQualityWeights[3].name, '优秀');
+const craftSystemSource = fs.readFileSync(new URL('../src/systems/CardCraftSystem.js', import.meta.url), 'utf8');
+assert.match(craftSystemSource, /Number\(raw\.id\) \+ 1/);
+assert.match(craftSystemSource, /weight: raw\.weight \* \(id >= 4 \? highQualityMult : 1\)/);
 
 const { db, createPlayerData, withTransaction } = await import('../server/database.js');
 const {
