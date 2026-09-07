@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
 
 concurrency:
   group: reaper-bigear-bake-${{ github.ref }}
@@ -20,8 +20,10 @@ jobs:
     timeout-minutes: 30
 
     steps:
-      - name: Checkout repository
+      - name: Checkout head branch
         uses: actions/checkout@v6
+        with:
+          ref: ${{ github.head_ref || github.ref_name }}
 
       - name: Setup Node.js
         uses: actions/setup-node@v6
@@ -47,7 +49,7 @@ jobs:
       - name: Upload re-baked unit assets
         uses: actions/upload-artifact@v4
         with:
-          name: reaper-bigear-bake-${{ github.sha }}
+          name: reaper-bigear-bake-${{ github.event.pull_request.head.sha || github.sha }}
           if-no-files-found: error
           retention-days: 7
           path: |
@@ -56,3 +58,18 @@ jobs:
             assets/sprites/unit_anim/57.png
             assets/sprites/unit_anim/57.json
             assets/sprites/unit_anim/manifest.json
+
+      - name: Commit verified 31/57 assets when changed
+        shell: bash
+        run: |
+          git add assets/sprites/unit_anim/31.png assets/sprites/unit_anim/31.json \
+                  assets/sprites/unit_anim/57.png assets/sprites/unit_anim/57.json
+          if git diff --cached --quiet; then
+            echo '31/57 baked assets already match the verified output.'
+            exit 0
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git commit -m 'fix: persist verified reaper and big-ear baked assets'
+          TARGET_BRANCH="${GITHUB_HEAD_REF:-${GITHUB_REF_NAME}}"
+          git push origin "HEAD:${TARGET_BRANCH}"
