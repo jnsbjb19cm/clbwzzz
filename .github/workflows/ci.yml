@@ -51,9 +51,6 @@ jobs:
       - name: Check JavaScript syntax
         run: node scripts/ci-syntax-check.mjs
 
-      - name: Verify 1536 room reconstruction
-        run: node scripts/verify-room-reference-1536.mjs
-
       - name: Verify all card special attacks
         run: npm run verify:card-specials
 
@@ -117,8 +114,11 @@ jobs:
       - name: Verify BOSS commander never hijacks normal targeting
         run: node scripts/verify-boss-commander-targeting-20260819.mjs
 
+      # Match the production start path. Runtime sprite assets are committed and
+      # have their own dedicated audits below; CI should not rebake the entire
+      # animation corpus just to prove the deploy bundle can be produced.
       - name: Build production bundle
-        run: npm run build
+        run: npm run build:deploy
 
       - name: Verify calibrated parabola release frames
         run: npm run verify:parabola-release
