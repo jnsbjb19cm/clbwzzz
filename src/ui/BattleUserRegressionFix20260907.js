@@ -154,12 +154,15 @@ function installDeckGroupRuntime() {
 
     const saved = DeckSelectView.loadSavedDeck(options.cardInventory, options.db, group);
     const fallback = fallbackDeckForGroup(options.cardInventory, options.db, group);
-    const selectedForGroup = roomState
-      ? (saved ?? fallback)
-      : (group === 'default' ? (options.deckSlots ?? saved ?? fallback) : (saved ?? fallback));
-    const preserveExplicitEmptyDeck = group !== 'default'
-      && Array.isArray(selectedForGroup)
-      && selectedForGroup.length === 0;
+    const hasExplicitSavedDeck = saved !== null;
+    const selectedForGroup = hasExplicitSavedDeck
+      ? saved
+      : (roomState
+          ? fallback
+          : (group === 'default' ? (options.deckSlots ?? fallback) : fallback));
+    const preserveExplicitEmptyDeck = Array.isArray(selectedForGroup)
+      && selectedForGroup.length === 0
+      && (group !== 'default' || hasExplicitSavedDeck);
 
     const result = originalDeckRender.call(this, root, {
       ...options,
@@ -167,8 +170,9 @@ function installDeckGroupRuntime() {
       deckSlots: selectedForGroup,
     });
 
-    // 旧 DeckSelectView 会把任何空数组自动替换成 STARTER_DECK。team1/2/3 的空数组
-    // 是合法、明确的编辑状态，必须在同一同步渲染周期内恢复为空，避免闪回默认战团。
+    // 旧 DeckSelectView 会把任何空数组自动替换成 STARTER_DECK。
+    // team1/2/3 天生允许“未配置=空”；default 只有在用户明确保存 [] 后才保持为空。
+    // 因此首次进入的新账号仍能得到默认初始卡，而已经清空并保存的默认组不会复活旧卡槽。
     if (preserveExplicitEmptyDeck && this._selected.length) {
       this._selected = [];
       this._activeSwapSlot = null;
