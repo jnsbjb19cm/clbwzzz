@@ -16,7 +16,6 @@ import { installBattleUnitPresentation20260906 } from './ui/BattleUnitPresentati
 import { installBattleUserRegressionFix20260907 } from './ui/BattleUserRegressionFix20260907.js';
 import { installDeckInventoryAuthorityFix20260907 } from './ui/DeckInventoryAuthorityFix20260907.js';
 import { installRoomDeckRefreshRegressionFix20260907 } from './ui/RoomDeckRefreshRegressionFix20260907.js';
-import { installSmithyServerAuthority20260907 } from './ui/SmithyServerAuthority20260907.js';
 import { installCardInventoryRemotePatch20260906 } from './core/CardInventoryRemotePatch20260906.js';
 import { authStore } from './core/AuthStore.js';
 
@@ -75,7 +74,5 @@ void import('./main.js').then(() => {
   installDeckInventoryAuthorityFix20260907();
   // 最终房间状态收口：战团分组保存，随机地图/换队/准备不再触发整页重绘。
   installRoomDeckRefreshRegressionFix20260907();
-  // 铁匠铺所有会改变卡牌/材料的操作最终走服务器权威接口，成功后以服务器快照回填本地。
-  installSmithyServerAuthority20260907();
   installBattleUnitPresentation20260906();
 });
