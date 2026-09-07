@@ -26,14 +26,12 @@ export default defineConfig({
     viewport: { width: 1920, height: 1080 },
     screenshot: 'only-on-failure',
     trace: 'retain-on-failure',
-    // Reusing an installed system browser avoids a browser download in local
-    // sandboxes; disable video there because Playwright's separate ffmpeg bundle
-    // is intentionally absent.
     video: systemBrowserExecutable ? 'off' : 'retain-on-failure',
     /*
-     * ef577a2 已启用登录门。浏览器回归测试只验证本地 UI/战斗表现，
-     * 不启动 Node/SQLite 后端，因此预置测试 token；App.restore 即使收到
-     * preview 的 404，也会继续 bootstrap，从而使用真实主城与战斗入口。
+     * Browser regressions exercise source-level UI seams (some tests import
+     * /src modules from inside the page), so the Playwright server must be Vite
+     * dev rather than `vite preview`. Production bundling is verified separately
+     * by `npm run build:deploy` in Browser Smoke/CI.
      */
     storageState: {
       cookies: [],
@@ -48,7 +46,7 @@ export default defineConfig({
     },
   },
   webServer: {
-    command: 'npm run preview -- --host 127.0.0.1 --port 4173',
+    command: 'npx vite --host 127.0.0.1 --port 4173',
     url: 'http://127.0.0.1:4173',
     reuseExistingServer: !process.env.CI,
     timeout: 120_000,
