@@ -5,15 +5,15 @@
   "uniformBounds": {
     "left": 83,
     "top": 91,
-    "right": 220,
-    "bottom": 248,
-    "opaque": 6401
+    "right": 222,
+    "bottom": 266,
+    "opaque": 9036
   },
   "drawFootY": {
-    "default": 0.7566666666666667,
-    "attacking": 0.7566666666666667,
-    "death": 0.7566666666666667,
-    "moving": 0.7566666666666667
+    "default": 0.8166666666666667,
+    "attacking": 0.84,
+    "death": 0.82,
+    "moving": 0.8166666666666667
   },
   "footOpaqueInset": 0,
   "scaleBoost": 1.48,
@@ -34,9 +34,9 @@
           "bounds": {
             "left": 105,
             "top": 113,
-            "right": 198,
-            "bottom": 226,
-            "opaque": 6401
+            "right": 200,
+            "bottom": 244,
+            "opaque": 9036
           }
         },
         {
@@ -46,10 +46,10 @@
           "h": 300,
           "bounds": {
             "left": 105,
-            "top": 113,
-            "right": 199,
-            "bottom": 225,
-            "opaque": 6344
+            "top": 112,
+            "right": 200,
+            "bottom": 244,
+            "opaque": 9039
           }
         },
         {
@@ -60,9 +60,9 @@
           "bounds": {
             "left": 105,
             "top": 112,
-            "right": 197,
-            "bottom": 225,
-            "opaque": 6385
+            "right": 200,
+            "bottom": 244,
+            "opaque": 9051
           }
         },
         {
@@ -73,9 +73,9 @@
           "bounds": {
             "left": 105,
             "top": 111,
-            "right": 197,
-            "bottom": 225,
-            "opaque": 6389
+            "right": 200,
+            "bottom": 244,
+            "opaque": 9058
           }
         },
         {
@@ -85,10 +85,10 @@
           "h": 300,
           "bounds": {
             "left": 105,
-            "top": 111,
-            "right": 197,
-            "bottom": 225,
-            "opaque": 6380
+            "top": 110,
+            "right": 200,
+            "bottom": 245,
+            "opaque": 9098
           }
         },
         {
@@ -99,9 +99,9 @@
           "bounds": {
             "left": 105,
             "top": 110,
-            "right": 196,
-            "bottom": 224,
-            "opaque": 6312
+            "right": 200,
+            "bottom": 245,
+            "opaque": 9108
           }
         },
         {
@@ -111,10 +111,10 @@
           "h": 300,
           "bounds": {
             "left": 105,
-            "top": 110,
-            "right": 196,
-            "bottom": 224,
-            "opaque": 6260
+            "top": 109,
+            "right": 200,
+            "bottom": 245,
+            "opaque": 9134
           }
         },
         {
@@ -124,10 +124,10 @@
           "h": 300,
           "bounds": {
             "left": 105,
-            "top": 109,
-            "right": 196,
-            "bottom": 224,
-            "opaque": 6292
+            "top": 108,
+            "right": 200,
+            "bottom": 245,
+            "opaque": 9117
           }
         },
         {
@@ -137,10 +137,10 @@
           "h": 300,
           "bounds": {
             "left": 105,
-            "top": 109,
-            "right": 196,
-            "bottom": 224,
-            "opaque": 6310
+            "top": 108,
+            "right": 200,
+            "bottom": 245,
+            "opaque": 9148
           }
         },
         {
@@ -150,10 +150,10 @@
           "h": 300,
           "bounds": {
             "left": 105,
-            "top": 108,
-            "right": 199,
-            "bottom": 223,
-            "opaque": 6289
+            "top": 107,
+            "right": 200,
+            "bottom": 245,
+            "opaque": 9159
           }
         },
         {
@@ -163,10 +163,10 @@
           "h": 300,
           "bounds": {
             "left": 105,
-            "top": 107,
-            "right": 196,
-            "bottom": 223,
-            "opaque": 6274
+            "top": 106,
+            "right": 200,
+            "bottom": 245,
+            "opaque": 9180
           }
         },
         {
@@ -176,10 +176,10 @@
           "h": 300,
           "bounds": {
             "left": 105,
-            "top": 107,
-            "right": 199,
-            "bottom": 223,
-            "opaque": 6125
+            "top": 106,
+            "right": 200,
+            "bottom": 246,
+            "opaque": 9210
           }
         },
         {
@@ -189,10 +189,10 @@
           "h": 300,
           "bounds": {
             "left": 105,
-            "top": 106,
-            "right": 196,
-            "bottom": 222,
-            "opaque": 6297
+            "top": 105,
+            "right": 200,
+            "bottom": 246,
+            "opaque": 9258
           }
         },
         {
@@ -202,10 +202,10 @@
           "h": 300,
           "bounds": {
             "left": 105,
-            "top": 107,
-            "right": 199,
-            "bottom": 223,
-            "opaque": 6125
+            "top": 106,
+            "right": 200,
+            "bottom": 246,
+            "opaque": 9210
           }
         },
         {
@@ -215,10 +215,10 @@
           "h": 300,
           "bounds": {
             "left": 105,
-            "top": 107,
-            "right": 196,
-            "bottom": 223,
-            "opaque": 6274
+            "top": 106,
+            "right": 200,
+            "bottom": 245,
+            "opaque": 9180
           }
         },
         {
@@ -228,10 +228,10 @@
           "h": 300,
           "bounds": {
             "left": 105,
-            "top": 108,
-            "right": 199,
-            "bottom": 223,
-            "opaque": 6289
+            "top": 107,
+            "right": 200,
+            "bottom": 245,
+            "opaque": 9159
           }
         },
         {
@@ -241,10 +241,10 @@
           "h": 300,
           "bounds": {
             "left": 105,
-            "top": 109,
-            "right": 196,
-            "bottom": 224,
-            "opaque": 6310
+            "top": 108,
+            "right": 200,
+            "bottom": 245,
+            "opaque": 9148
           }
         },
         {
@@ -254,10 +254,10 @@
           "h": 300,
           "bounds": {
             "left": 105,
-            "top": 109,
-            "right": 196,
-            "bottom": 224,
-            "opaque": 6292
+            "top": 108,
+            "right": 200,
+            "bottom": 245,
+            "opaque": 9117
           }
         },
         {
@@ -267,10 +267,10 @@
           "h": 300,
           "bounds": {
             "left": 105,
-            "top": 110,
-            "right": 196,
-            "bottom": 224,
-            "opaque": 6260
+            "top": 109,
+            "right": 200,
+            "bottom": 245,
+            "opaque": 9134
           }
         },
         {
@@ -281,9 +281,9 @@
           "bounds": {
             "left": 105,
             "top": 110,
-            "right": 196,
-            "bottom": 224,
-            "opaque": 6312
+            "right": 200,
+            "bottom": 245,
+            "opaque": 9108
           }
         },
         {
@@ -293,10 +293,10 @@
           "h": 300,
           "bounds": {
             "left": 105,
-            "top": 111,
-            "right": 197,
-            "bottom": 225,
-            "opaque": 6380
+            "top": 110,
+            "right": 200,
+            "bottom": 245,
+            "opaque": 9098
           }
         },
         {
@@ -307,9 +307,9 @@
           "bounds": {
             "left": 105,
             "top": 111,
-            "right": 197,
-            "bottom": 225,
-            "opaque": 6389
+            "right": 200,
+            "bottom": 244,
+            "opaque": 9058
           }
         },
         {
@@ -320,9 +320,9 @@
           "bounds": {
             "left": 105,
             "top": 112,
-            "right": 197,
-            "bottom": 225,
-            "opaque": 6385
+            "right": 200,
+            "bottom": 244,
+            "opaque": 9051
           }
         },
         {
@@ -332,10 +332,10 @@
           "h": 300,
           "bounds": {
             "left": 105,
-            "top": 113,
-            "right": 199,
-            "bottom": 225,
-            "opaque": 6344
+            "top": 112,
+            "right": 200,
+            "bottom": 244,
+            "opaque": 9039
           }
         },
         {
@@ -346,9 +346,9 @@
           "bounds": {
             "left": 105,
             "top": 113,
-            "right": 198,
-            "bottom": 226,
-            "opaque": 6401
+            "right": 200,
+            "bottom": 244,
+            "opaque": 9036
           }
         }
       ],
@@ -363,11 +363,11 @@
           "w": 300,
           "h": 300,
           "bounds": {
-            "left": 105,
+            "left": 84,
             "top": 113,
-            "right": 197,
-            "bottom": 226,
-            "opaque": 6394
+            "right": 219,
+            "bottom": 251,
+            "opaque": 12224
           }
         },
         {
@@ -376,11 +376,11 @@
           "w": 300,
           "h": 300,
           "bounds": {
-            "left": 101,
+            "left": 85,
             "top": 109,
-            "right": 196,
-            "bottom": 226,
-            "opaque": 6376
+            "right": 218,
+            "bottom": 252,
+            "opaque": 12071
           }
         },
         {
@@ -389,11 +389,11 @@
           "w": 300,
           "h": 300,
           "bounds": {
-            "left": 97,
-            "top": 106,
-            "right": 196,
-            "bottom": 226,
-            "opaque": 6433
+            "left": 85,
+            "top": 105,
+            "right": 215,
+            "bottom": 251,
+            "opaque": 11899
           }
         },
         {
@@ -402,11 +402,11 @@
           "w": 300,
           "h": 300,
           "bounds": {
-            "left": 93,
-            "top": 102,
-            "right": 195,
-            "bottom": 226,
-            "opaque": 6437
+            "left": 86,
+            "top": 101,
+            "right": 218,
+            "bottom": 249,
+            "opaque": 11740
           }
         },
         {
@@ -415,11 +415,11 @@
           "w": 300,
           "h": 300,
           "bounds": {
-            "left": 89,
+            "left": 88,
             "top": 98,
-            "right": 195,
-            "bottom": 226,
-            "opaque": 6408
+            "right": 218,
+            "bottom": 248,
+            "opaque": 11641
           }
         },
         {
@@ -430,9 +430,9 @@
           "bounds": {
             "left": 85,
             "top": 94,
-            "right": 195,
-            "bottom": 226,
-            "opaque": 6324
+            "right": 218,
+            "bottom": 248,
+            "opaque": 11711
           }
         },
         {
@@ -442,10 +442,10 @@
           "h": 300,
           "bounds": {
             "left": 81,
-            "top": 91,
-            "right": 194,
-            "bottom": 226,
-            "opaque": 6455
+            "top": 90,
+            "right": 219,
+            "bottom": 248,
+            "opaque": 11826
           }
         },
         {
@@ -456,9 +456,9 @@
           "bounds": {
             "left": 77,
             "top": 87,
-            "right": 195,
-            "bottom": 226,
-            "opaque": 6441
+            "right": 221,
+            "bottom": 246,
+            "opaque": 11947
           }
         },
         {
@@ -469,9 +469,9 @@
           "bounds": {
             "left": 73,
             "top": 83,
-            "right": 195,
-            "bottom": 226,
-            "opaque": 6416
+            "right": 223,
+            "bottom": 248,
+            "opaque": 12160
           }
         },
         {
@@ -481,10 +481,10 @@
           "h": 300,
           "bounds": {
             "left": 69,
-            "top": 80,
-            "right": 195,
-            "bottom": 226,
-            "opaque": 6390
+            "top": 79,
+            "right": 222,
+            "bottom": 249,
+            "opaque": 12334
           }
         },
         {
@@ -494,10 +494,10 @@
           "h": 300,
           "bounds": {
             "left": 64,
-            "top": 76,
-            "right": 195,
-            "bottom": 226,
-            "opaque": 6449
+            "top": 75,
+            "right": 221,
+            "bottom": 253,
+            "opaque": 12388
           }
         },
         {
@@ -508,9 +508,9 @@
           "bounds": {
             "left": 60,
             "top": 72,
-            "right": 196,
-            "bottom": 226,
-            "opaque": 6342
+            "right": 222,
+            "bottom": 251,
+            "opaque": 12265
           }
         },
         {
@@ -521,9 +521,9 @@
           "bounds": {
             "left": 56,
             "top": 68,
-            "right": 196,
-            "bottom": 226,
-            "opaque": 6400
+            "right": 219,
+            "bottom": 251,
+            "opaque": 12102
           }
         },
         {
@@ -533,10 +533,10 @@
           "h": 300,
           "bounds": {
             "left": 52,
-            "top": 65,
-            "right": 196,
-            "bottom": 225,
-            "opaque": 6403
+            "top": 64,
+            "right": 218,
+            "bottom": 252,
+            "opaque": 11980
           }
         },
         {
@@ -545,11 +545,11 @@
           "w": 300,
           "h": 300,
           "bounds": {
-            "left": 79,
+            "left": 78,
             "top": 127,
-            "right": 198,
-            "bottom": 229,
-            "opaque": 6446
+            "right": 215,
+            "bottom": 251,
+            "opaque": 11409
           }
         },
         {
@@ -558,11 +558,11 @@
           "w": 300,
           "h": 300,
           "bounds": {
-            "left": 108,
-            "top": 135,
+            "left": 86,
+            "top": 133,
             "right": 218,
-            "bottom": 251,
-            "opaque": 6978
+            "bottom": 252,
+            "opaque": 10435
           }
         },
         {
@@ -571,11 +571,11 @@
           "w": 300,
           "h": 300,
           "bounds": {
-            "left": 112,
+            "left": 88,
             "top": 109,
-            "right": 261,
-            "bottom": 232,
-            "opaque": 8213
+            "right": 262,
+            "bottom": 248,
+            "opaque": 12571
           }
         },
         {
@@ -584,11 +584,11 @@
           "w": 300,
           "h": 300,
           "bounds": {
-            "left": 116,
-            "top": 71,
+            "left": 85,
+            "top": 70,
             "right": 289,
-            "bottom": 233,
-            "opaque": 8123
+            "bottom": 248,
+            "opaque": 13501
           }
         },
         {
@@ -597,11 +597,11 @@
           "w": 300,
           "h": 300,
           "bounds": {
-            "left": 114,
-            "top": 74,
+            "left": 84,
+            "top": 73,
             "right": 289,
-            "bottom": 232,
-            "opaque": 8732
+            "bottom": 248,
+            "opaque": 14186
           }
         },
         {
@@ -610,11 +610,11 @@
           "w": 300,
           "h": 300,
           "bounds": {
-            "left": 112,
+            "left": 81,
             "top": 73,
             "right": 289,
-            "bottom": 231,
-            "opaque": 8259
+            "bottom": 246,
+            "opaque": 13675
           }
         },
         {
@@ -623,11 +623,11 @@
           "w": 300,
           "h": 300,
           "bounds": {
-            "left": 111,
+            "left": 82,
             "top": 71,
             "right": 289,
-            "bottom": 230,
-            "opaque": 9633
+            "bottom": 248,
+            "opaque": 15546
           }
         },
         {
@@ -636,11 +636,11 @@
           "w": 300,
           "h": 300,
           "bounds": {
-            "left": 110,
+            "left": 82,
             "top": 69,
             "right": 288,
-            "bottom": 229,
-            "opaque": 9732
+            "bottom": 249,
+            "opaque": 15783
           }
         },
         {
@@ -649,11 +649,11 @@
           "w": 300,
           "h": 300,
           "bounds": {
-            "left": 110,
+            "left": 80,
             "top": 67,
             "right": 287,
-            "bottom": 228,
-            "opaque": 9457
+            "bottom": 253,
+            "opaque": 15513
           }
         },
         {
@@ -662,11 +662,11 @@
           "w": 300,
           "h": 300,
           "bounds": {
-            "left": 110,
+            "left": 82,
             "top": 68,
             "right": 278,
-            "bottom": 227,
-            "opaque": 8209
+            "bottom": 251,
+            "opaque": 14123
           }
         },
         {
@@ -675,11 +675,11 @@
           "w": 300,
           "h": 300,
           "bounds": {
-            "left": 105,
+            "left": 84,
             "top": 113,
-            "right": 197,
-            "bottom": 226,
-            "opaque": 6394
+            "right": 219,
+            "bottom": 251,
+            "opaque": 12224
           }
         }
       ],
@@ -695,11 +695,11 @@
           "w": 300,
           "h": 300,
           "bounds": {
-            "left": 109,
+            "left": 89,
             "top": 113,
-            "right": 195,
-            "bottom": 226,
-            "opaque": 5817
+            "right": 216,
+            "bottom": 245,
+            "opaque": 10837
           }
         },
         {
@@ -708,11 +708,11 @@
           "w": 300,
           "h": 300,
           "bounds": {
-            "left": 113,
+            "left": 91,
             "top": 113,
-            "right": 190,
-            "bottom": 226,
-            "opaque": 5292
+            "right": 214,
+            "bottom": 243,
+            "opaque": 10092
           }
         },
         {
@@ -721,11 +721,11 @@
           "w": 300,
           "h": 300,
           "bounds": {
-            "left": 117,
-            "top": 114,
-            "right": 183,
-            "bottom": 225,
-            "opaque": 4490
+            "left": 94,
+            "top": 113,
+            "right": 212,
+            "bottom": 242,
+            "opaque": 9550
           }
         },
         {
@@ -734,11 +734,11 @@
           "w": 300,
           "h": 300,
           "bounds": {
-            "left": 121,
-            "top": 114,
-            "right": 178,
-            "bottom": 225,
-            "opaque": 3559
+            "left": 98,
+            "top": 113,
+            "right": 211,
+            "bottom": 242,
+            "opaque": 9166
           }
         },
         {
@@ -747,11 +747,89 @@
           "w": 300,
           "h": 300,
           "bounds": {
-            "left": 125,
+            "left": 101,
             "top": 114,
-            "right": 174,
-            "bottom": 217,
-            "opaque": 1157
+            "right": 209,
+            "bottom": 242,
+            "opaque": 8860
+          }
+        },
+        {
+          "x": 0,
+          "y": 16500,
+          "w": 300,
+          "h": 300,
+          "bounds": {
+            "left": 103,
+            "top": 135,
+            "right": 207,
+            "bottom": 242,
+            "opaque": 8499
+          }
+        },
+        {
+          "x": 0,
+          "y": 16800,
+          "w": 300,
+          "h": 300,
+          "bounds": {
+            "left": 101,
+            "top": 135,
+            "right": 209,
+            "bottom": 242,
+            "opaque": 8153
+          }
+        },
+        {
+          "x": 0,
+          "y": 17100,
+          "w": 300,
+          "h": 300,
+          "bounds": {
+            "left": 98,
+            "top": 120,
+            "right": 209,
+            "bottom": 243,
+            "opaque": 7742
+          }
+        },
+        {
+          "x": 0,
+          "y": 17400,
+          "w": 300,
+          "h": 300,
+          "bounds": {
+            "left": 95,
+            "top": 120,
+            "right": 208,
+            "bottom": 243,
+            "opaque": 7186
+          }
+        },
+        {
+          "x": 0,
+          "y": 17700,
+          "w": 300,
+          "h": 300,
+          "bounds": {
+            "left": 95,
+            "top": 108,
+            "right": 207,
+            "bottom": 241,
+            "opaque": 5644
+          }
+        },
+        {
+          "x": 0,
+          "y": 18000,
+          "w": 300,
+          "h": 300,
+          "bounds": {
+            "left": 101,
+            "top": 108,
+            "right": 205,
+            "bottom": 240,
+            "opaque": 4049
           }
         }
       ],
@@ -762,93 +840,15 @@
       "frames": [
         {
           "x": 0,
-          "y": 16500,
-          "w": 300,
-          "h": 300,
-          "bounds": {
-            "left": 105,
-            "top": 113,
-            "right": 198,
-            "bottom": 226,
-            "opaque": 6401
-          }
-        },
-        {
-          "x": 0,
-          "y": 16800,
-          "w": 300,
-          "h": 300,
-          "bounds": {
-            "left": 105,
-            "top": 113,
-            "right": 199,
-            "bottom": 225,
-            "opaque": 6344
-          }
-        },
-        {
-          "x": 0,
-          "y": 17100,
-          "w": 300,
-          "h": 300,
-          "bounds": {
-            "left": 105,
-            "top": 112,
-            "right": 197,
-            "bottom": 225,
-            "opaque": 6385
-          }
-        },
-        {
-          "x": 0,
-          "y": 17400,
-          "w": 300,
-          "h": 300,
-          "bounds": {
-            "left": 105,
-            "top": 111,
-            "right": 197,
-            "bottom": 225,
-            "opaque": 6389
-          }
-        },
-        {
-          "x": 0,
-          "y": 17700,
-          "w": 300,
-          "h": 300,
-          "bounds": {
-            "left": 105,
-            "top": 111,
-            "right": 197,
-            "bottom": 225,
-            "opaque": 6380
-          }
-        },
-        {
-          "x": 0,
-          "y": 18000,
-          "w": 300,
-          "h": 300,
-          "bounds": {
-            "left": 105,
-            "top": 110,
-            "right": 196,
-            "bottom": 224,
-            "opaque": 6312
-          }
-        },
-        {
-          "x": 0,
           "y": 18300,
           "w": 300,
           "h": 300,
           "bounds": {
             "left": 105,
-            "top": 110,
-            "right": 196,
-            "bottom": 224,
-            "opaque": 6260
+            "top": 113,
+            "right": 200,
+            "bottom": 244,
+            "opaque": 9036
           }
         },
         {
@@ -858,10 +858,10 @@
           "h": 300,
           "bounds": {
             "left": 105,
-            "top": 109,
-            "right": 196,
-            "bottom": 224,
-            "opaque": 6292
+            "top": 112,
+            "right": 200,
+            "bottom": 244,
+            "opaque": 9039
           }
         },
         {
@@ -871,10 +871,10 @@
           "h": 300,
           "bounds": {
             "left": 105,
-            "top": 109,
-            "right": 196,
-            "bottom": 224,
-            "opaque": 6310
+            "top": 112,
+            "right": 200,
+            "bottom": 244,
+            "opaque": 9051
           }
         },
         {
@@ -884,10 +884,10 @@
           "h": 300,
           "bounds": {
             "left": 105,
-            "top": 108,
-            "right": 199,
-            "bottom": 223,
-            "opaque": 6289
+            "top": 111,
+            "right": 200,
+            "bottom": 244,
+            "opaque": 9058
           }
         },
         {
@@ -897,10 +897,10 @@
           "h": 300,
           "bounds": {
             "left": 105,
-            "top": 107,
-            "right": 196,
-            "bottom": 223,
-            "opaque": 6274
+            "top": 110,
+            "right": 200,
+            "bottom": 245,
+            "opaque": 9098
           }
         },
         {
@@ -910,10 +910,10 @@
           "h": 300,
           "bounds": {
             "left": 105,
-            "top": 107,
-            "right": 199,
-            "bottom": 223,
-            "opaque": 6125
+            "top": 110,
+            "right": 200,
+            "bottom": 245,
+            "opaque": 9108
           }
         },
         {
@@ -923,10 +923,10 @@
           "h": 300,
           "bounds": {
             "left": 105,
-            "top": 106,
-            "right": 196,
-            "bottom": 222,
-            "opaque": 6297
+            "top": 109,
+            "right": 200,
+            "bottom": 245,
+            "opaque": 9134
           }
         },
         {
@@ -936,10 +936,10 @@
           "h": 300,
           "bounds": {
             "left": 105,
-            "top": 107,
-            "right": 199,
-            "bottom": 223,
-            "opaque": 6125
+            "top": 108,
+            "right": 200,
+            "bottom": 245,
+            "opaque": 9117
           }
         },
         {
@@ -949,10 +949,10 @@
           "h": 300,
           "bounds": {
             "left": 105,
-            "top": 107,
-            "right": 196,
-            "bottom": 223,
-            "opaque": 6274
+            "top": 108,
+            "right": 200,
+            "bottom": 245,
+            "opaque": 9148
           }
         },
         {
@@ -962,10 +962,10 @@
           "h": 300,
           "bounds": {
             "left": 105,
-            "top": 108,
-            "right": 199,
-            "bottom": 223,
-            "opaque": 6289
+            "top": 107,
+            "right": 200,
+            "bottom": 245,
+            "opaque": 9159
           }
         },
         {
@@ -975,10 +975,10 @@
           "h": 300,
           "bounds": {
             "left": 105,
-            "top": 109,
-            "right": 196,
-            "bottom": 224,
-            "opaque": 6310
+            "top": 106,
+            "right": 200,
+            "bottom": 245,
+            "opaque": 9180
           }
         },
         {
@@ -988,10 +988,10 @@
           "h": 300,
           "bounds": {
             "left": 105,
-            "top": 109,
-            "right": 196,
-            "bottom": 224,
-            "opaque": 6292
+            "top": 106,
+            "right": 200,
+            "bottom": 246,
+            "opaque": 9210
           }
         },
         {
@@ -1001,10 +1001,10 @@
           "h": 300,
           "bounds": {
             "left": 105,
-            "top": 110,
-            "right": 196,
-            "bottom": 224,
-            "opaque": 6260
+            "top": 105,
+            "right": 200,
+            "bottom": 246,
+            "opaque": 9258
           }
         },
         {
@@ -1014,10 +1014,10 @@
           "h": 300,
           "bounds": {
             "left": 105,
-            "top": 110,
-            "right": 196,
-            "bottom": 224,
-            "opaque": 6312
+            "top": 106,
+            "right": 200,
+            "bottom": 246,
+            "opaque": 9210
           }
         },
         {
@@ -1027,10 +1027,10 @@
           "h": 300,
           "bounds": {
             "left": 105,
-            "top": 111,
-            "right": 197,
-            "bottom": 225,
-            "opaque": 6380
+            "top": 106,
+            "right": 200,
+            "bottom": 245,
+            "opaque": 9180
           }
         },
         {
@@ -1040,10 +1040,10 @@
           "h": 300,
           "bounds": {
             "left": 105,
-            "top": 111,
-            "right": 197,
-            "bottom": 225,
-            "opaque": 6389
+            "top": 107,
+            "right": 200,
+            "bottom": 245,
+            "opaque": 9159
           }
         },
         {
@@ -1053,10 +1053,10 @@
           "h": 300,
           "bounds": {
             "left": 105,
-            "top": 112,
-            "right": 197,
-            "bottom": 225,
-            "opaque": 6385
+            "top": 108,
+            "right": 200,
+            "bottom": 245,
+            "opaque": 9148
           }
         },
         {
@@ -1066,10 +1066,10 @@
           "h": 300,
           "bounds": {
             "left": 105,
-            "top": 113,
-            "right": 199,
-            "bottom": 225,
-            "opaque": 6344
+            "top": 108,
+            "right": 200,
+            "bottom": 245,
+            "opaque": 9117
           }
         },
         {
@@ -1079,10 +1079,88 @@
           "h": 300,
           "bounds": {
             "left": 105,
+            "top": 109,
+            "right": 200,
+            "bottom": 245,
+            "opaque": 9134
+          }
+        },
+        {
+          "x": 0,
+          "y": 24000,
+          "w": 300,
+          "h": 300,
+          "bounds": {
+            "left": 105,
+            "top": 110,
+            "right": 200,
+            "bottom": 245,
+            "opaque": 9108
+          }
+        },
+        {
+          "x": 0,
+          "y": 24300,
+          "w": 300,
+          "h": 300,
+          "bounds": {
+            "left": 105,
+            "top": 110,
+            "right": 200,
+            "bottom": 245,
+            "opaque": 9098
+          }
+        },
+        {
+          "x": 0,
+          "y": 24600,
+          "w": 300,
+          "h": 300,
+          "bounds": {
+            "left": 105,
+            "top": 111,
+            "right": 200,
+            "bottom": 244,
+            "opaque": 9058
+          }
+        },
+        {
+          "x": 0,
+          "y": 24900,
+          "w": 300,
+          "h": 300,
+          "bounds": {
+            "left": 105,
+            "top": 112,
+            "right": 200,
+            "bottom": 244,
+            "opaque": 9051
+          }
+        },
+        {
+          "x": 0,
+          "y": 25200,
+          "w": 300,
+          "h": 300,
+          "bounds": {
+            "left": 105,
+            "top": 112,
+            "right": 200,
+            "bottom": 244,
+            "opaque": 9039
+          }
+        },
+        {
+          "x": 0,
+          "y": 25500,
+          "w": 300,
+          "h": 300,
+          "bounds": {
+            "left": 105,
             "top": 113,
-            "right": 198,
-            "bottom": 226,
-            "opaque": 6401
+            "right": 200,
+            "bottom": 244,
+            "opaque": 9036
           }
         }
       ],
