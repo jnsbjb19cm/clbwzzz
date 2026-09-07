@@ -19,6 +19,7 @@ const __dirname = path.dirname(__filename);
 import { authRouter } from './routes/auth.js';
 import { playerRouter } from './routes/player.js';
 import { playerSnapshotAuthorityRouter20260908 } from './routes/playerSnapshotAuthority20260908.js';
+import { stageResultAuthorityRouter20260908 } from './routes/stageResultAuthority20260908.js';
 import { materialRefillRouter } from './routes/materialRefill.js';
 import { smithyAuthorityRouter20260907 } from './routes/smithyAuthority20260907.js';
 import { socialSearchFixRouter } from './routes/socialSearchFix20260905.js';
@@ -101,6 +102,8 @@ app.get('/api/health', (_req, res) => {
 app.use('/api/auth', authRouter);
 // 登录/刷新时先由服务器补齐旧版仅存在 localStorage 的官方初始道具，并返回带绑定状态的数据库快照。
 app.use('/api/player', playerSnapshotAuthorityRouter20260908);
+// 战斗结算先写数据库金币/经验/掉落，再返回真实钱包；旧客户端的本地加值随后会被服务器快照纠正。
+app.use('/api/player', stageResultAuthorityRouter20260908);
 // 铁匠铺新增/移除卡牌与材料消耗必须先走服务器权威路由，客户端只接收快照。
 app.use('/api/player/smithy', smithyAuthorityRouter20260907);
 app.use('/api/player', playerRouter);
