@@ -58,8 +58,8 @@ playerRouter.put('/decks/:deckNo', async (req, res) => {
   const deckNo = clampInt(req.params.deckNo, 1, 3);
   const rawCards = Array.isArray(req.body.cards) ? req.body.cards : [];
   const cards = rawCards.map(Number).filter((id) => Number.isInteger(id) && id > 0);
-  if (cards.length < 1 || cards.length > 10) {
-    return res.status(400).json({ message: '战团必须包含1到10张卡牌' });
+  if (cards.length > 10) {
+    return res.status(400).json({ message: '战团最多包含10张卡牌' });
   }
   if (new Set(cards).size !== cards.length) {
     return res.status(400).json({ message: '同一战团中不能重复卡牌' });
@@ -134,7 +134,7 @@ playerRouter.post('/stage-result', async (req, res) => {
           [req.user.id, itemId],
         );
         if (existing) {
-          await conn.run('UPDATE player_items SET count=count+? WHERE user_id=? AND item_id=? AND is_bound=0', [count, req.user.id]);
+          await conn.run('UPDATE player_items SET count=count+? WHERE user_id=? AND item_id=? AND is_bound=0', [count, req.user.id, itemId]);
         } else {
           await conn.run('INSERT INTO player_items(user_id,item_id,count,is_bound) VALUES(?,?,?,0)', [req.user.id, itemId, count]);
         }
