@@ -98,7 +98,7 @@ await check('empty team deck remains empty after save, switch and reload', async
   assert.doesNotMatch(authoritySource, /if\s*\(\s*selected\?\.length\s*\)\s*return\s+selected/, 'an authoritative empty snapshot must not fall through to a local/default deck');
   assert.match(runtimeSource, /parsed\.length\s*===\s*0/, 'an explicitly saved empty local team deck must be distinguishable from a missing deck');
   assert.match(runtimeSource, /fallbackDeckForGroup/, 'only the default group may receive the starter-deck fallback');
-  assert.match(deckViewSource, /allowEmptyDeck/, 'DeckSelectView must preserve an explicit empty team deck during render');
+  assert.match(runtimeSource, /preserveExplicitEmptyDeck/, 'room render must undo the legacy renderer fallback when a team deck is explicitly empty');
   assert.doesNotMatch(playerSource, /cards\.length\s*<\s*1/, 'the deck editor endpoint must allow saving zero cards; battle start validation handles the minimum');
   assert.match(deckViewSource, /请至少选择1张卡牌/, 'battle start must still reject an empty selected deck');
 });
