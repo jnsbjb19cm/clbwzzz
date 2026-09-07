@@ -69,6 +69,24 @@ await check('room deck group switch is authoritative and battle uses the selecte
   assert.match(serverSource, /installRoomDeckSelection20260907/, 'server must install the four-deck authority patch before socket handlers run');
 });
 
+await check('team decks persist to server and collectible refill avoids protected inventory PUT', async () => {
+  const authoritySource = fs.readFileSync(new URL('../src/ui/DeckInventoryAuthorityFix20260907.js', import.meta.url), 'utf8');
+  const playerSource = fs.readFileSync(new URL('../server/routes/player.js', import.meta.url), 'utf8');
+  const refillSource = fs.readFileSync(new URL('../server/routes/cardInventoryRefill20260907.js', import.meta.url), 'utf8');
+  const bootstrapSource = fs.readFileSync(new URL('../src/bootstrap.js', import.meta.url), 'utf8');
+
+  assert.match(authoritySource, /snapshot\?\.decks|snapshot\.decks/, 'team deck editor must restore team1/team2/team3 from the authenticated server snapshot');
+  assert.match(authoritySource, /\/player\/decks\//, 'team deck edits must persist through the server deck endpoint');
+  assert.match(authoritySource, /grantAllCollectibleCards/, 'collectible refill must intercept the local bulk grant path');
+  assert.match(authoritySource, /\/player\/card-inventory\/refill-collectibles/, 'collectible refill must use its dedicated authoritative server endpoint');
+  assert.doesNotMatch(authoritySource, /put\(['"`]\/player\/card-inventory['"`]/, 'collectible refill must never bypass collection protection with the generic inventory PUT');
+
+  assert.match(playerSource, /post\(['"]\/card-inventory\/refill-collectibles['"]/, 'player router must expose an authenticated collectible refill action');
+  assert.match(refillSource, /isCollectible\(\)/, 'server refill must derive the allowed collectible set from the canonical card database');
+  assert.match(refillSource, /craft_quality[^\n]*5|craftQuality[^\n]*5/, 'server refill must preserve the existing quality-5 refill behavior');
+  assert.match(bootstrapSource, /installDeckInventoryAuthorityFix20260907/, 'deck/refill authority repair must be installed after the older deck runtime patch');
+});
+
 await check('debounced base attacks do not restart animation every tick', async () => {
   const { unitAnimPlayer } = await import('../src/battle/UnitAnimPlayer.js');
   const { installBaseAttackRenderStability20260906 } = await import('../src/battle/BaseAttackRenderStability20260906.js');
