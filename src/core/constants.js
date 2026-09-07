@@ -1,9 +1,9 @@
 /** 制作品质 1–5；0 仅兼容旧存档并按劣质处理。 */
 export const CRAFT_QUALITY = {
   1: { id: 0, name: '劣质', color: '#757575', baseLabel: '灰', legacy: true },
-  2: { id: 1, name: '普通', color: '#fefefe', baseLabel: '灰' },
-  3: { id: 2, name: '优秀', color: '#4caf50', baseLabel: '白' },
-  4: { id: 3, name: '精良', color: '#2196f3', baseLabel: '蓝' },
+  2: { id: 1, name: '普通', color: '#fefefe', baseLabel: '白' },
+  3: { id: 2, name: '精良', color: '#4caf50', baseLabel: '绿' },
+  4: { id: 3, name: '优秀', color: '#2196f3', baseLabel: '蓝' },
   5: { id: 4, name: '完美', color: '#9c27b0', baseLabel: '紫' },
 };
 
@@ -50,8 +50,8 @@ export function getCraftQualityCircleFilter(craftQuality) {
   const filters = {
     1: 'grayscale(1) brightness(0.75)',
     2: 'brightness(1.15) saturate(0.35)',
-    3: 'hue-rotate(85deg) saturate(1.4) brightness(1.05)',
-    4: 'hue-rotate(270deg) saturate(1.35) brightness(1.05)',
+    3: 'hue-rotate(270deg) saturate(1.35) brightness(1.05)',
+    4: 'hue-rotate(85deg) saturate(1.4) brightness(1.05)',
     5: 'hue-rotate(20deg) saturate(1.5) brightness(1.08)',
   };
   return filters[id] ?? filters[2];
