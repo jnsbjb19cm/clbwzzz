@@ -3,6 +3,10 @@ import { createRequire } from 'node:module';
 import { db, getPlayerSnapshot, withTransaction } from '../database.js';
 import { requireAuth } from '../middleware/auth.js';
 import { readCardInventory } from './cardInventoryPersistence20260906.js';
+import {
+  inheritSmithyBinding20260907,
+  planBoundFirstConsumption20260907,
+} from '../domain/smithyBinding20260907.js';
 
 const require = createRequire(import.meta.url);
 const cardJson = require('../../src/data/card.json');
@@ -48,7 +52,7 @@ function isCollectible(card) {
 }
 
 function isCraftable(card) {
-  return EXPERIENCE_CARD_IDS.has(int(card?.card_id)) || (isCollectible(card) && cardQuality(card) <= 4);
+  return isCollectible(card) && cardQuality(card) <= 4;
 }
 
 function defaultSmithyState() {
@@ -91,26 +95,33 @@ async function itemCount(conn, userId, itemId) {
   return Math.max(0, int(row?.count));
 }
 
-async function consumeItem(conn, userId, itemId, count) {
-  let left = Math.max(0, int(count));
-  if (!left) return true;
-  if (await itemCount(conn, userId, itemId) < left) return false;
+async function consumeItemTracked(conn, userId, itemId, count) {
+  const amount = Math.max(0, int(count));
+  if (!amount) return { ok: true, usedBound: false };
   const rows = await conn.all(
-    'SELECT is_bound AS isBound, count FROM player_items WHERE user_id=? AND item_id=? AND count>0 ORDER BY is_bound ASC',
+    'SELECT is_bound AS isBound, count FROM player_items WHERE user_id=? AND item_id=? AND count>0',
     [userId, itemId],
   );
-  for (const row of rows) {
-    if (left <= 0) break;
-    const take = Math.min(left, Math.max(0, int(row.count)));
-    const remain = Math.max(0, int(row.count) - take);
-    if (remain > 0) {
-      await conn.run('UPDATE player_items SET count=? WHERE user_id=? AND item_id=? AND is_bound=?', [remain, userId, itemId, int(row.isBound)]);
+  const plan = planBoundFirstConsumption20260907(rows, amount);
+  if (!plan.ok) return { ok: false, usedBound: false };
+  for (const step of plan.steps) {
+    if (step.remain > 0) {
+      await conn.run(
+        'UPDATE player_items SET count=? WHERE user_id=? AND item_id=? AND is_bound=?',
+        [step.remain, userId, itemId, step.isBound],
+      );
     } else {
-      await conn.run('DELETE FROM player_items WHERE user_id=? AND item_id=? AND is_bound=?', [userId, itemId, int(row.isBound)]);
+      await conn.run(
+        'DELETE FROM player_items WHERE user_id=? AND item_id=? AND is_bound=?',
+        [userId, itemId, step.isBound],
+      );
     }
-    left -= take;
   }
-  return left === 0;
+  return { ok: true, usedBound: plan.usedBound };
+}
+
+async function consumeItem(conn, userId, itemId, count) {
+  return (await consumeItemTracked(conn, userId, itemId, count)).ok;
 }
 
 async function addItem(conn, userId, itemId, count, isBound = 0) {
@@ -123,6 +134,20 @@ async function addItem(conn, userId, itemId, count, isBound = 0) {
   } else {
     await conn.run('INSERT INTO player_items(user_id,item_id,count,is_bound) VALUES(?,?,?,?)', [userId, itemId, amount, bound]);
   }
+}
+
+async function readItemSnapshot(userId) {
+  const rows = await db.all(`
+    SELECT item_id AS itemId, count, is_bound AS bound
+    FROM player_items
+    WHERE user_id=? AND count>0
+    ORDER BY item_id, is_bound DESC
+  `, [userId]);
+  return rows.map((row) => ({
+    itemId: int(row.itemId),
+    count: Math.max(0, int(row.count)),
+    bound: Boolean(row.bound),
+  }));
 }
 
 async function cardBagSlotCount(conn, userId) {
@@ -160,6 +185,7 @@ async function readCardSlot(conn, userId, slotIndex) {
     awakened: Boolean(extra.awakened),
     attributeRoll: extra.attributeRoll ?? null,
     powderSpent: extra.powderSpent && typeof extra.powderSpent === 'object' ? extra.powderSpent : {},
+    bound: Boolean(extra.bound),
   };
 }
 
@@ -170,6 +196,7 @@ async function writeCardExtra(conn, userId, slot) {
     awakened: Boolean(slot.awakened),
     attributeRoll: slot.attributeRoll ?? null,
     powderSpent: slot.powderSpent && typeof slot.powderSpent === 'object' ? slot.powderSpent : {},
+    bound: Boolean(slot.bound),
   });
   const existing = await conn.get('SELECT user_id AS userId FROM player_card_instance_state WHERE user_id=? AND slot_index=?', [userId, slot.slotIndex]);
   if (existing) await conn.run('UPDATE player_card_instance_state SET state_json=? WHERE user_id=? AND slot_index=?', [payload, userId, slot.slotIndex]);
@@ -241,29 +268,30 @@ function craftOutcomeRates(tier, highTier) {
 function rollCraftQuality(useCharm) {
   const mult = useCharm ? 1 + (Number(craftRules.charmBonus?.qualityWeight) || 0) : 1;
   const weights = craftRules.craftQualityWeights.map((entry) => ({
-    id: Math.max(1, int(entry.id, 1)),
+    id: Math.max(1, Math.min(5, int(entry.id, 0) + 1)),
     weight: Number(entry.weight) * (int(entry.id) >= 2 ? mult : 1),
   }));
   const total = weights.reduce((sum, entry) => sum + entry.weight, 0);
   let roll = Math.random() * total;
   for (const entry of weights) {
     roll -= entry.weight;
-    if (roll <= 0) return Math.max(1, Math.min(5, entry.id));
+    if (roll <= 0) return entry.id;
   }
   return 1;
 }
 
 async function responseSnapshot(userId, extra = {}) {
-  const [cardInventory, snapshot, smithyState] = await Promise.all([
+  const [cardInventory, snapshot, smithyState, items] = await Promise.all([
     readCardInventory(userId),
     getPlayerSnapshot(userId),
     readSmithyState(userId),
+    readItemSnapshot(userId),
   ]);
   return {
     ok: true,
     ...extra,
     cardInventory,
-    items: snapshot?.items ?? [],
+    items,
     profile: snapshot?.profile ?? null,
     smithyState,
   };
@@ -302,27 +330,33 @@ smithyAuthorityRouter20260907.post('/craft', async (req, res) => {
 
       if (!success) {
         if (useCharm) {
-          await consumeItem(conn, userId, material.charm, 1);
+          await consumeItemTracked(conn, userId, material.charm, 1);
           await writeSmithyState(conn, userId, state);
           return { result: 'fail_protected', message: '制作失败，保护符已消耗，材料已保留' };
         }
-        await consumeItem(conn, userId, material.parchment, int(need.parchment));
-        await consumeItem(conn, userId, material.gem, int(need.gem));
+        const parchmentUse = await consumeItemTracked(conn, userId, material.parchment, int(need.parchment));
+        const gemUse = await consumeItemTracked(conn, userId, material.gem, int(need.gem));
         const compensateLevel = Math.max(1, level - 1);
         const compensation = LEVEL_CONFIG.get(compensateLevel);
-        if (compensation) await addItem(conn, userId, compensation.gem, int(craftRules.failureCompensate));
+        const compensationBound = inheritSmithyBinding20260907(parchmentUse, gemUse);
+        if (compensation) {
+          await addItem(conn, userId, compensation.gem, int(craftRules.failureCompensate), compensationBound);
+        }
         await writeSmithyState(conn, userId, state);
         return { result: 'fail', message: `制作失败，补偿${compensateLevel}级宝石×${int(craftRules.failureCompensate)}` };
       }
 
-      await consumeItem(conn, userId, material.parchment, int(need.parchment));
-      await consumeItem(conn, userId, material.gem, int(need.gem));
-      if (useCharm) await consumeItem(conn, userId, material.charm, 1);
-      if (useDna) await consumeItem(conn, userId, material.dna, 1);
+      const parchmentUse = await consumeItemTracked(conn, userId, material.parchment, int(need.parchment));
+      const gemUse = await consumeItemTracked(conn, userId, material.gem, int(need.gem));
+      const charmUse = useCharm
+        ? await consumeItemTracked(conn, userId, material.charm, 1)
+        : { ok: true, usedBound: false };
+      const dnaUse = useDna
+        ? await consumeItemTracked(conn, userId, material.dna, 1)
+        : { ok: true, usedBound: false };
+      const outputBound = inheritSmithyBinding20260907(parchmentUse, gemUse, charmUse, dnaUse);
 
-      const rates = EXPERIENCE_CARD_IDS.has(targetId)
-        ? { targetRate: 1, ascendRate: 0, wrongRate: 0 }
-        : craftOutcomeRates(tier, highTier);
+      const rates = craftOutcomeRates(tier, highTier);
       const roll = Math.random();
       let outcome = 'target';
       let resultCard = target;
@@ -332,7 +366,7 @@ smithyAuthorityRouter20260907.post('/craft', async (req, res) => {
         const pool = cardJson.filter((card) => isCollectible(card) && cardQuality(card) === level + 1);
         resultCard = randomPick(pool, targetId) ?? target;
         if (useDna) {
-          await addItem(conn, userId, material.dna, 1);
+          await addItem(conn, userId, material.dna, 1, dnaUse.usedBound);
           dnaRefunded = true;
         }
       } else if (useDna || roll < rates.ascendRate + rates.targetRate) {
@@ -343,8 +377,13 @@ smithyAuthorityRouter20260907.post('/craft', async (req, res) => {
         resultCard = randomPick(pool, targetId) ?? target;
       }
 
-      const craftQuality = EXPERIENCE_CARD_IDS.has(int(resultCard.card_id)) ? 1 : rollCraftQuality(useCharm);
-      await insertCard(conn, userId, { cardId: int(resultCard.card_id), star: 0, craftQuality });
+      const craftQuality = rollCraftQuality(useCharm);
+      await insertCard(conn, userId, {
+        cardId: int(resultCard.card_id),
+        star: 0,
+        craftQuality,
+        bound: outputBound,
+      });
       if (outcome === 'wrong') state.craftPity[String(targetId)] = true;
       else delete state.craftPity[String(targetId)];
       await writeSmithyState(conn, userId, state);
@@ -355,6 +394,7 @@ smithyAuthorityRouter20260907.post('/craft', async (req, res) => {
         cardId: int(resultCard.card_id),
         cardName: String(resultCard.card_name || ''),
         craftQuality,
+        bound: outputBound,
         dnaRefunded,
         message: `${label}：${String(resultCard.card_name || resultCard.card_id)}${dnaRefunded ? '，DNA已返还' : ''}`,
       };
@@ -430,14 +470,15 @@ smithyAuthorityRouter20260907.post('/star-upgrade', async (req, res) => {
       const successRate = Math.min(100, rawRate);
       const doubleRate = Math.min(100, Math.max(0, rawRate - 100));
 
+      let consumedBinding = inheritSmithyBinding20260907(main, ...subs);
       if (route === 'powder') {
         const need = powderNeed(card, star);
         if (!need) throw new Error('当前星级没有可用强化粉配置');
         if (await itemCount(conn, userId, need.itemId) < need.count) throw new Error('强化粉不足');
-        await consumeItem(conn, userId, need.itemId, need.count);
+        const powderUse = await consumeItemTracked(conn, userId, need.itemId, need.count);
+        consumedBinding = inheritSmithyBinding20260907(consumedBinding, powderUse);
         main.powderSpent = { ...(main.powderSpent ?? {}) };
         main.powderSpent[need.itemId] = (int(main.powderSpent[need.itemId]) || 0) + need.count;
-        await writeCardExtra(conn, userId, main);
       }
 
       if (charmId) state.star.protections[key] = { itemId: charmId, level: charmLevel, charges: charmLevel };
@@ -453,24 +494,32 @@ smithyAuthorityRouter20260907.post('/star-upgrade', async (req, res) => {
         });
       }
 
+      main.bound = Boolean(consumedBinding);
+      await writeCardExtra(conn, userId, main);
+
       const success = Math.random() * 100 < successRate;
       if (success) {
         const double = doubleRate > 0 && Math.random() * 100 < doubleRate;
         const gain = double ? 2 : 1;
         const nextStar = Math.min(MAX_STAR, star + gain);
-        await updateCardStar(conn, userId, mainIndex, nextStar, { powderSpent: main.powderSpent });
         state.star.failures[key] = 0;
         state.star.pity[key] = false;
         const protection = state.star.protections[key];
         if (protection?.itemId && await itemCount(conn, userId, protection.itemId) > 0) {
-          await consumeItem(conn, userId, protection.itemId, 1);
+          const charmUse = await consumeItemTracked(conn, userId, protection.itemId, 1);
+          main.bound = inheritSmithyBinding20260907(main, charmUse);
         }
+        await updateCardStar(conn, userId, mainIndex, nextStar, {
+          powderSpent: main.powderSpent,
+          bound: main.bound,
+        });
         delete state.star.protections[key];
         await writeSmithyState(conn, userId, state);
         return {
           success: true,
           double,
           star: nextStar,
+          bound: Boolean(main.bound),
           message: double ? `升变成功，提升至${nextStar}星！` : `升星成功，提升至${nextStar}星！`,
         };
       }
@@ -482,7 +531,10 @@ smithyAuthorityRouter20260907.post('/star-upgrade', async (req, res) => {
       let dropped = false;
       if (protection?.charges > 0) protection.charges -= 1;
       else if (!state.star.pity[key] && failures % 3 === 0 && star > 0) {
-        await updateCardStar(conn, userId, mainIndex, star - 1, { powderSpent: main.powderSpent });
+        await updateCardStar(conn, userId, mainIndex, star - 1, {
+          powderSpent: main.powderSpent,
+          bound: main.bound,
+        });
         dropped = true;
       }
       await writeSmithyState(conn, userId, state);
@@ -490,6 +542,7 @@ smithyAuthorityRouter20260907.post('/star-upgrade', async (req, res) => {
         success: false,
         failures,
         dropped,
+        bound: Boolean(main.bound),
         pityActive: Boolean(state.star.pity[key]),
         message: dropped
           ? `连续失败${failures}次，主卡降低1星；副卡已进入销毁层。`
@@ -515,11 +568,12 @@ smithyAuthorityRouter20260907.post('/restore-escrow', async (req, res) => {
       const reverseCount = Number(entry.slot?.craftQuality || 1) > 4 ? 2 : 1;
       if (await itemCount(conn, userId, REVERSE_CARD_ID) < reverseCount) throw new Error(`逆转卡不足，需要${reverseCount}张`);
       if (await nextCardSlot(conn, userId) < 0) throw new Error('卡牌背包已满');
-      await consumeItem(conn, userId, REVERSE_CARD_ID, reverseCount);
+      const reverseUse = await consumeItemTracked(conn, userId, REVERSE_CARD_ID, reverseCount);
+      entry.slot.bound = inheritSmithyBinding20260907(entry.slot, reverseUse);
       await insertCard(conn, userId, entry.slot);
       state.star.escrow.splice(index, 1);
       await writeSmithyState(conn, userId, state);
-      return { message: `副卡已还原，消耗逆转卡×${reverseCount}。` };
+      return { message: `副卡已还原，消耗逆转卡×${reverseCount}。`, bound: Boolean(entry.slot.bound) };
     });
     return res.json(await responseSnapshot(userId, result));
   } catch (error) {
@@ -549,11 +603,16 @@ smithyAuthorityRouter20260907.post('/decompose', async (req, res) => {
         parchmentId: material?.parchment ?? null,
         pieceItemId: piece?.item_id ?? null,
         pieceCount: piece ? Math.max(1, Math.floor(Number(piece.need_num) / 4)) : 0,
+        bound: Boolean(slot.bound),
       };
       await removeCard(conn, userId, slotIndex);
-      if (rewards.gemId) await addItem(conn, userId, rewards.gemId, rewards.gem);
-      if (rewards.parchmentId && Math.random() < rewards.parchmentChance) await addItem(conn, userId, rewards.parchmentId, 1);
-      if (rewards.pieceItemId && rewards.pieceCount > 0) await addItem(conn, userId, rewards.pieceItemId, rewards.pieceCount);
+      if (rewards.gemId) await addItem(conn, userId, rewards.gemId, rewards.gem, rewards.bound);
+      if (rewards.parchmentId && Math.random() < rewards.parchmentChance) {
+        await addItem(conn, userId, rewards.parchmentId, 1, rewards.bound);
+      }
+      if (rewards.pieceItemId && rewards.pieceCount > 0) {
+        await addItem(conn, userId, rewards.pieceItemId, rewards.pieceCount, rewards.bound);
+      }
       return { rewards, message: `已分解「${String(card.card_name || slot.cardId)}」` };
     });
     return res.json(await responseSnapshot(userId, result));
@@ -574,12 +633,13 @@ smithyAuthorityRouter20260907.post('/material-combine', async (req, res) => {
       if (!from || !to || !from[type] || !to[type]) throw new Error('已达最高等级');
       const ratio = Math.max(1, int(craftMaterials.combineRatio, 10));
       if (await itemCount(conn, userId, from[type]) < ratio) throw new Error(`需要 ${ratio} 个低级材料`);
-      await consumeItem(conn, userId, from[type], ratio);
-      await addItem(conn, userId, to[type], 1);
+      const consumed = await consumeItemTracked(conn, userId, from[type], ratio);
+      await addItem(conn, userId, to[type], 1, consumed.usedBound);
       return {
         toLevel: fromLevel + 1,
         itemId: to[type],
         itemName: MATERIAL_ITEMS.get(to[type])?.item_name ?? '',
+        bound: consumed.usedBound,
         message: `加工成功：${MATERIAL_ITEMS.get(to[type])?.item_name ?? to[type]}`,
       };
     });
