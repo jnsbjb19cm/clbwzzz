@@ -12,7 +12,7 @@ async function check(name, fn) {
   }
 }
 
-await check('loot item ids resolve to real atlas sprites', async () => {
+await check('loot item ids resolve to real atlas sprites and preload before battle', async () => {
   const itemData = JSON.parse(fs.readFileSync(new URL('../src/data/item.json', import.meta.url), 'utf8'));
   const atlasData = JSON.parse(fs.readFileSync(new URL('../src/data/atlas/preload_items.json', import.meta.url), 'utf8'));
   const { resolveLootAtlasSprite20260906 } = await import('../src/battle/BattleLootIconResolver20260906.js');
@@ -23,8 +23,12 @@ await check('loot item ids resolve to real atlas sprites', async () => {
   const spriteNames = new Set((atlasData?.sprites ?? atlasData ?? []).map((entry) => String(entry?.name ?? entry?.sprite?.name ?? '')));
   assert.ok(spriteNames.has(String(sprite)), `resolved item sprite ${sprite} must exist in preload_items atlas`);
 
-  const rendererSource = fs.readFileSync(new URL('../src/battle/BattleRenderer.js', import.meta.url), 'utf8');
-  assert.match(rendererSource, /resolveLootAtlasSprite20260906/, 'battle renderer must map business item ids through item metadata before atlas lookup');
+  const runtimeSource = fs.readFileSync(new URL('../src/ui/BattleUserRegressionFix20260907.js', import.meta.url), 'utf8');
+  const bootstrapSource = fs.readFileSync(new URL('../src/bootstrap.js', import.meta.url), 'utf8');
+  assert.match(runtimeSource, /resolveLootAtlasSprite20260906/, 'loot renderer runtime must resolve business ids through the item atlas resolver');
+  assert.match(runtimeSource, /beginLootAtlasPreload/, 'loot atlas must begin preloading before a drop needs to render');
+  assert.match(runtimeSource, /requestItemAtlas/, 'renderer item atlas request must reuse the preloaded atlas');
+  assert.match(bootstrapSource, /installBattleUserRegressionFix20260907/, 'loot/deck runtime repair must be installed from bootstrap');
 });
 
 await check('room deck group switch is authoritative and battle uses the selected group', async () => {
@@ -39,16 +43,30 @@ await check('room deck group switch is authoritative and battle uses the selecte
   assert.equal(group.deckGroupToNumber20260906('team3'), 3);
   assert.equal(group.deckNumberToGroup20260906(0), 'default');
   assert.equal(group.deckNumberToGroup20260906(3), 'team3');
+  assert.notEqual(group.storageKeyForDeckGroup20260906('default'), group.storageKeyForDeckGroup20260906('team1'));
   assert.notEqual(group.storageKeyForDeckGroup20260906('team1'), group.storageKeyForDeckGroup20260906('team2'));
 
-  const deckSource = fs.readFileSync(new URL('../src/ui/DeckSelectView.js', import.meta.url), 'utf8');
-  const roomSource = fs.readFileSync(new URL('../src/ui/RoomView.js', import.meta.url), 'utf8');
-  const battleSource = fs.readFileSync(new URL('../src/ui/BattleView.js', import.meta.url), 'utf8');
-  assert.match(deckSource, /onSetDeck/, 'deck tab switch must notify the authoritative room state');
-  assert.match(deckSource, /storageKeyForDeckGroup20260906/, 'each deck group must use independent saved card slots');
-  assert.match(roomSource, /selectedDeckNo:\s*myMember\?\.selectedDeckNo/, 'RoomView must pass the current authoritative selected deck to the deck UI');
-  assert.match(roomSource, /onSetDeck:/, 'RoomView must send deck-group changes to room:set-deck');
-  assert.match(battleSource, /deckNumberToGroup20260906/, 'BattleView must resolve the room member selected deck before loading cards');
+  const { RoomManager } = await import('../server/rooms/RoomManager.js');
+  const { installRoomDeckSelection20260907 } = await import('../server/rooms/RoomDeckSelection20260907.js');
+  installRoomDeckSelection20260907();
+  const manager = new RoomManager();
+  let room = manager.createRoom({ user: { id: 7001, nickname: 'deck-test' }, mode: 'pvp' });
+  let me = room.members.find((member) => Number(member.userId) === 7001);
+  assert.equal(me?.selectedDeckNo, 0, 'new room member must start on authoritative default deck 0');
+  room = manager.setDeck(7001, 3);
+  me = room.members.find((member) => Number(member.userId) === 7001);
+  assert.equal(me?.selectedDeckNo, 3, 'room:set-deck must retain team3 instead of falling back to a prior group');
+  room = manager.setDeck(7001, 0);
+  me = room.members.find((member) => Number(member.userId) === 7001);
+  assert.equal(me?.selectedDeckNo, 0, 'room:set-deck must allow returning to default deck 0');
+
+  const runtimeSource = fs.readFileSync(new URL('../src/ui/BattleUserRegressionFix20260907.js', import.meta.url), 'utf8');
+  const serverSource = fs.readFileSync(new URL('../server/index.js', import.meta.url), 'utf8');
+  assert.match(runtimeSource, /storageKeyForDeckGroup20260906/, 'each deck group must use independent saved card slots');
+  assert.match(runtimeSource, /onSetDeck/, 'deck tab switch must notify authoritative room state');
+  assert.match(runtimeSource, /selectedDeckNo/, 'client must restore the server-selected deck group on room rerender');
+  assert.match(runtimeSource, /BattleView\.prototype\.render/, 'battle entry must resolve cards from the active room deck group');
+  assert.match(serverSource, /installRoomDeckSelection20260907/, 'server must install the four-deck authority patch before socket handlers run');
 });
 
 await check('debounced base attacks do not restart animation every tick', async () => {
@@ -80,5 +98,5 @@ if (failures.length) {
   failures.forEach((failure) => console.error(`- ${failure}`));
   process.exitCode = 1;
 } else {
-  console.log('PASS battle user regressions 20260906');
+  console.log('PASS battle user regressions 20260907');
 }
