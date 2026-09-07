@@ -82,8 +82,8 @@ await check('team decks persist to server and collectible refill avoids protecte
   assert.doesNotMatch(authoritySource, /put\(['"`]\/player\/card-inventory['"`]/, 'collectible refill must never bypass collection protection with the generic inventory PUT');
 
   assert.match(playerSource, /post\(['"]\/card-inventory\/refill-collectibles['"]/, 'player router must expose an authenticated collectible refill action');
-  assert.match(refillSource, /isCollectible\(\)/, 'server refill must derive the allowed collectible set from the canonical card database');
-  assert.match(refillSource, /craft_quality[^\n]*5|craftQuality[^\n]*5/, 'server refill must preserve the existing quality-5 refill behavior');
+  assert.match(refillSource, /isCollectible(?:\?\.)?\(\)/, 'server refill must derive the allowed collectible set from the canonical card database');
+  assert.match(refillSource, /\[userId,\s*slotIndex,\s*cardId,\s*2,\s*5\]/s, 'server refill must preserve the existing star-2 quality-5 refill behavior');
   assert.match(bootstrapSource, /installDeckInventoryAuthorityFix20260907/, 'deck/refill authority repair must be installed after the older deck runtime patch');
 });
 
