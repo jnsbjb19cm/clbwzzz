@@ -7,6 +7,7 @@ import { installRoomChatRuntimePatch20260906 } from './ui/RoomChatRuntimePatch20
 import { installRoomChatChannelFix20260906 } from './ui/RoomChatChannelFix20260906.js';
 import { installRoomInviteRuntime20260906 } from './ui/RoomInviteRuntime20260906.js';
 import { installSmithyOfficialRefill20260905 } from './ui/SmithyOfficialRefill20260905.js';
+import { installSmithyServerAuthority20260907 } from './ui/SmithyServerAuthority20260907.js';
 import { installMainCityTrialBulletin20260905 } from './ui/MainCityTrialBulletin20260905.js';
 import { installAnnouncementPlainText20260905 } from './ui/AnnouncementPlainText20260905.js';
 import { installPlayerQoL20260905 } from './ui/PlayerQoL20260905.js';
@@ -65,6 +66,8 @@ installPlayerQoL20260905();
 installDiamondShopExpansion20260905();
 // 登录成功后以服务器卡库为权威；旧版本仅存本地的强化/洗练实例状态会做一次兼容迁移。
 installCardInventoryRemotePatch20260906({ authStore });
+// 铁匠铺制造/强化/加工/拆解统一改为服务器事务权威；必须在 SmithyView 真正使用前安装。
+installSmithyServerAuthority20260907();
 
 void import('./main.js').then(() => {
   installBaseAttackRenderStability20260906();
