@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { db, getPlayerSnapshot, withTransaction } from '../database.js';
 import { requireAuth } from '../middleware/auth.js';
 import { getCardInventoryHandler, putCardInventoryHandler } from './cardInventoryPersistence20260906.js';
+import { refillCollectibleCardsHandler } from './cardInventoryRefill20260907.js';
 
 export const playerRouter = Router();
 playerRouter.use(requireAuth);
@@ -20,6 +21,7 @@ playerRouter.get('/snapshot', async (req, res) => {
 
 playerRouter.get('/card-inventory', getCardInventoryHandler);
 playerRouter.put('/card-inventory', putCardInventoryHandler);
+playerRouter.post('/card-inventory/refill-collectibles', refillCollectibleCardsHandler);
 
 playerRouter.put('/settings', async (req, res) => {
   const musicVolume = clampInt(req.body.musicVolume, 0, 100);
@@ -132,7 +134,7 @@ playerRouter.post('/stage-result', async (req, res) => {
           [req.user.id, itemId],
         );
         if (existing) {
-          await conn.run('UPDATE player_items SET count=count+? WHERE user_id=? AND item_id=? AND is_bound=0', [count, req.user.id, itemId]);
+          await conn.run('UPDATE player_items SET count=count+? WHERE user_id=? AND item_id=? AND is_bound=0', [count, req.user.id]);
         } else {
           await conn.run('INSERT INTO player_items(user_id,item_id,count,is_bound) VALUES(?,?,?,0)', [req.user.id, itemId, count]);
         }
