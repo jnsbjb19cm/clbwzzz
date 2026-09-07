@@ -69,6 +69,42 @@ await check('room deck group switch is authoritative and battle uses the selecte
   assert.match(serverSource, /installRoomDeckSelection20260907/, 'server must install the four-deck authority patch before socket handlers run');
 });
 
+await check('team decks persist to server and collectible refill avoids protected inventory PUT', async () => {
+  const authoritySource = fs.readFileSync(new URL('../src/ui/DeckInventoryAuthorityFix20260907.js', import.meta.url), 'utf8');
+  const playerSource = fs.readFileSync(new URL('../server/routes/player.js', import.meta.url), 'utf8');
+  const refillSource = fs.readFileSync(new URL('../server/routes/cardInventoryRefill20260907.js', import.meta.url), 'utf8');
+  const bootstrapSource = fs.readFileSync(new URL('../src/bootstrap.js', import.meta.url), 'utf8');
+
+  assert.match(authoritySource, /snapshot\?\.decks|snapshot\.decks/, 'team deck editor must restore team1/team2/team3 from the authenticated server snapshot');
+  assert.match(authoritySource, /\/player\/decks\//, 'team deck edits must persist through the server deck endpoint');
+  assert.match(authoritySource, /grantAllCollectibleCards/, 'collectible refill must intercept the local bulk grant path');
+  assert.match(authoritySource, /\/player\/card-inventory\/refill-collectibles/, 'collectible refill must use its dedicated authoritative server endpoint');
+  assert.doesNotMatch(authoritySource, /put\(['"`]\/player\/card-inventory['"`]/, 'collectible refill must never bypass collection protection with the generic inventory PUT');
+
+  assert.match(playerSource, /post\(['"]\/card-inventory\/refill-collectibles['"]/, 'player router must expose an authenticated collectible refill action');
+  assert.match(refillSource, /isCollectible(?:\?\.)?\(\)/, 'server refill must derive the allowed collectible set from the canonical card database');
+  assert.match(refillSource, /\[userId,\s*slotIndex,\s*cardId,\s*2,\s*5\]/s, 'server refill must preserve the existing star-2 quality-5 refill behavior');
+  assert.match(bootstrapSource, /installDeckInventoryAuthorityFix20260907/, 'deck/refill authority repair must be installed after the older deck runtime patch');
+});
+
+await check('explicitly empty decks remain empty after save, switch and reload', async () => {
+  const authoritySource = fs.readFileSync(new URL('../src/ui/DeckInventoryAuthorityFix20260907.js', import.meta.url), 'utf8');
+  const runtimeSource = fs.readFileSync(new URL('../src/ui/BattleUserRegressionFix20260907.js', import.meta.url), 'utf8');
+  const deckViewSource = fs.readFileSync(new URL('../src/ui/DeckSelectView.js', import.meta.url), 'utf8');
+  const playerSource = fs.readFileSync(new URL('../server/routes/player.js', import.meta.url), 'utf8');
+
+  assert.doesNotMatch(authoritySource, /\|\|\s*!cardIds\.length/, 'an empty team deck must still be queued for server persistence');
+  assert.doesNotMatch(authoritySource, /if\s*\(\s*!cardIds\.length\s*\)\s*return/, 'saving an empty team deck must not be dropped by the client');
+  assert.doesNotMatch(authoritySource, /if\s*\(\s*selected\?\.length\s*\)\s*return\s+selected/, 'an authoritative empty snapshot must not fall through to a local/default deck');
+  assert.match(runtimeSource, /parsed\.length\s*===\s*0/, 'an explicitly saved empty local deck must be distinguishable from a missing deck');
+  assert.match(runtimeSource, /fallbackDeckForGroup/, 'only a genuinely missing default deck may receive the starter-deck fallback');
+  assert.match(runtimeSource, /hasExplicitSavedDeck/, 'room render must distinguish explicitly saved empty state from a missing saved deck');
+  assert.doesNotMatch(runtimeSource, /preserveExplicitEmptyDeck\s*=\s*group\s*!==\s*['"]default['"]/, 'explicitly clearing the default group must remain empty too');
+  assert.doesNotMatch(runtimeSource, /options\.deckSlots\s*\?\?\s*saved/, 'stale caller deck slots must not override an explicitly saved default deck');
+  assert.doesNotMatch(playerSource, /cards\.length\s*<\s*1/, 'the deck editor endpoint must allow saving zero cards; battle start validation handles the minimum');
+  assert.match(deckViewSource, /请至少选择1张卡牌/, 'battle start must still reject an empty selected deck');
+});
+
 await check('debounced base attacks do not restart animation every tick', async () => {
   const { unitAnimPlayer } = await import('../src/battle/UnitAnimPlayer.js');
   const { installBaseAttackRenderStability20260906 } = await import('../src/battle/BaseAttackRenderStability20260906.js');

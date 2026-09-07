@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { db, getPlayerSnapshot, withTransaction } from '../database.js';
 import { requireAuth } from '../middleware/auth.js';
 import { getCardInventoryHandler, putCardInventoryHandler } from './cardInventoryPersistence20260906.js';
+import { refillCollectibleCardsHandler } from './cardInventoryRefill20260907.js';
 
 export const playerRouter = Router();
 playerRouter.use(requireAuth);
@@ -20,6 +21,7 @@ playerRouter.get('/snapshot', async (req, res) => {
 
 playerRouter.get('/card-inventory', getCardInventoryHandler);
 playerRouter.put('/card-inventory', putCardInventoryHandler);
+playerRouter.post('/card-inventory/refill-collectibles', refillCollectibleCardsHandler);
 
 playerRouter.put('/settings', async (req, res) => {
   const musicVolume = clampInt(req.body.musicVolume, 0, 100);
@@ -56,8 +58,8 @@ playerRouter.put('/decks/:deckNo', async (req, res) => {
   const deckNo = clampInt(req.params.deckNo, 1, 3);
   const rawCards = Array.isArray(req.body.cards) ? req.body.cards : [];
   const cards = rawCards.map(Number).filter((id) => Number.isInteger(id) && id > 0);
-  if (cards.length < 1 || cards.length > 10) {
-    return res.status(400).json({ message: '战团必须包含1到10张卡牌' });
+  if (cards.length > 10) {
+    return res.status(400).json({ message: '战团最多包含10张卡牌' });
   }
   if (new Set(cards).size !== cards.length) {
     return res.status(400).json({ message: '同一战团中不能重复卡牌' });
