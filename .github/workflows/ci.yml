@@ -69,6 +69,9 @@ jobs:
       - name: Verify room invite and guild approval
         run: node scripts/verify-room-invite-guild-approval-20260906.mjs
 
+      - name: Verify economy, smithy and guild authority
+        run: node scripts/verify-economy-smithy-guild-20260907.mjs
+
       - name: Verify debug hit circles stay removed
         run: node scripts/verify-remove-hit-debug-circles-20260905.mjs
 
