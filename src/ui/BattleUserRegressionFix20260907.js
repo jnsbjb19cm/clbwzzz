@@ -243,8 +243,14 @@ function beginLootAtlasPreload() {
       preloadImage = image;
       resolve(image);
     };
-    image.onerror = () => resolve(null);
-    image.src = `/${imageName}?v=loot-icons-20260907a`;
+    image.onerror = () => {
+      // A transient browser/cache failure must not pin every later battle drop to the
+      // yellow fallback marker. Clear the shared promise so the next request can retry.
+      preloadImage = null;
+      preloadPromise = null;
+      resolve(null);
+    };
+    image.src = `/${imageName}?v=loot-icons-20260907b`;
   });
   return preloadPromise;
 }
@@ -265,9 +271,14 @@ function installLootIconRuntime() {
     if (!pending) return originalRequestItemAtlas.call(this);
     if (!this.itemAtlasLoading) {
       this.itemAtlasLoading = pending.then((image) => {
-        if (image) this.itemAtlasImage = image;
         this.itemAtlasLoading = null;
-        return image;
+        if (image) {
+          this.itemAtlasImage = image;
+          return image;
+        }
+        // The shared preload failed. Fall back to BattleRenderer's ordinary loader now,
+        // while allowing later calls to start a fresh shared preload attempt as well.
+        return originalRequestItemAtlas.call(this);
       });
     }
     return this.itemAtlasLoading;
