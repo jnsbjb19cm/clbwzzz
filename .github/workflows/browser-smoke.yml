@@ -46,8 +46,11 @@ jobs:
       - name: Audit production dependency vulnerabilities
         run: npm audit --omit=dev --audit-level=moderate
 
+      # Smoke the same build path used by production startup. The full `build`
+      # command rebakes the animation/sprite corpus and can fail before the
+      # browser is ever exercised; those committed assets are audited elsewhere.
       - name: Build production bundle
-        run: npm run build
+        run: npm run build:deploy
 
       - name: Install Chromium
         run: npx playwright install chromium
