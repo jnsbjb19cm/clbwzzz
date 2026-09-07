@@ -13,8 +13,9 @@ function itemBusinessId(item) {
 
 /**
  * Convert the battle/business item id to the numeric sprite name used by preload_items.
- * Most legacy items use the same id in both places, while a few imported rows expose an
- * explicit sprite/resource field. Always retain the business id as the final fallback.
+ * The imported item atlas contains the battle material business ids themselves (10001..),
+ * so only an explicit sprite id may override that exact id. Fields such as `res` describe
+ * other item semantics in legacy data and must not redirect the atlas lookup.
  */
 export function resolveLootAtlasSprite20260906(itemId, itemData = []) {
   const businessId = numericCandidate(itemId);
@@ -24,16 +25,7 @@ export function resolveLootAtlasSprite20260906(itemId, itemData = []) {
     ? itemData.find((item) => itemBusinessId(item) === businessId)
     : null;
 
-  const explicit = [
-    row?.sprite_id,
-    row?.spriteId,
-    row?.sprite_res,
-    row?.spriteRes,
-    row?.res,
-    row?.icon_id,
-    row?.iconId,
-  ];
-  for (const value of explicit) {
+  for (const value of [row?.sprite_id, row?.spriteId]) {
     const candidate = numericCandidate(value);
     if (candidate) return candidate;
   }
