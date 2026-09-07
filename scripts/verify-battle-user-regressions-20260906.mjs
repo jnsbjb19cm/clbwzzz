@@ -87,7 +87,7 @@ await check('team decks persist to server and collectible refill avoids protecte
   assert.match(bootstrapSource, /installDeckInventoryAuthorityFix20260907/, 'deck/refill authority repair must be installed after the older deck runtime patch');
 });
 
-await check('empty team deck remains empty after save, switch and reload', async () => {
+await check('explicitly empty decks remain empty after save, switch and reload', async () => {
   const authoritySource = fs.readFileSync(new URL('../src/ui/DeckInventoryAuthorityFix20260907.js', import.meta.url), 'utf8');
   const runtimeSource = fs.readFileSync(new URL('../src/ui/BattleUserRegressionFix20260907.js', import.meta.url), 'utf8');
   const deckViewSource = fs.readFileSync(new URL('../src/ui/DeckSelectView.js', import.meta.url), 'utf8');
@@ -96,9 +96,11 @@ await check('empty team deck remains empty after save, switch and reload', async
   assert.doesNotMatch(authoritySource, /\|\|\s*!cardIds\.length/, 'an empty team deck must still be queued for server persistence');
   assert.doesNotMatch(authoritySource, /if\s*\(\s*!cardIds\.length\s*\)\s*return/, 'saving an empty team deck must not be dropped by the client');
   assert.doesNotMatch(authoritySource, /if\s*\(\s*selected\?\.length\s*\)\s*return\s+selected/, 'an authoritative empty snapshot must not fall through to a local/default deck');
-  assert.match(runtimeSource, /parsed\.length\s*===\s*0/, 'an explicitly saved empty local team deck must be distinguishable from a missing deck');
-  assert.match(runtimeSource, /fallbackDeckForGroup/, 'only the default group may receive the starter-deck fallback');
-  assert.match(runtimeSource, /preserveExplicitEmptyDeck/, 'room render must undo the legacy renderer fallback when a team deck is explicitly empty');
+  assert.match(runtimeSource, /parsed\.length\s*===\s*0/, 'an explicitly saved empty local deck must be distinguishable from a missing deck');
+  assert.match(runtimeSource, /fallbackDeckForGroup/, 'only a genuinely missing default deck may receive the starter-deck fallback');
+  assert.match(runtimeSource, /hasExplicitSavedDeck/, 'room render must distinguish explicitly saved empty state from a missing saved deck');
+  assert.doesNotMatch(runtimeSource, /preserveExplicitEmptyDeck\s*=\s*group\s*!==\s*['"]default['"]/, 'explicitly clearing the default group must remain empty too');
+  assert.doesNotMatch(runtimeSource, /options\.deckSlots\s*\?\?\s*saved/, 'stale caller deck slots must not override an explicitly saved default deck');
   assert.doesNotMatch(playerSource, /cards\.length\s*<\s*1/, 'the deck editor endpoint must allow saving zero cards; battle start validation handles the minimum');
   assert.match(deckViewSource, /请至少选择1张卡牌/, 'battle start must still reject an empty selected deck');
 });
