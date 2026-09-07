@@ -13,6 +13,7 @@ import { installPlayerQoL20260905 } from './ui/PlayerQoL20260905.js';
 import { installDiamondShopExpansion20260905 } from './ui/DiamondShopExpansion20260905.js';
 import { installBaseAttackRenderStability20260906 } from './battle/BaseAttackRenderStability20260906.js';
 import { installBattleUnitPresentation20260906 } from './ui/BattleUnitPresentation20260906.js';
+import { installBattleUserRegressionFix20260907 } from './ui/BattleUserRegressionFix20260907.js';
 import { installCardInventoryRemotePatch20260906 } from './core/CardInventoryRemotePatch20260906.js';
 import { authStore } from './core/AuthStore.js';
 
@@ -65,5 +66,7 @@ installCardInventoryRemotePatch20260906({ authStore });
 
 void import('./main.js').then(() => {
   installBaseAttackRenderStability20260906();
+  // 用户本轮三项回归：四套战团权威切换 + 实物掉落图标预载。
+  installBattleUserRegressionFix20260907();
   installBattleUnitPresentation20260906();
 });
