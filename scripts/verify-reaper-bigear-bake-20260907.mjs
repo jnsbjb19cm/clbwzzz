@@ -1,9 +1,10 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import sharp from 'sharp';
 
-const root = path.resolve(new URL('..', import.meta.url).pathname);
+const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const baselineDir = process.argv[2] ? path.resolve(process.argv[2]) : null;
 const outDir = path.join(root, 'assets/sprites/unit_anim');
 
@@ -47,9 +48,15 @@ for (const res of [31, 57]) {
     assert.ok(fs.existsSync(beforeFile), `missing baseline ${res}.png`);
     const before = await metrics(beforeFile);
     console.log(`res=${res} darkOpaque before=${before.darkOpaque} after=${after.darkOpaque} opaque before=${before.opaque} after=${after.opaque}`);
+    // 首次修复时新烘焙值会显著上升；资源落库后应保持相等。
+    // 如果未来重新引入黑底 flood-fill，after 会低于已验证的 checked-in baseline，于是稳定判红。
     assert.ok(
-      after.darkOpaque > before.darkOpaque,
-      `${res} dark detail count did not improve (${before.darkOpaque} -> ${after.darkOpaque})`,
+      after.darkOpaque >= before.darkOpaque,
+      `${res} lost dark details (${before.darkOpaque} -> ${after.darkOpaque})`,
+    );
+    assert.ok(
+      after.opaque >= before.opaque,
+      `${res} lost opaque artwork (${before.opaque} -> ${after.opaque})`,
     );
   } else {
     console.log(`res=${res} darkOpaque=${after.darkOpaque} opaque=${after.opaque} transparent=${after.transparent}`);
