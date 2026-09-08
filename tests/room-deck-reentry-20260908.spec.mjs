@@ -64,6 +64,9 @@ test('default/team1/team2/team3 stay isolated after room re-entry', async ({ pag
         group: view._deckTab,
         selected: [...view._selected],
         active: root.querySelector('.deck-tab.active')?.dataset.tab ?? null,
+        enemySlotCount: root.querySelectorAll('#room-right-side .enemy-slot').length,
+        enemyWaitingCount: root.querySelectorAll('#room-right-side .enemy-slot.question-mark').length,
+        badEnemyAvatar: Boolean(root.querySelector('#room-right-side img[src*="NaN"]')),
       };
     };
 
@@ -91,4 +94,12 @@ test('default/team1/team2/team3 stay isolated after room re-entry', async ({ pag
   expect(result.team3Reentry.active).toBe('team3');
   expect(result.team3Reentry.selected).toEqual(result.expected.team3);
   expect(result.stored).toEqual(result.expected);
+
+  // Empty red-team positions must remain as the three physical waiting cards;
+  // never fabricate a pseudo-member that renders /sprites/cards/NaN.png.
+  for (const reentry of [result.defaultReentry, result.team1Reentry, result.team2Reentry, result.team3Reentry]) {
+    expect(reentry.enemySlotCount).toBe(3);
+    expect(reentry.enemyWaitingCount).toBe(3);
+    expect(reentry.badEnemyAvatar).toBe(false);
+  }
 });
