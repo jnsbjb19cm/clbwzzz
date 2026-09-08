@@ -75,6 +75,9 @@ jobs:
       - name: Verify 2026-09-08 user regressions
         run: node scripts/verify-user-regressions-20260908.mjs
 
+      - name: Verify guild role, task pin persistence and hidden skill
+        run: node scripts/verify-guild-task-pin-skilltree-20260908.mjs
+
       - name: Verify debug hit circles stay removed
         run: node scripts/verify-remove-hit-debug-circles-20260905.mjs
 
