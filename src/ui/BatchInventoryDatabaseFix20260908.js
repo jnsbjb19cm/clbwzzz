@@ -146,7 +146,7 @@ function installBatchPanelAuthority(view, root) {
       view.toast(root, '该道具已经用完');
       return;
     }
-    const amount = Math.max(1, Math.min(total, Math.floor(Number(requested) || 1));
+    const amount = Math.max(1, Math.min(total, Math.floor(Number(requested) || 1)));
     controls.forEach((control) => { control.disabled = true; });
     useButton.textContent = `数据库处理中 ${amount} 个…`;
     try {
