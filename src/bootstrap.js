@@ -12,6 +12,7 @@ import { installSmithyServerAuthority20260907 } from './ui/SmithyServerAuthority
 import { installSmithyStrengthenLayoutFix20260908 } from './ui/SmithyStrengthenLayoutFix20260908.js';
 import { installSmithyMissingCardGuard20260908 } from './ui/SmithyMissingCardGuard20260908.js';
 import { installSmithyCardKindFilter20260908 } from './ui/SmithyCardKindFilter20260908.js';
+import { installSmithyCharmAndChatPolish20260908 } from './ui/SmithyCharmAndChatPolish20260908.js';
 import { installPlayerSnapshotAuthority20260908 } from './ui/PlayerSnapshotAuthority20260908.js';
 import { installDatabasePersistenceAuthority20260908 } from './ui/DatabasePersistenceAuthority20260908.js';
 import { installBatchInventoryDatabaseFix20260908 } from './ui/BatchInventoryDatabaseFix20260908.js';
@@ -87,6 +88,7 @@ installSmithyStrengthenLayoutFix20260908();
 installSmithyServerAuthority20260907();
 installSmithyMissingCardGuard20260908();
 installSmithyCardKindFilter20260908();
+installSmithyCharmAndChatPolish20260908();
 
 void import('./main.js').then(() => {
   installBaseAttackRenderStability20260906();
