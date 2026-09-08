@@ -42,6 +42,11 @@ function normalizePowderSpent(value) {
   return out;
 }
 
+function normalizeLearnedSkill(value) {
+  const skill = String(value || '').trim().slice(0, 64);
+  return skill || null;
+}
+
 function normalizeCard(raw, slotCount) {
   const slotIndex = Math.floor(Number(raw?.slotIndex));
   const cardId = Math.floor(Number(raw?.cardId));
@@ -55,6 +60,7 @@ function normalizeCard(raw, slotCount) {
     exp: Math.max(0, Math.min(2147483647, Math.floor(Number(raw?.exp) || 0))),
     customName: String(raw?.customName || '').trim().slice(0, 24) || null,
     awakened: Boolean(raw?.awakened),
+    learnedSkill: normalizeLearnedSkill(raw?.learnedSkill),
     attributeRoll: normalizeAttributeRoll(raw?.attributeRoll),
     powderSpent: normalizePowderSpent(raw?.powderSpent),
   };
@@ -110,6 +116,7 @@ export async function readCardInventory(userId) {
       exp: Math.max(0, Math.floor(Number(extra.exp) || 0)),
       customName: String(extra.customName || '').trim().slice(0, 24) || null,
       awakened: Boolean(extra.awakened),
+      learnedSkill: normalizeLearnedSkill(extra.learnedSkill),
       attributeRoll: normalizeAttributeRoll(extra.attributeRoll),
       powderSpent: normalizePowderSpent(extra.powderSpent),
       bound: Boolean(extra.bound),
@@ -141,8 +148,6 @@ export async function putCardInventoryHandler(req, res) {
     return res.status(409).json({ message: '卡牌新增或移除必须通过掉落、打造或合成系统完成' });
   }
 
-  // 客户端可以调整槽位，但星级、制作品质、绑定状态和粉末投入量都属于服务器权威数据。
-  // 优先沿用同槽同卡实例；卡牌被拖到新槽位时，再从同 cardId 的未使用实例中匹配。
   const unused = new Set(currentInstances.map((_, index) => index));
   const authoritativeCards = cards.map((card) => {
     let matchIndex = currentInstances.findIndex((row, index) => (
@@ -158,6 +163,7 @@ export async function putCardInventoryHandler(req, res) {
       ...card,
       star: server.star,
       craftQuality: server.craftQuality,
+      learnedSkill: normalizeLearnedSkill(server.extra.learnedSkill),
       powderSpent: normalizePowderSpent(server.extra.powderSpent),
       bound: Boolean(server.extra.bound),
     };
@@ -177,6 +183,7 @@ export async function putCardInventoryHandler(req, res) {
           exp: card.exp,
           customName: card.customName,
           awakened: card.awakened,
+          learnedSkill: card.learnedSkill,
           attributeRoll: card.attributeRoll,
           powderSpent: card.powderSpent,
           bound: card.bound,
