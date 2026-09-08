@@ -63,6 +63,16 @@ function saveCurrentDeck(view) {
   return saveDeckGroup(view, group, view._selected);
 }
 
+function scheduleDeckAutosave(view) {
+  clearTimeout(view?.__roomDeckAutosaveTimer20260908);
+  if (!view) return;
+  view.__roomDeckAutosaveTimer20260908 = setTimeout(() => {
+    void saveCurrentDeck(view).catch((error) => {
+      console.warn('[deck] 自动保存当前战团失败', error);
+    });
+  }, 120);
+}
+
 function awaitRoomDeckSelection(view) {
   return Promise.resolve(view?.__roomDeckSelectionPromise20260908).catch(() => {});
 }
@@ -116,36 +126,49 @@ function installDeckTabServerBridge(owner, view) {
   if (!root || root.__deckTabServerBridge20260908) return;
   root.__deckTabServerBridge20260908 = true;
 
-  // BattleRoomDeckUiV3 owns the visual tab click and stops propagation on the
-  // .game-room element. Capture one level above it, remember the outgoing draft,
-  // then let V3 switch the UI. In a microtask publish the same selection to the
-  // server and auto-save the deck we just left.
   root.addEventListener('click', (event) => {
     const target = event.target instanceof Element ? event.target : null;
-    const tab = target?.closest?.('.deck-tab');
-    if (!tab) return;
+    if (!target) return;
 
-    const previousGroup = normalizeDeckGroup20260906(
-      view._deckTab ?? view._cardInventory?.__activeDeckGroup20260907 ?? 'default',
-    );
-    const outgoing = copyDeck(view._v3Decks?.[previousGroup] ?? view._selected);
-
-    queueMicrotask(() => {
-      const nextGroup = normalizeDeckGroup20260906(
-        view._deckTab ?? tab.dataset.tab ?? previousGroup,
+    const tab = target.closest('.deck-tab');
+    if (tab) {
+      const previousGroup = normalizeDeckGroup20260906(
+        view._deckTab ?? view._cardInventory?.__activeDeckGroup20260907 ?? 'default',
       );
-      if (nextGroup === previousGroup) return;
-      const deckNo = deckGroupToNumber20260906(nextGroup);
+      const outgoing = copyDeck(view._v3Decks?.[previousGroup] ?? view._selected);
 
-      const selectionPromise = (view.__roomDeckSelectionPromise20260908 ?? Promise.resolve())
-        .catch(() => {})
-        .then(async () => {
-          await saveDeckGroup(view, previousGroup, outgoing);
-          if (view._cardInventory) view._cardInventory.__activeDeckGroup20260907 = nextGroup;
-          await view._roomState?.onSetDeck?.(deckNo);
-        });
-      view.__roomDeckSelectionPromise20260908 = selectionPromise;
-    });
+      // V3 changes its visual tab on the .game-room capture listener. This
+      // ancestor capture runs first; a microtask runs afterwards and mirrors that
+      // exact tab to selectedDeckNo on the server.
+      queueMicrotask(() => {
+        const nextGroup = normalizeDeckGroup20260906(
+          view._deckTab ?? tab.dataset.tab ?? previousGroup,
+        );
+        if (nextGroup === previousGroup) return;
+        const deckNo = deckGroupToNumber20260906(nextGroup);
+
+        const selectionPromise = (view.__roomDeckSelectionPromise20260908 ?? Promise.resolve())
+          .catch(() => {})
+          .then(async () => {
+            await saveDeckGroup(view, previousGroup, outgoing);
+            if (view._cardInventory) view._cardInventory.__activeDeckGroup20260907 = nextGroup;
+            await view._roomState?.onSetDeck?.(deckNo);
+          });
+        view.__roomDeckSelectionPromise20260908 = selectionPromise;
+      });
+      return;
+    }
+
+    if (target.closest('#drawer-cards .v3-drawer-card, [data-v3-action="confirm"]')) {
+      queueMicrotask(() => scheduleDeckAutosave(view));
+    }
+  }, true);
+
+  root.addEventListener('dblclick', (event) => {
+    const target = event.target instanceof Element ? event.target : null;
+    if (target?.closest?.('#deck-slots-row .v3-deck-slot.filled')) {
+      queueMicrotask(() => scheduleDeckAutosave(view));
+    }
   }, true);
 }
 
@@ -184,10 +207,6 @@ function roomMemberUi(member, fallbackId) {
     ready: Boolean(member?.ready),
     avatar: '/sprites/cards/1.png',
   };
-}
-
-function waitingEnemyUi() {
-  return { id: 'waiting-red-0', name: '等待加入...', lv: '--', ready: false };
 }
 
 function syncRoomStatusBar(view, root) {
@@ -254,13 +273,13 @@ function syncRoomInsideInPlace(owner, room) {
   view._allowUnbalanced = Boolean(room.allowUnbalanced);
   view._randomMatch = Boolean(room.randomMatch);
   view._members = blueMembers.map((member, index) => roomMemberUi(member, index + 1));
-  if (room.mode === 'pvp') {
-    view._enemyPlayers = redMembers.length
-      ? redMembers.map((member, index) => roomMemberUi(member, 200 + index))
-      : [waitingEnemyUi()];
-  } else {
-    view._enemyPlayers = [];
-  }
+  // Keep only real red-team members here. DeckSelectView._renderEnemy always
+  // renders three physical enemy slots and turns missing entries into the pink
+  // waiting/question cards. A fake "等待加入" member would instead create a
+  // broken NaN.png avatar and destroy the intended waiting-card presentation.
+  view._enemyPlayers = room.mode === 'pvp'
+    ? redMembers.map((member, index) => roomMemberUi(member, 200 + index))
+    : [];
 
   if (!view._members.length && room.mode !== 'pvp') {
     view._members = [roomMemberUi(me, 1)];
