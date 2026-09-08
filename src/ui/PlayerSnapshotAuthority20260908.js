@@ -4,10 +4,15 @@ import { App } from './App.js';
 const PATCH_FLAG = Symbol.for('clbwz.playerSnapshotAuthority20260908');
 let activeApp = null;
 
-function applyItemSnapshot(app, items) {
+function applyItemSnapshot(app, items, itemBag = null) {
   const inventory = app?.inventory;
   if (!inventory?.state || !Array.isArray(items)) return;
-  const slotCount = Math.max(Number(inventory.state.slotCount) || 120, items.length, 120);
+  const remoteSlotCount = Number(itemBag?.slotCount);
+  const slotCount = Math.max(
+    120,
+    Number.isFinite(remoteSlotCount) ? Math.floor(remoteSlotCount) : 0,
+    items.length,
+  );
   const slots = Array.from({ length: slotCount }, () => null);
   let cursor = 0;
   for (const raw of items) {
@@ -45,8 +50,16 @@ function applyResponse(app, data) {
   if (!app || !data || typeof data !== 'object') return;
   if (data.profile) applyProfileSnapshot(app, data.profile);
   if (data.snapshot?.profile) applyProfileSnapshot(app, data.snapshot.profile);
-  if (Array.isArray(data.items)) applyItemSnapshot(app, data.items);
-  if (Array.isArray(data.snapshot?.items)) applyItemSnapshot(app, data.snapshot.items);
+  if (Array.isArray(data.items)) applyItemSnapshot(app, data.items, data.itemBag);
+  if (Array.isArray(data.snapshot?.items)) applyItemSnapshot(app, data.snapshot.items, data.snapshot.itemBag);
+  if (data.cardInventory && app.cardInventory?.applyServerSnapshot) {
+    app.cardInventory.applyServerSnapshot(data.cardInventory);
+  }
+  if (data.snapshot?.cardInventory && app.cardInventory?.applyServerSnapshot) {
+    app.cardInventory.applyServerSnapshot(data.snapshot.cardInventory);
+  }
+  const stamina = Number(data.extraResources?.stamina ?? data.snapshot?.extraResources?.stamina);
+  if (Number.isFinite(stamina) && app.player) app.player.stamina = stamina;
 
   const walletGold = Number(data.wallet?.gold ?? data.gold);
   if (Number.isFinite(walletGold) && app.player) {
@@ -63,26 +76,33 @@ export function installPlayerSnapshotAuthority20260908() {
   App.prototype.bootstrap = function bootstrapWithServerSnapshot(...args) {
     activeApp = this;
     applyProfileSnapshot(this, authStore.snapshot?.profile);
-    applyItemSnapshot(this, authStore.snapshot?.items);
+    applyItemSnapshot(this, authStore.snapshot?.items, authStore.snapshot?.itemBag);
+    if (authStore.snapshot?.cardInventory && this.cardInventory?.applyServerSnapshot) {
+      this.cardInventory.applyServerSnapshot(authStore.snapshot.cardInventory);
+    }
     return originalBootstrap.apply(this, args);
   };
 
   const api = authStore.api;
   const originalGet = api.get.bind(api);
   const originalPost = api.post.bind(api);
+  const originalPut = api.put.bind(api);
 
   api.get = async function getWithAuthority(path, ...args) {
     const data = await originalGet(path, ...args);
-    if (path === '/player/snapshot') {
-      authStore.snapshot = data;
-      applyResponse(activeApp, data);
-    }
+    if (path === '/player/snapshot') authStore.snapshot = data;
+    applyResponse(activeApp, data);
     return data;
   };
 
   api.post = async function postWithAuthority(path, body, ...args) {
     const data = await originalPost(path, body, ...args);
-    // 所有明确返回 profile/wallet/items 的服务器事务都可以直接刷新本地显示缓存。
+    applyResponse(activeApp, data);
+    return data;
+  };
+
+  api.put = async function putWithAuthority(path, body, ...args) {
+    const data = await originalPut(path, body, ...args);
     applyResponse(activeApp, data);
     return data;
   };
