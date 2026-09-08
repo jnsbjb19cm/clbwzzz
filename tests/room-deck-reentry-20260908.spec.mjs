@@ -1,18 +1,21 @@
 import { test, expect } from '@playwright/test';
 
-test('default/team1/team2/team3 stay isolated after room re-entry', async ({ page }) => {
+test('default/team1/team2/team3 stay isolated and selected room deck reaches battle', async ({ page }) => {
   await page.goto('/');
   const result = await page.evaluate(async () => {
-    const [cardModule, inventoryModule, deckModule, groupModule, battlePatch, roomPatch] = await Promise.all([
+    const [cardModule, inventoryModule, deckModule, groupModule, battlePatch, roomPatch, runtimePatch, battleViewModule] = await Promise.all([
       import('/src/core/CardDatabase.js'),
       import('/src/core/CardInventoryStore.js'),
       import('/src/ui/DeckSelectView.js'),
       import('/src/ui/DeckGroupSelection20260906.js'),
       import('/src/ui/BattleUserRegressionFix20260907.js'),
       import('/src/ui/RoomDeckRefreshRegressionFix20260907.js'),
+      import('/src/ui/RoomBattleDeckRuntimeFix20260908.js'),
+      import('/src/ui/BattleView.js'),
     ]);
     battlePatch.installBattleUserRegressionFix20260907();
     roomPatch.installRoomDeckRefreshRegressionFix20260907();
+    runtimePatch.installRoomBattleDeckRuntimeFix20260908();
 
     const db = new cardModule.CardDatabase();
     const inventory = new inventoryModule.CardInventoryStore(db);
@@ -70,16 +73,37 @@ test('default/team1/team2/team3 stay isolated after room re-entry', async ({ pag
       };
     };
 
-    return {
-      expected: groups,
+    const reentries = {
       defaultReentry: renderReentry(groupModule.deckGroupToNumber20260906('default')),
       team1Reentry: renderReentry(groupModule.deckGroupToNumber20260906('team1')),
       team2Reentry: renderReentry(groupModule.deckGroupToNumber20260906('team2')),
       team3Reentry: renderReentry(groupModule.deckGroupToNumber20260906('team3')),
+    };
+
+    // Direct runtime seam: room handoff must beat BattleView's legacy default-deck
+    // reload in its PVP branch. spectator=true avoids creating a live socket.
+    document.body.innerHTML = '<div id="battle-root"></div>';
+    inventory.__activeDeckGroup20260907 = 'team3';
+    inventory.__roomBattleDeckSelection20260908 = { group: 'team3', slots: [...groups.team3] };
+    const battleView = new battleViewModule.BattleView(db, {
+      cardInventory: inventory,
+      heroSkills: null,
+      pvp: { roomId: 8008, spectator: true },
+    });
+    battleView.render(document.querySelector('#battle-root'));
+    const battleDeckSlots = [...battleView.deckSlots];
+    const engineBagIndices = battleView.engine?.deck?.map((entry) => entry.bagIndex) ?? [];
+    battleView.stopLoop?.();
+
+    return {
+      expected: groups,
+      ...reentries,
       stored: Object.fromEntries(Object.keys(groups).map((group) => [
         group,
         deckModule.DeckSelectView.loadSavedDeck(inventory, db, group),
       ])),
+      battleDeckSlots,
+      engineBagIndices,
     };
   });
 
@@ -95,11 +119,12 @@ test('default/team1/team2/team3 stay isolated after room re-entry', async ({ pag
   expect(result.team3Reentry.selected).toEqual(result.expected.team3);
   expect(result.stored).toEqual(result.expected);
 
-  // Empty red-team positions must remain as the three physical waiting cards;
-  // never fabricate a pseudo-member that renders /sprites/cards/NaN.png.
   for (const reentry of [result.defaultReentry, result.team1Reentry, result.team2Reentry, result.team3Reentry]) {
     expect(reentry.enemySlotCount).toBe(3);
     expect(reentry.enemyWaitingCount).toBe(3);
     expect(reentry.badEnemyAvatar).toBe(false);
   }
+
+  expect(result.battleDeckSlots).toEqual(result.expected.team3);
+  expect(result.engineBagIndices).toEqual(result.expected.team3);
 });
