@@ -20,11 +20,12 @@ const mappedQualities = craftRules.craftQualityWeights.map((raw) => {
   return { id, name: canonical.name, color: canonical.color, weight: Number(raw.weight) };
 });
 assert.deepEqual(mappedQualities.map((entry) => entry.id), [1, 2, 3, 4, 5]);
-assert.deepEqual(mappedQualities.map((entry) => entry.name), ['劣质', '普通', '精良', '优秀', '完美']);
+// 用户 2026-09-08 给出的品质顺序：劣质灰、普通白、优秀绿、精良蓝、完美紫。
+assert.deepEqual(mappedQualities.map((entry) => entry.name), ['劣质', '普通', '优秀', '精良', '完美']);
 assert.equal(mappedQualities[2].color.toLowerCase(), '#4caf50');
 assert.equal(mappedQualities[3].color.toLowerCase(), '#2196f3');
-assert.equal(craftRules.craftQualityWeights[2].name, '精良');
-assert.equal(craftRules.craftQualityWeights[3].name, '优秀');
+assert.equal(craftRules.craftQualityWeights[2].name, '优秀');
+assert.equal(craftRules.craftQualityWeights[3].name, '精良');
 const craftSystemSource = fs.readFileSync(new URL('../src/systems/CardCraftSystem.js', import.meta.url), 'utf8');
 assert.match(craftSystemSource, /Number\(raw\.id\) \+ 1/);
 assert.match(craftSystemSource, /weight: raw\.weight \* \(id >= 4 \? highQualityMult : 1\)/);
@@ -109,25 +110,36 @@ assert.match(roomDeckSource, /me\.selectedDeckNo == null\) return normalizeDeckG
 assert.match(roomDeckSource, /selectedDeckNo:\s*me\?\.selectedDeckNo \?\? 0/);
 assert.doesNotMatch(roomDeckSource, /selectedDeckNo:\s*me\?\.selectedDeckNo \?\? 1/);
 assert.match(roomDeckSource, /roomDeckGroup\(room, userId, view\._deckTab \?\? 'default'\)/);
+assert.match(roomDeckSource, /await awaitRoomDeckSelection\(view\)/);
+assert.match(roomDeckSource, /scheduleDeckAutosave\(view\)/);
+assert.doesNotMatch(roomDeckSource, /waiting-red-0/);
 
 // 用户日志中的 stale card id 不能再让强化/拆解读取 undefined.name 后整页消失。
 const smithyGuardSource = fs.readFileSync(new URL('../src/ui/SmithyMissingCardGuard20260908.js', import.meta.url), 'utf8');
 assert.match(smithyGuardSource, /db\.getById\(slot\.cardId\) \? slot : null/);
 assert.match(smithyGuardSource, /SmithyView\.prototype\.renderUpgradeRoute/);
 assert.match(smithyGuardSource, /SmithyView\.prototype\.renderDecompose/);
+const strengthenSource = fs.readFileSync(new URL('../src/systems/CardStrengthenSystem.js', import.meta.url), 'utf8');
+assert.doesNotMatch(strengthenSource, /craftRules\.strengthenSuccess/);
+assert.match(strengthenSource, /BASE_STRENGTH_RATES/);
 
-// 品质圈固定逻辑尺寸，不能再由 drawW/baseUnit 等怪物贴图尺寸决定。
+// 品质底座固定逻辑尺寸，不能再由 drawW/baseUnit 等怪物贴图尺寸决定；
+// 中间必须留空，采用前缘更厚的多层椭圆能量环。
 const haloSource = fs.readFileSync(new URL('../src/ui/BattleQualityHaloFix20260908.js', import.meta.url), 'utf8');
-assert.match(haloSource, /const HALO_RX = 31/);
-assert.match(haloSource, /const HALO_RY = 14/);
+assert.match(haloSource, /const HALO_RX = 38/);
+assert.match(haloSource, /const HALO_RY = 11\.5/);
 assert.doesNotMatch(haloSource, /drawW|baseUnit/);
+assert.doesNotMatch(haloSource, /ctx\.fill\(\)/);
+assert.match(haloSource, /quality === 5/);
 
-// 500xx 制作材料并不在旧 item atlas；战斗掉落必须显式复用铁匠铺真实素材。
+// 500xx 制作材料并不在旧 item atlas；战斗掉落必须显式复用铁匠铺真实素材，
+// 并且先从旧 renderer 的 lootDrops 里过滤，彻底避免黄色旋转方块占位符。
 const lootMaterialSource = fs.readFileSync(new URL('../src/ui/BattleLootMaterialIconFix20260908.js', import.meta.url), 'utf8');
 assert.match(lootMaterialSource, /materialArt\(50000 \+ level\)/);
 assert.match(lootMaterialSource, /materialArt\(50010 \+ level\)/);
 assert.match(lootMaterialSource, /materialArt\(50020 \+ level\)/);
 assert.match(lootMaterialSource, /materialArt\(50030 \+ level\)/);
+assert.match(lootMaterialSource, /lootDrops: ordinaryDrops/);
 assert.match(lootMaterialSource, /ctx\.drawImage/);
 
 const bootstrapSource = fs.readFileSync(new URL('../src/bootstrap.js', import.meta.url), 'utf8');
