@@ -82,6 +82,7 @@ function ensureStyle() {
 
     .classic-smithy-screen[data-smithy-mode='strengthen'] .star-charm {
       min-height: 52px;
+      min-width: 0;
       padding: 5px 8px !important;
     }
 
@@ -115,6 +116,34 @@ function ensureStyle() {
         display: block;
         height: 84px;
         pointer-events: none;
+      }
+    }
+
+    /* 宽屏但高度不足时改成 2×2，四个保护符无需浏览器缩放即可同时出现。 */
+    @media (max-height: 920px) and (min-width: 1050px) {
+      .classic-smithy-screen[data-smithy-mode='strengthen'] .star-charm-list {
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+      }
+
+      .classic-smithy-screen[data-smithy-mode='strengthen'] .star-charm {
+        gap: 4px;
+      }
+
+      .classic-smithy-screen[data-smithy-mode='strengthen'] .star-charm span {
+        min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .classic-smithy-screen[data-smithy-mode='strengthen'] .star-charm b {
+        flex: 0 0 auto;
+        font-size: .78rem;
+      }
+
+      .classic-smithy-screen[data-smithy-mode='strengthen'] .star-charm-list::after {
+        grid-column: 1 / -1;
+        height: 64px;
       }
     }
   `;
