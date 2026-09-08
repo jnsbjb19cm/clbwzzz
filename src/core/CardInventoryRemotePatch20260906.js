@@ -45,6 +45,9 @@ function normalizeRemoteSlot(raw) {
     awakened: Boolean(raw.awakened),
     attributeRoll: normalizeAttributeRoll(raw.attributeRoll),
     powderSpent: normalizePowderSpent(raw.powderSpent),
+    // Binding is authoritative server state. Keep it when hydrating local stores so
+    // strengthen/decompose/craft UIs see the same bound/unbound card as the DB.
+    bound: Boolean(raw.bound),
   };
 }
 
