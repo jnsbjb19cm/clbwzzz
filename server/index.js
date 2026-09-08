@@ -21,6 +21,7 @@ import { playerRouter } from './routes/player.js';
 import { playerSnapshotAuthorityRouter20260908 } from './routes/playerSnapshotAuthority20260908.js';
 import { stageResultAuthorityRouter20260908 } from './routes/stageResultAuthority20260908.js';
 import { playerEconomyAuthorityRouter20260908 } from './routes/playerEconomyAuthority20260908.js';
+import { functionalItemAuthorityRouter20260908 } from './routes/functionalItemAuthority20260908.js';
 import { questPinPersistenceRouter20260908 } from './routes/questPinPersistence20260908.js';
 import { materialRefillRouter } from './routes/materialRefill.js';
 import { smithyAuthorityRouter20260907 } from './routes/smithyAuthority20260907.js';
@@ -97,8 +98,8 @@ app.get('/api/health', (_req, res) => {
 app.use('/api/auth', authRouter);
 app.use('/api/player', playerSnapshotAuthorityRouter20260908);
 app.use('/api/player', stageResultAuthorityRouter20260908);
-// 玩家钱包、道具使用/出售/丢弃、背包扩容、商城购买统一先落数据库。
 app.use('/api/player', playerEconomyAuthorityRouter20260908);
+app.use('/api/player', functionalItemAuthorityRouter20260908);
 app.use('/api/player', questPinPersistenceRouter20260908);
 app.use('/api/player/smithy', smithyAuthorityRouter20260907);
 app.use('/api/player', playerRouter);
@@ -117,9 +118,7 @@ if (fs.existsSync(indexHtml)) {
   app.use(express.static(distDir, {
     maxAge: '1d',
     setHeaders(res, filePath) {
-      if (filePath.endsWith('index.html')) {
-        res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
-      }
+      if (filePath.endsWith('index.html')) res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
     },
   }));
   app.get(/.*/, (req, res, next) => {
@@ -154,9 +153,7 @@ installRoomInviteService20260906(io);
 installSystemAnnouncementService(io);
 
 const stopRandomMatchBotService = startRandomMatchBotService(io);
-const stopRoomLifetimeService = startRoomLifetimeService(io, {
-  stopBattle: stopAuthorityBattleByRoom,
-});
+const stopRoomLifetimeService = startRoomLifetimeService(io, { stopBattle: stopAuthorityBattleByRoom });
 
 server.listen(config.port, () => {
   console.log(`[clbwzzz] server listening on http://localhost:${config.port}`);
