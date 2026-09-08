@@ -1,22 +1,23 @@
-import craftRules from '../data/craftRules.json';
 import smithyJson from '../data/smithy.json';
 import { getInstanceStatMultiplier } from '../core/constants.js';
 
 const POWDER_IDS = [10001, 10002, 10003, 10004, 10005];
+// Keep the client preview in lock-step with the authoritative
+// server/routes/smithyAuthority20260907.js BASE_STAR_RATES table.
+// craftRules.json has no strengthenSuccess array, so reading that missing
+// property made getSuccessRate() iterate undefined as soon as a card was put
+// into the strengthen slot.
+const BASE_STRENGTH_RATES = [100, 45, 40, 35, 30, 25, 20, 18, 16, 14, 12, 10, 9, 8, 7];
 
 export class CardStrengthenSystem {
   constructor(db) {
     this.db = db;
     this.table = smithyJson[0]?.strength ?? [];
-    this.rules = craftRules.strengthenSuccess;
   }
 
   getSuccessRate(strengthLv) {
-    const next = strengthLv + 1;
-    for (const row of this.rules) {
-      if (next <= row.maxLv) return row.rate;
-    }
-    return 0.4;
+    const level = Math.max(0, Math.min(BASE_STRENGTH_RATES.length - 1, Number(strengthLv) || 0));
+    return BASE_STRENGTH_RATES[level] / 100;
   }
 
   getPowderNeed(cardQuality, strengthLv) {
