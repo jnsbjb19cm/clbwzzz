@@ -20,12 +20,12 @@ const mappedQualities = craftRules.craftQualityWeights.map((raw) => {
   return { id, name: canonical.name, color: canonical.color, weight: Number(raw.weight) };
 });
 assert.deepEqual(mappedQualities.map((entry) => entry.id), [1, 2, 3, 4, 5]);
-// 用户 2026-09-08 给出的品质顺序：劣质灰、普通白、优秀绿、精良蓝、完美紫。
-assert.deepEqual(mappedQualities.map((entry) => entry.name), ['劣质', '普通', '优秀', '精良', '完美']);
+// 项目既定品质：劣质灰、普通白、精良绿、优秀蓝、完美紫。
+assert.deepEqual(mappedQualities.map((entry) => entry.name), ['劣质', '普通', '精良', '优秀', '完美']);
 assert.equal(mappedQualities[2].color.toLowerCase(), '#4caf50');
 assert.equal(mappedQualities[3].color.toLowerCase(), '#2196f3');
-assert.equal(craftRules.craftQualityWeights[2].name, '优秀');
-assert.equal(craftRules.craftQualityWeights[3].name, '精良');
+assert.equal(craftRules.craftQualityWeights[2].name, '精良');
+assert.equal(craftRules.craftQualityWeights[3].name, '优秀');
 const craftSystemSource = fs.readFileSync(new URL('../src/systems/CardCraftSystem.js', import.meta.url), 'utf8');
 assert.match(craftSystemSource, /Number\(raw\.id\) \+ 1/);
 assert.match(craftSystemSource, /weight: raw\.weight \* \(id >= 4 \? highQualityMult : 1\)/);
@@ -114,6 +114,13 @@ assert.match(roomDeckSource, /await awaitRoomDeckSelection\(view\)/);
 assert.match(roomDeckSource, /scheduleDeckAutosave\(view\)/);
 assert.doesNotMatch(roomDeckSource, /waiting-red-0/);
 
+// 开局必须把房间中真正显示的战团直接交给 BattleView，不能在 PVP/BOSS render 时再读默认卡组。
+const roomBattleDeckSource = fs.readFileSync(new URL('../src/ui/RoomBattleDeckRuntimeFix20260908.js', import.meta.url), 'utf8');
+assert.match(roomBattleDeckSource, /__roomBattleDeckSelection20260908/);
+assert.match(roomBattleDeckSource, /loadExactRoomDeck20260908/);
+assert.match(roomBattleDeckSource, /realEnemyPlayers/);
+assert.match(roomBattleDeckSource, /this\._renderEnemy\?\.\(root\)/);
+
 // 用户日志中的 stale card id 不能再让强化/拆解读取 undefined.name 后整页消失。
 const smithyGuardSource = fs.readFileSync(new URL('../src/ui/SmithyMissingCardGuard20260908.js', import.meta.url), 'utf8');
 assert.match(smithyGuardSource, /db\.getById\(slot\.cardId\) \? slot : null/);
@@ -123,18 +130,29 @@ const strengthenSource = fs.readFileSync(new URL('../src/systems/CardStrengthenS
 assert.doesNotMatch(strengthenSource, /craftRules\.strengthenSuccess/);
 assert.match(strengthenSource, /BASE_STRENGTH_RATES/);
 
-// 品质底座固定逻辑尺寸，不能再由 drawW/baseUnit 等怪物贴图尺寸决定；
-// 中间必须留空，采用前缘更厚的多层椭圆能量环。
+// 造卡和强化都必须有 全部/植物/怪物 筛选。
+const smithyFilterSource = fs.readFileSync(new URL('../src/ui/SmithyCardKindFilter20260908.js', import.meta.url), 'utf8');
+assert.match(smithyFilterSource, /\['all', '全部'\]/);
+assert.match(smithyFilterSource, /\['plant', '植物'\]/);
+assert.match(smithyFilterSource, /\['monster', '怪物'\]/);
+assert.match(smithyFilterSource, /renderCraftWithKindFilter20260908/);
+assert.match(smithyFilterSource, /renderUpgradeWithKindFilter20260908/);
+
+// 品质底座固定逻辑尺寸，并恢复参考图中“多股能量汇于中心一点”的漩涡。
 const haloSource = fs.readFileSync(new URL('../src/ui/BattleQualityHaloFix20260908.js', import.meta.url), 'utf8');
 assert.match(haloSource, /const HALO_RX = 38/);
 assert.match(haloSource, /const HALO_RY = 11\.5/);
 assert.doesNotMatch(haloSource, /drawW|baseUnit/);
-assert.doesNotMatch(haloSource, /ctx\.fill\(\)/);
+assert.match(haloSource, /drawConvergingVortex/);
+assert.match(haloSource, /bezierCurveTo/);
 assert.match(haloSource, /quality === 5/);
 
-// 500xx 制作材料并不在旧 item atlas；战斗掉落必须显式复用铁匠铺真实素材，
-// 并且先从旧 renderer 的 lootDrops 里过滤，彻底避免黄色旋转方块占位符。
+// BattleEngine 实际掉的是 10001..10005 强化粉；500xx 是制造材料。两类都不在旧 atlas，
+// 必须全部过滤掉旧 renderer 的黄色旋转方块，并复用铁匠铺真实素材。
 const lootMaterialSource = fs.readFileSync(new URL('../src/ui/BattleLootMaterialIconFix20260908.js', import.meta.url), 'utf8');
+assert.match(lootMaterialSource, /isPowderId/);
+assert.match(lootMaterialSource, /SMITHY_MATERIAL_ART\.powder/);
+assert.match(lootMaterialSource, /materialArt\(10000 \+ level\)/);
 assert.match(lootMaterialSource, /materialArt\(50000 \+ level\)/);
 assert.match(lootMaterialSource, /materialArt\(50010 \+ level\)/);
 assert.match(lootMaterialSource, /materialArt\(50020 \+ level\)/);
@@ -146,6 +164,8 @@ const bootstrapSource = fs.readFileSync(new URL('../src/bootstrap.js', import.me
 assert.match(bootstrapSource, /installPlayerSnapshotAuthority20260908\(\)/);
 assert.match(bootstrapSource, /installSmithyStrengthenLayoutFix20260908\(\)/);
 assert.match(bootstrapSource, /installSmithyMissingCardGuard20260908\(\)/);
+assert.match(bootstrapSource, /installSmithyCardKindFilter20260908\(\)/);
+assert.match(bootstrapSource, /installRoomBattleDeckRuntimeFix20260908\(\)/);
 assert.match(bootstrapSource, /installBattleQualityHaloFix20260908\(\)/);
 assert.match(bootstrapSource, /installBattleLootMaterialIconFix20260908\(\)/);
 
