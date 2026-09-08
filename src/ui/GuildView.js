@@ -7,6 +7,8 @@ import {
 } from './GuildPermissionPolicy20260906.js';
 
 const itemDb = new ItemDatabase();
+const GUILD_UPGRADE_COST = Object.freeze({ 2: 20_000, 3: 50_000, 4: 100_000, 5: 200_000 });
+const MANAGED_ROLE_ORDER = Object.freeze(['member', 'elite', 'vice_president']);
 
 function esc(text) {
   return String(text ?? '')
@@ -19,6 +21,7 @@ function esc(text) {
 export class GuildView {
   constructor() {
     this.api = authStore.api;
+    this.guild = null;
   }
 
   async render(root) {
@@ -33,6 +36,7 @@ export class GuildView {
 
   async load() {
     const data = await this.api.get('/guild/my').catch(() => ({ guild: null }));
+    this.guild = data.guild || null;
     if (!data.guild) return this.renderNoGuild();
     this.renderGuild(data.guild);
   }
@@ -79,9 +83,12 @@ export class GuildView {
   }
 
   renderGuild(g) {
+    this.guild = g;
     const el = this.root.querySelector('#guild-main');
     const bonus = Math.round((g.craftStrengthBonus ?? 0) * 100);
     const normalizedRole = normalizeGuildRole20260906(g.role);
+    const nextLevel = Math.min(5, Number(g.level || 1) + 1);
+    const nextUpgradeCost = GUILD_UPGRADE_COST[nextLevel] || 0;
     // 新服务端直接返回 canApprove；旧服务端/滚动发布期间则用同一规范化角色规则兜底。
     const canApprove = typeof g.canApprove === 'boolean'
       ? g.canApprove
@@ -96,16 +103,17 @@ export class GuildView {
         <button id="guild-members-btn" type="button" style="padding:6px 12px;border-radius:6px;border:0;background:#3a5a3a;color:#fff;cursor:pointer;">成员</button>
         <button id="guild-warehouse-btn" type="button" style="padding:6px 12px;border-radius:6px;border:0;background:#3a5a3a;color:#fff;cursor:pointer;">仓库</button>
         ${canApprove ? `<button id="guild-approve-btn" type="button" style="padding:6px 12px;border-radius:6px;border:0;background:#5a4a8a;color:#fff;cursor:pointer;">审批</button>` : ''}
-        ${normalizedRole === 'president' && g.level < 5 ? `<button id="guild-upgrade-btn" type="button" style="padding:6px 12px;border-radius:6px;border:0;background:#6a5a2a;color:#fff;cursor:pointer;">升级公会</button>` : ''}
+        ${normalizedRole === 'president' && g.level < 5 ? `<button id="guild-upgrade-btn" type="button" style="padding:6px 12px;border-radius:6px;border:0;background:#6a5a2a;color:#fff;cursor:pointer;">升级公会（${nextUpgradeCost}金币）</button>` : ''}
         <button id="guild-leave-btn" type="button" style="padding:6px 12px;border-radius:6px;border:0;background:#6a3a3a;color:#fff;cursor:pointer;">退出公会</button>
       </div>
       <div id="guild-detail"></div>`;
 
     el.querySelector('#guild-members-btn').addEventListener('click', () => this.showMembers(g.guildId));
     el.querySelector('#guild-upgrade-btn')?.addEventListener('click', async () => {
+      if (!confirm(`确定花费 ${nextUpgradeCost} 金币将公会升级到 Lv.${nextLevel}？`)) return;
       try {
         const res = await this.api.post('/guild/upgrade', {});
-        alert(`公会升级成功，当前 Lv.${res.level}`);
+        alert(`公会升级成功，当前 Lv.${res.level}，剩余金币 ${res.gold}`);
         this.load();
       } catch (e) { alert(e.message); }
     });
@@ -121,16 +129,47 @@ export class GuildView {
   async showMembers(guildId) {
     const data = await this.api.get(`/guild/${guildId}/members`).catch(() => ({ members: [] }));
     const el = this.root.querySelector('#guild-detail');
+    const canManageRoles = normalizeGuildRole20260906(this.guild?.role) === 'president';
+    const roleControls = (member) => {
+      const role = normalizeGuildRole20260906(member.role);
+      if (!canManageRoles || role === 'president') return '';
+      const index = MANAGED_ROLE_ORDER.indexOf(role);
+      if (index < 0) return '';
+      const upRole = index < MANAGED_ROLE_ORDER.length - 1 ? MANAGED_ROLE_ORDER[index + 1] : null;
+      const downRole = index > 0 ? MANAGED_ROLE_ORDER[index - 1] : null;
+      return `
+        <span style="display:inline-flex;gap:5px;margin-left:10px;">
+          ${upRole ? `<button type="button" data-guild-role-change="${member.userId}" data-guild-next-role="${upRole}" style="padding:3px 8px;border-radius:5px;border:0;background:#4a7a3a;color:#fff;cursor:pointer;">升职为${ROLE_LABEL[upRole]}</button>` : ''}
+          ${downRole ? `<button type="button" data-guild-role-change="${member.userId}" data-guild-next-role="${downRole}" style="padding:3px 8px;border-radius:5px;border:0;background:#6a5a2a;color:#fff;cursor:pointer;">降职为${ROLE_LABEL[downRole]}</button>` : ''}
+        </span>`;
+    };
     el.innerHTML = `
       <div style="background:#101d10;border:1px solid #3a5a3a;border-radius:12px;padding:14px;">
         <h4 style="margin:0 0 8px;">公会成员</h4>
         ${data.members.map((m) => `
-          <div style="padding:5px 0;border-bottom:1px solid #223322;display:flex;justify-content:space-between;">
-            <span>${esc(m.nickname || '玩家')} <small style="color:#888;">${esc(m.roleLabel)}</small>
-            <span style="color:${m.online ? '#8bff9b' : '#888'};font-size:12px;">${m.online ? '在线' : '离线'}</span></span>
-            <span style="color:#bbb;">Lv.${m.level} · ${m.honor}荣誉</span>
+          <div style="padding:7px 0;border-bottom:1px solid #223322;display:flex;justify-content:space-between;gap:10px;align-items:center;">
+            <span style="min-width:0;">${esc(m.nickname || '玩家')} <small style="color:#888;">${esc(m.roleLabel)}</small>
+            <span style="color:${m.online ? '#8bff9b' : '#888'};font-size:12px;">${m.online ? '在线' : '离线'}</span>
+            ${roleControls(m)}</span>
+            <span style="color:#bbb;white-space:nowrap;">Lv.${m.level} · ${m.honor}荣誉</span>
           </div>`).join('')}
       </div>`;
+
+    el.querySelectorAll('[data-guild-role-change]').forEach((btn) => btn.addEventListener('click', async () => {
+      const userId = Number(btn.dataset.guildRoleChange);
+      const role = String(btn.dataset.guildNextRole || '');
+      if (!userId || !role) return;
+      if (!confirm(`确定将该成员职位调整为${ROLE_LABEL[role] || role}？`)) return;
+      btn.disabled = true;
+      try {
+        await this.api.post(`/guild/${guildId}/promote`, { userId, role });
+        alert(`职位调整成功：${ROLE_LABEL[role] || role}`);
+        await this.showMembers(guildId);
+      } catch (e) {
+        alert(e.message);
+        btn.disabled = false;
+      }
+    }));
   }
 
   async showJoinRequests(guildId) {
@@ -202,6 +241,17 @@ export class GuildView {
       } catch (e) { alert(e.message); }
     });
   }
+}
+
+function itemName(itemId) {
+  return itemDb.getById(Number(itemId))?.name || `道具${itemId}`;
+}
+
+function itemIcon(itemId) {
+  const src = getCraftMaterialImage(Number(itemId));
+  return src
+    ? `<img src="${src}" alt="" draggable="false" style="width:44px;height:44px;object-fit:contain;image-rendering:auto;" />`
+    : `<div style="width:44px;height:44px;margin:0 auto;border-radius:8px;background:#263826;display:grid;place-items:center;color:#8fb08f;font-size:11px;">${esc(itemId)}</div>`;
 }
 
 const ROLE_LABEL = {
