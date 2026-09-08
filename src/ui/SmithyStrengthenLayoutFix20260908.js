@@ -5,6 +5,11 @@ export function installSmithyStrengthenLayoutFix20260908() {
   const style = document.createElement('style');
   style.id = STYLE_ID;
   style.textContent = `
+    .classic-smithy-screen[data-smithy-mode='strengthen'] .starup-page,
+    .classic-smithy-screen[data-smithy-mode='strengthen'] .starup-layout {
+      overflow: visible !important;
+    }
+
     .classic-smithy-screen[data-smithy-mode='strengthen'] .starup-layout {
       display: grid !important;
       grid-template-areas: 'info workbench cards' !important;
@@ -15,9 +20,21 @@ export function installSmithyStrengthenLayoutFix20260908() {
       width: 100% !important;
     }
 
+    /*
+     * 左侧有大块空白，把成功率/强化粉/保护符整个面板只向左扩展。
+     * 负 margin 与增加的 width 使用同一个值，所以面板右边缘、中央工作台和
+     * 右侧卡牌列表完全不移动；只是吃掉左侧原本闲置的蓝色区域。
+     */
     .classic-smithy-screen[data-smithy-mode='strengthen'] .starup-info {
+      --smithy-info-left-expand: 120px;
       grid-area: info !important;
+      box-sizing: border-box !important;
+      position: relative !important;
+      z-index: 2 !important;
       min-width: 0 !important;
+      width: calc(100% + var(--smithy-info-left-expand)) !important;
+      max-width: none !important;
+      margin-left: calc(-1 * var(--smithy-info-left-expand)) !important;
       max-height: min(620px, calc(100dvh - 250px)) !important;
       overflow-y: auto !important;
       overflow-x: hidden !important;
@@ -74,6 +91,12 @@ export function installSmithyStrengthenLayoutFix20260908() {
       overflow-x: hidden !important;
     }
 
+    @media (max-width: 1250px) {
+      .classic-smithy-screen[data-smithy-mode='strengthen'] .starup-info {
+        --smithy-info-left-expand: 72px;
+      }
+    }
+
     @media (max-width: 900px) {
       .classic-smithy-screen[data-smithy-mode='strengthen'] .starup-layout {
         grid-template-areas:
@@ -82,6 +105,7 @@ export function installSmithyStrengthenLayoutFix20260908() {
         grid-template-columns: minmax(180px, .72fr) minmax(320px, 1.28fr) !important;
       }
       .classic-smithy-screen[data-smithy-mode='strengthen'] .starup-info {
+        --smithy-info-left-expand: 32px;
         max-height: min(540px, calc(100dvh - 230px)) !important;
       }
       .classic-smithy-screen[data-smithy-mode='strengthen'] .starup-card-list .starup-scroll {
@@ -95,6 +119,7 @@ export function installSmithyStrengthenLayoutFix20260908() {
         grid-template-columns: minmax(0, 1fr) !important;
       }
       .classic-smithy-screen[data-smithy-mode='strengthen'] .starup-info {
+        --smithy-info-left-expand: 0px;
         max-height: min(420px, calc(100dvh - 210px)) !important;
       }
       .classic-smithy-screen[data-smithy-mode='strengthen'] .starup-card-list .starup-scroll {
