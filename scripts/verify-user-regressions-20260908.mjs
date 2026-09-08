@@ -98,8 +98,43 @@ assert.ok(
   '数据库战斗结算必须先于旧 stage-result',
 );
 
+// 卡牌绑定不能在服务器 -> 浏览器 hydration 时被 normalizeRemoteSlot 丢掉。
+const cardRemoteSource = fs.readFileSync(new URL('../src/core/CardInventoryRemotePatch20260906.js', import.meta.url), 'utf8');
+assert.match(cardRemoteSource, /bound:\s*Boolean\(raw\.bound\)/);
+
+// 房间协议是 default=0, team1/2/3=1/2/3。重进时服务器快照暂缺 selectedDeckNo
+// 也不能擅自回退到 team1 或覆盖当前 group。
+const roomDeckSource = fs.readFileSync(new URL('../src/ui/RoomDeckRefreshRegressionFix20260907.js', import.meta.url), 'utf8');
+assert.match(roomDeckSource, /me\.selectedDeckNo == null\) return normalizeDeckGroup20260906\(fallbackGroup\)/);
+assert.match(roomDeckSource, /selectedDeckNo:\s*me\?\.selectedDeckNo \?\? 0/);
+assert.doesNotMatch(roomDeckSource, /selectedDeckNo:\s*me\?\.selectedDeckNo \?\? 1/);
+assert.match(roomDeckSource, /roomDeckGroup\(room, userId, view\._deckTab \?\? 'default'\)/);
+
+// 用户日志中的 stale card id 不能再让强化/拆解读取 undefined.name 后整页消失。
+const smithyGuardSource = fs.readFileSync(new URL('../src/ui/SmithyMissingCardGuard20260908.js', import.meta.url), 'utf8');
+assert.match(smithyGuardSource, /db\.getById\(slot\.cardId\) \? slot : null/);
+assert.match(smithyGuardSource, /SmithyView\.prototype\.renderUpgradeRoute/);
+assert.match(smithyGuardSource, /SmithyView\.prototype\.renderDecompose/);
+
+// 品质圈固定逻辑尺寸，不能再由 drawW/baseUnit 等怪物贴图尺寸决定。
+const haloSource = fs.readFileSync(new URL('../src/ui/BattleQualityHaloFix20260908.js', import.meta.url), 'utf8');
+assert.match(haloSource, /const HALO_RX = 31/);
+assert.match(haloSource, /const HALO_RY = 14/);
+assert.doesNotMatch(haloSource, /drawW|baseUnit/);
+
+// 500xx 制作材料并不在旧 item atlas；战斗掉落必须显式复用铁匠铺真实素材。
+const lootMaterialSource = fs.readFileSync(new URL('../src/ui/BattleLootMaterialIconFix20260908.js', import.meta.url), 'utf8');
+assert.match(lootMaterialSource, /materialArt\(50000 \+ level\)/);
+assert.match(lootMaterialSource, /materialArt\(50010 \+ level\)/);
+assert.match(lootMaterialSource, /materialArt\(50020 \+ level\)/);
+assert.match(lootMaterialSource, /materialArt\(50030 \+ level\)/);
+assert.match(lootMaterialSource, /ctx\.drawImage/);
+
 const bootstrapSource = fs.readFileSync(new URL('../src/bootstrap.js', import.meta.url), 'utf8');
 assert.match(bootstrapSource, /installPlayerSnapshotAuthority20260908\(\)/);
 assert.match(bootstrapSource, /installSmithyStrengthenLayoutFix20260908\(\)/);
+assert.match(bootstrapSource, /installSmithyMissingCardGuard20260908\(\)/);
+assert.match(bootstrapSource, /installBattleQualityHaloFix20260908\(\)/);
+assert.match(bootstrapSource, /installBattleLootMaterialIconFix20260908\(\)/);
 
 console.log('2026-09-08 user regressions: PASS');
