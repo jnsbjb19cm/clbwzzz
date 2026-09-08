@@ -1,6 +1,7 @@
 import { DeckSelectView } from './DeckSelectView.js';
 import { RoomView } from './RoomView.js';
 import {
+  deckGroupToNumber20260906,
   deckNumberToGroup20260906,
   normalizeDeckGroup20260906,
 } from './DeckGroupSelection20260906.js';
@@ -46,14 +47,24 @@ function syncDeckTabs(root, group) {
   });
 }
 
+function saveDeckGroup(view, group, selection) {
+  if (!view?._cardInventory) return Promise.resolve();
+  const normalized = normalizeDeckGroup20260906(group);
+  const result = DeckSelectView.saveDeck(copyDeck(selection), view._cardInventory, normalized);
+  return Promise.resolve(result)
+    .then(() => DeckSelectView.awaitDeckSave20260908?.(normalized));
+}
+
 function saveCurrentDeck(view) {
   if (!view?._cardInventory) return Promise.resolve();
   const group = normalizeDeckGroup20260906(
     view._deckTab ?? view._cardInventory.__activeDeckGroup20260907 ?? 'default',
   );
-  const result = DeckSelectView.saveDeck(copyDeck(view._selected), view._cardInventory, group);
-  return Promise.resolve(result)
-    .then(() => DeckSelectView.awaitDeckSave20260908?.(group));
+  return saveDeckGroup(view, group, view._selected);
+}
+
+function awaitRoomDeckSelection(view) {
+  return Promise.resolve(view?.__roomDeckSelectionPromise20260908).catch(() => {});
 }
 
 function loadGroupIntoView(view, root, group, { force = false } = {}) {
@@ -67,12 +78,9 @@ function loadGroupIntoView(view, root, group, { force = false } = {}) {
     return;
   }
 
-  // Once the room controller has been initialised, changing the server-selected
-  // deck automatically commits the deck we are leaving. This removes the old
-  // "must click 确定 before changing tab" trap while avoiding an initial-render
-  // overwrite of a server deck.
   if (view.__roomDeckGroupInitialized20260908 && previousGroup !== normalized) {
-    void saveCurrentDeck(view).catch((error) => {
+    const outgoing = copyDeck(view._v3Decks?.[previousGroup] ?? view._selected);
+    void saveDeckGroup(view, previousGroup, outgoing).catch((error) => {
       console.warn(`[deck] 自动保存${previousGroup}失败`, error);
     });
   }
@@ -103,6 +111,44 @@ function reportRoomAction(owner, promise) {
   });
 }
 
+function installDeckTabServerBridge(owner, view) {
+  const root = owner?.root?.querySelector?.('#lobby-room-inside');
+  if (!root || root.__deckTabServerBridge20260908) return;
+  root.__deckTabServerBridge20260908 = true;
+
+  // BattleRoomDeckUiV3 owns the visual tab click and stops propagation on the
+  // .game-room element. Capture one level above it, remember the outgoing draft,
+  // then let V3 switch the UI. In a microtask publish the same selection to the
+  // server and auto-save the deck we just left.
+  root.addEventListener('click', (event) => {
+    const target = event.target instanceof Element ? event.target : null;
+    const tab = target?.closest?.('.deck-tab');
+    if (!tab) return;
+
+    const previousGroup = normalizeDeckGroup20260906(
+      view._deckTab ?? view._cardInventory?.__activeDeckGroup20260907 ?? 'default',
+    );
+    const outgoing = copyDeck(view._v3Decks?.[previousGroup] ?? view._selected);
+
+    queueMicrotask(() => {
+      const nextGroup = normalizeDeckGroup20260906(
+        view._deckTab ?? tab.dataset.tab ?? previousGroup,
+      );
+      if (nextGroup === previousGroup) return;
+      const deckNo = deckGroupToNumber20260906(nextGroup);
+
+      const selectionPromise = (view.__roomDeckSelectionPromise20260908 ?? Promise.resolve())
+        .catch(() => {})
+        .then(async () => {
+          await saveDeckGroup(view, previousGroup, outgoing);
+          if (view._cardInventory) view._cardInventory.__activeDeckGroup20260907 = nextGroup;
+          await view._roomState?.onSetDeck?.(deckNo);
+        });
+      view.__roomDeckSelectionPromise20260908 = selectionPromise;
+    });
+  }, true);
+}
+
 function installStableRoomCallbacks(owner, view) {
   const state = view?._roomState;
   if (!state || !owner?.socket) return;
@@ -111,8 +157,7 @@ function installStableRoomCallbacks(owner, view) {
   state.__stableOriginalStart20260907 = originalStart;
 
   state.onReady = () => reportRoomAction(owner, (async () => {
-    // Non-host players also publish their selected deck before becoming ready,
-    // so the host can never start while their deck PUT is still in flight.
+    await awaitRoomDeckSelection(view);
     await saveCurrentDeck(view);
     const me = memberFor(owner.room, owner.currentUserId?.());
     return owner.socket.setReady(!me?.ready);
@@ -123,11 +168,11 @@ function installStableRoomCallbacks(owner, view) {
   state.onChangeMap = (mapId) => reportRoomAction(owner, owner.socket.changeMap(mapId));
   state.onSwitch = () => reportRoomAction(owner, owner.socket.switchTeam());
   state.onStart = () => reportRoomAction(owner, (async () => {
-    // Save + await the currently visible group before asking the server to start.
-    // Previously startBattle could win this race and read the prior/default deck.
+    await awaitRoomDeckSelection(view);
     await saveCurrentDeck(view);
     return originalStart?.();
   })());
+  installDeckTabServerBridge(owner, view);
 }
 
 function roomMemberUi(member, fallbackId) {
@@ -275,12 +320,8 @@ function installDeckRenderGuard() {
     );
     if (this._cardInventory) this._cardInventory.__activeDeckGroup20260907 = group;
 
-    // BattleRoomDeckUiV3.initializeState() 会读取自己的 activeTab，并可能把刚由
-    // 服务器 selectedDeckNo 选中的战团重新改回旧 tab。这里在所有旧补丁之后收口。
     loadGroupIntoView(this, root, group, { force: true });
 
-    // V3 的“确定”按钮调用的是安装时捕获的旧 saveDeck。把这条陈旧引用改成
-    // 运行时最终 saveDeck，让 team1/team2/team3 始终携带当前 group 写入。
     this.__originalSaveDeck = (selected, cardInventory) => {
       const activeGroup = normalizeDeckGroup20260906(
         this._deckTab ?? cardInventory?.__activeDeckGroup20260907 ?? group,
@@ -322,8 +363,6 @@ function installRoomRenderGuard() {
     if (room) this.room = room;
     if (!this.room || !this.root) return;
 
-    // 换地图、换战团、准备、取消准备、换队、房间规则、随机匹配，以及同房间成员
-    // ready/team 的普通变化，都只更新对应 DOM。只有房间壳本身发生变化才允许整页重建。
     if (!roomShellChanged(previous, this.room) && syncRoomInsideInPlace(this, this.room)) return;
     return previousRefreshRoom.call(this, this.room);
   }
