@@ -8,6 +8,9 @@ import {
   getTutorialDeckSlots,
 } from '../tutorial/TutorialConfig.js';
 import { App } from './App.js';
+import { installAnnouncementPlainText20260905 } from './AnnouncementPlainText20260905.js';
+import { installSmithyCharmAndChatPolish20260908 } from './SmithyCharmAndChatPolish20260908.js';
+import { installBatchInventoryDatabaseFix20260908 } from './BatchInventoryDatabaseFix20260908.js';
 
 const PATCH_FLAG = Symbol.for('clbwzzz.systemAnnouncementClient20260905');
 let socketClient = null;
@@ -207,14 +210,39 @@ function announceCraftAscend({ fromCardName, cardId, resultName, craftQuality })
   }).catch(() => {});
 }
 
-function reportPvpResult(won) {
+function reportPvpResult(won, context = {}) {
   if (!authStore.isLoggedIn()) return;
-  socket().emitAck('pvp:result-report', { won: Boolean(won) }).catch(() => {});
+  const opponentName = String(
+    context?.opponentName
+      ?? context?.opponent?.nickname
+      ?? context?.enemyNickname
+      ?? context?.enemyName
+      ?? '',
+  ).trim().slice(0, 24);
+  const resultId = String(
+    context?.resultId
+      ?? context?.battleId
+      ?? context?.matchId
+      ?? context?.roomId
+      ?? '',
+  ).trim().slice(0, 80);
+  socket().emitAck('pvp:result-report', {
+    won: Boolean(won),
+    opponentName: opponentName || undefined,
+    resultId: resultId || undefined,
+  }).catch(() => {});
 }
 
 export function installSystemAnnouncementClient() {
   if (globalThis[PATCH_FLAG]) return;
   globalThis[PATCH_FLAG] = true;
+
+  // Recovery modules existed on the branch but were not wired into main.js.
+  // Activate them from this always-installed client so room/chat/smithy/inventory
+  // and the visible announcement fallback are effective at runtime.
+  installAnnouncementPlainText20260905();
+  installSmithyCharmAndChatPolish20260908();
+  installBatchInventoryDatabaseFix20260908();
 
   const previousMount = App.prototype.mount;
   App.prototype.mount = function mountWithAnnouncementAccountGuard(...args) {
@@ -253,7 +281,7 @@ export function installSystemAnnouncementClient() {
       || Boolean(payload?.pvp)
       || Boolean(this.routeOpts?.pvp)
     ) {
-      reportPvpResult(Boolean(payload?.won));
+      reportPvpResult(Boolean(payload?.won), payload || {});
     }
     return result;
   };
