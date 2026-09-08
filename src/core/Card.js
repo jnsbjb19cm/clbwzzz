@@ -33,7 +33,8 @@ export class Card {
     this.cost = raw.cost_a;
     /* 当前规则只保留1~5级；旧数据中的6级统一降为5级。 */
     this.quality = Math.max(1, Math.min(5, Number(raw.card_quality) || 1));
-    this.category = raw.card_category;
+    // 原始数据把魅惑妖灵(53)误标成植物阵营；游戏规则中它是怪物卡。
+    this.category = this.id === 53 ? CARD_CATEGORY.MONSTER : raw.card_category;
     this.type = raw.card_type;
     this.cooldown = raw.card_cd;
     this.moveSpeed = raw.move_speed;
