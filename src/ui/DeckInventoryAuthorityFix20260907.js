@@ -67,7 +67,7 @@ function updateSnapshotDeck(deckNo, cardIds) {
 }
 
 function queueDeckSave(deckNo, cardIds) {
-  if (!authStore?.isLoggedIn?.() || deckNo < 1 || deckNo > 3) return;
+  if (!authStore?.isLoggedIn?.() || deckNo < 1 || deckNo > 3) return Promise.resolve();
   const key = deckCacheKey(deckNo);
   const requestedIds = [...cardIds];
   const signature = requestedIds.join(',');
@@ -75,7 +75,7 @@ function queueDeckSave(deckNo, cardIds) {
   state.cardIds = [...requestedIds];
   if (state.signature === signature) {
     DECK_PENDING.set(key, state);
-    return;
+    return state.queue;
   }
   state.signature = signature;
   state.queue = state.queue
@@ -92,9 +92,18 @@ function queueDeckSave(deckNo, cardIds) {
         state.signature = null;
         state.cardIds = null;
         console.warn(`[deck] 战团${deckNo}保存失败`, error);
+        throw error;
       }
     });
   DECK_PENDING.set(key, state);
+  return state.queue;
+}
+
+function pendingDeckSave(group) {
+  const normalized = normalizeDeckGroup20260906(group);
+  const deckNo = deckGroupToNumber20260906(normalized);
+  if (deckNo < 1 || deckNo > 3) return Promise.resolve();
+  return DECK_PENDING.get(deckCacheKey(deckNo))?.queue ?? Promise.resolve();
 }
 
 function installDeckServerPersistence() {
@@ -122,9 +131,16 @@ function installDeckServerPersistence() {
     const normalized = normalizeDeckGroup20260906(group ?? cardInventory?.__activeDeckGroup20260907 ?? 'default');
     priorSaveDeck(selected, cardInventory, normalized);
     const deckNo = deckGroupToNumber20260906(normalized);
-    if (deckNo < 1 || deckNo > 3) return;
+    if (deckNo < 1 || deckNo > 3) return Promise.resolve();
     const cardIds = cardIdsFromSelection(selected, cardInventory);
-    queueDeckSave(deckNo, cardIds);
+    return queueDeckSave(deckNo, cardIds);
+  };
+
+  // Room start/ready must not race the asynchronous PUT /player/decks/:deckNo.
+  // Waiting for this queue guarantees the server starts with the exact group
+  // that the player sees in the room instead of a stale/default deck snapshot.
+  DeckSelectView.awaitDeckSave20260908 = function awaitDeckSave20260908(group) {
+    return pendingDeckSave(group);
   };
 }
 
