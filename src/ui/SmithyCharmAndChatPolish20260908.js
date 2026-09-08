@@ -3,6 +3,13 @@ import { SMITHY_MATERIAL_ART } from './SmithyMaterialArtwork.js';
 const PATCH_FLAG = Symbol.for('clbwz.smithyCharmAndChatPolish20260908');
 const STYLE_ID = 'smithy-charm-chat-polish-20260908';
 const chatHomes = new WeakMap();
+const POWDER_TIER_BY_LABEL = Object.freeze({
+  '一级强化粉': 1,
+  '二级强化粉': 2,
+  '三级强化粉': 3,
+  '四级强化粉': 4,
+  '五级强化粉': 5,
+});
 let layoutQueued = false;
 
 function ensureStyle() {
@@ -85,11 +92,6 @@ function ensureStyle() {
       z-index: 80 !important;
     }
 
-    /*
-     * 100% 浏览器缩放下左侧保护符曾仍按单列排布，宽屏媒体规则只写了
-     * grid-template-columns 却没有真正启用 grid，缩放后触发布局变化才“看起来恢复”。
-     * 这里直接锁定真实网格和内部滚动，四个保护符在正常缩放即可完整访问。
-     */
     .classic-smithy-screen[data-smithy-mode='strengthen'] .starup-info {
       max-height: min(560px, calc(100dvh - 300px)) !important;
       overflow-y: auto !important;
@@ -100,18 +102,52 @@ function ensureStyle() {
       scrollbar-gutter: stable;
     }
 
+    /*
+     * 保护符固定两行两列。左侧 starup-info 已向左扩宽，所以不再需要横向轨道，
+     * 每格可以完整容纳图标、一级/二级/三级/四级保护符名称以及数量。
+     */
     .classic-smithy-screen[data-smithy-mode='strengthen'] .star-charm-list {
       display: grid !important;
-      grid-template-columns: minmax(0, 1fr) !important;
-      align-items: stretch;
-      gap: 5px !important;
-      min-width: 0;
+      grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+      grid-template-rows: repeat(2, minmax(0, auto)) !important;
+      grid-auto-flow: row !important;
+      align-items: stretch !important;
+      gap: 8px !important;
+      width: 100% !important;
+      max-width: 100% !important;
+      min-width: 0 !important;
+      overflow: visible !important;
+      padding: 0 !important;
     }
 
     .classic-smithy-screen[data-smithy-mode='strengthen'] .star-charm {
-      min-height: 52px;
-      min-width: 0;
-      padding: 5px 8px !important;
+      box-sizing: border-box !important;
+      display: flex !important;
+      align-items: center !important;
+      min-height: 58px !important;
+      min-width: 0 !important;
+      width: 100% !important;
+      padding: 6px 10px !important;
+      gap: 7px !important;
+    }
+
+    .classic-smithy-screen[data-smithy-mode='strengthen'] .star-charm > .smithy-material-art {
+      flex: 0 0 auto !important;
+    }
+
+    .classic-smithy-screen[data-smithy-mode='strengthen'] .star-charm > span:not(.smithy-material-art) {
+      flex: 1 1 auto !important;
+      min-width: 0 !important;
+      overflow: visible !important;
+      text-overflow: clip !important;
+      white-space: nowrap !important;
+      font-size: .9rem !important;
+    }
+
+    .classic-smithy-screen[data-smithy-mode='strengthen'] .star-charm > b {
+      flex: 0 0 auto !important;
+      white-space: nowrap !important;
+      font-size: .82rem !important;
     }
 
     @media (max-height: 920px) {
@@ -130,59 +166,9 @@ function ensureStyle() {
         margin-bottom: 6px !important;
       }
 
-      .classic-smithy-screen[data-smithy-mode='strengthen'] .star-charm-list {
-        gap: 5px !important;
-      }
-
       .classic-smithy-screen[data-smithy-mode='strengthen'] .star-charm {
-        min-height: 48px;
-        padding: 4px 7px !important;
-      }
-    }
-
-    /*
-     * 宽屏低高度场景改为真正的横向保护符轨道。
-     * 每个保护符保留足够宽度显示“一级/二级/三级/四级保护符 + x1500”，
-     * 不再为了 2×2 硬塞而把名称裁成“一…”“二…”。
-     */
-    @media (max-height: 920px) and (min-width: 1050px) {
-      .classic-smithy-screen[data-smithy-mode='strengthen'] .star-charm-list {
-        display: grid !important;
-        grid-template-columns: none !important;
-        grid-template-rows: minmax(0, 1fr) !important;
-        grid-auto-flow: column !important;
-        grid-auto-columns: minmax(220px, 235px) !important;
-        width: 100% !important;
-        max-width: 100% !important;
-        overflow-x: auto !important;
-        overflow-y: hidden !important;
-        padding: 0 0 7px !important;
-        scroll-padding-inline: 2px;
-        scroll-snap-type: x proximity;
-        overscroll-behavior-x: contain;
-        scrollbar-gutter: auto;
-        touch-action: pan-x;
-      }
-
-      .classic-smithy-screen[data-smithy-mode='strengthen'] .star-charm {
-        min-width: 220px !important;
-        width: auto !important;
-        gap: 6px;
-        scroll-snap-align: start;
-      }
-
-      .classic-smithy-screen[data-smithy-mode='strengthen'] .star-charm span {
-        flex: 1 1 auto;
-        min-width: max-content;
-        overflow: visible !important;
-        text-overflow: clip !important;
-        white-space: nowrap !important;
-      }
-
-      .classic-smithy-screen[data-smithy-mode='strengthen'] .star-charm b {
-        flex: 0 0 auto;
-        font-size: .82rem;
-        white-space: nowrap;
+        min-height: 52px !important;
+        padding: 5px 8px !important;
       }
     }
   `;
@@ -202,6 +188,31 @@ function fixFourthCharm(scope = document) {
     art.dataset.tier = '4';
     image.src = level4;
     image.alt = '';
+  }
+}
+
+/*
+ * 强化粉消耗本身由 CardStrengthenSystem 的 powderNeed.itemId 决定，界面文字也是
+ * 根据该 itemId 输出；之前只有图标错误地用 star + 1 选帧，导致每升一星图标就变。
+ * 这里以实际显示的强化粉物品名为权威，把 powder.png 帧固定到真正消耗的粉末等级。
+ */
+function fixPowderArtwork(scope = document) {
+  const lines = [];
+  if (scope.matches?.('.smithy-material-line')) lines.push(scope);
+  for (const line of scope.querySelectorAll?.('.smithy-material-line') ?? []) lines.push(line);
+
+  for (const line of lines) {
+    const art = line.querySelector('[data-smithy-art="powder"]');
+    if (!art) continue;
+    const text = line.textContent ?? '';
+    const matched = Object.entries(POWDER_TIER_BY_LABEL).find(([label]) => text.includes(label));
+    if (!matched) continue;
+    const tier = matched[1];
+    const visualTier = Math.max(1, Math.min(4, tier));
+    const offset = ((visualTier - 1) / 3) * 100;
+    art.dataset.tier = String(tier);
+    art.style.backgroundSize = '100% 400%';
+    art.style.backgroundPosition = `50% ${offset}%`;
   }
 }
 
@@ -285,7 +296,6 @@ function normalizeSmithyLayout() {
     }
     if (list) {
       list.style.display = 'grid';
-      /* 强制读取一次几何信息，让隐藏→显示/字体加载后的首次 100% 布局立即落地。 */
       void list.getBoundingClientRect().height;
     }
   }
@@ -294,6 +304,7 @@ function normalizeSmithyLayout() {
 function runLayoutSync() {
   layoutQueued = false;
   removeRechargeButtons(document);
+  fixPowderArtwork(document);
   normalizeSmithyLayout();
   syncRoomChatDock();
 }
@@ -310,6 +321,7 @@ function queueLayoutSync() {
 function enhance(scope = document) {
   removeRechargeButtons(scope);
   fixFourthCharm(scope);
+  fixPowderArtwork(scope);
   enhanceChat(scope);
   queueLayoutSync();
 }
@@ -329,10 +341,10 @@ export function installSmithyCharmAndChatPolish20260908() {
       }
       for (const node of mutation.addedNodes) {
         if (!(node instanceof Element)) continue;
-        if (node.matches?.('.classic-chat, [data-charm-id="50024"], .smithy-stone-btn, #lobby-recharge, .lobby-btn-recharge, #lobby-room-inside, .classic-smithy-screen')) {
+        if (node.matches?.('.classic-chat, [data-charm-id="50024"], [data-smithy-art="powder"], .smithy-material-line, .smithy-stone-btn, #lobby-recharge, .lobby-btn-recharge, #lobby-room-inside, .classic-smithy-screen')) {
           enhance(node.parentElement ?? node);
           needsEnhance = false;
-        } else if (node.querySelector?.('.classic-chat, [data-charm-id="50024"], .smithy-stone-btn, #lobby-recharge, .lobby-btn-recharge, #lobby-room-inside, .classic-smithy-screen')) {
+        } else if (node.querySelector?.('.classic-chat, [data-charm-id="50024"], [data-smithy-art="powder"], .smithy-material-line, .smithy-stone-btn, #lobby-recharge, .lobby-btn-recharge, #lobby-room-inside, .classic-smithy-screen')) {
           enhance(node);
           needsEnhance = false;
         }
