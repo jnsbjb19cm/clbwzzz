@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
 
-test('craft material drops bypass placeholder and quality pedestal stays a transparent energy ring', async ({ page }) => {
+test('smithy drops bypass placeholder and quality pedestal keeps converging energy vortex', async ({ page }) => {
   await page.goto('/');
   const result = await page.evaluate(async () => {
     const [rendererModule, lootModule, haloModule, constantsModule] = await Promise.all([
@@ -18,6 +18,8 @@ test('craft material drops bypass placeholder and quality pedestal stays a trans
         save: () => events.push({ type: 'save' }),
         restore: () => events.push({ type: 'restore' }),
         beginPath: () => events.push({ type: 'beginPath' }),
+        moveTo: (...args) => events.push({ type: 'moveTo', args }),
+        bezierCurveTo: (...args) => events.push({ type: 'bezierCurveTo', args }),
         arc: (...args) => events.push({ type: 'arc', args }),
         ellipse: (...args) => events.push({ type: 'ellipse', args }),
         fill: () => events.push({ type: 'fill' }),
@@ -31,6 +33,7 @@ test('craft material drops bypass placeholder and quality pedestal stays a trans
         createRadialGradient: gradient,
         createLinearGradient: gradient,
         globalAlpha: 1,
+        globalCompositeOperation: 'source-over',
         fillStyle: '',
         strokeStyle: '',
         lineWidth: 1,
@@ -46,29 +49,25 @@ test('craft material drops bypass placeholder and quality pedestal stays a trans
 
     lootModule.installBattleLootMaterialIconFix20260908();
     const renderer = Object.create(rendererModule.BattleRenderer.prototype);
+
     const craftCtx = makeContext();
     renderer.drawLootDrops(craftCtx, {
       time: 1,
-      lootDrops: [{
-        id: 1,
-        itemId: 50001,
-        kind: 'craft-material',
-        lane: 0,
-        col: 0,
-        createdAt: 0,
-      }],
+      lootDrops: [{ id: 1, itemId: 50001, kind: 'craft-material', lane: 0, col: 0, createdAt: 0 }],
+    });
+
+    // This is the real BattleEngine death-drop ID family that was still showing
+    // the yellow diamond in the user's screenshot.
+    const powderCtx = makeContext();
+    renderer.drawLootDrops(powderCtx, {
+      time: 1,
+      lootDrops: [{ id: 2, itemId: 10001, lane: 0, col: 0, createdAt: 0 }],
     });
 
     const ordinaryCtx = makeContext();
     renderer.drawLootDrops(ordinaryCtx, {
       time: 1,
-      lootDrops: [{
-        id: 2,
-        itemId: 999999,
-        lane: 0,
-        col: 0,
-        createdAt: 0,
-      }],
+      lootDrops: [{ id: 3, itemId: 999999, lane: 0, col: 0, createdAt: 0 }],
     });
 
     haloModule.installBattleQualityHaloFix20260908();
@@ -81,10 +80,12 @@ test('craft material drops bypass placeholder and quality pedestal stays a trans
 
     return {
       craftPlaceholderRects: craftCtx.events.filter((event) => event.type === 'fillRect').length,
+      powderPlaceholderRects: powderCtx.events.filter((event) => event.type === 'fillRect').length,
       ordinaryPlaceholderRects: ordinaryCtx.events.filter((event) => event.type === 'fillRect').length,
-      craftLabel: craftCtx.events.some((event) => event.type === 'fillText' && event.args?.[0] === '掉落'),
+      powderLabel: powderCtx.events.some((event) => event.type === 'fillText' && event.args?.[0] === '掉落'),
       haloFillCount: haloCtx.events.filter((event) => event.type === 'fill').length,
       haloEllipseCount: haloCtx.events.filter((event) => event.type === 'ellipse').length,
+      haloBezierCount: haloCtx.events.filter((event) => event.type === 'bezierCurveTo').length,
       haloMaxStroke: Math.max(0, ...haloCtx.events.filter((event) => event.type === 'stroke').map((event) => Number(event.lineWidth) || 0)),
       quality3: constantsModule.resolveCraftQuality(3),
       quality4: constantsModule.resolveCraftQuality(4),
@@ -92,19 +93,21 @@ test('craft material drops bypass placeholder and quality pedestal stays a trans
     };
   });
 
-  // 500xx smithy materials must never go through the old rotated-square fallback.
   expect(result.craftPlaceholderRects).toBe(0);
+  expect(result.powderPlaceholderRects).toBe(0);
   expect(result.ordinaryPlaceholderRects).toBeGreaterThan(0);
-  expect(result.craftLabel).toBe(true);
+  expect(result.powderLabel).toBe(true);
 
-  // The reference pedestal has a transparent centre and a thick front rim.
-  expect(result.haloFillCount).toBe(0);
+  // Only the tiny convergence core is filled; the pedestal itself stays an open
+  // energy ring, with multiple curved streams visibly converging to one point.
+  expect(result.haloFillCount).toBe(1);
   expect(result.haloEllipseCount).toBeGreaterThanOrEqual(5);
+  expect(result.haloBezierCount).toBeGreaterThanOrEqual(6);
   expect(result.haloMaxStroke).toBeGreaterThanOrEqual(7);
 
-  expect(result.quality3.name).toBe('优秀');
+  expect(result.quality3.name).toBe('精良');
   expect(result.quality3.baseLabel).toBe('绿');
-  expect(result.quality4.name).toBe('精良');
+  expect(result.quality4.name).toBe('优秀');
   expect(result.quality4.baseLabel).toBe('蓝');
   expect(result.quality5.name).toBe('完美');
   expect(result.quality5.baseLabel).toBe('紫');
