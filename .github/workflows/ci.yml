@@ -78,6 +78,9 @@ jobs:
       - name: Verify database-first economy persistence
         run: node scripts/verify-database-persistence-authority-20260908.mjs
 
+      - name: Verify level 4 charm and collapsible classic chat
+        run: node scripts/verify-smithy-charm-chat-polish-20260908.mjs
+
       - name: Verify debug hit circles stay removed
         run: node scripts/verify-remove-hit-debug-circles-20260905.mjs
 
