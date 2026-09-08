@@ -17,6 +17,12 @@ const { functionalItemAuthorityRouter20260908 } = await import('../server/routes
 const { playerSnapshotAuthorityRouter20260908 } = await import('../server/routes/playerSnapshotAuthority20260908.js');
 const { performGuildUpgrade20260907 } = await import('../server/routes/guildUpgradeAuthority20260907.js');
 
+async function assertOk(response, label) {
+  if (response.status === 200) return;
+  const body = await response.text();
+  assert.equal(response.status, 200, `${label}: ${body}`);
+}
+
 await db.run("INSERT INTO users(id,username,password_hash) VALUES(1,'db-authority-user','x')");
 await createPlayerData(1, 'db-authority-user');
 await db.run('DELETE FROM player_items WHERE user_id=1 AND item_id IN (1,3,82)');
@@ -47,7 +53,7 @@ try {
     const response = await request('/api/player/inventory/use', {
       method: 'POST', body: JSON.stringify({ itemId: 1, bound: false }),
     });
-    assert.equal(response.status, 200, await response.text());
+    await assertOk(response, 'use gold box');
   }
   let profile = await db.get('SELECT gold FROM player_profiles WHERE user_id=1');
   assert.equal(Number(profile.gold), 22800, '两个5000金币礼盒必须直接写入数据库金币');
@@ -63,12 +69,12 @@ try {
   let response = await request('/api/player/inventory/sell', {
     method: 'POST', body: JSON.stringify({ itemId: 3, count: 1, bound: false }),
   });
-  assert.equal(response.status, 200, await response.text());
+  await assertOk(response, 'sell item');
   let payload = await response.json();
   assert.equal(Number(payload.profile.gold), 2900, '出售所得100金币必须写入数据库');
 
   response = await request('/api/player/snapshot');
-  assert.equal(response.status, 200);
+  await assertOk(response, 'snapshot');
   payload = await response.json();
   assert.equal(Number(payload.profile.gold), 2900, '刷新后的服务器快照必须保持数据库金币');
   assert.ok(Number(payload.itemBag?.slotCount) >= 120, '道具背包容量必须由数据库快照恢复');
@@ -83,7 +89,7 @@ try {
     method: 'POST',
     body: JSON.stringify({ itemId: 82, targetSlotIndex: card.slotIndex, bound: false }),
   });
-  assert.equal(response.status, 200, await response.text());
+  await assertOk(response, 'functional item');
   const upgradedCard = await db.get('SELECT craft_quality AS craftQuality FROM player_cards WHERE user_id=1 AND slot_index=?', [card.slotIndex]);
   assert.equal(Number(upgradedCard.craftQuality), 2, '品质升阶石效果必须直接写数据库卡牌实例');
   const stone = await db.get('SELECT count FROM player_items WHERE user_id=1 AND item_id=82 AND is_bound=0');
