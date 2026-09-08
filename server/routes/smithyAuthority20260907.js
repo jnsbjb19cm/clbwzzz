@@ -1,3 +1,4 @@
+import { announceSmithyResult } from '../socket/SystemAnnouncementService.js';
 import { Router } from 'express';
 import { createRequire } from 'node:module';
 import { db, getPlayerSnapshot, withTransaction } from '../database.js';
@@ -399,7 +400,11 @@ smithyAuthorityRouter20260907.post('/craft', async (req, res) => {
         message: `${label}：${String(resultCard.card_name || resultCard.card_id)}${dnaRefunded ? '，DNA已返还' : ''}`,
       };
     });
-    return res.json(await responseSnapshot(userId, result));
+    const response = await responseSnapshot(userId, result);
+    announceSmithyResult({ ...req.user, nickname: response.profile?.nickname }, result, {
+      fromCardName: CARD_BY_ID.get(int(req.body?.targetCardId))?.card_name,
+    });
+    return res.json(response);
   } catch (error) {
     return res.status(400).json({ message: error?.message || '制造失败' });
   }
@@ -517,6 +522,8 @@ smithyAuthorityRouter20260907.post('/star-upgrade', async (req, res) => {
         await writeSmithyState(conn, userId, state);
         return {
           success: true,
+          cardId: main.cardId,
+          cardName: String(card.card_name || main.cardId),
           double,
           star: nextStar,
           bound: Boolean(main.bound),
@@ -549,7 +556,9 @@ smithyAuthorityRouter20260907.post('/star-upgrade', async (req, res) => {
           : `升星失败(连续${failures}次)；副卡已进入销毁层。`,
       };
     });
-    return res.json(await responseSnapshot(userId, result));
+    const response = await responseSnapshot(userId, result);
+    announceSmithyResult({ ...req.user, nickname: response.profile?.nickname }, result);
+    return res.json(response);
   } catch (error) {
     return res.status(400).json({ message: error?.message || '强化失败' });
   }

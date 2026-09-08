@@ -1,8 +1,6 @@
 import './LobbyChatPatch20260905.js';
 import { authStore, NEW_PLAYER_TUTORIAL_PROMPT_KEY } from '../core/AuthStore.js';
 import { SocketClient } from '../network/SocketClient.js';
-import { StarUpgradeSystem } from '../systems/StarUpgradeSystem.js';
-import { CardCraftSystem } from '../systems/CardCraftSystem.js';
 import {
   NEW_PLAYER_TUTORIAL_MARKER,
   getTutorialDeckSlots,
@@ -17,6 +15,8 @@ let socketClient = null;
 let unsubscribe = null;
 let expiryTimer = null;
 let welcomedUserId = null;
+const announcementQueue = [];
+const recentAnnouncementIds = new Set();
 
 function socket() {
   if (!socketClient) socketClient = new SocketClient({ getToken: () => authStore.token });
@@ -58,7 +58,9 @@ function applyAnnouncementToClassicBars() {
     root.classList.toggle('is-idle', !data);
     const label = root.querySelector('.classic-broadcast-label');
     if (label) label.textContent = data ? `📣 ${data.title || '系统广播'}` : '📣 系统广播';
-    setTrackText(root.querySelector('.classic-broadcast-track'), text);
+    const track = root.querySelector('.classic-broadcast-track');
+    if (track) track.style.paddingLeft = data ? '0px' : '';
+    setTrackText(track, text);
   }
 }
 
@@ -77,6 +79,20 @@ function appendSystemToClassicChats(data) {
 }
 
 function publishAnnouncement(raw = {}, { ttl = 14000 } = {}) {
+  if (!raw?.text || (raw.id && recentAnnouncementIds.has(String(raw.id)))) return;
+  if (raw.id) {
+    recentAnnouncementIds.add(String(raw.id));
+    if (recentAnnouncementIds.size > 200) recentAnnouncementIds.delete(recentAnnouncementIds.values().next().value);
+  }
+  const current = currentAnnouncement();
+  if (current && current.kind !== 'welcome') {
+    announcementQueue.push({ raw, ttl });
+    return;
+  }
+  displayAnnouncement(raw, ttl);
+}
+
+function displayAnnouncement(raw, ttl) {
   if (!raw?.text) return;
   const data = {
     id: raw.id || `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
@@ -93,8 +109,10 @@ function publishAnnouncement(raw = {}, { ttl = 14000 } = {}) {
 
   if (expiryTimer) window.clearTimeout(expiryTimer);
   expiryTimer = window.setTimeout(() => {
-    clearCurrentAnnouncement(data.id);
     expiryTimer = null;
+    clearCurrentAnnouncement(data.id);
+    const next = announcementQueue.shift();
+    if (next) displayAnnouncement(next.raw, next.ttl);
   }, Math.max(4000, Number(ttl) || 14000));
 }
 
@@ -104,6 +122,8 @@ function disconnectAnnouncements() {
   try { socketClient?.disconnect?.(); } catch {}
   socketClient = null;
   welcomedUserId = null;
+  announcementQueue.length = 0;
+  recentAnnouncementIds.clear();
   if (expiryTimer) window.clearTimeout(expiryTimer);
   expiryTimer = null;
   clearCurrentAnnouncement();
@@ -191,58 +211,18 @@ function showNewPlayerTutorialPrompt(app) {
   app.root.append(overlay);
 }
 
-function announceStrengthen({ cardId, cardName, star }) {
-  if (!authStore.isLoggedIn() || Number(star) < 6) return;
-  socket().emitAck('system:announce:strengthen', {
-    cardId: Number(cardId) || null,
-    cardName: String(cardName || '').slice(0, 32),
-    star: Number(star) || 0,
-  }).catch(() => {});
-}
-
-function announceCraftAscend({ fromCardName, cardId, resultName, craftQuality }) {
-  if (!authStore.isLoggedIn()) return;
-  socket().emitAck('system:announce:craft-ascend', {
-    fromCardName: String(fromCardName || '').slice(0, 32),
-    cardId: Number(cardId) || null,
-    resultName: String(resultName || '').slice(0, 48),
-    craftQuality: Number(craftQuality) || null,
-  }).catch(() => {});
-}
-
-function reportPvpResult(won, context = {}) {
-  if (!authStore.isLoggedIn()) return;
-  const opponentName = String(
-    context?.opponentName
-      ?? context?.opponent?.nickname
-      ?? context?.enemyNickname
-      ?? context?.enemyName
-      ?? '',
-  ).trim().slice(0, 24);
-  const resultId = String(
-    context?.resultId
-      ?? context?.battleId
-      ?? context?.matchId
-      ?? context?.roomId
-      ?? '',
-  ).trim().slice(0, 80);
-  socket().emitAck('pvp:result-report', {
-    won: Boolean(won),
-    opponentName: opponentName || undefined,
-    resultId: resultId || undefined,
-  }).catch(() => {});
-}
-
 export function installSystemAnnouncementClient() {
   if (globalThis[PATCH_FLAG]) return;
   globalThis[PATCH_FLAG] = true;
 
-  // Recovery modules existed on the branch but were not wired into main.js.
-  // Activate them from this always-installed client so room/chat/smithy/inventory
-  // and the visible announcement fallback are effective at runtime.
+  // Keep the existing recovery entry points; installers are idempotent when
+  // bootstrap.js has already installed them in the normal application startup.
   installAnnouncementPlainText20260905();
   installSmithyCharmAndChatPolish20260908();
   installBatchInventoryDatabaseFix20260908();
+  window.addEventListener('clbwz:queue-system-announcement', (event) => {
+    publishAnnouncement(event.detail);
+  });
 
   const previousMount = App.prototype.mount;
   App.prototype.mount = function mountWithAnnouncementAccountGuard(...args) {
@@ -273,54 +253,5 @@ export function installSystemAnnouncementClient() {
     return result;
   };
 
-  const previousBattleResult = App.prototype.handleBattleResult;
-  App.prototype.handleBattleResult = function handleBattleResultWithStreak(payload = {}) {
-    const result = previousBattleResult.call(this, payload);
-    if (
-      String(payload?.mode || '').toLowerCase() === 'pvp'
-      || Boolean(payload?.pvp)
-      || Boolean(this.routeOpts?.pvp)
-    ) {
-      reportPvpResult(Boolean(payload?.won), payload || {});
-    }
-    return result;
-  };
-
-  const previousUpgrade = StarUpgradeSystem.prototype.upgrade;
-  StarUpgradeSystem.prototype.upgrade = function upgradeWithWorldAnnouncement(
-    mainIndex,
-    subIndices,
-    options = {},
-  ) {
-    const before = this.cardInventory?.getSlots?.()?.[mainIndex];
-    const cardId = Number(before?.cardId) || 0;
-    const card = this.db?.getById?.(cardId);
-    const cardName = card?.name ?? card?.card_name ?? `卡牌#${cardId}`;
-    const result = previousUpgrade.call(this, mainIndex, subIndices, options);
-    if (result?.ok && result?.success && Number(result.star) >= 6) {
-      announceStrengthen({ cardId, cardName, star: Number(result.star) });
-    }
-    return result;
-  };
-
-  const previousCraft = CardCraftSystem.prototype.craft;
-  CardCraftSystem.prototype.craft = function craftWithAscendAnnouncement(
-    targetCardId,
-    inventory,
-    cardInventory,
-    craftState,
-    options = {},
-  ) {
-    const target = this.db?.getById?.(targetCardId);
-    const result = previousCraft.call(this, targetCardId, inventory, cardInventory, craftState, options);
-    if (result?.ok && result?.outcome === 'ascend') {
-      announceCraftAscend({
-        fromCardName: target?.name ?? target?.card_name ?? `卡牌#${targetCardId}`,
-        cardId: result.cardId,
-        resultName: result.displayName || result.cardName || `卡牌#${result.cardId}`,
-        craftQuality: result.craftQuality,
-      });
-    }
-    return result;
-  };
+  // Craft/upgrade and PVP announcements now come from committed server results.
 }

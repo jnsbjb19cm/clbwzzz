@@ -1,7 +1,6 @@
 const PATCH_FLAG = Symbol.for('clbwz.announcementPlainText20260905');
 const DECORATION_RE = /^[\s📣📌🃏✨]+/u;
 const FALLBACK_ID = 'clbwz-system-announcement-fallback-20260908';
-let fallbackTimer = null;
 
 function cleanAnnouncementDecorations(root = document) {
   root?.querySelectorAll?.('.classic-broadcast-label').forEach((label) => {
@@ -13,13 +12,14 @@ function cleanAnnouncementDecorations(root = document) {
 
 function removeFallbackAnnouncement() {
   document.getElementById(FALLBACK_ID)?.remove();
-  if (fallbackTimer) window.clearTimeout(fallbackTimer);
-  fallbackTimer = null;
 }
 
 function ensureFallbackAnnouncement(data) {
   if (!data?.text) return removeFallbackAnnouncement();
-  if (document.querySelector('.classic-system-broadcast')) {
+  const visibleBar = [...document.querySelectorAll('.classic-system-broadcast')].some((bar) => (
+    bar.getClientRects().length > 0 && getComputedStyle(bar).visibility !== 'hidden'
+  ));
+  if (visibleBar) {
     removeFallbackAnnouncement();
     return;
   }
@@ -52,9 +52,9 @@ function ensureFallbackAnnouncement(data) {
   }
 
   const title = String(data.title || '系统广播').replace(DECORATION_RE, '').trim();
-  bar.textContent = `${title}：${String(data.text)}`;
-  if (fallbackTimer) window.clearTimeout(fallbackTimer);
-  fallbackTimer = window.setTimeout(removeFallbackAnnouncement, 15000);
+  const text = `${title}：${String(data.text)}`;
+  if (bar.textContent !== text) bar.textContent = text;
+  // Lifetime belongs to SystemAnnouncementClient, including its queue/clear event.
 }
 
 function syncAnnouncementVisibility(root = document) {
@@ -89,17 +89,22 @@ export function installAnnouncementPlainText20260905() {
   if (globalThis[PATCH_FLAG] || typeof document === 'undefined') return;
   globalThis[PATCH_FLAG] = true;
 
-  const sync = () => syncAnnouncementVisibility(document);
-  sync();
-
-  const observer = new MutationObserver(() => sync());
-  observer.observe(document.documentElement, {
+  const options = {
     childList: true,
     subtree: true,
     characterData: true,
     attributes: true,
     attributeFilter: ['class', 'hidden', 'style'],
-  });
+  };
+  // Updating hidden/class/style/text itself generates mutations. Disconnect while
+  // rendering so the observer cannot recursively trigger itself and freeze RAF.
+  const sync = () => {
+    observer.disconnect();
+    try { syncAnnouncementVisibility(document); }
+    finally { observer.observe(document.documentElement, options); }
+  };
+  const observer = new MutationObserver(sync);
+  sync();
 
   window.addEventListener('clbwz:system-announcement', (event) => {
     if (event.detail?.clear) removeFallbackAnnouncement();

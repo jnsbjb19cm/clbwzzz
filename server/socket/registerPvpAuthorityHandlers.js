@@ -1,3 +1,4 @@
+import { recordAuthorityPvpResult } from './SystemAnnouncementService.js';
 import { roomManager } from '../rooms/RoomManager.js';
 import { CoopBossBattle } from '../battle/CoopBossBattle.js';
 import { PvpBattle } from '../battle/PvpBattle.js';
@@ -436,7 +437,15 @@ async function awardAuthorityBattleDrops(room, entry) {
 }
 
 function broadcastFinished(io, room, entry) {
-  awardAuthorityBattleDrops(room, entry).catch((error) => console.error('[clbwzzz] award drops failed', error));
+  if (!entry.finishSettlement) {
+    entry.finishSettlement = awardAuthorityBattleDrops(room, entry)
+      .catch((error) => console.error('[clbwzzz] award drops failed', error))
+      .then(() => recordAuthorityPvpResult(io, room, entry))
+      .catch((error) => {
+        entry.finishSettlement = null;
+        console.error('[clbwzzz] announcement settlement failed', error);
+      });
+  }
   emitPersonalized(io, room, entry, 'pvp:authority:finished', { includeProjectiles: true });
 }
 
@@ -534,6 +543,10 @@ function ensureAuthorityBattle(roomId, io, cardDb) {
 
   const entry = {
     battle: createBattle(teams, cardDb),
+    announcementMembers: [...teams.room.members.values()].map((member) => ({
+      userId: Number(member.userId), nickname: member.nickname,
+      team: member.team, isBot: Boolean(member.isBot),
+    })),
     timer: null,
     lastAt: monotonicNowMs(),
     accumulator: 0,

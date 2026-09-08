@@ -50,34 +50,7 @@ function publishLocalSystemDrop(drops) {
     text: `获得 ${text}（非绑定）`,
     at: Date.now(),
   };
-  globalThis.__clbwzLastSystemAnnouncement = data;
-
-  for (const root of document.querySelectorAll('.classic-system-broadcast')) {
-    root.dataset.systemKind = 'battle-drop';
-    root.classList.remove('is-idle');
-    const label = root.querySelector('.classic-broadcast-label');
-    if (label) label.textContent = '📣 战斗掉落';
-    const track = root.querySelector('.classic-broadcast-track');
-    if (track) {
-      track.replaceChildren();
-      const first = document.createElement('b');
-      first.className = 'classic-broadcast-item';
-      first.textContent = data.text;
-      const dot = document.createElement('i');
-      dot.setAttribute('aria-hidden', 'true');
-      dot.textContent = '◆';
-      track.append(first, dot, first.cloneNode(true));
-    }
-  }
-
-  for (const log of document.querySelectorAll('[data-classic-chat-log]')) {
-    const line = document.createElement('p');
-    line.className = 'is-system';
-    line.textContent = `[系统] 战斗掉落：${data.text}`;
-    log.append(line);
-    log.scrollTop = log.scrollHeight;
-  }
-  window.dispatchEvent(new CustomEvent('clbwz:system-announcement', { detail: data }));
+  window.dispatchEvent(new CustomEvent('clbwz:queue-system-announcement', { detail: data }));
 }
 
 function ensureNoticeStyle() {
@@ -152,7 +125,8 @@ async function detectAuthorityDrops(view) {
       const drops = diffCounts(before, counts);
       if (!drops.length) continue;
       view.__pvpDropBaseline = counts;
-      showDropNotice(drops, { addToLocalBag: true });
+      // fetchServerItems already applied the complete authoritative inventory.
+      showDropNotice(drops, { addToLocalBag: false });
       return;
     } catch {
       return;
@@ -166,7 +140,10 @@ function bindPvpDropNotice(view) {
   void fetchServerItems().then(({ counts }) => {
     view.__pvpDropBaseline = counts;
   }).catch(() => {});
+  let resultHandled = false;
   view.__pvpDropNoticeUnsub = view.pvpSocket.on('pvp:authority:finished', () => {
+    if (resultHandled) return;
+    resultHandled = true;
     // 服务端先异步写入非绑定掉落，再广播 finished；稍后轮询快照直到能看到新增数量。
     setTimeout(() => void detectAuthorityDrops(view), 120);
   });

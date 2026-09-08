@@ -1,46 +1,25 @@
-import { db } from '../database.js';
-import { roomManager } from '../rooms/RoomManager.js';
+import { db, withTransaction } from '../database.js';
 
 const STREAK_BROADCAST_MIN = 2;
-const recentStrengthen = new Map();
-const recentCraftAscend = new Map();
-const reportedPvpResult = new Set();
+let announcementIO = null;
+let tablesReady = null;
+let settlementQueue = Promise.resolve();
 
-async function ensureTables() {
-  await db.run(`
-    CREATE TABLE IF NOT EXISTS pvp_win_streaks (
-      user_id BIGINT PRIMARY KEY,
-      streak INT NOT NULL DEFAULT 0,
-      updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
-    )
-  `).catch(async () => {
-    await db.run(`
+function ensureTables() {
+  if (!tablesReady) {
+    tablesReady = db.run(`
       CREATE TABLE IF NOT EXISTS pvp_win_streaks (
-        user_id INTEGER PRIMARY KEY,
-        streak INTEGER NOT NULL DEFAULT 0,
-        updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+        user_id BIGINT PRIMARY KEY,
+        streak INT NOT NULL DEFAULT 0,
+        updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
       )
-    `);
-  });
-}
-
-async function getStreak(userId) {
-  const row = await db.get('SELECT streak FROM pvp_win_streaks WHERE user_id=?', [Number(userId)]);
-  return Math.max(0, Number(row?.streak) || 0);
-}
-
-async function setStreak(userId, streak) {
-  const id = Number(userId);
-  const value = Math.max(0, Math.floor(Number(streak) || 0));
-  const row = await db.get('SELECT user_id FROM pvp_win_streaks WHERE user_id=?', [id]);
-  if (row) {
-    await db.run('UPDATE pvp_win_streaks SET streak=?, updated_at=CURRENT_TIMESTAMP WHERE user_id=?', [value, id]);
-  } else {
-    await db.run('INSERT INTO pvp_win_streaks(user_id,streak) VALUES(?,?)', [id, value]);
+    `).catch((error) => { tablesReady = null; throw error; });
   }
+  return tablesReady;
 }
 
 function emitAnnouncement(io, payload) {
+  if (!io) return;
   io.emit('system:announcement', {
     id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
     at: Date.now(),
@@ -49,137 +28,103 @@ function emitAnnouncement(io, payload) {
   });
 }
 
-function rateLimited(map, userId, waitMs = 1200) {
-  const id = Number(userId);
-  const now = Date.now();
-  const last = Number(map.get(id)) || 0;
-  if (now - last < waitMs) return true;
-  map.set(id, now);
-  return false;
+// Called only AFTER the smithy transaction has committed. Client-side craft and
+// upgrade methods are bypassed by the authoritative HTTP actions.
+export function announceSmithyResult(user, result, { fromCardName = '' } = {}) {
+  if (!result || !announcementIO) return;
+  const nickname = String(user.nickname || user.username || '勇士').slice(0, 24);
+  const cardName = String(result.cardName || `卡牌#${result.cardId}`).slice(0, 48);
+  const base = { userId: Number(user.id), cardId: Number(result.cardId) || null };
+  if (result.outcome === 'ascend') {
+    emitAnnouncement(announcementIO, {
+      ...base,
+      kind: 'craft-ascend', title: '造卡升变',
+      text: `恭喜 ${nickname} 制作「${String(fromCardName || '目标卡牌').slice(0, 32)}」时触发升变，获得「${cardName}」！`,
+      craftQuality: Number(result.craftQuality) || null,
+    });
+  } else if (result.success && (Number(result.star) >= 6 || result.double)) {
+    emitAnnouncement(announcementIO, {
+      ...base,
+      kind: 'strengthen', title: result.double ? '强化升变' : '强化捷报',
+      text: result.double
+        ? `恭喜 ${nickname} 强化「${cardName}」时触发升变，成功提升至 ${result.star} 星！`
+        : `恭喜 ${nickname} 将「${cardName}」成功强化至 ${result.star} 星！`,
+      star: Number(result.star),
+    });
+  }
 }
 
-/**
- * 世界系统播报：
- * - 卡牌强化到 6 星及以上；
- * - 做卡触发升变；
- * - PVP 2 连胜起播报；
- * - 2 连胜及以上被打断时播报连胜中断。
- */
-export function installSystemAnnouncementService(io) {
-  void ensureTables().catch((error) => console.error('[announcement] init failed', error));
+// One promise per authoritative battle, not per room. The captured roster remains
+// valid even when a player leaves before the asynchronous settlement completes.
+export function recordAuthorityPvpResult(io, room, entry) {
+  const battle = entry?.battle;
+  if (room?.mode !== 'pvp' || battle?.status !== 'finished'
+    || !['blue', 'red'].includes(battle.winner)) return Promise.resolve();
+  if (entry.announcementSettlement) return entry.announcementSettlement;
+  const winner = battle.winner;
+  const members = (entry.announcementMembers ?? [
+    ...(battle.teamBlue ?? []).map((member) => ({ ...member, team: 'blue' })),
+    ...(battle.teamRed ?? []).map((member) => ({ ...member, team: 'red' })),
+  ]).filter((member) => Number.isInteger(Number(member.userId))
+    && Number(member.userId) > 0 && !member.isBot);
 
-  io.on('connection', (socket) => {
-    socket.on('system:announce:strengthen', (payload = {}, ack) => {
-      try {
-        const star = Math.max(0, Math.min(15, Math.floor(Number(payload.star) || 0)));
-        if (star < 6) return typeof ack === 'function' && ack({ ok: true, announced: false });
-        if (rateLimited(recentStrengthen, socket.user.id)) {
-          return typeof ack === 'function' && ack({ ok: true, announced: false });
+  const settle = async () => {
+    await ensureTables();
+    const messages = await withTransaction(async (conn) => {
+      const messages = [];
+      // Lock in a stable order on MySQL; serialize announcement transactions on
+      // SQLite. Counts for both teams commit together before any broadcast.
+      for (const member of [...members].sort((a, b) => Number(a.userId) - Number(b.userId))) {
+        const userId = Number(member.userId);
+        await conn.run('UPDATE player_profiles SET user_id=user_id WHERE user_id=?', [userId]);
+        const row = await conn.get('SELECT streak FROM pvp_win_streaks WHERE user_id=?', [userId]);
+        const previous = Math.max(0, Number(row?.streak) || 0);
+        const won = member.team === winner;
+        const next = won ? previous + 1 : 0;
+        if (row) {
+          await conn.run('UPDATE pvp_win_streaks SET streak=?, updated_at=CURRENT_TIMESTAMP WHERE user_id=?', [next, userId]);
+        } else {
+          await conn.run('INSERT INTO pvp_win_streaks(user_id,streak) VALUES(?,?)', [userId, next]);
         }
-
-        const cardName = String(payload.cardName || `卡牌#${Number(payload.cardId) || '?'}`).trim().slice(0, 32);
-        const nickname = String(socket.user.nickname || socket.user.username || '勇士').slice(0, 24);
-        emitAnnouncement(io, {
-          kind: 'strengthen',
-          title: '强化捷报',
-          text: `恭喜 ${nickname} 将「${cardName}」成功强化至 ${star} 星！`,
-          userId: Number(socket.user.id),
-          star,
-          cardId: Number(payload.cardId) || null,
-        });
-        if (typeof ack === 'function') ack({ ok: true, announced: true });
-      } catch (error) {
-        if (typeof ack === 'function') ack({ ok: false, message: error.message || '播报失败' });
-      }
-    });
-
-    socket.on('system:announce:craft-ascend', (payload = {}, ack) => {
-      try {
-        if (rateLimited(recentCraftAscend, socket.user.id)) {
-          return typeof ack === 'function' && ack({ ok: true, announced: false });
-        }
-        const fromName = String(payload.fromCardName || '目标卡牌').trim().slice(0, 32);
-        const resultName = String(payload.resultName || payload.cardName || '稀有卡牌').trim().slice(0, 48);
-        const nickname = String(socket.user.nickname || socket.user.username || '勇士').slice(0, 24);
-        emitAnnouncement(io, {
-          kind: 'craft-ascend',
-          title: '造卡升变',
-          text: `恭喜 ${nickname} 制作「${fromName}」时触发升变，获得「${resultName}」！`,
-          userId: Number(socket.user.id),
-          cardId: Number(payload.cardId) || null,
-          craftQuality: Number(payload.craftQuality) || null,
-        });
-        if (typeof ack === 'function') ack({ ok: true, announced: true });
-      } catch (error) {
-        if (typeof ack === 'function') ack({ ok: false, message: error.message || '播报失败' });
-      }
-    });
-
-    socket.on('pvp:result-report', async (payload = {}, ack) => {
-      try {
-        const userId = Number(socket.user.id);
-        const room = roomManager.getRoomByUser(userId);
-        const member = room?.members?.get?.(userId) ?? null;
-        const roomIsPvp = Boolean(room?.mode === 'pvp' && member && !member.isBot);
-
-        // Battle result can arrive after the room has already been torn down.
-        // A live non-PVP/invalid room is still rejected, but a missing room is
-        // allowed so streak bookkeeping and world announcements are not lost.
-        if (room && !roomIsPvp) throw new Error('PVP 成员状态无效');
-
-        const clientResultId = String(payload?.resultId ?? '').trim().slice(0, 80);
-        const reportKey = roomIsPvp
-          ? `${room.id}:${Number(room.createdAt) || 0}:${userId}`
-          : `${clientResultId || `fallback-${Math.floor(Date.now() / 5000)}`}:${userId}`;
-        if (reportedPvpResult.has(reportKey)) {
-          if (typeof ack === 'function') ack({ ok: true, duplicate: true });
-          return;
-        }
-        reportedPvpResult.add(reportKey);
-        setTimeout(() => reportedPvpResult.delete(reportKey), 6 * 60 * 60 * 1000).unref?.();
-
-        const won = Boolean(payload.won);
-        const previous = await getStreak(userId);
-        const nickname = String(socket.user.nickname || socket.user.username || '勇士').slice(0, 24);
-
-        if (won) {
-          const next = previous + 1;
-          await setStreak(userId, next);
-          if (next >= STREAK_BROADCAST_MIN) {
-            emitAnnouncement(io, {
-              kind: 'win-streak',
-              title: `${next} 连胜`,
-              text: `${nickname} 已取得 ${next} 连胜，气势正盛！`,
-              userId,
-              streak: next,
-            });
-          }
-          if (typeof ack === 'function') ack({ ok: true, streak: next });
-          return;
-        }
-
-        await setStreak(userId, 0);
-        if (previous >= STREAK_BROADCAST_MIN) {
-          const opponents = roomIsPvp
-            ? [...room.members.values()]
-                .filter((m) => m.team !== member.team && m.isBot !== true)
-                .map((m) => String(m.nickname || '').trim())
-                .filter(Boolean)
-            : [];
-          const payloadBreaker = String(payload?.opponentName ?? '').trim().slice(0, 24);
-          const breaker = opponents.length ? opponents.join('、') : (payloadBreaker || '对方玩家');
-          emitAnnouncement(io, {
-            kind: 'streak-ended',
-            title: '连胜中断',
-            text: `${breaker} 终结了 ${nickname} 的 ${previous} 连胜！`,
-            userId,
-            streak: previous,
+        const nickname = String(member.nickname || member.username || '勇士').slice(0, 24);
+        if (won && next >= STREAK_BROADCAST_MIN) {
+          messages.push({
+            kind: 'win-streak', title: `${next} 连胜`,
+            text: `${nickname} 已取得 ${next} 连胜，气势正盛！`, userId, streak: next,
+          });
+        } else if (!won && previous >= STREAK_BROADCAST_MIN) {
+          const breaker = members.filter((other) => other.team === winner)
+            .map((other) => String(other.nickname || other.username || '勇士').slice(0, 24)).join('、') || '对方阵营';
+          messages.push({
+            kind: 'streak-ended', title: '连胜中断',
+            text: `${breaker} 终结了 ${nickname} 的 ${previous} 连胜！`, userId, streak: previous,
           });
         }
-        if (typeof ack === 'function') ack({ ok: true, streak: 0, ended: previous });
-      } catch (error) {
-        if (typeof ack === 'function') ack({ ok: false, message: error.message || '记录失败' });
       }
+      return messages;
     });
+    for (const message of messages) emitAnnouncement(io, message);
+    return messages;
+  };
+  const pending = settlementQueue.then(settle);
+  settlementQueue = pending.catch(() => {});
+  entry.announcementSettlement = pending.catch((error) => {
+    entry.announcementSettlement = null; // Allow retry after a rolled-back transaction.
+    throw error;
+  });
+  return entry.announcementSettlement;
+}
+
+export function installSystemAnnouncementService(io) {
+  announcementIO = io;
+  void ensureTables().catch((error) => console.error('[announcement] init failed', error));
+  io.on('connection', (socket) => {
+    // Old clients may still report these events. Acknowledge without trusting or
+    // counting them: the committed craft / server battle result is the authority.
+    for (const event of ['system:announce:strengthen', 'system:announce:craft-ascend', 'pvp:result-report']) {
+      socket.on(event, (_payload, ack) => {
+        if (typeof ack === 'function') ack({ ok: true, announced: false, authoritative: true });
+      });
+    }
   });
 }

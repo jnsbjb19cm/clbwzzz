@@ -10,6 +10,7 @@ function applyItemSnapshot(app, items, itemBag = null) {
   const remoteSlotCount = Number(itemBag?.slotCount);
   const slotCount = Math.max(
     120,
+    Number(inventory.state.slotCount) || 0,
     Number.isFinite(remoteSlotCount) ? Math.floor(remoteSlotCount) : 0,
     items.length,
   );
@@ -46,12 +47,27 @@ function applyProfileSnapshot(app, profile) {
   app.updatePlayerDisplay?.();
 }
 
-function applyResponse(app, data) {
+// Only these endpoints return a COMPLETE personal inventory. Warehouse/auction
+// lists and material-refill grants also use `items`, but are not snapshots.
+function isPlayerSnapshotPath(path) {
+  return /^\/player\/(?:snapshot|economy-state|smithy\/(?:state|craft|star-upgrade|decompose|material-combine|restore-escrow)|inventory\/(?:use|sell|drop|expand)|shop\/(?:buy-item|buy-pack|recharge-demo)|cards\/(?:discard|use-functional-item)|quests\/claim-reward|stage-result|migration\/local-snapshot)$/.test(String(path).split('?')[0]);
+}
+
+function isInventoryTransfer(path, method) {
+  const route = String(path).split('?')[0];
+  return (method === 'post' && (route === '/auction' || route === '/auction/buy'
+    || /^\/guild\/\d+\/warehouse\/(?:deposit|withdraw)$/.test(route)))
+    || (method === 'delete' && /^\/auction\/\d+$/.test(route));
+}
+
+function applyResponse(app, data, path) {
   if (!app || !data || typeof data !== 'object') return;
   if (data.profile) applyProfileSnapshot(app, data.profile);
   if (data.snapshot?.profile) applyProfileSnapshot(app, data.snapshot.profile);
-  if (Array.isArray(data.items)) applyItemSnapshot(app, data.items, data.itemBag);
-  if (Array.isArray(data.snapshot?.items)) applyItemSnapshot(app, data.snapshot.items, data.snapshot.itemBag);
+  if (isPlayerSnapshotPath(path)) {
+    if (Array.isArray(data.items)) applyItemSnapshot(app, data.items, data.itemBag);
+    if (Array.isArray(data.snapshot?.items)) applyItemSnapshot(app, data.snapshot.items, data.snapshot.itemBag);
+  }
   if (data.cardInventory && app.cardInventory?.applyServerSnapshot) {
     app.cardInventory.applyServerSnapshot(data.cardInventory);
   }
@@ -85,25 +101,29 @@ export function installPlayerSnapshotAuthority20260908() {
 
   const api = authStore.api;
   const originalGet = api.get.bind(api);
-  const originalPost = api.post.bind(api);
-  const originalPut = api.put.bind(api);
-
   api.get = async function getWithAuthority(path, ...args) {
+    const token = authStore.token;
     const data = await originalGet(path, ...args);
+    if (token !== authStore.token) return data;
     if (path === '/player/snapshot') authStore.snapshot = data;
-    applyResponse(activeApp, data);
+    applyResponse(activeApp, data, path);
     return data;
   };
 
-  api.post = async function postWithAuthority(path, body, ...args) {
-    const data = await originalPost(path, body, ...args);
-    applyResponse(activeApp, data);
-    return data;
-  };
-
-  api.put = async function putWithAuthority(path, body, ...args) {
-    const data = await originalPut(path, body, ...args);
-    applyResponse(activeApp, data);
-    return data;
-  };
+  for (const method of ['post', 'put', 'delete']) {
+    const original = api[method].bind(api);
+    api[method] = async function mutateWithAuthority(path, ...args) {
+      const token = authStore.token;
+      const data = await original(path, ...args);
+      if (token !== authStore.token) return data;
+      applyResponse(activeApp, data, path);
+      if (data?.ok !== false && isInventoryTransfer(path, method)) {
+        // A committed transfer must not be reported as failed if refresh fails:
+        // otherwise retrying could deposit/buy twice.
+        try { await api.get('/player/snapshot'); }
+        catch (error) { console.warn('[inventory] 交易成功，背包同步暂时失败', error); }
+      }
+      return data;
+    };
+  }
 }
