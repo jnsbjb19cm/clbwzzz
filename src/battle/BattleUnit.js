@@ -74,6 +74,7 @@ export class BattleUnit {
   }
 
   isMovable() {
+    if (this.bossCommanderOnly === true) return false;
     return this.moveSpeed > 0;
   }
 
@@ -93,6 +94,9 @@ export class BattleUnit {
   }
 
   isLowTarget() {
+    // BOSS 模型只负责展示/承载 HUD。实际伤害仍通过敌方基地路由结算，
+    // 因此它不能成为普通单位、子弹或移动阻挡的判定目标。
+    if (this.bossCommanderOnly === true) return true;
     if (FORCED_TARGETABLE_CARD_IDS.has(this.cardId)) return false;
     return this.atkStyle === 9;
   }
