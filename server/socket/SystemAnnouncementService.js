@@ -119,11 +119,18 @@ export function installSystemAnnouncementService(io) {
       try {
         const userId = Number(socket.user.id);
         const room = roomManager.getRoomByUser(userId);
-        if (!room || room.mode !== 'pvp') throw new Error('当前不在 PVP 房间中');
-        const member = room.members.get(userId);
-        if (!member || member.isBot) throw new Error('PVP 成员状态无效');
+        const member = room?.members?.get?.(userId) ?? null;
+        const roomIsPvp = Boolean(room?.mode === 'pvp' && member && !member.isBot);
 
-        const reportKey = `${room.id}:${Number(room.createdAt) || 0}:${userId}`;
+        // Battle result can arrive after the room has already been torn down.
+        // A live non-PVP/invalid room is still rejected, but a missing room is
+        // allowed so streak bookkeeping and world announcements are not lost.
+        if (room && !roomIsPvp) throw new Error('PVP 成员状态无效');
+
+        const clientResultId = String(payload?.resultId ?? '').trim().slice(0, 80);
+        const reportKey = roomIsPvp
+          ? `${room.id}:${Number(room.createdAt) || 0}:${userId}`
+          : `${clientResultId || `fallback-${Math.floor(Date.now() / 5000)}`}:${userId}`;
         if (reportedPvpResult.has(reportKey)) {
           if (typeof ack === 'function') ack({ ok: true, duplicate: true });
           return;
@@ -153,11 +160,14 @@ export function installSystemAnnouncementService(io) {
 
         await setStreak(userId, 0);
         if (previous >= STREAK_BROADCAST_MIN) {
-          const opponents = [...room.members.values()]
-            .filter((m) => m.team !== member.team && m.isBot !== true)
-            .map((m) => m.nickname)
-            .filter(Boolean);
-          const breaker = opponents.length ? opponents.join('、') : '对方阵营';
+          const opponents = roomIsPvp
+            ? [...room.members.values()]
+                .filter((m) => m.team !== member.team && m.isBot !== true)
+                .map((m) => String(m.nickname || '').trim())
+                .filter(Boolean)
+            : [];
+          const payloadBreaker = String(payload?.opponentName ?? '').trim().slice(0, 24);
+          const breaker = opponents.length ? opponents.join('、') : (payloadBreaker || '对方玩家');
           emitAnnouncement(io, {
             kind: 'streak-ended',
             title: '连胜中断',
