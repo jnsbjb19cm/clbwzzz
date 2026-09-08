@@ -46,12 +46,35 @@ function syncDeckTabs(root, group) {
   });
 }
 
+function saveCurrentDeck(view) {
+  if (!view?._cardInventory) return Promise.resolve();
+  const group = normalizeDeckGroup20260906(
+    view._deckTab ?? view._cardInventory.__activeDeckGroup20260907 ?? 'default',
+  );
+  const result = DeckSelectView.saveDeck(copyDeck(view._selected), view._cardInventory, group);
+  return Promise.resolve(result)
+    .then(() => DeckSelectView.awaitDeckSave20260908?.(group));
+}
+
 function loadGroupIntoView(view, root, group, { force = false } = {}) {
   if (!view?._cardInventory || !view?._db) return;
   const normalized = normalizeDeckGroup20260906(group);
-  if (!force && normalizeDeckGroup20260906(view._deckTab) === normalized) {
+  const previousGroup = normalizeDeckGroup20260906(
+    view._deckTab ?? view._cardInventory.__activeDeckGroup20260907 ?? 'default',
+  );
+  if (!force && previousGroup === normalized) {
     syncDeckTabs(root, normalized);
     return;
+  }
+
+  // Once the room controller has been initialised, changing the server-selected
+  // deck automatically commits the deck we are leaving. This removes the old
+  // "must click 确定 before changing tab" trap while avoiding an initial-render
+  // overwrite of a server deck.
+  if (view.__roomDeckGroupInitialized20260908 && previousGroup !== normalized) {
+    void saveCurrentDeck(view).catch((error) => {
+      console.warn(`[deck] 自动保存${previousGroup}失败`, error);
+    });
   }
 
   view._deckTab = normalized;
@@ -67,17 +90,10 @@ function loadGroupIntoView(view, root, group, { force = false } = {}) {
   if (view._v3Decks) view._v3Decks[normalized] = copyDeck(selected);
   if (view._v3Committed) view._v3Committed[normalized] = copyDeck(selected);
   view._activeSwapSlot = null;
+  view.__roomDeckGroupInitialized20260908 = true;
   view._renderDeckSlots?.(root);
   view._renderDrawer?.(root);
   syncDeckTabs(root, normalized);
-}
-
-function saveCurrentDeck(view) {
-  if (!view?._cardInventory) return;
-  const group = normalizeDeckGroup20260906(
-    view._deckTab ?? view._cardInventory.__activeDeckGroup20260907 ?? 'default',
-  );
-  DeckSelectView.saveDeck(copyDeck(view._selected), view._cardInventory, group);
 }
 
 function reportRoomAction(owner, promise) {
@@ -94,20 +110,24 @@ function installStableRoomCallbacks(owner, view) {
   const originalStart = state.__stableOriginalStart20260907 ?? state.onStart;
   state.__stableOriginalStart20260907 = originalStart;
 
-  state.onReady = () => {
-    saveCurrentDeck(view);
+  state.onReady = () => reportRoomAction(owner, (async () => {
+    // Non-host players also publish their selected deck before becoming ready,
+    // so the host can never start while their deck PUT is still in flight.
+    await saveCurrentDeck(view);
     const me = memberFor(owner.room, owner.currentUserId?.());
-    return reportRoomAction(owner, owner.socket.setReady(!me?.ready));
-  };
+    return owner.socket.setReady(!me?.ready);
+  })());
   state.onSetDeck = (deckNo) => reportRoomAction(owner, owner.socket.setDeck(deckNo));
   state.onSetRule = (value) => reportRoomAction(owner, owner.socket.setRule(value));
   state.onRandomMatch = (value) => reportRoomAction(owner, owner.socket.setRandomMatch(value));
   state.onChangeMap = (mapId) => reportRoomAction(owner, owner.socket.changeMap(mapId));
   state.onSwitch = () => reportRoomAction(owner, owner.socket.switchTeam());
-  state.onStart = () => {
-    saveCurrentDeck(view);
+  state.onStart = () => reportRoomAction(owner, (async () => {
+    // Save + await the currently visible group before asking the server to start.
+    // Previously startBattle could win this race and read the prior/default deck.
+    await saveCurrentDeck(view);
     return originalStart?.();
-  };
+  })());
 }
 
 function roomMemberUi(member, fallbackId) {
@@ -119,6 +139,10 @@ function roomMemberUi(member, fallbackId) {
     ready: Boolean(member?.ready),
     avatar: '/sprites/cards/1.png',
   };
+}
+
+function waitingEnemyUi() {
+  return { id: 'waiting-red-0', name: '等待加入...', lv: '--', ready: false };
 }
 
 function syncRoomStatusBar(view, root) {
@@ -185,9 +209,13 @@ function syncRoomInsideInPlace(owner, room) {
   view._allowUnbalanced = Boolean(room.allowUnbalanced);
   view._randomMatch = Boolean(room.randomMatch);
   view._members = blueMembers.map((member, index) => roomMemberUi(member, index + 1));
-  view._enemyPlayers = room.mode === 'pvp'
-    ? redMembers.map((member, index) => roomMemberUi(member, 200 + index))
-    : [];
+  if (room.mode === 'pvp') {
+    view._enemyPlayers = redMembers.length
+      ? redMembers.map((member, index) => roomMemberUi(member, 200 + index))
+      : [waitingEnemyUi()];
+  } else {
+    view._enemyPlayers = [];
+  }
 
   if (!view._members.length && room.mode !== 'pvp') {
     view._members = [roomMemberUi(me, 1)];
@@ -257,7 +285,7 @@ function installDeckRenderGuard() {
       const activeGroup = normalizeDeckGroup20260906(
         this._deckTab ?? cardInventory?.__activeDeckGroup20260907 ?? group,
       );
-      DeckSelectView.saveDeck(selected, cardInventory, activeGroup);
+      return DeckSelectView.saveDeck(selected, cardInventory, activeGroup);
     };
 
     const owner = this.__roomDeckRefreshOwner20260907;
