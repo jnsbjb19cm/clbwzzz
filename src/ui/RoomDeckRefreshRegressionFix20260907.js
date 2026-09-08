@@ -26,9 +26,10 @@ function roomShellChanged(previous, next) {
     || hostId(previous) !== hostId(next);
 }
 
-function roomDeckGroup(room, userId) {
+function roomDeckGroup(room, userId, fallbackGroup = 'default') {
   const me = memberFor(room, userId);
-  return deckNumberToGroup20260906(me?.selectedDeckNo ?? 1);
+  if (!me || me.selectedDeckNo == null) return normalizeDeckGroup20260906(fallbackGroup);
+  return deckNumberToGroup20260906(me.selectedDeckNo);
 }
 
 function copyDeck(value) {
@@ -199,7 +200,7 @@ function syncRoomInsideInPlace(owner, room) {
     stageName: room.name || '对战房间',
     members,
     myTeam: owner.myTeam,
-    selectedDeckNo: me?.selectedDeckNo ?? 1,
+    selectedDeckNo: me?.selectedDeckNo ?? 0,
     allowUnbalanced: Boolean(room.allowUnbalanced),
     randomMatch: Boolean(room.randomMatch),
   };
@@ -221,7 +222,7 @@ function syncRoomInsideInPlace(owner, room) {
   if (randomMatch) randomMatch.checked = Boolean(room.randomMatch);
   syncMapButton(root, room.mapId);
 
-  const group = roomDeckGroup(room, userId);
+  const group = roomDeckGroup(room, userId, view._deckTab ?? 'default');
   if (normalizeDeckGroup20260906(view._deckTab) !== group) {
     loadGroupIntoView(view, root, group, { force: true });
   } else {
@@ -242,6 +243,7 @@ function installDeckRenderGuard() {
     const group = roomDeckGroup(
       { members: options.roomState.members ?? [] },
       options.roomState.myUserId,
+      options.roomState.selectedDeckNo == null ? (this._deckTab ?? 'default') : deckNumberToGroup20260906(options.roomState.selectedDeckNo),
     );
     if (this._cardInventory) this._cardInventory.__activeDeckGroup20260907 = group;
 
@@ -276,7 +278,7 @@ function installRoomRenderGuard() {
     if (this.deckSelect) {
       this.deckSelect.__roomDeckRefreshOwner20260907 = this;
       const root = this.root?.querySelector?.('#lobby-room-inside');
-      const group = roomDeckGroup(this.room, this.currentUserId?.());
+      const group = roomDeckGroup(this.room, this.currentUserId?.(), this.deckSelect._deckTab ?? 'default');
       loadGroupIntoView(this.deckSelect, root, group, { force: true });
       installStableRoomCallbacks(this, this.deckSelect);
     }
