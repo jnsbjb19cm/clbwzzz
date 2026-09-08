@@ -21,9 +21,38 @@ function activeRoomDeck(view) {
   return { group, slots };
 }
 
+function realEnemyPlayers(roomState) {
+  return (roomState?.members ?? [])
+    .filter((member) => member?.team === 'red')
+    .map((member, index) => ({
+      id: Number(member.userId) || 200 + index,
+      name: member.nickname || '玩家',
+      lv: Number(member.level) || 1,
+      ready: Boolean(member.ready),
+    }));
+}
+
 export function installRoomBattleDeckRuntimeFix20260908() {
   if (globalThis[INSTALL_FLAG]) return;
   globalThis[INSTALL_FLAG] = true;
+
+  // The legacy DeckSelectView inserts a fake "等待加入" enemy whenever a PVP
+  // room has no red members. In a real room that turns the top question card
+  // into a pseudo player, leaving only two physical waiting cards. Replace the
+  // fake entry with the actual red-team list after every room render.
+  const originalDeckRender = DeckSelectView.prototype.render;
+  if (!originalDeckRender?.__roomBattleDeckRuntimeFix20260908) {
+    function renderRoomWaitingSlots20260908(root, options = {}) {
+      const result = originalDeckRender.call(this, root, options);
+      if (options.roomState && options.mode === 'pvp') {
+        this._enemyPlayers = realEnemyPlayers(options.roomState);
+        this._renderEnemy?.(root);
+      }
+      return result;
+    }
+    renderRoomWaitingSlots20260908.__roomBattleDeckRuntimeFix20260908 = true;
+    DeckSelectView.prototype.render = renderRoomWaitingSlots20260908;
+  }
 
   const originalEnterBattle = RoomView.prototype.enterBattle;
   if (!originalEnterBattle?.__roomBattleDeckRuntimeFix20260908) {
@@ -39,13 +68,13 @@ export function installRoomBattleDeckRuntimeFix20260908() {
     RoomView.prototype.enterBattle = enterBattleWithExactRoomDeck20260908;
   }
 
-  const originalRender = BattleView.prototype.render;
-  if (!originalRender?.__roomBattleDeckRuntimeFix20260908) {
+  const originalBattleRender = BattleView.prototype.render;
+  if (!originalBattleRender?.__roomBattleDeckRuntimeFix20260908) {
     function renderWithExactRoomDeck20260908(root) {
       const inventory = this.cardInventory;
       const handoff = inventory?.__roomBattleDeckSelection20260908;
       if (!handoff || !Array.isArray(handoff.slots) || !handoff.slots.length) {
-        return originalRender.call(this, root);
+        return originalBattleRender.call(this, root);
       }
 
       const slots = copySelection(handoff.slots);
@@ -62,7 +91,7 @@ export function installRoomBattleDeckRuntimeFix20260908() {
         return previousLoadSavedDeck.call(this, cardInventory, db, group);
       };
       try {
-        return originalRender.call(this, root);
+        return originalBattleRender.call(this, root);
       } finally {
         DeckSelectView.loadSavedDeck = previousLoadSavedDeck;
         delete inventory.__roomBattleDeckSelection20260908;
