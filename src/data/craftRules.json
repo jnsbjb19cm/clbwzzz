@@ -12,8 +12,8 @@
   "craftQualityWeights": [
     {"id":0,"name":"劣质","weight":30,"color":"#757575"},
     {"id":1,"name":"普通","weight":35,"color":"#f5f5f5"},
-    {"id":2,"name":"精良","weight":20,"color":"#4caf50"},
-    {"id":3,"name":"优秀","weight":12,"color":"#2196f3"},
+    {"id":2,"name":"优秀","weight":20,"color":"#4caf50"},
+    {"id":3,"name":"精良","weight":12,"color":"#2196f3"},
     {"id":4,"name":"完美","weight":3,"color":"#9c27b0"}
   ],
   "decomposeBase": {
