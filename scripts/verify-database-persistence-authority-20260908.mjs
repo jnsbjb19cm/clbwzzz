@@ -12,6 +12,8 @@ process.env.JWT_SECRET = 'db-authority-20260908-secret';
 
 const { db, createPlayerData, withTransaction } = await import('../server/database.js');
 const { config } = await import('../server/config.js');
+const { ensurePlayerInventoryBootstrap20260908 } = await import('../server/domain/playerInventoryAuthority20260908.js');
+const { batchInventoryUseAuthorityRouter20260908 } = await import('../server/routes/batchInventoryUseAuthority20260908.js');
 const { playerEconomyAuthorityRouter20260908 } = await import('../server/routes/playerEconomyAuthority20260908.js');
 const { functionalItemAuthorityRouter20260908 } = await import('../server/routes/functionalItemAuthority20260908.js');
 const { playerSnapshotAuthorityRouter20260908 } = await import('../server/routes/playerSnapshotAuthority20260908.js');
@@ -25,15 +27,18 @@ async function assertOk(response, label) {
 
 await db.run("INSERT INTO users(id,username,password_hash) VALUES(1,'db-authority-user','x')");
 await createPlayerData(1, 'db-authority-user');
+// 模拟账号已经完成一次官方初始背包迁移。之后真实消耗绝不能再被 starter bootstrap 补回。
+await ensurePlayerInventoryBootstrap20260908(1);
 await db.run('DELETE FROM player_items WHERE user_id=1 AND item_id IN (1,3,82)');
-await db.run('INSERT INTO player_items(user_id,item_id,count,is_bound) VALUES(1,1,2,0)');
+await db.run('INSERT INTO player_items(user_id,item_id,count,is_bound) VALUES(1,1,14,0)');
 await db.run('INSERT INTO player_items(user_id,item_id,count,is_bound) VALUES(1,3,1,0)');
 await db.run('INSERT INTO player_items(user_id,item_id,count,is_bound) VALUES(1,82,1,0)');
-await db.run('UPDATE player_profiles SET gold=12800, diamond=50, honor=120 WHERE user_id=1');
+await db.run('UPDATE player_profiles SET gold=22800, diamond=50, honor=120 WHERE user_id=1');
 
 const app = express();
 app.use(express.json());
 app.use('/api/player', playerSnapshotAuthorityRouter20260908);
+app.use('/api/player', batchInventoryUseAuthorityRouter20260908);
 app.use('/api/player', playerEconomyAuthorityRouter20260908);
 app.use('/api/player', functionalItemAuthorityRouter20260908);
 const server = await new Promise((resolve) => {
@@ -49,35 +54,39 @@ try {
     headers: { ...headers, ...(options.headers || {}) },
   });
 
-  for (let index = 0; index < 2; index += 1) {
-    const response = await request('/api/player/inventory/use', {
-      method: 'POST', body: JSON.stringify({ itemId: 1, bound: false }),
-    });
-    await assertOk(response, 'use gold box');
-  }
-  let profile = await db.get('SELECT gold FROM player_profiles WHERE user_id=1');
-  assert.equal(Number(profile.gold), 22800, '两个5000金币礼盒必须直接写入数据库金币');
-  const box = await db.get('SELECT count FROM player_items WHERE user_id=1 AND item_id=1 AND is_bound=0');
-  assert.equal(box, undefined, '金币礼盒必须在同一数据库事务中扣除');
+  let response = await request('/api/player/inventory/use', {
+    method: 'POST',
+    body: JSON.stringify({ itemId: 1, count: 14, bound: false }),
+  });
+  await assertOk(response, 'batch use 14 gold boxes');
+  let payload = await response.json();
+  assert.equal(Number(payload.used), 14, '批量接口必须按输入数量14结算，而不是固定10或1');
+  assert.equal(Number(payload.profile.gold), 92800, '14个金币礼盒必须一次性把70000金币写入数据库');
+  let box = await db.get('SELECT count FROM player_items WHERE user_id=1 AND item_id=1 AND is_bound=0');
+  assert.equal(box, undefined, '一键使用全部必须真实删除数据库中的14个非绑定金币礼盒');
+
+  response = await request('/api/player/snapshot');
+  await assertOk(response, 'snapshot after batch use');
+  payload = await response.json();
+  assert.equal(Number(payload.profile.gold), 92800, '刷新后必须保留批量使用写入数据库的金币');
+  assert.equal(
+    payload.items.some((row) => Number(row.itemId) === 1),
+    false,
+    '已经批量用完的金币礼盒刷新后绝不能重新补回来',
+  );
 
   await db.run("INSERT INTO guilds(id,name,level,created_by) VALUES(1,'DBGuild',1,1)");
   await db.run("INSERT INTO guild_members(guild_id,user_id,role) VALUES(1,1,'president')");
   const upgraded = await withTransaction((conn) => performGuildUpgrade20260907(conn, 1));
   assert.equal(upgraded.level, 2);
-  assert.equal(upgraded.gold, 2800, '公会升级必须能使用金币礼盒刚写入数据库的金币');
+  assert.equal(upgraded.gold, 72800, '公会升级必须直接使用批量金币袋写入数据库的余额');
 
-  let response = await request('/api/player/inventory/sell', {
+  response = await request('/api/player/inventory/sell', {
     method: 'POST', body: JSON.stringify({ itemId: 3, count: 1, bound: false }),
   });
   await assertOk(response, 'sell item');
-  let payload = await response.json();
-  assert.equal(Number(payload.profile.gold), 2900, '出售所得100金币必须写入数据库');
-
-  response = await request('/api/player/snapshot');
-  await assertOk(response, 'snapshot');
   payload = await response.json();
-  assert.equal(Number(payload.profile.gold), 2900, '刷新后的服务器快照必须保持数据库金币');
-  assert.ok(Number(payload.itemBag?.slotCount) >= 120, '道具背包容量必须由数据库快照恢复');
+  assert.equal(Number(payload.profile.gold), 72900, '出售所得100金币必须写入数据库');
 
   let card = await db.get('SELECT slot_index AS slotIndex FROM player_cards WHERE user_id=1 ORDER BY slot_index LIMIT 1');
   if (!card) {
@@ -98,13 +107,22 @@ try {
   await new Promise((resolve) => server.close(resolve));
 }
 
-const clientSource = fs.readFileSync(new URL('../src/ui/DatabasePersistenceAuthority20260908.js', import.meta.url), 'utf8');
-assert.match(clientSource, /\/player\/inventory\/use/);
-assert.match(clientSource, /\/player\/inventory\/sell/);
-assert.match(clientSource, /\/player\/shop\/buy-item/);
-assert.match(clientSource, /\/player\/cards\/use-functional-item/);
-assert.match(clientSource, /\/player\/cards\/discard/);
+const databaseClientSource = fs.readFileSync(new URL('../src/ui/DatabasePersistenceAuthority20260908.js', import.meta.url), 'utf8');
+assert.match(databaseClientSource, /\/player\/inventory\/use/);
+assert.match(databaseClientSource, /\/player\/inventory\/sell/);
+assert.match(databaseClientSource, /\/player\/shop\/buy-item/);
+assert.match(databaseClientSource, /\/player\/cards\/use-functional-item/);
+assert.match(databaseClientSource, /\/player\/cards\/discard/);
+
+const batchClientSource = fs.readFileSync(new URL('../src/ui/BatchInventoryDatabaseFix20260908.js', import.meta.url), 'utf8');
+assert.match(batchClientSource, /count:\s*amount/);
+assert.match(batchClientSource, /Boolean\(slot\.bound\) === Boolean\(bound\)/);
+assert.match(batchClientSource, /批量打开\/使用 ×\$\{amount\}/);
+assert.match(batchClientSource, /一键使用全部 ×\$\{total\}/);
+assert.doesNotMatch(batchClientSource, /itemUse\.use\(/, '最终批量面板不得再走本地 ItemUseSystem 循环');
+
 const bootstrap = fs.readFileSync(new URL('../src/bootstrap.js', import.meta.url), 'utf8');
 assert.match(bootstrap, /installDatabasePersistenceAuthority20260908\(\)/);
+assert.match(bootstrap, /installBatchInventoryDatabaseFix20260908\(\)/);
 
-console.log('database-first wallet, bag, shop, functional items and guild spend: PASS');
+console.log('database-first wallet, batch item use, bag, shop, functional items and guild spend: PASS');
