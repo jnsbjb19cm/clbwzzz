@@ -4,13 +4,14 @@ test('real strengthen/decompose views survive stale DB card rows and keep streng
   await page.setViewportSize({ width: 1280, height: 720 });
   await page.goto('/');
   const result = await page.evaluate(async () => {
-    const [cardModule, itemModule, inventoryModule, smithyModule, layoutModule, guardModule] = await Promise.all([
+    const [cardModule, itemModule, inventoryModule, smithyModule, layoutModule, guardModule, strengthenModule] = await Promise.all([
       import('/src/core/CardDatabase.js'),
       import('/src/core/ItemDatabase.js'),
       import('/src/core/CardInventoryStore.js'),
       import('/src/ui/SmithyView.js'),
       import('/src/ui/SmithyStrengthenLayoutFix20260908.js'),
       import('/src/ui/SmithyMissingCardGuard20260908.js'),
+      import('/src/systems/CardStrengthenSystem.js'),
     ]);
     layoutModule.installSmithyStrengthenLayoutFix20260908();
     guardModule.installSmithyMissingCardGuard20260908();
@@ -28,9 +29,19 @@ test('real strengthen/decompose views survive stale DB card rows and keep streng
     const cardInventory = new inventoryModule.CardInventoryStore(db);
     if (cardInventory.getUsedCount() === 0) cardInventory.grantAllCollectibleCards();
 
-    // Reproduce the user's actual crash shape: the server/local inventory contains an
-    // old card id that no longer exists in CardDatabase. Previously card.name threw in
-    // strengthen and decompose and the entire center UI vanished.
+    // Exact regression for the reported console exception. craftRules.json has no
+    // strengthenSuccess field; selecting a real card used to make getSuccessRate()
+    // execute `for (const row of undefined)` and the strengthen screen crashed.
+    const strengthenSystem = new strengthenModule.CardStrengthenSystem(db);
+    const realSlot = cardInventory.getSlots().find((slot) => slot && db.getById(slot.cardId));
+    const realCard = realSlot ? db.getById(realSlot.cardId) : null;
+    const strengthenPreview = realSlot && realCard
+      ? strengthenSystem.canStrengthen(realSlot, realCard)
+      : null;
+    const previewRates = [0, 1, 2, 14].map((level) => strengthenSystem.getSuccessRate(level));
+
+    // Reproduce the stale-card crash shape separately: the server/local inventory
+    // contains an old card id that no longer exists in CardDatabase.
     const staleIndex = Math.min(199, cardInventory.state.slots.length - 1);
     cardInventory.state.slots[staleIndex] = {
       cardId: 999999,
@@ -74,9 +85,11 @@ test('real strengthen/decompose views survive stale DB card rows and keep streng
       sidePresent: Boolean(root.querySelector('.smithy-decompose-side')),
       staleVisible: root.textContent.includes('999999'),
     };
-    return { strengthen, decompose };
+    return { strengthen, decompose, strengthenPreview, previewRates };
   });
 
+  expect(result.strengthenPreview?.ok).toBe(true);
+  expect(result.previewRates).toEqual([1, 0.45, 0.4, 0.07]);
   expect(result.strengthen.mode).toBe('strengthen');
   expect(result.strengthen.info).not.toBeNull();
   expect(result.strengthen.center).not.toBeNull();
