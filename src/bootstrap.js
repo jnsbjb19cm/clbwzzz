@@ -1,4 +1,5 @@
 import { installTrainingBaseThreatFix20260905 } from './battle/TrainingBaseThreatFix20260905.js';
+import { installBattleLootVariety20260908 } from './battle/BattleLootVariety20260908.js';
 import { installEconomyInventoryRules20260905 } from './ui/EconomyInventoryRules20260905.js';
 import { installEconomyInventoryPersistence20260905 } from './ui/EconomyInventoryPersistence20260905.js';
 import { installCraftBindingSafety20260905 } from './ui/CraftBindingSafety20260905.js';
@@ -95,6 +96,8 @@ void import('./main.js').then(() => {
   // 把房间里实际可见的战团原样交给 BattleView；同时保留三张真实等待玩家卡槽。
   installRoomBattleDeckRuntimeFix20260908();
   installBattleUnitPresentation20260906();
+  // 冒险战掉落从单一强化粉扩展为强化粉、羊皮纸、宝石和卡牌DNA。
+  installBattleLootVariety20260908();
   // 品质底座固定尺寸并恢复向中心汇聚的能量漩涡。
   installBattleQualityHaloFix20260908();
   // BOSS/冒险战中强化粉与500xx铁匠铺材料绕开旧占位符，直接绘制真实素材。
