@@ -48,9 +48,6 @@ jobs:
       - name: Check JavaScript syntax
         run: node scripts/ci-syntax-check.mjs
 
-      # The repository's permanent battle checks were consolidated on 2026-09-05/06.
-      # Do not call the removed August verify scripts: they are stale package.json
-      # entries and cannot provide a red/green signal on the current codebase.
       - name: Verify battle runtime contract
         run: node scripts/verify-battle-runtime-contract-20260906.mjs
 
@@ -77,6 +74,9 @@ jobs:
 
       - name: Verify guild role, task pin persistence and hidden skill
         run: node scripts/verify-guild-task-pin-skilltree-20260908.mjs
+
+      - name: Verify database-first economy persistence
+        run: node scripts/verify-database-persistence-authority-20260908.mjs
 
       - name: Verify debug hit circles stay removed
         run: node scripts/verify-remove-hit-debug-circles-20260905.mjs
