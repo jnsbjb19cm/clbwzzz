@@ -14,6 +14,7 @@ import { installSmithyMissingCardGuard20260908 } from './ui/SmithyMissingCardGua
 import { installSmithyCardKindFilter20260908 } from './ui/SmithyCardKindFilter20260908.js';
 import { installPlayerSnapshotAuthority20260908 } from './ui/PlayerSnapshotAuthority20260908.js';
 import { installDatabasePersistenceAuthority20260908 } from './ui/DatabasePersistenceAuthority20260908.js';
+import { installBatchInventoryDatabaseFix20260908 } from './ui/BatchInventoryDatabaseFix20260908.js';
 import { installPlayerStateDatabaseBridge20260908 } from './ui/PlayerStateDatabaseBridge20260908.js';
 import { installQuestRewardDatabaseAuthority20260908 } from './ui/QuestRewardDatabaseAuthority20260908.js';
 import { installQuestPinPersistence20260908 } from './ui/QuestPinPersistence20260908.js';
@@ -75,6 +76,8 @@ installCardInventoryRemotePatch20260906({ authStore });
 // 钱包/卡牌/道具等强一致数据使用专用服务器事务；本地仅做显示缓存。
 installPlayerSnapshotAuthority20260908();
 installDatabasePersistenceAuthority20260908();
+// PlayerQoL 的批量面板早于数据库权威层安装；这里最后重绑数量控件和一键使用，避免退回本地循环。
+installBatchInventoryDatabaseFix20260908();
 // 任务进度、天赋配置、BOSS/世界地图进度、非货币玩家元数据也写数据库状态文档。
 installPlayerStateDatabaseBridge20260908();
 // 任务奖励必须先在数据库唯一领取并发放，再更新本地任务UI。
