@@ -11,6 +11,9 @@ export const HERO_MP_REGEN_INTERVAL = 50;
 /** 初始只装备非天赋技能；其余技能必须先在天赋树解锁。 */
 export const DEFAULT_SKILL_LOADOUT = [503, 504, 505, null, null, null];
 
+/** 不应出现在技能树/技能池中的内部或废弃技能。 */
+const HIDDEN_SKILL_CARD_IDS = new Set([520]);
+
 /** 主动技能的战斗效果。 */
 export const SKILL_EFFECTS = {
   500: { kind: 'aoe_damage', radius: 1, damage: 60, needsTarget: true, label: '3×3范围伤害' },
@@ -37,7 +40,6 @@ export const SKILL_EFFECTS = {
   534: { kind: 'row_damage', damage: 100, needsTarget: true, label: '横向100伤害' },
   535: { kind: 'row_damage', damage: 100, needsTarget: true, label: '横向100伤害' },
   536: { kind: 'row_damage', damage: 100, needsTarget: true, label: '横向100伤害' },
-  520: { kind: 'enemy_hero_stun', stunSec: 10, label: '敌方英雄眩晕10秒' },
   542: { kind: 'enemy_hero_stun', stunSec: 10, label: '敌方英雄眩晕' },
   545: { kind: 'buff_max_hp', amount: 30, duration: 15, label: '五花肉(占位：全队生命上限+30)' },
   537: { kind: 'firebird', damage: 70, burnDps: 10, burnSec: 5, label: '全体70伤害并灼烧5秒' },
@@ -66,7 +68,8 @@ export const SKILL_EFFECTS = {
 
 export function isActiveSkillCard(card) {
   const category = Number(card?.card_category ?? card?.category);
-  return category === 2 && card.id >= 500 && card.id < 600;
+  const id = Number(card?.id ?? card?.card_id);
+  return category === 2 && id >= 500 && id < 600 && !HIDDEN_SKILL_CARD_IDS.has(id);
 }
 
 export function getSkillEffect(cardId) {
