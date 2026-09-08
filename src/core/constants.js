@@ -2,8 +2,8 @@
 export const CRAFT_QUALITY = {
   1: { id: 0, name: '劣质', color: '#757575', baseLabel: '灰', legacy: true },
   2: { id: 1, name: '普通', color: '#fefefe', baseLabel: '白' },
-  3: { id: 2, name: '优秀', color: '#4caf50', baseLabel: '绿' },
-  4: { id: 3, name: '精良', color: '#2196f3', baseLabel: '蓝' },
+  3: { id: 2, name: '精良', color: '#4caf50', baseLabel: '绿' },
+  4: { id: 3, name: '优秀', color: '#2196f3', baseLabel: '蓝' },
   5: { id: 4, name: '完美', color: '#9c27b0', baseLabel: '紫' },
 };
 
