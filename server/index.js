@@ -20,6 +20,7 @@ import { authRouter } from './routes/auth.js';
 import { playerRouter } from './routes/player.js';
 import { playerSnapshotAuthorityRouter20260908 } from './routes/playerSnapshotAuthority20260908.js';
 import { stageResultAuthorityRouter20260908 } from './routes/stageResultAuthority20260908.js';
+import { batchInventoryUseAuthorityRouter20260908 } from './routes/batchInventoryUseAuthority20260908.js';
 import { playerEconomyAuthorityRouter20260908 } from './routes/playerEconomyAuthority20260908.js';
 import { functionalItemAuthorityRouter20260908 } from './routes/functionalItemAuthority20260908.js';
 import { playerStateDocumentRouter20260908 } from './routes/playerStateDocument20260908.js';
@@ -100,6 +101,8 @@ app.get('/api/health', (_req, res) => {
 app.use('/api/auth', authRouter);
 app.use('/api/player', playerSnapshotAuthorityRouter20260908);
 app.use('/api/player', stageResultAuthorityRouter20260908);
+// 批量使用必须先拦截 count>1，在单个道具旧路由前完成数据库原子扣除与奖励结算。
+app.use('/api/player', batchInventoryUseAuthorityRouter20260908);
 app.use('/api/player', playerEconomyAuthorityRouter20260908);
 app.use('/api/player', functionalItemAuthorityRouter20260908);
 app.use('/api/player', playerStateDocumentRouter20260908);
