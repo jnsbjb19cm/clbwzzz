@@ -140,27 +140,49 @@ function ensureStyle() {
       }
     }
 
-    /* 你截图这种宽屏、低高度窗口直接 2×2，不依赖浏览器缩放触发。 */
+    /*
+     * 宽屏低高度场景改为真正的横向保护符轨道。
+     * 每个保护符保留足够宽度显示“一级/二级/三级/四级保护符 + x1500”，
+     * 不再为了 2×2 硬塞而把名称裁成“一…”“二…”。
+     */
     @media (max-height: 920px) and (min-width: 1050px) {
       .classic-smithy-screen[data-smithy-mode='strengthen'] .star-charm-list {
         display: grid !important;
-        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+        grid-template-columns: none !important;
+        grid-template-rows: minmax(0, 1fr) !important;
+        grid-auto-flow: column !important;
+        grid-auto-columns: minmax(220px, 235px) !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        overflow-x: auto !important;
+        overflow-y: hidden !important;
+        padding: 0 0 7px !important;
+        scroll-padding-inline: 2px;
+        scroll-snap-type: x proximity;
+        overscroll-behavior-x: contain;
+        scrollbar-gutter: auto;
+        touch-action: pan-x;
       }
 
       .classic-smithy-screen[data-smithy-mode='strengthen'] .star-charm {
-        gap: 4px;
+        min-width: 220px !important;
+        width: auto !important;
+        gap: 6px;
+        scroll-snap-align: start;
       }
 
       .classic-smithy-screen[data-smithy-mode='strengthen'] .star-charm span {
-        min-width: 0;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
+        flex: 1 1 auto;
+        min-width: max-content;
+        overflow: visible !important;
+        text-overflow: clip !important;
+        white-space: nowrap !important;
       }
 
       .classic-smithy-screen[data-smithy-mode='strengthen'] .star-charm b {
         flex: 0 0 auto;
-        font-size: .78rem;
+        font-size: .82rem;
+        white-space: nowrap;
       }
     }
   `;
