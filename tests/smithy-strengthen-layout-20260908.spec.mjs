@@ -69,7 +69,9 @@ test('real strengthen/decompose views survive stale DB card rows and keep streng
     view.renderBody(root);
     const decompose = {
       mode: root.querySelector('.classic-smithy-screen')?.getAttribute('data-smithy-mode'),
-      pagePresent: Boolean(root.querySelector('.decompose-page')),
+      pagePresent: Boolean(root.querySelector('.smithy-decompose-layout')),
+      cataloguePresent: Boolean(root.querySelector('.smithy-decompose-layout .smithy-card-catalogue')),
+      sidePresent: Boolean(root.querySelector('.smithy-decompose-side')),
       staleVisible: root.textContent.includes('999999'),
     };
     return { strengthen, decompose };
@@ -88,5 +90,7 @@ test('real strengthen/decompose views survive stale DB card rows and keep streng
 
   expect(result.decompose.mode).toBe('decompose');
   expect(result.decompose.pagePresent).toBe(true);
+  expect(result.decompose.cataloguePresent).toBe(true);
+  expect(result.decompose.sidePresent).toBe(true);
   expect(result.decompose.staleVisible).toBe(false);
 });
