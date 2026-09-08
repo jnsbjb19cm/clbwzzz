@@ -13,6 +13,7 @@ import { installSmithyStrengthenLayoutFix20260908 } from './ui/SmithyStrengthenL
 import { installSmithyMissingCardGuard20260908 } from './ui/SmithyMissingCardGuard20260908.js';
 import { installSmithyCardKindFilter20260908 } from './ui/SmithyCardKindFilter20260908.js';
 import { installPlayerSnapshotAuthority20260908 } from './ui/PlayerSnapshotAuthority20260908.js';
+import { installDatabasePersistenceAuthority20260908 } from './ui/DatabasePersistenceAuthority20260908.js';
 import { installQuestPinPersistence20260908 } from './ui/QuestPinPersistence20260908.js';
 import { installMainCityTrialBulletin20260905 } from './ui/MainCityTrialBulletin20260905.js';
 import { installAnnouncementPlainText20260905 } from './ui/AnnouncementPlainText20260905.js';
@@ -60,49 +61,33 @@ installEconomyInventoryRules20260905();
 installEconomyInventoryPersistence20260905();
 installCraftBindingSafety20260905();
 installLobbyUiPolish20260905();
-// Must run after the lobby patch because it owns the final in-room append/replay behavior.
 installRoomChatRuntimePatch20260906();
-// Channel authority must run after the persistence patch so it can replace the legacy
-// send listener while retaining message replay across room rerenders.
 installRoomChatChannelFix20260906();
-// Invite runtime shares RoomView lifecycle with room chat; install it after chat patches so
-// lobby/room/battle presence and invitation UI wrap the final RoomView methods.
 installRoomInviteRuntime20260906();
 installSmithyOfficialRefill20260905();
 installMainCityTrialBulletin20260905();
 installAnnouncementPlainText20260905();
 installPlayerQoL20260905();
 installDiamondShopExpansion20260905();
-// 登录成功后以服务器卡库为权威；旧版本仅存本地的强化/洗练实例状态会做一次兼容迁移。
 installCardInventoryRemotePatch20260906({ authStore });
-// 登录/刷新后金币和道具统一使用数据库快照，localStorage 只做显示缓存。
+// 登录/刷新后服务器快照覆盖本地缓存。
 installPlayerSnapshotAuthority20260908();
-// 任务置顶由服务器数据库按账号保存；QuestView 每次重绘后自动恢复置顶顺序。
+// 背包、金币/钻石/荣誉、商城购买、功能道具、卡牌移除等持久化操作必须先提交数据库。
+installDatabasePersistenceAuthority20260908();
 installQuestPinPersistence20260908();
-// 强化界面固定为“左信息 / 中央强化台 / 右选卡”，禁止中央操作台被响应式规则挤入右侧选卡区。
 installSmithyStrengthenLayoutFix20260908();
-// 铁匠铺制造/强化/加工/拆解统一改为服务器事务权威；必须在 SmithyView 真正使用前安装。
 installSmithyServerAuthority20260907();
-// 数据库里若残留旧版本卡牌ID，强化/拆解不能因为 card.name 为空让整个界面崩溃。
 installSmithyMissingCardGuard20260908();
-// 造卡和强化卡池提供“全部 / 植物 / 怪物”筛选，并保持精良绿、优秀蓝的说明。
 installSmithyCardKindFilter20260908();
 
 void import('./main.js').then(() => {
   installBaseAttackRenderStability20260906();
-  // 用户本轮三项回归：四套战团权威切换 + 实物掉落图标预载。
   installBattleUserRegressionFix20260907();
-  // 必须位于旧战团运行时补丁之后：把 team1/2/3 接回服务器战团，并让“补全卡”走专用权威接口。
   installDeckInventoryAuthorityFix20260907();
-  // 最终房间状态收口：战团分组保存，随机地图/换队/准备不再触发整页重绘。
   installRoomDeckRefreshRegressionFix20260907();
-  // 把房间里实际可见的战团原样交给 BattleView；同时保留三张真实等待玩家卡槽。
   installRoomBattleDeckRuntimeFix20260908();
   installBattleUnitPresentation20260906();
-  // 冒险战掉落从单一强化粉扩展为强化粉、羊皮纸、宝石和卡牌DNA。
   installBattleLootVariety20260908();
-  // 品质底座固定尺寸并恢复向中心汇聚的能量漩涡。
   installBattleQualityHaloFix20260908();
-  // BOSS/冒险战中强化粉与500xx铁匠铺材料绕开旧占位符，直接绘制真实素材。
   installBattleLootMaterialIconFix20260908();
 });
