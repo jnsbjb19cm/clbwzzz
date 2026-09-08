@@ -26,10 +26,19 @@ assert.match(polishSource, /star-charm-list[\s\S]*display:\s*grid\s*!important/)
 assert.match(polishSource, /overflow-y:\s*auto\s*!important/);
 assert.match(polishSource, /max-height:\s*920px/);
 assert.match(polishSource, /min-width:\s*1050px/);
-assert.match(polishSource, /grid-template-columns:\s*repeat\(2,\s*minmax\(0,\s*1fr\)\)/);
 assert.match(polishSource, /getBoundingClientRect\(\)/);
 assert.match(polishSource, /ResizeObserver/);
 assert.match(polishSource, /addEventListener\('resize',\s*queueLayoutSync/);
+
+// 宽屏低高度时保护符改成横向轨道；名称必须完整显示，不能再使用省略号裁断。
+assert.match(polishSource, /grid-auto-flow:\s*column\s*!important/);
+assert.match(polishSource, /grid-auto-columns:\s*minmax\(220px,\s*235px\)\s*!important/);
+assert.match(polishSource, /overflow-x:\s*auto\s*!important/);
+assert.match(polishSource, /scroll-snap-type:\s*x\s+proximity/);
+assert.match(polishSource, /min-width:\s*220px\s*!important/);
+assert.match(polishSource, /text-overflow:\s*clip\s*!important/);
+assert.match(polishSource, /white-space:\s*nowrap\s*!important/);
+assert.doesNotMatch(polishSource, /text-overflow:\s*ellipsis/);
 
 // 房间聊天必须挂到房间 DOM 内，不能继续作为页面级 fixed 浮层。
 assert.match(polishSource, /#lobby-room-inside\s*>\s*\.classic-chat/);
@@ -40,4 +49,4 @@ assert.match(polishSource, /position:\s*absolute\s*!important/);
 const bootstrapSource = fs.readFileSync(new URL('../src/bootstrap.js', import.meta.url), 'utf8');
 assert.match(bootstrapSource, /installSmithyCharmAndChatPolish20260908\(\)/);
 
-console.log('smithy 100% zoom, recharge removal and room-docked chat guards: PASS');
+console.log('smithy horizontal protection charms, 100% zoom, recharge removal and room-docked chat guards: PASS');
