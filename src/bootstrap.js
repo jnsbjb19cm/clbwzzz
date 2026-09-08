@@ -18,6 +18,7 @@ import { installDiamondShopExpansion20260905 } from './ui/DiamondShopExpansion20
 import { installBaseAttackRenderStability20260906 } from './battle/BaseAttackRenderStability20260906.js';
 import { installBattleUnitPresentation20260906 } from './ui/BattleUnitPresentation20260906.js';
 import { installBattleQualityHaloFix20260908 } from './ui/BattleQualityHaloFix20260908.js';
+import { installBattleLootMaterialIconFix20260908 } from './ui/BattleLootMaterialIconFix20260908.js';
 import { installBattleUserRegressionFix20260907 } from './ui/BattleUserRegressionFix20260907.js';
 import { installDeckInventoryAuthorityFix20260907 } from './ui/DeckInventoryAuthorityFix20260907.js';
 import { installRoomDeckRefreshRegressionFix20260907 } from './ui/RoomDeckRefreshRegressionFix20260907.js';
@@ -90,4 +91,6 @@ void import('./main.js').then(() => {
   installBattleUnitPresentation20260906();
   // 品质圈固定尺寸并增强描边/发光，不再跟随怪物贴图大小变化。
   installBattleQualityHaloFix20260908();
+  // BOSS/冒险战中 500xx 铁匠铺材料不在旧 items atlas，直接绘制真实羊皮纸/宝石/保护符/DNA素材。
+  installBattleLootMaterialIconFix20260908();
 });
