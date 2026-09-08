@@ -9,6 +9,7 @@ import { installRoomInviteRuntime20260906 } from './ui/RoomInviteRuntime20260906
 import { installSmithyOfficialRefill20260905 } from './ui/SmithyOfficialRefill20260905.js';
 import { installSmithyServerAuthority20260907 } from './ui/SmithyServerAuthority20260907.js';
 import { installSmithyStrengthenLayoutFix20260908 } from './ui/SmithyStrengthenLayoutFix20260908.js';
+import { installSmithyMissingCardGuard20260908 } from './ui/SmithyMissingCardGuard20260908.js';
 import { installPlayerSnapshotAuthority20260908 } from './ui/PlayerSnapshotAuthority20260908.js';
 import { installMainCityTrialBulletin20260905 } from './ui/MainCityTrialBulletin20260905.js';
 import { installAnnouncementPlainText20260905 } from './ui/AnnouncementPlainText20260905.js';
@@ -74,6 +75,8 @@ installPlayerSnapshotAuthority20260908();
 installSmithyStrengthenLayoutFix20260908();
 // 铁匠铺制造/强化/加工/拆解统一改为服务器事务权威；必须在 SmithyView 真正使用前安装。
 installSmithyServerAuthority20260907();
+// 数据库里若残留旧版本卡牌ID，强化/拆解不能因为 card.name 为空让整个界面崩溃。
+installSmithyMissingCardGuard20260908();
 
 void import('./main.js').then(() => {
   installBaseAttackRenderStability20260906();
