@@ -17,6 +17,7 @@ import { installPlayerQoL20260905 } from './ui/PlayerQoL20260905.js';
 import { installDiamondShopExpansion20260905 } from './ui/DiamondShopExpansion20260905.js';
 import { installBaseAttackRenderStability20260906 } from './battle/BaseAttackRenderStability20260906.js';
 import { installBattleUnitPresentation20260906 } from './ui/BattleUnitPresentation20260906.js';
+import { installBattleQualityHaloFix20260908 } from './ui/BattleQualityHaloFix20260908.js';
 import { installBattleUserRegressionFix20260907 } from './ui/BattleUserRegressionFix20260907.js';
 import { installDeckInventoryAuthorityFix20260907 } from './ui/DeckInventoryAuthorityFix20260907.js';
 import { installRoomDeckRefreshRegressionFix20260907 } from './ui/RoomDeckRefreshRegressionFix20260907.js';
@@ -87,4 +88,6 @@ void import('./main.js').then(() => {
   // 最终房间状态收口：战团分组保存，随机地图/换队/准备不再触发整页重绘。
   installRoomDeckRefreshRegressionFix20260907();
   installBattleUnitPresentation20260906();
+  // 品质圈固定尺寸并增强描边/发光，不再跟随怪物贴图大小变化。
+  installBattleQualityHaloFix20260908();
 });
