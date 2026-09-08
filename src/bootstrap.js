@@ -10,6 +10,7 @@ import { installSmithyOfficialRefill20260905 } from './ui/SmithyOfficialRefill20
 import { installSmithyServerAuthority20260907 } from './ui/SmithyServerAuthority20260907.js';
 import { installSmithyStrengthenLayoutFix20260908 } from './ui/SmithyStrengthenLayoutFix20260908.js';
 import { installSmithyMissingCardGuard20260908 } from './ui/SmithyMissingCardGuard20260908.js';
+import { installSmithyCardKindFilter20260908 } from './ui/SmithyCardKindFilter20260908.js';
 import { installPlayerSnapshotAuthority20260908 } from './ui/PlayerSnapshotAuthority20260908.js';
 import { installMainCityTrialBulletin20260905 } from './ui/MainCityTrialBulletin20260905.js';
 import { installAnnouncementPlainText20260905 } from './ui/AnnouncementPlainText20260905.js';
@@ -22,6 +23,7 @@ import { installBattleLootMaterialIconFix20260908 } from './ui/BattleLootMateria
 import { installBattleUserRegressionFix20260907 } from './ui/BattleUserRegressionFix20260907.js';
 import { installDeckInventoryAuthorityFix20260907 } from './ui/DeckInventoryAuthorityFix20260907.js';
 import { installRoomDeckRefreshRegressionFix20260907 } from './ui/RoomDeckRefreshRegressionFix20260907.js';
+import { installRoomBattleDeckRuntimeFix20260908 } from './ui/RoomBattleDeckRuntimeFix20260908.js';
 import { installCardInventoryRemotePatch20260906 } from './core/CardInventoryRemotePatch20260906.js';
 import { authStore } from './core/AuthStore.js';
 
@@ -79,6 +81,8 @@ installSmithyStrengthenLayoutFix20260908();
 installSmithyServerAuthority20260907();
 // 数据库里若残留旧版本卡牌ID，强化/拆解不能因为 card.name 为空让整个界面崩溃。
 installSmithyMissingCardGuard20260908();
+// 造卡和强化卡池提供“全部 / 植物 / 怪物”筛选，并保持精良绿、优秀蓝的说明。
+installSmithyCardKindFilter20260908();
 
 void import('./main.js').then(() => {
   installBaseAttackRenderStability20260906();
@@ -88,9 +92,11 @@ void import('./main.js').then(() => {
   installDeckInventoryAuthorityFix20260907();
   // 最终房间状态收口：战团分组保存，随机地图/换队/准备不再触发整页重绘。
   installRoomDeckRefreshRegressionFix20260907();
+  // 把房间里实际可见的战团原样交给 BattleView；同时保留三张真实等待玩家卡槽。
+  installRoomBattleDeckRuntimeFix20260908();
   installBattleUnitPresentation20260906();
-  // 品质圈固定尺寸并增强描边/发光，不再跟随怪物贴图大小变化。
+  // 品质底座固定尺寸并恢复向中心汇聚的能量漩涡。
   installBattleQualityHaloFix20260908();
-  // BOSS/冒险战中 500xx 铁匠铺材料不在旧 items atlas，直接绘制真实羊皮纸/宝石/保护符/DNA素材。
+  // BOSS/冒险战中强化粉与500xx铁匠铺材料绕开旧占位符，直接绘制真实素材。
   installBattleLootMaterialIconFix20260908();
 });
