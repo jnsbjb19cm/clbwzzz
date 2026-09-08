@@ -13,25 +13,31 @@ assert.match(polishSource, /is-minimized/);
 assert.match(polishSource, /MutationObserver/);
 assert.match(polishSource, /aria-expanded/);
 
-// 铁匠铺不再保留单独的“钻石储值”大按钮；聊天缩放按钮必须足够大，便于点击。
-assert.match(polishSource, /removeSmithyRecharge/);
+// 铁匠铺/大厅不再保留钻石储值按钮；聊天缩放按钮增大，便于点击。
+assert.match(polishSource, /removeRechargeButtons/);
 assert.match(polishSource, /smithy-stone-btn/);
+assert.match(polishSource, /#lobby-recharge/);
 assert.match(polishSource, /button\.remove\(\)/);
-assert.match(polishSource, /width:\s*44px/);
-assert.match(polishSource, /height:\s*36px/);
+assert.match(polishSource, /width:\s*56px/);
+assert.match(polishSource, /height:\s*44px/);
 
-// 低高度视口下，保护符区域必须留出底部安全空间并可滚到四级保护符，不能被底部导航/聊天遮住。
-assert.match(polishSource, /100dvh\s*-\s*350px/);
-assert.match(polishSource, /scroll-padding-bottom:\s*84px/);
-assert.match(polishSource, /star-charm-list::after/);
-assert.match(polishSource, /data-charm-id="50024"/);
-
-// 用户截图的宽屏低高度场景下改为 2×2 保护符布局，四个等级在 100% 浏览器缩放也能同时出现。
+// 100% 缩放首次进入时必须直接启用真实 grid，而不是只声明 grid-template-columns。
+assert.match(polishSource, /star-charm-list[\s\S]*display:\s*grid\s*!important/);
+assert.match(polishSource, /overflow-y:\s*auto\s*!important/);
 assert.match(polishSource, /max-height:\s*920px/);
 assert.match(polishSource, /min-width:\s*1050px/);
 assert.match(polishSource, /grid-template-columns:\s*repeat\(2,\s*minmax\(0,\s*1fr\)\)/);
+assert.match(polishSource, /getBoundingClientRect\(\)/);
+assert.match(polishSource, /ResizeObserver/);
+assert.match(polishSource, /addEventListener\('resize',\s*queueLayoutSync/);
+
+// 房间聊天必须挂到房间 DOM 内，不能继续作为页面级 fixed 浮层。
+assert.match(polishSource, /#lobby-room-inside\s*>\s*\.classic-chat/);
+assert.match(polishSource, /data-room-docked='true'/);
+assert.match(polishSource, /room\.appendChild\(chat\)/);
+assert.match(polishSource, /position:\s*absolute\s*!important/);
 
 const bootstrapSource = fs.readFileSync(new URL('../src/bootstrap.js', import.meta.url), 'utf8');
 assert.match(bootstrapSource, /installSmithyCharmAndChatPolish20260908\(\)/);
 
-console.log('level-4 protection charm artwork, normal-zoom layout and collapsible classic chat: PASS');
+console.log('smithy 100% zoom, recharge removal and room-docked chat guards: PASS');
