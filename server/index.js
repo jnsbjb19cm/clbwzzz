@@ -20,6 +20,7 @@ import { authRouter } from './routes/auth.js';
 import { playerRouter } from './routes/player.js';
 import { playerSnapshotAuthorityRouter20260908 } from './routes/playerSnapshotAuthority20260908.js';
 import { stageResultAuthorityRouter20260908 } from './routes/stageResultAuthority20260908.js';
+import { playerEconomyAuthorityRouter20260908 } from './routes/playerEconomyAuthority20260908.js';
 import { questPinPersistenceRouter20260908 } from './routes/questPinPersistence20260908.js';
 import { materialRefillRouter } from './routes/materialRefill.js';
 import { smithyAuthorityRouter20260907 } from './routes/smithyAuthority20260907.js';
@@ -65,20 +66,13 @@ installBattleMeleeContactFinal();
 installBattleMushroomProjectileFinal();
 installCoopBossOwnerResourceFinal();
 installRoomBossRound2Fix();
-// 房间战团选择协议：默认=0，战团1/2/3=1/2/3；必须在 socket handlers 开始接收请求前安装。
 installRoomDeckSelection20260907();
-// 业务权威收口必须最后安装：只覆盖仍冲突的语义，不回退 Round2/Round3 已修好的规则。
 installBattleRuleConvergence20260830();
 installAuthorityRuleConvergence20260830();
-// 2026-09-03 用户规则最终权威：服务端与客户端使用同一套飞行/死亡规则；
-// 中立障碍的精灵归属只认真正造成扣血并完成击杀的一方。
 installBattleUserRules20260903();
 installPvpNeutralDamageOwnership20260903();
-// 人机只改 PVP 行为：遵循真实资源与软 CD，同时提高可移动卡/前线判断权重。
 installPvpBotAi20260905();
-// 高单位/高特效场景限制纯视觉队列，避免服务端无头引擎也维护无限视觉对象。
 installBattleRuntimePerformance20260905();
-// 权威战斗实际重逻辑改为30Hz聚合推进，并缓存同一时刻重复快照/单位序列化。
 installAuthorityPerformance20260905();
 
 const app = express();
@@ -101,24 +95,18 @@ app.get('/api/health', (_req, res) => {
   res.json({ ok: true, service: 'clbwzzz-server', time: new Date().toISOString() });
 });
 app.use('/api/auth', authRouter);
-// 登录/刷新时先由服务器补齐旧版仅存在 localStorage 的官方初始道具，并返回带绑定状态的数据库快照。
 app.use('/api/player', playerSnapshotAuthorityRouter20260908);
-// 战斗结算先写数据库金币/经验/掉落，再返回真实钱包；旧客户端的本地加值随后会被服务器快照纠正。
 app.use('/api/player', stageResultAuthorityRouter20260908);
-// 任务置顶按账号写数据库；必须在旧 playerRouter 前挂载，避免未来同名路由被遮蔽。
+// 玩家钱包、道具使用/出售/丢弃、背包扩容、商城购买统一先落数据库。
+app.use('/api/player', playerEconomyAuthorityRouter20260908);
 app.use('/api/player', questPinPersistenceRouter20260908);
-// 铁匠铺新增/移除卡牌与材料消耗必须先走服务器权威路由，客户端只接收快照。
 app.use('/api/player/smithy', smithyAuthorityRouter20260907);
 app.use('/api/player', playerRouter);
 app.use('/api/player', materialRefillRouter);
-// 新好友接口优先：修复历史申请唯一键导致“搜得到但无法重新添加”。
 app.use('/api/social', socialFriendFixRouter);
-// 新好友搜索优先处理 /search：支持 ID/昵称/账号，并避开旧 SQL ESCAPE 方言差异。
 app.use('/api/social', socialSearchFixRouter);
 app.use('/api/social', socialRouter);
-// 公会升级必须优先走数据库条件扣款事务，避免旧路由先读余额造成不同步/并发重复扣款。
 app.use('/api/guild', guildUpgradeAuthorityRouter20260907);
-// 新仓库接口放在旧 guildRouter 前面，相同 deposit/withdraw 路径由新版非绑定物品规则优先处理。
 app.use('/api/guild', guildWarehouseGridRouter);
 app.use('/api/guild', guildRouter);
 app.use('/api/auction', auctionRouter);
@@ -158,7 +146,6 @@ const io = new Server(server, {
   cors: { origin: socketCorsOrigin, credentials: true },
   transports: ['websocket', 'polling'],
 });
-// 周期世界快照是可替代状态：网络忙时只保最新帧，避免旧快照排队形成秒级延迟。
 installAuthoritySnapshotBackpressure20260905(io);
 registerSocketHandlers(io);
 registerPvpAuthorityHandlers(io, { cardDb: getPvpCardDb() });
@@ -166,10 +153,7 @@ installBattleChatService(io);
 installRoomInviteService20260906(io);
 installSystemAnnouncementService(io);
 
-// 随机匹配：先给真人 10 秒匹配窗口，超时仍有空位再补人机。
 const stopRandomMatchBotService = startRandomMatchBotService(io);
-
-// 房间从创建起最多存在 2 小时；同时回收随机匹配后只剩人机的死房间。
 const stopRoomLifetimeService = startRoomLifetimeService(io, {
   stopBattle: stopAuthorityBattleByRoom,
 });
