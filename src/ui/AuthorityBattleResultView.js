@@ -39,32 +39,28 @@ function clearAutoExit(view) {
   view.__authorityResultExitAt = null;
 }
 
-function startAutoExit(view, root, card) {
-  if (view.__authorityResultExitTimer || view.__authorityResultExited) return;
-  view.__authorityResultExitAt = Date.now() + 3000;
-  let countdown = card.querySelector('.authority-exit-countdown');
-  if (!countdown) {
-    countdown = document.createElement('p');
-    countdown.className = 'authority-exit-countdown';
-    card.append(countdown);
-  }
-  const update = () => {
-    if (!root.isConnected || view.viewRoot !== root || view.engine?.status === 'playing') {
+function setupResultClose(view, root, card) {
+  if (view.__authorityResultExited) return;
+  // 去掉 3 秒自动退出限制，改为右上角点击 ✕ 手动退出。
+  view.__authorityResultExitAt = null;
+  card.querySelector('.authority-exit-countdown')?.remove();
+  let close = card.querySelector('.authority-result-close');
+  if (!close) {
+    close = document.createElement('button');
+    close.type = 'button';
+    close.className = 'authority-result-close';
+    close.setAttribute('aria-label', '退出战斗');
+    close.textContent = '✕';
+    close.addEventListener('click', () => {
+      view.__authorityResultExited = true;
       clearAutoExit(view);
-      return;
-    }
-    const remaining = Math.max(0, Math.ceil((view.__authorityResultExitAt - Date.now()) / 1000));
-    countdown.textContent = remaining + ' 秒后自动退出房间';
-    if (remaining > 0) return;
-    clearAutoExit(view);
-    view.__authorityResultExited = true;
-    // 复用离房入口，释放战场并通知服务器离开房间。
-    const exit = document.querySelector('#pvp-exit-ov');
-    if (exit) exit.click();
-    else root.querySelector('#result-exit')?.click();
-  };
-  view.__authorityResultExitTimer = setInterval(update, 100);
-  update();
+      // 复用离房入口，释放战场并通知服务器离开房间。
+      const exit = document.querySelector('#pvp-exit-ov');
+      if (exit) exit.click();
+      else root.querySelector('#result-exit')?.click();
+    });
+    card.append(close);
+  }
 }
 
 export function installAuthorityBattleResultView() {
@@ -86,7 +82,7 @@ export function installAuthorityBattleResultView() {
     if (!report || !card) return result;
     card.classList.add('authority-result-card');
     card.closest('.result-overlay')?.classList.add('authority-result-overlay');
-    startAutoExit(this, root, card);
+    setupResultClose(this, root, card);
     let board = card.querySelector('.authority-scoreboard');
     if (!board) {
       board = document.createElement('div');

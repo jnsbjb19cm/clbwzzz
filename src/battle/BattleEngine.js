@@ -1838,13 +1838,19 @@ export class BattleEngine {
     unit._deathResolved = true;
     this.rollDeathDrop(unit);
 
-    // 软泥忍者怪：死亡后分身出2只小软泥
+    // 软泥忍者怪：死亡后分身出2只小软泥（减速/冻结等状态不阻止分身）
     if (unit.cardId === 28) {
-      for (let i = 0; i < 2; i++) this.spawnSummon(29, unit.lane, unit.col, unit.team);
+      for (let i = 0; i < 2; i++) this.spawnSummon(29, unit.lane, unit.col, unit.team, {
+        pvpBossMinion: Boolean(unit.pvpBossMinion),
+        pvpOwnerUserId: unit.pvpOwnerUserId ?? null,
+      });
     }
     // 幻.飞行忍者：正常死亡召唤分身；被自爆炸死(飞行水蜜桃/热血火龙果)不产生分身
     if (unit.cardId === 45 && !unit._suicideKilled) {
-      this.spawnSummon(60, unit.lane, unit.col, unit.team);
+      this.spawnSummon(60, unit.lane, unit.col, unit.team, {
+        pvpBossMinion: Boolean(unit.pvpBossMinion),
+        pvpOwnerUserId: unit.pvpOwnerUserId ?? null,
+      });
     }
     // 真.西瓜太郎：死亡后爆炸，对周围3x3格范围内敌方单位造成伤害
     if (unit.cardId === 30) {
@@ -1866,6 +1872,8 @@ export class BattleEngine {
     deployEffect = true,
     preload = true,
     log = true,
+    pvpBossMinion = false,
+    pvpOwnerUserId = null,
   } = {}) {
     const card = this.db.getById(cardId);
     if (!card) return null;
@@ -1880,6 +1888,8 @@ export class BattleEngine {
       }
     }
     const unit = new BattleUnit({ card, lane, col: placeCol, team });
+    if (pvpBossMinion) unit.pvpBossMinion = true;
+    if (pvpOwnerUserId != null) unit.pvpOwnerUserId = pvpOwnerUserId;
     this.initUnitSpawnFade(unit, { preload });
     this.units.push(unit);
     if (deployEffect) this.pushDeployEffect(lane, placeCol, unit.craftQuality);

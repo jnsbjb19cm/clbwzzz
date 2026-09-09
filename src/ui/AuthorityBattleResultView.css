@@ -35,6 +35,25 @@
 .authority-result-card .authority-exit-countdown,
 .authority-result-card #result-desc { margin: 6px 0; color: #fff0bd; font-size: 12px; }
 .authority-result-card .result-actions { margin-top: 6px; }
+.authority-result-close {
+  position: absolute;
+  top: 6px;
+  right: 8px;
+  width: 30px;
+  height: 30px;
+  border: 1px solid rgba(238, 203, 81, .7);
+  border-radius: 50%;
+  background: rgba(12, 35, 24, .82);
+  color: #ffe98a;
+  font-size: 16px;
+  font-weight: 900;
+  line-height: 1;
+  cursor: pointer;
+  z-index: 5;
+}
+.authority-result-close:hover {
+  filter: brightness(1.15);
+}
 @media (max-width: 600px) {
   .authority-team-tables { flex-direction: column; }
 }

@@ -216,10 +216,11 @@ function chooseCard(battle, pool, startIndex = 0, { avoidActiveStatic = false } 
   return null;
 }
 
-function spawnUnit(battle, card, lane, col, wave, { sentinel = false } = {}) {
+function spawnUnit(battle, card, lane, col, wave, { sentinel = false, forceSpecial = false } = {}) {
   if (!battle.bossUnit?.alive || !card) return null;
   if (battle.activeBossMinions().length >= effectiveMinionCap(battle)) return null;
-  if (!fullPoolOf(battle).includes(Number(card.id))) return null;
+  // 循环波次特殊召唤（钻地/幻飞）即使不在固定 10 卡池内也允许生成。
+  if (!forceSpecial && !fullPoolOf(battle).includes(Number(card.id))) return null;
   const formation = FORMATION.find(slot => slot.id === Number(card.id));
   if (formation && activeCardCount(battle, card.id) >= formation.lanes.length) return null;
 
@@ -299,6 +300,9 @@ function spawnFormation(battle, wave, limit) {
   for (const slot of FORMATION) {
     const card = battle.db?.getById?.(slot.id);
     if (!card) continue;
+    // 蒲公英精灵每 16 波补一次；怪物面包机每 7 波补一次。
+    if (Number(slot.id) === DANDELION_CARD_ID && wave % 16 !== 0) continue;
+    if (Number(slot.id) === MONSTER_TOASTER_CARD_ID && wave % 7 !== 0) continue;
     for (const lane of slot.lanes) {
       if (spawned.length >= limit) return spawned;
       // 已移动的石巨人仍计入数量，补阵不会叠加同类支援卡。
@@ -331,7 +335,7 @@ function spawnWaveSpecific(battle, wave) {
       const lane = Math.max(0, (wave + i) % 5);
       const col = chooseColumn(battle, [lane], { card });
       if (col == null) continue;
-      const unit = spawnUnit(battle, card, lane, col, wave);
+      const unit = spawnUnit(battle, card, lane, col, wave, { forceSpecial: true });
       if (unit) spawned.push(unit);
     }
   }
@@ -344,7 +348,7 @@ function spawnWaveSpecific(battle, wave) {
     const col = chooseColumn(battle, lanes, { card });
     if (col == null) return spawned;
     for (const lane of lanes) {
-      const unit = spawnUnit(battle, card, lane, col, wave);
+      const unit = spawnUnit(battle, card, lane, col, wave, { forceSpecial: true });
       if (unit) spawned.push(unit);
     }
   }
