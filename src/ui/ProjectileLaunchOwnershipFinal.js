@@ -1,3 +1,4 @@
+import { predictProjectile } from './PvpProjectileContinuity20260819.js';
 import { BattleEngine } from '../battle/BattleEngine.js';
 import { BattleRenderer } from '../battle/BattleRenderer.js';
 import { getProjectileArcHeight } from '../battle/Projectile.js';
@@ -204,10 +205,18 @@ function installEngineLaunchOwnership() {
 
 function installLaunchOwnedRenderer() {
   BattleRenderer.prototype.drawProjectiles = function drawLaunchOwnedProjectiles(ctx, engine) {
-    this._launchOwnedProjectileAudit = [];
+    const now = performance.now();
+    const captureAudit = !this._launchOwnedProjectileAudit || now - (this._lastProjectileAuditAt ?? -Infinity) >= 100;
+    if (captureAudit) {
+      this._lastProjectileAuditAt = now;
+      this._launchOwnedProjectileAudit = [];
+    }
     for (const projectile of engine?.projectiles ?? []) {
       if (!projectile?.launched) continue;
 
+      // Sample the authoritative flight clock at the final draw seam as well.
+      // Late renderer installation must not remove RAF-rate projectile prediction.
+      predictProjectile(projectile, now);
       const visual = stableLaunchVisual(projectile);
       const startCol = finite(projectile.flightStartCol, finite(projectile.startCol));
       const startLane = finite(projectile.flightStartLane, finite(projectile.lane));
@@ -263,7 +272,7 @@ function installLaunchOwnedRenderer() {
       point.x = projectile.__finalDrawX;
 
       drawProjectileSprite(this, ctx, projectile, point, target, source);
-      this._launchOwnedProjectileAudit.push({
+      if (captureAudit) this._launchOwnedProjectileAudit.push({
         id: projectile.id,
         owner: projectile.owner,
         trajectory: projectile.trajectory,
@@ -286,6 +295,7 @@ function installLaunchOwnedRenderer() {
       });
     }
 
+    if (!captureAudit) return;
     // 兼容既有诊断/回归入口：最终 renderer 已取代旧 RuntimeStability 的 projectile draw，
     // 但旧 verifier 仍是公开测试缝。镜像同一份最终 audit，避免出现“实际绘制正确、诊断字段空”的假红。
     this._runtimeStabilityProjectileAudit = this._launchOwnedProjectileAudit;

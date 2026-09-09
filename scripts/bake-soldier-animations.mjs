@@ -37,9 +37,9 @@ const OUT_DIR = path.join(ROOT, 'assets/sprites/unit_anim');
 
 const FRAME_RATE = 12;
 const BASE_CANVAS = 220;
-// MC31(跳跃大耳怪)与 MC57(死神)的合成画布本身已经透明。
+// MC8(大耳怪)、MC31(跳跃大耳怪)与 MC57(死神)的合成画布本身已经透明。
 // 二次从画布四边做黑底 flood-fill 会把与边界连通的黑色脸/嘴/描边一起抠掉。
-const PRESERVE_COMPOSITED_DARK_FEATURE_RES = new Set([31, 57]);
+const PRESERVE_COMPOSITED_DARK_FEATURE_RES = new Set([8, 31, 57]);
 
 const parser = new XMLParser({
   ignoreAttributes: false,
@@ -99,7 +99,7 @@ async function cropSprite(atlasPath, sprite) {
 }
 
 async function chromaFrameBuffer(pngBuffer, { preserveDarkFeatures = false } = {}) {
-  // 31/57 的源图集是带 alpha 的 soldier.png，合成画布也先 clearRect 为透明；
+  // 8/31/57 的源图集是带 alpha 的 soldier.png，合成画布也先 clearRect 为透明；
   // 因而这里没有黑底需要再次抠。直接保留原 PNG 可避免黑色面部细节被误删。
   if (preserveDarkFeatures) return pngBuffer;
   const { data, info } = await sharp(pngBuffer)
@@ -609,6 +609,8 @@ async function main() {
     manifest.skippedAnim = [...new Set(manifest.skippedAnim)].sort((a, b) => a - b);
   }
 
+  // Targeted art repair: leave global effects, bullets and the existing catalogue untouched.
+  if (partial && process.argv.includes('--units-only')) return;
   fs.writeFileSync(manifestPath, JSON.stringify(manifest, null, 2));
   if (!vertigoOnly) {
     const rebaked = partial ? onlyRes.length : manifest.baked.length;

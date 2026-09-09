@@ -42,7 +42,7 @@ function keepCrossFrameVisualX(projectile, currentX, predictedX, direction) {
   return nextX;
 }
 
-function predictProjectile(projectile, now) {
+export function predictProjectile(projectile, now) {
   // 新协议：普通 straight/parabola 子弹用绝对服务器时间轴。
   // 不积分本机 delta，不追 20/30Hz snapshot target；30/60/144FPS 只是采样次数不同。
   if (projectile?.__serverTimelineProjectile) {

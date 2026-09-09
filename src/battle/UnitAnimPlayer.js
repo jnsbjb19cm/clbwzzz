@@ -76,6 +76,7 @@ const ANIM_CACHE_BUST = '20260826a';
 // 31/57 已重新烘焙黑色面部细节，JSON 与 PNG 必须同时避开修复前的缓存。
 const DARK_FEATURE_ANIM_CACHE_BUST = '20260909-dark-features';
 function animationCacheVersion(res) {
+  if (String(res) === '8') return '20260909-bigear-mouth';
   return ['31', '57'].includes(String(res)) ? DARK_FEATURE_ANIM_CACHE_BUST : ANIM_CACHE_BUST;
 }
 const FROZEN_DEATH_DURATION = 0.16;
