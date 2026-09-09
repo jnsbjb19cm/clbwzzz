@@ -15,46 +15,9 @@ function removeFallbackAnnouncement() {
 }
 
 function ensureFallbackAnnouncement(data) {
-  if (!data?.text) return removeFallbackAnnouncement();
-  const visibleBar = [...document.querySelectorAll('.classic-system-broadcast')].some((bar) => (
-    bar.getClientRects().length > 0 && getComputedStyle(bar).visibility !== 'hidden'
-  ));
-  if (visibleBar) {
-    removeFallbackAnnouncement();
-    return;
-  }
-
-  let bar = document.getElementById(FALLBACK_ID);
-  if (!bar) {
-    bar = document.createElement('div');
-    bar.id = FALLBACK_ID;
-    bar.setAttribute('role', 'status');
-    bar.setAttribute('aria-live', 'polite');
-    bar.style.cssText = [
-      'position:fixed',
-      'left:50%',
-      'top:18px',
-      'transform:translateX(-50%)',
-      'z-index:250000',
-      'max-width:min(900px,calc(100vw - 32px))',
-      'box-sizing:border-box',
-      'padding:10px 22px',
-      'border:2px solid rgba(225,190,82,.95)',
-      'border-radius:12px',
-      'background:linear-gradient(180deg,rgba(13,92,118,.98),rgba(4,49,69,.98))',
-      'box-shadow:0 5px 18px rgba(0,0,0,.38),inset 0 1px rgba(255,255,255,.2)',
-      'color:#fff2b0',
-      'font:700 16px/1.5 "Microsoft YaHei",sans-serif',
-      'text-align:center',
-      'pointer-events:none',
-    ].join(';');
-    document.body.appendChild(bar);
-  }
-
-  const title = String(data.title || '系统广播').replace(DECORATION_RE, '').trim();
-  const text = `${title}：${String(data.text)}`;
-  if (bar.textContent !== text) bar.textContent = text;
-  // Lifetime belongs to SystemAnnouncementClient, including its queue/clear event.
+  // 不再创建顶部悬浮的 fallback 播报条：战斗/房间没有 classic-system-broadcast 时，
+  // 系统消息仍会进入左下角战斗聊天；主城/铁匠铺仍保留原有 classic 广播条。
+  removeFallbackAnnouncement();
 }
 
 function syncAnnouncementVisibility(root = document) {
