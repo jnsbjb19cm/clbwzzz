@@ -22,6 +22,17 @@ const FINISHED_RETENTION_MS = 30_000;
 // roomId -> { battle, timer, lastAt, accumulator, broadcastAccumulator, seq, cleanupTimer }
 const authorityBattles = new Map();
 
+function emitCollectedLoot(io, room, entry) {
+  entry.collectedLootIds ??= new Set();
+  for (const drop of entry.battle.engine.lootDrops ?? []) {
+    if (!drop.collected || entry.collectedLootIds.has(drop.id)) continue;
+    entry.collectedLootIds.add(drop.id);
+    for (const socketId of recipientSocketIds(room, entry)) {
+      io.to(socketId).emit('pvp:authority:loot-collected', { roomId: room.id, drop });
+    }
+  }
+}
+
 function monotonicNowMs() {
   return globalThis.performance?.now?.() ?? Date.now();
 }
@@ -495,6 +506,7 @@ function ensureAuthorityBattle(roomId, io, cardDb) {
         ? new Map(activeProjectiles.map((projectile) => [Number(projectile.id), projectile]))
         : null;
       entry.battle.tick(STEP_SECONDS);
+      emitCollectedLoot(io, room, entry);
       emitNewProjectileLaunchEvents(io, room, entry);
       if (previousProjectiles) emitRemovedProjectileEvents(io, room, entry, previousProjectiles);
       entry.accumulator -= STEP_SECONDS;
@@ -626,6 +638,17 @@ export function registerPvpAuthorityHandlers(io, { cardDb }) {
       } catch (error) {
         ackError(ack, error);
       }
+    });
+
+    socket.on('pvp:authority:collect-loot', (payload = {}, ack) => {
+      try {
+        const { room, entry } = currentRoomAndBattle(socket, io, cardDb);
+        if (Number(payload.roomId) !== Number(room.id)) throw new Error('房间已变更');
+        if (!entry.battle.collectLootDrop) throw new Error('当前战斗不支持此掉落');
+        const drop = entry.battle.collectLootDrop(socket.user.id, payload.dropId);
+        emitCollectedLoot(io, room, entry);
+        ackOk(ack, { drop });
+      } catch (error) { ackError(ack, error); }
     });
 
     socket.on('pvp:authority:cast-skill', (payload = {}, ack) => {

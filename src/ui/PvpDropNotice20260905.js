@@ -3,6 +3,7 @@ import { ItemDatabase } from '../core/ItemDatabase.js';
 import { App } from './App.js';
 import { BagView } from './BagView.js';
 import { BattleView } from './BattleView.js';
+import { cellCenterX, cellCenterY } from '../battle/BattleConfig.js';
 
 const PATCH_FLAG = Symbol.for('clbwzzz.pvpDropNotice20260905');
 const APP_FLAG = Symbol.for('clbwzzz.pveDropNotice20260905');
@@ -37,7 +38,7 @@ function iconHtml(itemId) {
   }
 }
 
-function publishLocalSystemDrop(drops) {
+function publishLocalSystemDrop(drops, { nickname = authStore.user?.nickname || authStore.user?.username || '玩家', pending = false } = {}) {
   if (!drops.length) return;
   const text = drops.map(({ itemId, count }) => {
     const item = itemDb.getById(itemId);
@@ -47,7 +48,7 @@ function publishLocalSystemDrop(drops) {
     id: `battle-drop-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
     kind: 'battle-drop',
     title: '战斗掉落',
-    text: `获得 ${text}（非绑定）`,
+    text: `玩家 ${nickname} 获得了 ${text}${pending ? '（本局战利品，结算入包）' : '（非绑定）'}`,
     at: Date.now(),
   };
   window.dispatchEvent(new CustomEvent('clbwz:queue-system-announcement', { detail: data }));
@@ -134,6 +135,75 @@ async function detectAuthorityDrops(view) {
   }
 }
 
+function bindLootInteraction(view) {
+  view.__lootInteractionCleanup?.();
+  const root = view.viewRoot;
+  const canvas = root?.querySelector('#battle-canvas');
+  if (!canvas) return;
+  if (view.__lootInteractionEngine !== view.engine) view.__collectedLootIds = new Set();
+  view.__lootInteractionEngine = view.engine;
+  const collected = view.__collectedLootIds ??= new Set();
+  let active = true;
+  const pending = new Set();
+  const announced = new Set();
+  const receive = ({ drop, roomId } = {}) => {
+    if (!active || !drop || (roomId != null && Number(roomId) !== Number(view.pvp?.roomId))) return;
+    collected.add(Number(drop.id));
+    const local = view.engine?.lootDrops?.find(item => Number(item.id) === Number(drop.id));
+    if (local) local.collected = true;
+    if (announced.has(Number(drop.id))) return;
+    announced.add(Number(drop.id));
+    publishLocalSystemDrop([drop], { nickname: drop.recipientNickname, pending: true });
+  };
+  const unsubscribe = view.pvpSocket?.on?.('pvp:authority:loot-collected', receive);
+  const collect = async drop => {
+    const id = Number(drop.id);
+    if (drop.collected || collected.has(id) || pending.has(id) || view.pvp?.spectator) return;
+    if (view.pvp) {
+      const userId = Number(view.__pvpLatestSnapshot?.viewerUserId ?? authStore.user?.id);
+      if (Number(drop.recipientUserId) !== userId || !view.pvpSocket?.emitAck) return;
+      pending.add(id);
+      try {
+        const response = await view.pvpSocket.emitAck('pvp:authority:collect-loot', { roomId: view.pvp.roomId, dropId: id });
+        receive(response);
+      } catch { /* 原自动拾取仍会继续，失败不本地发奖。 */ }
+      finally { pending.delete(id); }
+    } else {
+      drop.collected = true;
+      collected.add(id);
+      publishLocalSystemDrop([drop], { pending: true });
+    }
+  };
+  const hover = event => {
+    if (!view.engine || event.buttons || event.target.closest?.('button, input, .result-overlay, .settings-panel')) return;
+    const rect = canvas.getBoundingClientRect();
+    if (!rect.width || !rect.height || event.clientX < rect.left || event.clientX > rect.right || event.clientY < rect.top || event.clientY > rect.bottom) return;
+    const scale = view.renderer?.fieldScale || 1;
+    const x = (event.clientX - rect.left) * canvas.width / (rect.width * scale);
+    const y = (event.clientY - rect.top) * canvas.height / (rect.height * scale);
+    for (const drop of view.engine.lootDrops ?? []) {
+      const age = view.engine.time - Number(drop.createdAt || 0);
+      if (age < 0 || age > 3.2) continue;
+      const cx = cellCenterX(drop.col);
+      const cy = cellCenterY(drop.lane) - 18 - Math.sin(age * 5.5) * 5 - Math.min(13, age * 5);
+      if (Math.abs(x - cx) <= 30 && Math.abs(y - cy) <= 30) void collect(drop);
+    }
+  };
+  root.addEventListener('pointermove', hover, { passive: true });
+  // 本地冒险保留 3.2 秒自动收取；联网掉落由服务器自动收取并广播。
+  const timer = view.pvp ? null : setInterval(() => {
+    for (const drop of view.engine?.lootDrops ?? []) {
+      if (view.engine.time - drop.createdAt >= 3.2 || view.engine.status !== 'playing') void collect(drop);
+    }
+  }, 150);
+  view.__lootInteractionCleanup = () => {
+    active = false;
+    root.removeEventListener('pointermove', hover);
+    clearInterval(timer);
+    unsubscribe?.();
+  };
+}
+
 function bindPvpDropNotice(view) {
   if (!view?.pvp || view.pvp.spectator || view.__pvpDropNoticeBound || !view.pvpSocket?.on) return;
   view.__pvpDropNoticeBound = true;
@@ -179,12 +249,16 @@ function install() {
   const previousRenderBattle = BattleView.prototype.renderBattle;
   BattleView.prototype.renderBattle = async function renderBattleWithAuthorityDropNotice(...args) {
     const result = await previousRenderBattle.apply(this, args);
+    bindLootInteraction(this);
     if (this.pvp) bindPvpDropNotice(this);
     return result;
   };
 
   const previousDestroy = BattleView.prototype.destroy;
   BattleView.prototype.destroy = function destroyDropNoticeBridge(...args) {
+    this.__lootInteractionCleanup?.();
+    this.__lootInteractionCleanup = null;
+    this.__collectedLootIds = null;
     try { this.__pvpDropNoticeUnsub?.(); } catch {}
     this.__pvpDropNoticeUnsub = null;
     this.__pvpDropNoticeBound = false;

@@ -137,6 +137,7 @@ function drawArtwork(ctx, art, cx, cy, size) {
 }
 
 function drawSpecialLootIcon(ctx, drop, now) {
+  if (drop.collected) return true;
   const art = materialArt(drop?.itemId);
   if (!art) return false;
 

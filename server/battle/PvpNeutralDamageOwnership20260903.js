@@ -18,7 +18,7 @@ function normalizeSource(source) {
   const ownerUserId = Number(source?.ownerUserId);
   return {
     team,
-    ownerUserId: Number.isFinite(ownerUserId) && ownerUserId > 0 ? ownerUserId : null,
+    ownerUserId: Number.isFinite(ownerUserId) && ownerUserId !== 0 ? ownerUserId : null,
   };
 }
 
@@ -96,6 +96,8 @@ export function installPvpNeutralDamageOwnership20260903() {
   PvpBattle.prototype.withTeamPerspective = function withTeamPerspectivePreservingNeutral(team, callback) {
     if (team === 'blue') return callback();
     const engine = this.engine;
+    const previousPerspective = Boolean(engine.__pvpPerspectiveFlipped);
+    engine.__pvpPerspectiveFlipped = !previousPerspective;
     for (const unit of engine.units ?? []) {
       unit.team = flipCombatSide(unit.team);
     }
@@ -123,6 +125,7 @@ export function installPvpNeutralDamageOwnership20260903() {
       for (const unit of engine.units ?? []) {
         unit.team = flipCombatSide(unit.team);
       }
+      engine.__pvpPerspectiveFlipped = previousPerspective;
     }
   };
 

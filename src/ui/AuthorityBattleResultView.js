@@ -24,7 +24,7 @@ function teamTable(report, team) {
     ['经验', row => rewardValue(row.exp)],
     ['加成', () => '—'],
     ['战利品', row => !settled ? '等待结算' : row.items.length ? row.items.map(item =>
-      `<span class="authority-prize">${itemIconMarkup(item.itemId, 32)}<span>${escapeHtml(items.getById(item.itemId)?.name ?? '道具')} ×${Number(item.count)}</span></span>`,
+      `<span class="authority-prize">${itemIconMarkup(item.itemId, 24)}<span>${escapeHtml(items.getById(item.itemId)?.name ?? '道具')} ×${Number(item.count)}</span></span>`,
     ).join('') : '无'],
   ];
   return `<section class="authority-team authority-team-${team}"><h3>${name}<strong>${outcome}</strong></h3>
@@ -33,14 +33,60 @@ function teamTable(report, team) {
     ).join('')}</tbody></table></section>`;
 }
 
+function clearAutoExit(view) {
+  clearInterval(view.__authorityResultExitTimer);
+  view.__authorityResultExitTimer = null;
+  view.__authorityResultExitAt = null;
+}
+
+function startAutoExit(view, root, card) {
+  if (view.__authorityResultExitTimer || view.__authorityResultExited) return;
+  view.__authorityResultExitAt = Date.now() + 3000;
+  let countdown = card.querySelector('.authority-exit-countdown');
+  if (!countdown) {
+    countdown = document.createElement('p');
+    countdown.className = 'authority-exit-countdown';
+    card.append(countdown);
+  }
+  const update = () => {
+    if (!root.isConnected || view.viewRoot !== root || view.engine?.status === 'playing') {
+      clearAutoExit(view);
+      return;
+    }
+    const remaining = Math.max(0, Math.ceil((view.__authorityResultExitAt - Date.now()) / 1000));
+    countdown.textContent = remaining + ' 秒后自动退出房间';
+    if (remaining > 0) return;
+    clearAutoExit(view);
+    view.__authorityResultExited = true;
+    // 复用离房入口，释放战场并通知服务器离开房间。
+    const exit = document.querySelector('#pvp-exit-ov');
+    if (exit) exit.click();
+    else root.querySelector('#result-exit')?.click();
+  };
+  view.__authorityResultExitTimer = setInterval(update, 100);
+  update();
+}
+
 export function installAuthorityBattleResultView() {
+  const previousDestroy = BattleView.prototype.destroy;
+  BattleView.prototype.destroy = function (...args) {
+    clearAutoExit(this);
+    return previousDestroy.apply(this, args);
+  };
   const previous = BattleView.prototype.updateResultOverlay;
   BattleView.prototype.updateResultOverlay = function (root) {
     const result = previous.call(this, root);
     const report = this.__authorityBattleReport;
     const card = root?.querySelector('#result-overlay .result-card');
-    if (!report || !card || this.engine?.status === 'playing') return result;
+    if (this.engine?.status === 'playing') {
+      clearAutoExit(this);
+      this.__authorityResultExited = false;
+      return result;
+    }
+    if (!report || !card) return result;
     card.classList.add('authority-result-card');
+    card.closest('.result-overlay')?.classList.add('authority-result-overlay');
+    startAutoExit(this, root, card);
     let board = card.querySelector('.authority-scoreboard');
     if (!board) {
       board = document.createElement('div');

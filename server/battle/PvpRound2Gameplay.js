@@ -100,7 +100,9 @@ function spawnBarrierSpirit(engine, barrier) {
   barrier.__pvpBarrierResolved = true;
   const spiritId = BARRIER_TO_SPIRIT.get(Number(barrier.cardId));
   const team = barrier.__pvpLastHitTeam === 'enemy' ? 'enemy' : 'player';
-  const spirit = engine.spawnSummon(spiritId, barrier.lane, barrier.col, team);
+  // 归属元数据始终是服务器阵营；红方技能执行中，生成单位须先转成临时视角。
+  const spawnTeam = engine.__pvpPerspectiveFlipped ? (team === 'player' ? 'enemy' : 'player') : team;
+  const spirit = engine.spawnSummon(spiritId, barrier.lane, barrier.col, spawnTeam);
   if (!spirit) return null;
   spirit.__pvpBarrierSummon = true;
   spirit.pvpOwnerUserId = barrier.__pvpLastHitOwnerUserId ?? null;

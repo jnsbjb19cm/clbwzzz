@@ -345,6 +345,7 @@ function applySnapshot(view, snapshot, { force = false } = {}) {
     lane: finite(drop.lane),
     col: localCol(view, drop.col),
     createdAt: finite(drop.createdAt),
+    collected: Boolean(drop.collected || view.__collectedLootIds?.has(Number(drop.id))),
   }));
 
   // 周期压缩快照可以省略 projectiles；此时绝不能清空客户端正在按

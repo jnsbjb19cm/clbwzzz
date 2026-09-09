@@ -1018,6 +1018,7 @@ export class BattleRenderer {
   drawLootDrops(ctx, engine) {
     const now = Number(engine.time) || 0;
     for (const drop of engine.lootDrops ?? []) {
+      if (drop.collected) continue;
       const age = now - Number(drop.createdAt || 0);
       if (age < 0 || age > 3.2) continue;
       const appear = Math.min(1, age / 0.18);

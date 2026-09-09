@@ -108,10 +108,23 @@ function configureBotSkills(battle, member, state) {
   let budget = getTalentPointBudget(member.level);
   const branches = ['north', 'east', 'south', 'west'];
   const branch = branches[Math.abs(Number(member.userId)) % branches.length];
+  const builds = {
+    north: [559, 517, 518], east: [537, 517, 541],
+    south: [558, 560, 506], west: [539, 518, 547],
+  };
+  const priorityNodes = new Set();
+  const addPath = node => {
+    if (!node || priorityNodes.has(node.id)) return;
+    for (const id of node.prerequisites) addPath(TALENT_NODES.find(n => n.id === id));
+    priorityNodes.add(node.id);
+  };
+  for (const id of builds[branch]) addPath(TALENT_NODES.find(node => node.skillId === id));
+  const priority = [...priorityNodes];
   while (budget > 0) {
     const eligible = TALENT_NODES.filter(node => !unlocked.has(node.id)
       && Number(node.cost || 0) <= budget && node.prerequisites.every(id => unlocked.has(id)))
-      .sort((a, b) => Number(b.branch === branch) - Number(a.branch === branch)
+      .sort((a, b) => (priority.includes(a.id) ? priority.indexOf(a.id) : 999) - (priority.includes(b.id) ? priority.indexOf(b.id) : 999)
+        || Number(b.branch === branch) - Number(a.branch === branch)
         || Number(Boolean(b.skillId)) - Number(Boolean(a.skillId)));
     if (!eligible.length) break;
     const node = eligible[0];
@@ -120,7 +133,8 @@ function configureBotSkills(battle, member, state) {
   }
   const learned = TALENT_NODES.filter(node => node.skillId && unlocked.has(node.id)).map(node => node.skillId);
   const allowed = new Set([...learned, ...DEFAULT_SKILL_LOADOUT.filter(Boolean)]);
-  const preferred = Array.isArray(member.skillLoadout) ? member.skillLoadout : [504, ...learned.reverse(), 503, 505];
+  const preferred = Array.isArray(member.skillLoadout) ? member.skillLoadout
+    : [504, ...builds[branch], 503, ...learned, 505];
   const loadout = [...new Set(preferred)].filter(id => allowed.has(id) && battle.db.getById(id) && getSkillEffect(id)).slice(0, 6);
   battle.setSkillLoadout(member.userId, [...loadout, ...Array(6 - loadout.length).fill(null)]);
   state.skillsConfigured = true;
@@ -140,12 +154,18 @@ function chooseDeployment(battle, userId, state) {
     .filter(card => now >= Number(state.cardReadyAt.get(Number(card.id)) || 0))
     .filter(card => !(serverCooldowns[card.id] > 0) && affordable(battle, userId, card));
   const choices = [];
-  const canAffordMoving = legal.some(isMovable);
+  // 前排、支援、推进轮流补位；轮次只影响优先级，资源/CD 不足时仍可选其他合法卡。
+  const formation = ['guard', 'support', 'moving', 'moving', 'support'];
+  const preferredRole = personalMoving === 0 && personalFixed >= 2 ? 'moving'
+    : personalFixed === 0 && personalMoving >= 2 ? 'support'
+      : formation[state.deployCount % formation.length];
+  const homeLane = Math.abs(Number(userId)) % 5;
   for (let lane = 0; lane < 5; lane += 1) {
     const stats = laneStats(battle, team, lane);
     const flying = stats.enemy.filter(u => u.isFlying?.()).length;
     const wounded = stats.own.filter(u => u.hp < u.maxHp * 0.65).length;
     const defenders = stats.own.filter(u => u.atkStyle === 1).length;
+    const supports = stats.own.filter(u => !u.isMovable?.() && u.atkStyle !== 1).length;
     const threats = stats.enemy.reduce((n, u) => n + Math.max(0, Number(u.atk) || 0), 0);
     for (const card of legal) {
       const traits = getCardTraits(card.id) || {};
@@ -154,15 +174,20 @@ function chooseDeployment(battle, userId, state) {
       const healer = Number(card.viewType) === 4;
       const antiAir = Number(card.atkStyle) === 3 || Number(card.viewType) === 6;
       const cost = battle.deployCost(card);
-      // 常态以推进为主：至少两次移动卡部署后才考虑一次固定防守卡。
       const urgent = stats.enemyNearBase > 0;
-      if (!movable && !urgent && (personalFixed >= 2 || (canAffordMoving && (state.deployCount < 2 || (state.movingSinceFixed || 0) < 2)))) continue;
-      if (!movable && !urgent && personalFixed >= 3) continue;
-      if (guard && ((!urgent && defenders) || !stats.enemy.length)) continue;
-      if (healer && wounded < 2) continue;
+      if (guard && !urgent && defenders) continue;
+      if (healer && wounded < 2 && (stats.own.length < 2 || stats.own.some(u => u.viewType === 4))) continue;
       if (!urgent && personalUnits.length >= 2 && ((cost.sun > 0 && resource.sun - cost.sun < 2) || (cost.food > 0 && resource.food - cost.food < 2))) continue;
       let score = stats.enemyNearBase * 8 + stats.enemy.length * 2 - stats.own.length * 1.2;
-      score += movable ? (personalMoving < 3 ? 12 : 7) : (stats.enemy.length ? 0 : -12);
+      const role = movable ? 'moving' : guard ? 'guard' : 'support';
+      if (role === preferredRole) score += 32;
+      if (lane === homeLane) score += 5;
+      score += Math.min(25, stats.enemy.reduce((sum, unit) => sum + strategicThreat(unit), 0) / 2);
+      if (guard && !defenders) score += supports ? 18 : 8;
+      if (!movable && !guard && !supports) score += defenders ? 22 : 6;
+      if (movable) score += personalMoving < 2 ? 14 : 7;
+      else if (personalFixed >= 3 && !urgent) score -= 35;
+      if (!movable && !guard && supports >= 2) score -= 25;
       if (flying) score += antiAir ? 12 + flying * 3 : -8;
       if (urgent) {
         score += 100;
@@ -172,8 +197,8 @@ function chooseDeployment(battle, userId, state) {
         else if (Number(card.atk) > 0) score += 12;
         if (healer) score -= 30;
       }
-      if (guard) score += !flying && threats > 0 && !defenders ? 8 : -9;
-      if (healer) score += wounded >= 2 ? wounded * 5 : -18;
+      if (guard && flying && !threats) score -= 12;
+      if (healer) score += wounded >= 2 ? wounded * 5 : -6;
       if (traits.doubleVsDefender && stats.enemy.some(u => u.atkStyle === 1)) score += 8;
       if (card.id === 25 && stats.enemy.length >= 3) score += 7;
       if (stats.own.some(u => Number(u.cardId) === Number(card.id))) score -= 4;
@@ -186,6 +211,11 @@ function chooseDeployment(battle, userId, state) {
     }
   }
   return choices.sort((a, b) => b.score - a.score);
+}
+
+function strategicThreat(unit) {
+  if (Number(unit.cardId) === 58) return 50; // 蘑菇仙人的全场攻击，优先保护队友阵线。
+  return (Number(unit.quality) >= 5 ? 16 : 0) + Math.min(20, Math.max(0, Number(unit.atk) - 20));
 }
 
 function trySmartSkill(battle, member, state) {
@@ -202,52 +232,82 @@ function trySmartSkill(battle, member, state) {
   const hp = team === 'blue' ? battle.engine.heroHp : battle.engine.enemyHeroHp;
   const maxHp = team === 'blue' ? battle.engine.heroMaxHp : battle.engine.enemyHeroMaxHp;
   const skills = battle.skillStateOf(userId);
-  if (skills.pending.length || now < (state.skillReadyAt || 0)) return;
+  if (skills.pending.length || now < (state.skillReadyAt || 0) || now < (battle.__botTeamSkillReadyAt?.get(team) || 0)) return;
   const reserve = Math.max(35, [503, 504].filter(id => skills.loadout.includes(id)).reduce((sum, id) => sum + getSkillMpCost(battle.db.getById(id)), 0));
   battle.__botEffectUntil ??= new Map();
   const emergency = danger > 0 && hp < maxHp * 0.25;
   if (state.deployCount === 0 && !emergency) return;
+  battle.__botFocusUntil ??= new Map();
+  const alliedCasts = [...battle.skillStates.values()].flatMap(skill => skill.pending ?? []).filter(cast => cast.team === team);
+  const alreadyCovered = unit => alliedCasts.some(cast => {
+    const effect = cast.effect;
+    if (Number(effect?.damage) < unit.hp || !Number(effect?.damage)) return false;
+    if (['damage_all_enemies', 'firebird'].includes(effect.kind)) return true;
+    if (!effect.needsTarget || !cast.target) return false;
+    if (effect.kind === 'row_damage') return unit.lane === cast.target.lane;
+    return Math.abs(unit.lane - cast.target.lane) <= (effect.radiusLane ?? effect.radius ?? 0)
+      && Math.abs(unit.col - cast.target.col) <= Math.max(0.55, effect.radiusCol ?? effect.radius ?? 0);
+  });
+  const focusAvailable = unit => !(unit.invulnUntil > now) && !alreadyCovered(unit)
+    && now >= (battle.__botFocusUntil.get(team + ':' + unit.uid) || 0);
   const candidates = [];
   for (const skillId of skills.loadout.filter(Boolean)) {
     const effect = getSkillEffect(skillId), card = battle.db.getById(skillId);
     if (!effect || !card || (skills.cooldowns[skillId] || 0) > 0 || skills.mp < getSkillMpCost(card)) continue;
     const mpCost = getSkillMpCost(card);
     if ((!emergency && skills.mp - mpCost < reserve) || now < (battle.__botEffectUntil.get(team + ':' + effect.kind) || 0)) continue;
-    let score = 0, target = null;
+    let score = 0, target = null, focusUid = null;
     if (effect.kind === 'heal_hero' && ((hp < maxHp * 0.55 && maxHp - hp >= effect.amount) || emergency)) score = 20 + danger;
-    if (effect.kind === 'freeze_all_enemies' && (danger >= 3 || (enemies.length >= 6 && own.length >= 3)) && enemies.some(u => !(u.frozenUntil > now))) score = 12 + danger;
+    if (effect.kind === 'freeze_all_enemies' && (danger >= 3 || (enemies.length >= 6 && own.length >= 3) || (own.length >= 2 && enemies.some(u => strategicThreat(u) >= 50 && focusAvailable(u)))) && enemies.some(u => !(u.frozenUntil > now))) score = 12 + danger;
     if (['buff_max_hp', 'buff_atk_allies', 'buff_as_ms'].includes(effect.kind)
-      && own.filter(u => u.isMovable?.() && enemies.some(e => e.lane === u.lane && Math.abs(e.col - u.col) < 2)).length >= 4) score = 8;
+      && own.filter(u => u.atk > 0 && enemies.some(e => e.lane === u.lane && Math.abs(e.col - u.col) < 3)).length >= 3) score = 8;
     if (effect.kind === 'base_invulnerable' && emergency) score = 28;
     if (effect.kind === 'invuln_all_allies' && own.filter(u => u.hp < u.maxHp * 0.4).length >= 3 && danger) score = 16;
     if (effect.kind === 'enemy_hero_damage' && (team === 'blue' ? battle.engine.enemyHeroHp : battle.engine.heroHp) <= effect.damage) score = 30;
-    if (['damage_all_enemies', 'firebird', 'fatal_curse', 'thunderstorm'].includes(effect.kind) && enemies.length >= 5) score = 10 + enemies.length;
+    if (['damage_all_enemies', 'firebird', 'fatal_curse', 'thunderstorm'].includes(effect.kind) && enemies.length >= 4) {
+      const damage = Number(effect.damage || 0) + Number(effect.burnDps || effect.dps || 0) * Math.min(5, Number(effect.burnSec || effect.duration || 0));
+      const value = enemies.reduce((sum, u) => sum + Math.min(u.hp, damage), 0);
+      if (value >= mpCost * 6 || (effect.kind === 'thunderstorm' && danger >= 3)) score = 15 + enemies.length + Math.min(10, value / 100);
+    }
+    if (['damage_all_enemies', 'firebird'].includes(effect.kind)) {
+      const threat = enemies.find(u => strategicThreat(u) > 0 && focusAvailable(u) && u.hp <= Number(effect.damage) && own.length >= 2);
+      if (threat) { score = 35 + strategicThreat(threat); focusUid = threat.uid; }
+    }
+    if (effect.kind === 'phase_out_enemies' && danger >= 3 && own.length >= 2) score = 16 + danger;
     if (['heal_all_allies', 'sacred_revival'].includes(effect.kind) && own.filter(u => u.hp < u.maxHp * 0.6).length >= 2) score = 10;
     if (effect.needsTarget && enemies.length) {
-      const ranked = enemies.map(u => ({ u, hits: enemies.filter(v => effect.kind === 'row_damage'
+      const ranked = enemies.filter(focusAvailable).map(u => ({ u, threat: strategicThreat(u), hits: enemies.filter(v => effect.kind === 'row_damage'
         ? v.lane === u.lane : effect.kind === 'fire_wall' ? Math.abs(v.col - u.col) < 0.55 : Math.abs(v.lane - u.lane) <= (effect.radiusLane ?? effect.radius ?? 0)
           && Math.abs(v.col - u.col) <= (effect.radiusCol ?? effect.radius ?? 0)).length }))
-        .sort((a, b) => b.hits - a.hits || b.u.atk - a.u.atk);
+        .sort((a, b) => (b.threat + b.hits * 4) - (a.threat + a.hits * 4) || b.u.atk - a.u.atk);
       const best = ranked[0];
+      if (!best) continue;
       const damage = Number(effect.damage) || Number(effect.dps || 0) * Math.min(3, Number(effect.duration) || 3);
       const returnValue = enemies.filter(u => effect.kind === 'row_damage' ? u.lane === best.u.lane
         : effect.kind === 'fire_wall' ? Math.abs(u.col - best.u.col) < 0.55
           : Math.abs(u.lane - best.u.lane) <= (effect.radiusLane ?? effect.radius ?? 0)
             && Math.abs(u.col - best.u.col) <= (effect.radiusCol ?? effect.radius ?? 0))
         .reduce((sum, u) => sum + Math.min(u.hp, damage), 0);
-      if ((best.hits >= 2 && returnValue >= Math.max(80, mpCost * 6)) || (emergency && best.u.hp <= damage)) {
-        score = 6 + best.hits;
+      const priorityKill = best.threat > 0 && damage >= best.u.hp && own.length >= 1;
+      const priorityStrike = priorityKill || (best.threat >= 50 && own.length >= 2 && damage >= best.u.hp * 0.35);
+      if (priorityStrike || (best.hits >= 2 && returnValue >= Math.max(80, mpCost * 6)) || (emergency && best.u.hp <= damage)) {
+        score = priorityStrike ? 35 + best.threat : 6 + best.hits;
+        if (damage >= best.u.hp) focusUid = best.u.uid;
         target = { lane: Math.max(0, Math.min(4, Math.floor(best.u.lane))), col: Math.max(0, Math.min(11, Math.floor(best.u.col))) };
       }
     }
-    if (score > 0) candidates.push({ skillId, target, score });
+    if (score > 0) candidates.push({ skillId, target, focusUid, score: score - (state.lastSkillId === skillId ? 4 : 0) });
   }
   candidates.sort((a, b) => b.score - a.score);
   if (!candidates.length) return;
   try {
     const choice = candidates[0];
-    battle.castSkill(userId, choice);
-    state.skillReadyAt = now + 12;
+    const cast = battle.castSkill(userId, choice);
+    if (choice.focusUid != null) battle.__botFocusUntil.set(team + ':' + choice.focusUid, Math.max(now + 2, Number(cast?.applyAt || now) + 0.5));
+    state.lastSkillId = choice.skillId;
+    state.skillReadyAt = now + 24 + Math.random() * 12;
+    battle.__botTeamSkillReadyAt ??= new Map();
+    battle.__botTeamSkillReadyAt.set(team, now + 8 + Math.random() * 4);
     const effect = getSkillEffect(choice.skillId);
     battle.__botEffectUntil.set(team + ':' + effect.kind, now + Math.max(5, effect.duration || effect.freezeSec || 0));
   } catch { /* 正常技能接口负责装备、MP、冷却及落点校验。 */ }
@@ -258,7 +318,17 @@ function candidateCols(team, movable, guard = false, stats = null) {
   const columns = movable ? (blue ? [2, 1, 0] : [9, 10, 11])
     : guard ? (blue ? [4, 3, 2, 1, 0] : [7, 8, 9, 10, 11])
       : (blue ? [0, 1, 2, 3, 4] : [11, 10, 9, 8, 7]);
-  if (!stats?.enemyNearBase) return columns;
+  if (!stats?.enemyNearBase) {
+    if (!movable && !guard && stats) {
+      const guards = stats.own.filter(u => u.atkStyle === 1);
+      if (guards.length) {
+        const front = blue ? Math.max(...guards.map(u => u.col)) : Math.min(...guards.map(u => u.col));
+        const behind = columns.filter(col => blue ? col < front : col > front);
+        if (behind.length) return behind.sort((a, b) => Math.abs(a - front) - Math.abs(b - front));
+      }
+    }
+    return columns;
+  }
   const nearest = blue ? Math.min(...stats.enemy.map(unit => Number(unit.col)))
     : Math.max(...stats.enemy.map(unit => Number(unit.col)));
   // 新单位落在基地与最靠近基地的敌人之间，不能放在突破者背后向外走。

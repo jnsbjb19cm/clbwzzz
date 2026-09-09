@@ -56,6 +56,26 @@ export function attachBattleReport(battle, room) {
     finally { this.__reportSkillCaster = prior; }
   };
   if (room.mode !== 'pvp') return;
+  // 掉落归属在生成时锁定；划过拾取和自动拾取只确认收取，不重复增加奖励。
+  battle.collectLootDrop = function (userId, dropId) {
+    const drop = this.engine.lootDrops.find(drop => Number(drop.id) === Number(dropId));
+    if (!drop || Number(drop.recipientUserId) !== Number(userId) || Number(userId) <= 0) throw new Error('该掉落不属于你');
+    if (!drop.collected) {
+      drop.collected = true;
+      drop.collectedAt = this.engine.time;
+    }
+    return { ...drop };
+  };
+  const previousTick = battle.tick;
+  battle.tick = function (...args) {
+    const result = previousTick.apply(this, args);
+    for (const drop of this.engine.lootDrops) {
+      if (!drop.collected && (this.engine.time - drop.createdAt >= 3.2 || this.status !== 'playing')) {
+        this.collectLootDrop(drop.recipientUserId, drop.id);
+      }
+    }
+    return result;
+  };
   // 死亡掉落按归属队伍分配给真人；双方均可掉落，不能掉给负数人机账户。
   engine.rollDeathDrop = function (unit) {
     if (!report.rewardsEnabled || !unit || unit._lootRolled || unit.pvpNeutral) return null;
@@ -79,7 +99,7 @@ export function attachBattleReport(battle, room) {
       lane: Math.max(0, Math.min(4, Math.floor(unit.lane))),
       col: Math.max(0, Math.min(11, Number(unit.col))),
       sourceUid: unit.uid, sourceCardId: unit.cardId, createdAt: this.time,
-      recipientUserId: recipient.userId, rewardTeam: recipient.team,
+      recipientUserId: recipient.userId, recipientNickname: recipient.nickname, rewardTeam: recipient.team,
     };
     this.lootDrops.push(drop);
     return drop;
