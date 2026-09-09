@@ -225,13 +225,14 @@ async function buyClassicProduct(view, product) {
   if (product.kind === 'pack') {
     return authStore.api.post('/player/shop/buy-pack', { packId: Number(product.data?.item_id) });
   }
-  if (product.kind === 'item') {
+  if (product.kind === 'item' || product.kind === 'gem-item') {
     const effect = product.data?.effect;
     if (effect?.type !== 'inventory') throw new Error('该商品尚未接入数据库道具发放');
     return authStore.api.post('/player/shop/buy-item', {
       itemId: Number(effect.realId),
       count: Math.max(1, Number(effect.count) || 1),
-      goldCost: Math.max(0, Number(product.data?.price) || 0),
+      goldCost: product.kind === 'gem-item' ? 0 : Math.max(0, Number(product.data?.price) || 0),
+      gemCost: product.kind === 'gem-item' ? Math.max(0, Number(product.data?.gemPrice) || 0) : 0,
     });
   }
   throw new Error('未知商品类型');

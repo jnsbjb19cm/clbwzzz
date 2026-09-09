@@ -340,16 +340,17 @@ playerEconomyAuthorityRouter20260908.post('/shop/buy-item', async (req, res) => 
   const itemId = Number(req.body?.itemId);
   const count = clampInt(req.body?.count ?? 1, 1, 9999);
   const goldCost = clampInt(req.body?.goldCost ?? 0, 0, 2_000_000_000);
+  const gemCost = clampInt(req.body?.gemCost ?? 0, 0, 2_000_000_000);
   const def = itemDef(itemId);
   if (!def) return res.status(400).json({ message: '商品道具配置不存在' });
   try {
     await withTransaction(async (conn) => {
       const debit = await conn.run(
-        'UPDATE player_profiles SET gold=gold-?, updated_at=CURRENT_TIMESTAMP WHERE user_id=? AND gold>=?',
-        [goldCost, userId, goldCost],
+        'UPDATE player_profiles SET gold=gold-?, diamond=diamond-?, updated_at=CURRENT_TIMESTAMP WHERE user_id=? AND gold>=? AND diamond>=?',
+        [goldCost, gemCost, userId, goldCost, gemCost],
       );
       const affected = Number(debit?.affectedRows ?? debit?.changes ?? 0);
-      if (affected !== 1) throw new Error('金币不足');
+      if (affected !== 1) throw new Error(gemCost > 0 ? '钻石不足' : '金币不足');
       await addItem(conn, userId, itemId, count, false);
     });
     return res.json(await buildResponse(userId, { purchasedItemId: itemId, purchasedCount: count }));
