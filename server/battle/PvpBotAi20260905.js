@@ -89,6 +89,19 @@ function laneStats(battle, team, lane) {
   };
 }
 
+function hasBaseThreat(battle, team) {
+  return Array.from({ length: 5 }, (_, lane) => laneStats(battle, team, lane))
+    .some(stats => stats.enemyNearBase > 0);
+}
+
+function deploymentReadyAt(battle, userId, state) {
+  // 战术停顿可因紧急防守缩短；单卡 CD 和资源仍由正常部署接口强制校验。
+  const normal = Math.max(Number(state.startedAt) || 0, Number(state.globalReadyAt) || 0);
+  if (!hasBaseThreat(battle, teamOfMember(battle, userId))) return normal;
+  const emergency = state.lastDeployAt == null ? state.startedAt : state.lastDeployAt + 6;
+  return Math.min(normal, emergency);
+}
+
 function configureBotSkills(battle, member, state) {
   if (state.skillsConfigured) return;
   const unlocked = new Set(['core']);
@@ -142,15 +155,23 @@ function chooseDeployment(battle, userId, state) {
       const antiAir = Number(card.atkStyle) === 3 || Number(card.viewType) === 6;
       const cost = battle.deployCost(card);
       // 常态以推进为主：至少两次移动卡部署后才考虑一次固定防守卡。
-      const urgent = stats.enemyNearBase >= 2;
+      const urgent = stats.enemyNearBase > 0;
       if (!movable && !urgent && (personalFixed >= 2 || (canAffordMoving && (state.deployCount < 2 || (state.movingSinceFixed || 0) < 2)))) continue;
-      if (!movable && personalFixed >= 3) continue;
-      if (guard && (defenders || !stats.enemy.length)) continue;
+      if (!movable && !urgent && personalFixed >= 3) continue;
+      if (guard && ((!urgent && defenders) || !stats.enemy.length)) continue;
       if (healer && wounded < 2) continue;
       if (!urgent && personalUnits.length >= 2 && ((cost.sun > 0 && resource.sun - cost.sun < 2) || (cost.food > 0 && resource.food - cost.food < 2))) continue;
       let score = stats.enemyNearBase * 8 + stats.enemy.length * 2 - stats.own.length * 1.2;
       score += movable ? (personalMoving < 3 ? 12 : 7) : (stats.enemy.length ? 0 : -12);
       if (flying) score += antiAir ? 12 + flying * 3 : -8;
+      if (urgent) {
+        score += 100;
+        // 家门口先解当前威胁，不能被移动卡配比挤掉对空或近身防守。
+        if (flying) score += antiAir ? 30 : -35;
+        else if (guard && !defenders) score += 18;
+        else if (Number(card.atk) > 0) score += 12;
+        if (healer) score -= 30;
+      }
       if (guard) score += !flying && threats > 0 && !defenders ? 8 : -9;
       if (healer) score += wounded >= 2 ? wounded * 5 : -18;
       if (traits.doubleVsDefender && stats.enemy.some(u => u.atkStyle === 1)) score += 8;
@@ -158,10 +179,9 @@ function chooseDeployment(battle, userId, state) {
       if (stats.own.some(u => Number(u.cardId) === Number(card.id))) score -= 4;
       score += Math.min(4, Number(card.atk || 0) / 8) - (cost.sun + cost.food) * 0.06;
       score += Math.random() * 1.5;
-      for (const col of candidateCols(team, movable, guard)) {
+      for (const [index, col] of candidateCols(team, movable, guard, stats).entries()) {
         if (!movable && (battle.engine.getUnitsAt?.(lane, col) || []).some(u => u.alive && !u.pvpNeutral && !u.isMovable?.())) continue;
-        choices.push({ card, lane, col, score });
-        break;
+        choices.push({ card, lane, col, score: score - index });
       }
     }
   }
@@ -233,12 +253,19 @@ function trySmartSkill(battle, member, state) {
   } catch { /* 正常技能接口负责装备、MP、冷却及落点校验。 */ }
 }
 
-function candidateCols(team, movable, guard = false) {
-  if (guard) return team === 'blue' ? [4, 3, 2, 1, 0] : [7, 8, 9, 10, 11];
-  if (team === 'blue') {
-    return movable ? [2, 1, 0] : [0, 1, 2, 3, 4];
-  }
-  return movable ? [9, 10, 11] : [11, 10, 9, 8, 7];
+function candidateCols(team, movable, guard = false, stats = null) {
+  const blue = team === 'blue';
+  const columns = movable ? (blue ? [2, 1, 0] : [9, 10, 11])
+    : guard ? (blue ? [4, 3, 2, 1, 0] : [7, 8, 9, 10, 11])
+      : (blue ? [0, 1, 2, 3, 4] : [11, 10, 9, 8, 7]);
+  if (!stats?.enemyNearBase) return columns;
+  const nearest = blue ? Math.min(...stats.enemy.map(unit => Number(unit.col)))
+    : Math.max(...stats.enemy.map(unit => Number(unit.col)));
+  // 新单位落在基地与最靠近基地的敌人之间，不能放在突破者背后向外走。
+  const intercept = columns.filter(col => blue ? col <= nearest : col >= nearest);
+  if (!intercept.length) return [blue ? 0 : 11];
+  if (guard || movable) return intercept.sort((a, b) => Math.abs(a - nearest) - Math.abs(b - nearest));
+  return intercept;
 }
 
 function recordLane(state, lane) {
@@ -253,17 +280,18 @@ function recordLane(state, lane) {
 
 function trySmartDeploy(battle, userId, state) {
   const now = Number(battle.engine?.time) || 0;
-  if (
-    now < state.startedAt
-    || now < state.thinkAt
-    || now < state.globalReadyAt
-  ) return false;
-
-  // 判断频率保持较快，保证人机仍会响应战线变化；真正出卡受独立部署间隔和原始卡牌 CD 限制。
+  if (now < state.thinkAt) return false;
+  // 等待出牌时也只按决策频率扫描战线，不在每个服务器 tick 重复遍历全场。
   state.thinkAt = now + 0.70 + Math.random() * 0.45;
+  if (now < deploymentReadyAt(battle, userId, state)) return false;
 
   const choices = chooseDeployment(battle, userId, state);
-  for (const choice of choices.slice(0, 10)) {
+  // 先尝试不同卡牌的最佳落点，避免前十个候选其实都是同一张失败卡。
+  const firstByCard = new Map();
+  for (const choice of choices) if (!firstByCard.has(choice.card.id)) firstByCard.set(choice.card.id, choice);
+  const first = [...firstByCard.values()];
+  const ordered = [...first, ...choices.filter(choice => firstByCard.get(choice.card.id) !== choice)];
+  for (const choice of ordered.slice(0, 20)) {
     const { card, lane, col } = choice;
     state.smartDeployPermit = true;
     try {
@@ -278,6 +306,15 @@ function trySmartDeploy(battle, userId, state) {
     } finally {
       state.smartDeployPermit = false;
     }
+  }
+  if (ordered.length && state.lastDeployError
+      && (state.lastReportedDeployError !== state.lastDeployError || now >= (state.reportDeployErrorAt || 0))) {
+    state.lastReportedDeployError = state.lastDeployError;
+    state.reportDeployErrorAt = now + 30;
+    console.warn('[pvp-bot] deploy rejected', {
+      roomId: battle.roomId, userId, team: teamOfMember(battle, userId),
+      time: Math.round(now), reason: state.lastDeployError,
+    });
   }
   return false;
 }
@@ -296,14 +333,15 @@ export function installPvpBotAi20260905() {
     const now = Number(this.engine?.time) || 0;
     const card = this.db?.getById?.(Number(payload.cardId));
     if (!card) throw new Error('人机卡牌不存在');
-    if (now + 1e-6 < Number(state.globalReadyAt || 0)) throw new Error('人机部署间隔中');
+    if (now + 1e-6 < deploymentReadyAt(this, userId, state)) throw new Error('人机部署间隔中');
     if (now + 1e-6 < Number(state.cardReadyAt.get(Number(card.id)) || 0)) throw new Error('人机卡牌冷却中');
 
     const result = previousDeploy.call(this, userId, payload);
 
     // 同一张卡严格使用完整原始 CD；资源仍由 previousDeploy 真正扣除。
     state.cardReadyAt.set(Number(card.id), now + cardCooldown(card));
-    // 每个人机至少间隔 12~18 秒；资源不足或原始卡牌 CD 未到继续等待。
+    // 每个人机常态间隔 12~18 秒，紧急防守最短 6 秒；资源和原始卡牌 CD 仍须满足。
+    state.lastDeployAt = now;
     state.globalReadyAt = now + scaledDeployDelay(6.0 + Math.random() * 3.0);
     // 每个人机独立出牌；只扣自己的资源并使用自己的冷却。
     state.deployCount += 1;
@@ -335,5 +373,6 @@ export const PVP_BOT_AI_TIMING_20260906 = Object.freeze({
   deployTimeScale: BOT_DEPLOY_TIME_SCALE_20260906,
   openingDelaySec: [3.0, 6.0],
   personalDeployDelaySec: [12.0, 18.0],
+  emergencyDeployDelaySec: 6.0,
   teamDeployDelaySec: [0, 0],
 });
