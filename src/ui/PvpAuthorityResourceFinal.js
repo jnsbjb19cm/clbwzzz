@@ -72,7 +72,16 @@ function showAuthoritySkill(view, payload = {}) {
   const effect = getSkillEffect(skillId);
   if (!effect) return;
   const target = localTarget(view, payload.target);
+  const previousFx = new Set(view.engine.skillFx ?? view.engine.skillEffects ?? []);
   view.engine.skills.showEffect(skillId, effect, target);
+  for (const fx of view.engine.skillFx ?? view.engine.skillEffects ?? []) {
+    if (previousFx.has(fx)) continue;
+    fx.__pvpDirectionTagged = true;
+    fx.pvpDirection = String(payload.team || 'blue') === String(view.pvp?.team || 'blue') ? 1 : -1;
+    fx.pvpCasterTeam = payload.team;
+    fx.pvpCasterUserId = payload.userId;
+    fx.pvpEventId = String(payload.id ?? (payload.team + ':' + skillId + ':' + (payload.startedAt ?? payload.applyAt ?? 0)));
+  }
   audio.playSkill(skillId);
   view.lastSkillKey = '';
   view.lastInfoKey = '';

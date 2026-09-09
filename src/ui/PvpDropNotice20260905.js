@@ -141,8 +141,16 @@ function bindPvpDropNotice(view) {
     view.__pvpDropBaseline = counts;
   }).catch(() => {});
   let resultHandled = false;
-  view.__pvpDropNoticeUnsub = view.pvpSocket.on('pvp:authority:finished', () => {
+  view.__pvpDropNoticeUnsub = view.pvpSocket.on('pvp:authority:finished', (snapshot) => {
     if (resultHandled) return;
+    if (snapshot?.battleReport) {
+      if (snapshot.battleReport.status !== 'settled') return;
+      resultHandled = true;
+      const row = snapshot.battleReport.rows.find(row => Number(row.userId) === Number(snapshot.viewerUserId));
+      void fetchServerItems().catch(() => {});
+      if (row?.items?.length) showDropNotice(row.items, { addToLocalBag: false });
+      return;
+    }
     resultHandled = true;
     // 服务端先异步写入非绑定掉落，再广播 finished；稍后轮询快照直到能看到新增数量。
     setTimeout(() => void detectAuthorityDrops(view), 120);

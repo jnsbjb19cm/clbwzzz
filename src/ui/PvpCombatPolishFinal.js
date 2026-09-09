@@ -247,6 +247,7 @@ function tagLatestSkillFx(view, payload) {
   fx.__pvpDirectionTagged = true;
   fx.pvpDirection = localCasterDirection(view, payload.team);
   fx.pvpCasterTeam = payload.team;
+  fx.pvpCasterUserId = payload.userId;
   fx.pvpEventId = visualEventId(payload);
 }
 

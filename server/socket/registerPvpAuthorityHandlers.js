@@ -1,3 +1,4 @@
+import { attachBattleReport, settleBattleReport } from '../battle/AuthorityBattleReport.js';
 import { recordAuthorityPvpResult } from './SystemAnnouncementService.js';
 import { roomManager } from '../rooms/RoomManager.js';
 import { CoopBossBattle } from '../battle/CoopBossBattle.js';
@@ -17,7 +18,6 @@ const HEAVY_UNIT_SNAPSHOT_THRESHOLD = 24;
 const VERY_HEAVY_UNIT_SNAPSHOT_THRESHOLD = 48;
 const MAX_CATCHUP_SECONDS = 0.2;
 const FINISHED_RETENTION_MS = 30_000;
-const BOT_DECK_IDS = [1, 2, 3, 4, 5, 6, 8, 9, 11, 15, 17, 19, 20, 21, 22, 25, 26, 30, 31, 32, 33, 35, 36, 37, 38];
 
 // roomId -> { battle, timer, lastAt, accumulator, broadcastAccumulator, seq, cleanupTimer }
 const authorityBattles = new Map();
@@ -263,6 +263,7 @@ function buildWorldSnapshot(entry, seq, { includeProjectiles = true } = {}) {
   const serverTimeMs = monotonicNowMs();
   return {
     ...sharedBasic,
+    battleReport: battle.status === 'playing' ? null : battle.battleReport,
     protocol: battle.mode === 'boss' ? 'server-authoritative-boss-v2' : 'server-authoritative-v5',
     seq,
     serverNow: Date.now(),
@@ -378,56 +379,21 @@ function deferBroadcast(io, room, entry, excludeUserId = null) {
   });
 }
 
-const AUTHORITY_DROP_ITEM_IDS = [10001, 10002, 10003, 10004, 10005, 30055];
-
-async function awardAuthorityBattleDrops(room, entry) {
-  if (entry._dropsAwarded) return;
-  entry._dropsAwarded = true;
-
-  // 机器人使用负数 userId（例如 -100001），并不存在于 users 表。
-  // 权威战斗掉落只写入真实数据库玩家，避免 player_items 外键失败并回滚整批真人奖励。
-  const members = [...room.members.values()].filter((member) => {
-    const userId = Number(member?.userId);
-    return Number.isInteger(userId) && userId > 0;
-  });
-  if (!members.length) return;
-
-  const grants = members.map((member) => {
-    const itemId = AUTHORITY_DROP_ITEM_IDS[Math.floor(Math.random() * AUTHORITY_DROP_ITEM_IDS.length)];
-    const count = 1 + Math.floor(Math.random() * 3);
-    return { userId: Number(member.userId), itemId, count };
-  });
-
-  await withTransaction(async (conn) => {
-    for (const grant of grants) {
-      const existing = await conn.get(
-        'SELECT * FROM player_items WHERE user_id=? AND item_id=? AND is_bound=0',
-        [grant.userId, grant.itemId],
-      );
-      if (existing) {
-        await conn.run(
-          'UPDATE player_items SET count=count+? WHERE user_id=? AND item_id=? AND is_bound=0',
-          [grant.count, grant.userId, grant.itemId],
-        );
-      } else {
-        await conn.run(
-          'INSERT INTO player_items(user_id,item_id,count,is_bound) VALUES(?,?,?,0)',
-          [grant.userId, grant.itemId, grant.count],
-        );
-      }
-    }
-  });
-}
-
 function broadcastFinished(io, room, entry) {
   if (!entry.finishSettlement) {
-    entry.finishSettlement = awardAuthorityBattleDrops(room, entry)
-      .catch((error) => console.error('[clbwzzz] award drops failed', error))
-      .then(() => recordAuthorityPvpResult(io, room, entry))
-      .catch((error) => {
-        entry.finishSettlement = null;
-        console.error('[clbwzzz] announcement settlement failed', error);
-      });
+    entry.battle.battleReport.status = 'pending';
+    entry.battle.battleReport.winner = entry.battle.winner;
+    entry.finishSettlement = withTransaction(conn => settleBattleReport(conn, entry.battle))
+      .then(report => { entry.battle.battleReport = report; })
+      .catch(error => {
+        entry.battle.battleReport.status = 'error';
+        console.error('[clbwzzz] battle rewards failed', error);
+      })
+      .then(() => {
+        emitPersonalized(io, room, entry, 'pvp:authority:finished', { includeProjectiles: true });
+        return recordAuthorityPvpResult(io, room, entry);
+      })
+      .catch(error => console.error('[clbwzzz] announcement settlement failed', error));
   }
   emitPersonalized(io, room, entry, 'pvp:authority:finished', { includeProjectiles: true });
 }
@@ -476,40 +442,6 @@ function createBattle(teams, cardDb) {
   });
 }
 
-function runBotAI(entry, room, cardDb) {
-  if (!entry.battle || entry.battle.status !== 'playing') return;
-  const now = entry.battle.engine?.time ?? 0;
-  for (const member of room.members.values()) {
-    if (!member?.isBot) continue;
-    if (!member._botStartAt) member._botStartAt = 6;
-    const nextDeployAt = Number(member._botDeployAt || member._botStartAt || 6);
-    if (now < nextDeployAt) continue;
-    member._botDeployAt = now + 2.2;
-
-    const legalIds = BOT_DECK_IDS.filter((id) => {
-      const card = cardDb?.getById?.(id);
-      if (!card) return false;
-      if (card.card_name === '石巨人') return false;
-      if (Number(card.card_quality || 0) > 4) return false;
-      return true;
-    });
-    if (!legalIds.length) continue;
-    const cardId = legalIds[Math.floor(Math.random() * legalIds.length)];
-    const card = cardDb?.getById?.(cardId);
-    const movable = Boolean(card && Number(card.move_speed) > 0);
-    const lane = Math.floor(Math.random() * 5);
-    const isBlue = member.team === 'blue';
-    let col;
-    if (isBlue) col = movable ? 3 + Math.floor(Math.random() * 2) : Math.floor(Math.random() * 2);
-    else col = movable ? 7 + Math.floor(Math.random() * 2) : 10 + Math.floor(Math.random() * 2);
-    try {
-      entry.battle.deploy(Number(member.userId), { cardId, lane, col });
-    } catch {
-      // 资源不足或位置非法时跳过
-    }
-  }
-}
-
 function ensureAuthorityBattle(roomId, io, cardDb) {
   const numericRoomId = Number(roomId);
   const existing = authorityBattles.get(numericRoomId);
@@ -542,6 +474,8 @@ function ensureAuthorityBattle(roomId, io, cardDb) {
     cleanupTimer: null,
   };
 
+  attachBattleReport(entry.battle, teams.room);
+
   entry.timer = setInterval(() => {
     const room = roomManager.getRoom(numericRoomId);
     if (!room) {
@@ -565,7 +499,6 @@ function ensureAuthorityBattle(roomId, io, cardDb) {
       if (previousProjectiles) emitRemovedProjectileEvents(io, room, entry, previousProjectiles);
       entry.accumulator -= STEP_SECONDS;
     }
-    runBotAI(entry, room, cardDb);
 
     const unitCount = entry.battle.engine?.units?.length ?? 0;
     const broadcastInterval = unitCount >= VERY_HEAVY_UNIT_SNAPSHOT_THRESHOLD

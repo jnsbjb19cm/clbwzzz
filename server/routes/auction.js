@@ -44,6 +44,8 @@ auctionRouter.get('/', async (req, res) => {
 });
 
 auctionRouter.get('/mine', async (req, res) => {
+  // 历史取消记录已退还物品，只清理该用户的取消记录。
+  await db.run("DELETE FROM auction_listings WHERE seller_id=? AND status='cancelled'", [req.user.id]);
   const rows = await db.all(`
     SELECT id AS listingId, item_id AS itemId, count, price, status, created_at AS createdAt
     FROM auction_listings
@@ -105,10 +107,12 @@ auctionRouter.post('/buy', async (req, res) => {
   }
 
   await withTransaction(async (conn) => {
-    await conn.run('UPDATE player_profiles SET gold=gold-?, updated_at=CURRENT_TIMESTAMP WHERE user_id=?', [listing.price, req.user.id]);
+    const purchased = await conn.run("UPDATE auction_listings SET status='sold' WHERE id=? AND status='active'", [listingId]);
+    if (Number(purchased.changes ?? purchased.affectedRows) !== 1) throw new Error('拍卖品已售出或已取消');
+    const paid = await conn.run('UPDATE player_profiles SET gold=gold-?, updated_at=CURRENT_TIMESTAMP WHERE user_id=? AND gold>=?', [listing.price, req.user.id, listing.price]);
+    if (Number(paid.changes ?? paid.affectedRows) !== 1) throw new Error('金币不足');
     await conn.run('UPDATE player_profiles SET gold=gold+?, updated_at=CURRENT_TIMESTAMP WHERE user_id=?', [listing.price, listing.seller_id]);
     await addNonBoundItem(conn, req.user.id, listing.item_id, listing.count);
-    await conn.run('UPDATE auction_listings SET status=\'sold\' WHERE id=?', [listingId]);
   });
   return res.json({ ok: true, message: '购买成功' });
 });
@@ -121,8 +125,9 @@ auctionRouter.delete('/:id', async (req, res) => {
   );
   if (!listing) return res.status(404).json({ message: '拍卖品不存在或无法取消' });
   await withTransaction(async (conn) => {
+    const removed = await conn.run("DELETE FROM auction_listings WHERE id=? AND seller_id=? AND status='active'", [listingId, req.user.id]);
+    if (Number(removed.changes ?? removed.affectedRows) !== 1) throw new Error('拍卖品已售出或已取消');
     await addNonBoundItem(conn, req.user.id, listing.item_id, listing.count);
-    await conn.run('UPDATE auction_listings SET status=\'cancelled\' WHERE id=?', [listingId]);
   });
   return res.json({ ok: true });
 });

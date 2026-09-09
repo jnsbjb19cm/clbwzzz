@@ -74,6 +74,11 @@ function drawSkillFxWithOriginalPositions(ctx, engine) {
 
     if (fullScreen) {
       const viewport = viewportFieldBounds(this);
+      ctx.save();
+      if (effect.pvpDirection < 0) {
+        ctx.translate(2 * viewport.left + viewport.width, 0);
+        ctx.scale(-1, 1);
+      }
       skillAnimPlayer.drawCover(
         ctx,
         skillId,
@@ -85,6 +90,7 @@ function drawSkillFxWithOriginalPositions(ctx, engine) {
         alpha * 0.92,
         effect.loop === true,
       );
+      ctx.restore();
       this._runtimeViewportCovers.push({ skillId, ...viewport });
       this._runtimeCoordinateSkillAudit.push({
         skillId,
@@ -115,6 +121,12 @@ function drawSkillFxWithOriginalPositions(ctx, engine) {
     const size = Math.max(CELL_W, CELL_H)
       * Math.max(1.35, 1.35 + finite(effect.radius) * 1.35);
 
+    ctx.save();
+    if (effect.pvpDirection < 0) {
+      // 绕实际目标镜像素材，目标格与伤害位置不随镜像移动。
+      ctx.translate(2 * drawX, 0);
+      ctx.scale(-1, 1);
+    }
     if (positionType === 4) {
       skillAnimPlayer.draw(
         ctx,
@@ -148,6 +160,8 @@ function drawSkillFxWithOriginalPositions(ctx, engine) {
         effect.loop === true,
       );
     }
+
+    ctx.restore();
 
     // cellX/cellY 在诊断接口中表示“该视觉按原资源语义应落到的锚点”，
     // 而 logicalTargetX/Y 单独保留玩家点中的格心。番茄炸弹素材的爆心本来

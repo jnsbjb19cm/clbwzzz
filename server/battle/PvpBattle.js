@@ -299,7 +299,7 @@ export class PvpBattle {
     state.mp -= mpCost;
     state.cooldowns[skillId] = getSkillCooldownSec(card);
     const applyAt = this.engine.time + getSkillResolutionDelay(skillId, 0.9);
-    state.pending.push({ skillId, card, effect, target, team, applyAt });
+    state.pending.push({ userId: Number(userId), skillId, card, effect, target, team, applyAt });
     this.engine.pushLog(`技能【${card.name}】已释放(${team})`);
 
     return {

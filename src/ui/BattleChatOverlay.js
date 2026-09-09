@@ -275,6 +275,8 @@ function mountBattleChatOverlay(view) {
       spectator: Boolean(message.spectator),
     });
   };
+  const onSkillAnnounced = event => onCurrentChat(event.detail);
+  view.viewRoot?.addEventListener('clbwz:skill-announced', onSkillAnnounced);
   const onLobbyChat = (message = {}) => {
     const channel = ['world', 'guild', 'private'].includes(message.channel) ? message.channel : null;
     if (!channel) return;
@@ -310,6 +312,7 @@ function mountBattleChatOverlay(view) {
   view.__battleChatUnsub = () => {
     for (const unsub of unsubs) try { unsub?.(); } catch {}
     window.removeEventListener('clbwz:system-announcement', onSystem);
+    view.viewRoot?.removeEventListener('clbwz:skill-announced', onSkillAnnounced);
   };
 
   for (const entry of (view.pvp?.room?.chat ?? []).slice(-30)) {

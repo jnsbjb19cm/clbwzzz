@@ -1,3 +1,4 @@
+import { installAuthorityBattleResultView } from './ui/AuthorityBattleResultView.js';
 import './battle/BattleEngineBaseEdgeCompat.js';
 import './ui/BattleRoomExact.css';
 import './ui/BattleRoomStability.css';
@@ -180,6 +181,7 @@ installProjectileViewportFinal();
 installPvpWildernessRoomFinal();
 installPvpBattleBridgeFinal();
 installPvpAuthoritySyncFinal();
+installAuthorityBattleResultView();
 installPvpProjectileSpawnEvent20260819();
 installPvpAuthorityResourceFinal();
 installPvpCombatPolishFinal();

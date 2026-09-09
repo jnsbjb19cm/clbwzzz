@@ -13,10 +13,7 @@ const WALNUT_GUARD_CARD_ID = 2;
 const BURROW_CARD_IDS = new Set([43, 41]); // 钻地大蒜 / 地道工兵
 const REAR_SUPPORT_CARD_IDS = new Set([36]); // 蒲公英精灵
 
-/*
- * BOSS 召唤池必须保持“广池”，不能退化成只会叫固定几张卡。
- * 每个 BOSS 有偏好池，同时仍会回退到完整池；bossList.minionCardIds 也会并入候选。
- */
+// 每个 BOSS 固定最多 10 种部署卡，单位数量另外计算。
 const FIXED_HIGH_CARD_IDS = Object.freeze([36, 32, 54, 41, 43, 45, 64, MONSTER_TOASTER_CARD_ID]);
 const RANDOM_HIGH_CARD_IDS = Object.freeze([73, 46, 105, 100, 102]);
 const LOW_CARD_IDS = Object.freeze([5, 28, 12, 16, 69, 3, 25, 27, 21]);
@@ -75,7 +72,7 @@ const BOSS_ROSTERS = Object.freeze({
 /*
  * 主批次严格是 3 / 5 个，而不是“若干个 3/5 人 group”。
  * 普通难度在 3 与 5 之间交替；困难固定 5。
- * 石巨人是例外：不论难度，一次固定 3 个。
+ * 石巨人是例外：场上最多 1 个。
  * 钻地大蒜/地道工兵是渗透单位：一次只出 1 个，并且场上不能同时存在二者。
  * 品质/星级还会随波数缓慢成长，但各难度区间互相错开。
  */
@@ -97,16 +94,27 @@ function uniqueIds(values) {
   return [...new Set((values ?? []).map(Number).filter((id) => Number.isInteger(id) && id > 0))];
 }
 
+const FORMATION = Object.freeze([
+  { id: 2, lanes: [0, 1, 2, 3, 4], col: 7 },
+  { id: 36, lanes: [1, 2, 3], col: 9 },
+  { id: 20, lanes: [1, 2, 3], col: 10 },
+  { id: 35, lanes: [2], col: 8 },
+  { id: 25, lanes: [2], col: 11 },
+]);
+
 function fullPoolOf(battle) {
+  if (battle.__bossDeckIds) return battle.__bossDeckIds;
   const roster = rosterOf(battle);
-  return uniqueIds([
+  battle.__bossDeckIds = uniqueIds([
+    ...FORMATION.map(slot => slot.id),
     ...(battle.bossInfo?.minionCardIds ?? []),
     ...roster.low,
     ...roster.random,
     ...roster.fixed,
     ...roster.bonus,
     ...BOSS_MINION_CARD_IDS,
-  ]).filter((id) => id !== ALIEN_SENTINEL_CARD_ID);
+  ]).filter((id) => battle.db?.getById?.(id)).slice(0, 10);
+  return battle.__bossDeckIds;
 }
 
 function cardPoolOf(battle, movable) {
@@ -168,7 +176,8 @@ function isRangedCard(card) {
 function columnOrderForCard(card, { staticUnit = false } = {}) {
   const cardId = Number(card?.id ?? card?.card_id);
   if (cardId === WALNUT_GUARD_CARD_ID) return [7, 8, 9, 10, 11];
-  if (REAR_SUPPORT_CARD_IDS.has(cardId) || isRangedCard(card)) return [11, 10, 9, 8, 7];
+  if (REAR_SUPPORT_CARD_IDS.has(cardId)) return [9, 8, 10];
+  if (isRangedCard(card)) return [11, 10, 9, 8, 7];
   if (staticUnit) return [8, 7, 9, 10, 11];
   return [10, 9, 11, 8, 7];
 }
@@ -198,6 +207,9 @@ function chooseCard(battle, pool, startIndex = 0, { avoidActiveStatic = false } 
 function spawnUnit(battle, card, lane, col, wave, { sentinel = false } = {}) {
   if (!battle.bossUnit?.alive || !card) return null;
   if (battle.activeBossMinions().length >= effectiveMinionCap(battle)) return null;
+  if (!fullPoolOf(battle).includes(Number(card.id))) return null;
+  const formation = FORMATION.find(slot => slot.id === Number(card.id));
+  if (formation && activeCardCount(battle, card.id) >= formation.lanes.length) return null;
 
   const unit = new BattleUnit({
     card,
@@ -241,17 +253,18 @@ function spawnUnit(battle, card, lane, col, wave, { sentinel = false } = {}) {
 
 function batchCountForCard(battle, card, wave) {
   const cardId = Number(card?.id ?? card?.card_id);
-  if (cardId === STONE_GIANT_CARD_ID) return 3;
+  if (cardId === STONE_GIANT_CARD_ID) return 1;
   if (BURROW_CARD_IDS.has(cardId)) return 1;
   return profileOf(battle).batch(wave);
 }
 
-function spawnMainBatch(battle, wave) {
-  const movablePool = cardPoolOf(battle, true);
+function spawnMainBatch(battle, wave, limit = profileOf(battle).batch(wave)) {
+  if (limit <= 0) return [];
+  const movablePool = cardPoolOf(battle, true).filter(id => !FORMATION.some(slot => slot.id === id));
   const card = chooseCard(battle, movablePool, wave - 1);
   if (!card) return [];
 
-  const count = batchCountForCard(battle, card, wave);
+  const count = Math.min(limit, batchCountForCard(battle, card, wave));
   const lanes = laneOrder(count, wave);
   const col = chooseColumn(battle, lanes, { card });
   if (col == null) return [];
@@ -259,78 +272,21 @@ function spawnMainBatch(battle, wave) {
   return lanes.map((lane) => spawnUnit(battle, card, lane, col, wave)).filter(Boolean);
 }
 
-function spawnStaticSupplement(battle, wave) {
-  if (wave % 3 !== 0) return [];
-  const pool = cardPoolOf(battle, false);
-  const ordered = activeCardCount(battle, WALNUT_GUARD_CARD_ID) === 0
-    ? [WALNUT_GUARD_CARD_ID, ...pool.filter((id) => id !== WALNUT_GUARD_CARD_ID)]
-    : pool;
-  const card = chooseCard(battle, ordered, wave - 1, { avoidActiveStatic: true });
-  if (!card) return [];
-
-  // 怪物面包机是整列防线：一次把五路同列补齐。
-  if (Number(card.id) === MONSTER_TOASTER_CARD_ID) {
-    const lanes = [0, 1, 2, 3, 4];
-    const col = chooseColumn(battle, lanes, { staticUnit: true, card });
-    if (col == null) return [];
-    return lanes.map((lane) => spawnUnit(battle, card, lane, col, wave)).filter(Boolean);
+function spawnFormation(battle, wave, limit) {
+  const spawned = [];
+  for (const slot of FORMATION) {
+    const card = battle.db?.getById?.(slot.id);
+    if (!card) continue;
+    for (const lane of slot.lanes) {
+      if (spawned.length >= limit) return spawned;
+      // 已移动的石巨人仍计入数量，补阵不会叠加同类支援卡。
+      if (activeCardCount(battle, slot.id) >= slot.lanes.length) break;
+      if (!cellFree(battle, lane, slot.col)) continue;
+      const unit = spawnUnit(battle, card, lane, slot.col, wave);
+      if (unit) spawned.push(unit);
+    }
   }
-
-  const laneStart = (wave - 1) % 5;
-  for (let offset = 0; offset < 5; offset += 1) {
-    const lane = (laneStart + offset) % 5;
-    const col = chooseColumn(battle, [lane], { staticUnit: true, card });
-    if (col == null) continue;
-    const unit = spawnUnit(battle, card, lane, col, wave);
-    return unit ? [unit] : [];
-  }
-  return [];
-}
-
-function spawnRearSupportSupplement(battle, wave) {
-  if (wave < 2 || wave % 4 !== 2) return null;
-  const candidates = uniqueIds([
-    ...REAR_SUPPORT_CARD_IDS,
-    ...rosterOf(battle).fixed,
-    ...rosterOf(battle).random,
-  ]).filter((id) => {
-    const card = battle.db?.getById?.(id);
-    return card && (REAR_SUPPORT_CARD_IDS.has(id) || isRangedCard(card)) && activeCardCount(battle, id) === 0;
-  });
-  const card = chooseCard(battle, candidates, wave - 1);
-  if (!card) return null;
-  const laneStart = (wave + 1) % 5;
-  for (let offset = 0; offset < 5; offset += 1) {
-    const lane = (laneStart + offset) % 5;
-    const col = chooseColumn(battle, [lane], { card });
-    if (col == null) continue;
-    return spawnUnit(battle, card, lane, col, wave);
-  }
-  return null;
-}
-
-function spawnSentinelExtra(battle, wave) {
-  if (wave % 4 !== 0 || activeCardCount(battle, ALIEN_SENTINEL_CARD_ID) > 0) return null;
-  const victim = battle.engine.units
-    .filter((unit) =>
-      unit?.alive
-      && unit.team === 'player'
-      && unit.pvpNeutral !== true
-      && unit.bossCommanderOnly !== true
-      && !unit.isMovable?.(),
-    )
-    .sort((a, b) => Number(a.uid) - Number(b.uid))[0];
-  if (!victim) return null;
-  const card = battle.db?.getById?.(ALIEN_SENTINEL_CARD_ID);
-  if (!card) return null;
-  return spawnUnit(
-    battle,
-    card,
-    Math.floor(victim.lane),
-    Math.floor(victim.col),
-    wave,
-    { sentinel: true },
-  );
+  return spawned;
 }
 
 export function installBossSummonRules20260819() {
@@ -380,20 +336,11 @@ export function installBossSummonRules20260819() {
     const wave = Math.max(0, Number(this.bossMinionWave) || 0) + 1;
     this.bossMinionWave = wave;
 
-    const spawned = spawnMainBatch(this, wave);
-    const supplements = spawnStaticSupplement(this, wave);
-    spawned.push(...supplements);
-    const rearSupport = spawnRearSupportSupplement(this, wave);
-    if (rearSupport) spawned.push(rearSupport);
-    const sentinel = spawnSentinelExtra(this, wave);
-    if (sentinel) spawned.push(sentinel);
-
-    const extraSet = new Set([...supplements, rearSupport, sentinel].filter(Boolean));
-    const mainCount = spawned.filter((unit) => unit && !extraSet.has(unit)).length;
-    this.engine.pushLog?.(
-      `【${this.bossInfo.name}】第${wave}批：主力${mainCount}张`
-      + `${supplements.length ? ' + 前排/静态防线' : ''}${rearSupport ? ' + 后排远程/支援' : ''}${sentinel ? ' + 外星哨兵' : ''}`,
-    );
+    // 等待正常召唤间隔，阵型和主力共享每批 3/5 个的预算，不能一次铺满。
+    const budget = profileOf(this).batch(wave);
+    const spawned = spawnFormation(this, wave, Math.ceil(budget / 2));
+    spawned.push(...spawnMainBatch(this, wave, budget - spawned.length));
+    this.engine.pushLog?.('【' + this.bossInfo.name + '】第' + wave + '批：补充' + spawned.length + '个单位（卡池' + fullPoolOf(this).length + '种）');
     return spawned;
   };
 

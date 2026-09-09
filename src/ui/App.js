@@ -247,7 +247,8 @@ export class App {
     if (next) this.showGlobalNotice(next.title, next.desc);
   }
 
-  handleBattleResult({ won, stage, drops = [], durationMs = 0 }) {
+  handleBattleResult({ won, stage, drops = [], durationMs = 0, mode = 'pve' }) {
+    if (mode === 'pvp' || mode === 'boss') return; // 权威房间奖励由服务器结算并刷新快照。
     const reward = getBattleRewards(stage, won);
     let totalGold = reward.gold;
     let totalExp = reward.exp;

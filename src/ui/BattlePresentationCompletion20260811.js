@@ -128,14 +128,25 @@ function bossAnchor(view) {
   };
 }
 
-function heroAnchor(view, side) {
+function heroAnchor(view, side, event = {}) {
   const layer = ensureAnnouncementLayer(view);
   if (!layer) return null;
+  const userId = Number(event.userId);
+  const avatar = Number.isFinite(userId) ? view.viewRoot?.querySelector('.pvp-column-player[data-user-id="' + userId + '"]') : null;
+  const avatarRect = avatar?.getBoundingClientRect();
+  const layerRect = layer.getBoundingClientRect();
+  if (avatarRect?.width && avatarRect?.height && layerRect.width && layerRect.height) {
+    return {
+      x: (avatarRect.left + avatarRect.width / 2 - layerRect.left) * layer.clientWidth / layerRect.width,
+      y: (avatarRect.top - layerRect.top + avatarRect.height * 0.2) * layer.clientHeight / layerRect.height,
+    };
+  }
   const width = layer.clientWidth || view.viewRoot?.clientWidth || 1600;
   const height = layer.clientHeight || view.viewRoot?.clientHeight || 900;
   return {
     x: side === 'left' ? width * 0.095 : width * 0.905,
-    y: height * 0.55,
+    y: height * (0.28 + Math.max(0, (view.__pvpLatestSnapshot?.players ?? view.pvp?.room?.members ?? [])
+      .filter(member => String(member.team) === String(event.team)).findIndex(member => Number(member.userId) === userId)) * 0.22),
   };
 }
 
@@ -170,15 +181,22 @@ function announceSkill(view, event) {
 
   const isBoss = view.pvp?.mode === 'boss' && String(event.team) === 'red';
   const side = localSideForEvent(view, event);
-  const anchor = isBoss ? (bossAnchor(view) ?? heroAnchor(view, 'right')) : heroAnchor(view, side);
+  const anchor = isBoss ? (bossAnchor(view) ?? heroAnchor(view, 'right')) : heroAnchor(view, side, event);
   if (!anchor) return;
 
   const bubble = document.createElement('div');
   bubble.className = `battle-skill-speech-bubble ${side === 'right' ? 'enemy' : 'ally'}${isBoss ? ' boss' : ''}`;
   bubble.dataset.skillId = String(Number(event.skillId));
   bubble.dataset.skillEventId = eventKey(event);
-  bubble.dataset.skillCaster = isBoss ? 'boss' : side;
+  bubble.dataset.skillCaster = isBoss ? 'boss' : String(event.userId ?? side);
+  const members = view.__pvpLatestSnapshot?.players ?? view.pvp?.room?.members ?? [];
+  const caster = members.find(member => Number(member.userId) === Number(event.userId));
+  const nickname = isBoss ? (view.__pvpLatestSnapshot?.boss?.name || 'BOSS') : (caster?.nickname || '玩家');
+  bubble.title = nickname + '施放：' + name;
   bubble.innerHTML = escapeText(name);
+  view.viewRoot?.dispatchEvent(new CustomEvent('clbwz:skill-announced', { detail: {
+    id: 'skill-' + eventKey(event), userId: event.userId, nickname, text: '施放【' + name + '】',
+  } }));
   bubble.style.left = `${anchor.x}px`;
   bubble.style.top = `${anchor.y}px`;
   layer.append(bubble);

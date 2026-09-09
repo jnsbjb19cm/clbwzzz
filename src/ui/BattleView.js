@@ -781,11 +781,11 @@ export class BattleView {
       this.onBattleResult?.({
         won: win,
         stage: this.engine.stage,
-        mode: this.pvp?.mode ?? 'pve',
+        mode: this.pvp ? (this.pvp.mode || 'pvp') : 'pve',
         bossId: this.pvp?.bossId ?? this.boss?.id ?? null,
         difficulty: this.pvp?.difficulty ?? this.boss?.difficulty ?? null,
         durationMs: Math.max(0, Math.round((this.engine.time || 0) * 1000)),
-        drops: (this.engine.lootDrops ?? []).map((drop) => ({ ...drop })),
+        drops: this.__pvpAuthorityActive ? [] : (this.engine.lootDrops ?? []).map((drop) => ({ ...drop })),
       });
       // 任务事件上报：战斗完成 / 通关 / 击杀数 / 时长 / 零伤亡 / 用卡种类
       if (win) this.onQuestEvent?.('adventure_complete', { count: 1 });

@@ -2,6 +2,12 @@ const DISCONNECT_GRACE_MS = 30_000;
 import { getBossById } from '../../src/data/bossList.js';
 
 /** 房间规模 → 每队人数(1v1 / 2v2 / 3v3) */
+export const PVP_MAP_IDS = Object.freeze(['2', '4', '7']);
+export function rollPvpMap(previous = null, rng = Math.random) {
+  const candidates = PVP_MAP_IDS.filter(id => id !== String(previous));
+  return candidates[Math.min(candidates.length - 1, Math.max(0, Math.floor(rng() * candidates.length)))];
+}
+
 const SIZE_TO_TEAM = { '1v1': 1, '2v2': 2, '3v3': 3 };
 
 function publicMember(member) {
@@ -15,6 +21,8 @@ function publicMember(member) {
     isHost: member.isHost,
     selectedDeckNo: member.selectedDeckNo,
     joinOrder: member.joinOrder,
+    isBot: Boolean(member.isBot),
+    botDifficulty: member.botDifficulty,
   };
 }
 
@@ -96,8 +104,8 @@ export class RoomManager {
       size,
       maxTeamSize,
       stageId: String(stageId || ''),
-      // PVP 默认黄沙场景(7=黄沙/沙丘)；房主可 dice 随机 2=草地/4=冰川
-      mapId: String(mapId || (mode === 'pvp' ? '7' : '')),
+      // 服务器从已支持的地图抽取，所有成员共用该结果。
+      mapId: mode === 'pvp' ? rollPvpMap() : String(mapId || ''),
       status: 'waiting',
       createdAt: Date.now(),
       members: new Map(),
@@ -197,7 +205,9 @@ export class RoomManager {
     const member = room.members.get(Number(userId));
     if (!member?.isHost) throw new Error('只有房主可以切换地图');
     if (room.mode !== 'pvp') throw new Error('只有PVP房间可以随机地图');
-    room.mapId = String(mapId || '');
+    if (room.status !== 'waiting') throw new Error('战斗开始后不能切换地图');
+    if (!PVP_MAP_IDS.includes(String(mapId))) throw new Error('地图不存在');
+    room.mapId = String(mapId);
     this.resetReady(room);
     return cloneRoom(room);
   }
@@ -266,8 +276,9 @@ export class RoomManager {
         const userId = -100000 - botSeq;
         const member = {
           userId,
-          nickname: `人机${botSeq}`,
-          level: 1,
+          nickname: `高级人机${botSeq}`,
+          botDifficulty: 'advanced',
+          level: Math.max(1, Math.min(50, Number([...room.members.values()].find(m => m.isHost)?.level) || 1)),
           team,
           ready: true,
           connected: true,
@@ -286,6 +297,8 @@ export class RoomManager {
   markStarted(userId) {
     const room = this.canStart(userId);
     this.fillRandomBots(room);
+    if (room.mode === 'pvp' && room._hasStarted) room.mapId = rollPvpMap(room.mapId);
+    room._hasStarted = true;
     room.status = 'starting';
     return cloneRoom(room);
   }
@@ -297,8 +310,8 @@ export class RoomManager {
     const members = [...room.members.values()];
     return {
       room,
-      teamBlue: members.filter((m) => m.team === 'blue').map((m) => ({ userId: m.userId, nickname: m.nickname })),
-      teamRed: members.filter((m) => m.team === 'red').map((m) => ({ userId: m.userId, nickname: m.nickname })),
+      teamBlue: members.filter((m) => m.team === 'blue').map(publicMember),
+      teamRed: members.filter((m) => m.team === 'red').map(publicMember),
     };
   }
 

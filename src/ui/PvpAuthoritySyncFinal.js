@@ -274,6 +274,7 @@ function applySnapshot(view, snapshot, { force = false } = {}) {
   if (!force && seq && seq <= (view.__pvpAuthoritySeq || 0)) return;
   view.__pvpAuthoritySeq = Math.max(view.__pvpAuthoritySeq || 0, seq);
   view.__pvpLatestSnapshot = snapshot;
+  if (snapshot.battleReport) view.__authorityBattleReport = snapshot.battleReport;
   syncColumnAssets(view);
 
   const engine = view.engine;
