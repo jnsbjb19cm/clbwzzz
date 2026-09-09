@@ -1,3 +1,4 @@
+import { pickExactTierCard } from '../core/CardEgg.js';
 import { formatCraftCardName } from '../core/constants.js';
 
 const FIXED_GIFTS = { 1:{gold:5000}, 2:{gem:10}, 3:{honor:5000}, 4:{stamina:6}, 5:{exp:200} };
@@ -71,12 +72,13 @@ export class ItemUseSystem {
 
   openCardPack(item, slotIndex, inventory, cardInventory) {
     const maxQ = Math.min(6, Math.max(1, item.quality ?? 2));
-    const pool = this.cardDb.getCollectibleCards().filter(c => c.quality <= maxQ);
+    const pool = this.cardDb.getCollectibleCards().filter(c => item.cardPoolQuality ? c.quality === item.cardPoolQuality : c.quality <= maxQ);
     if (!pool.length) return { ok: false, error: '卡池为空' };
     const weights = pool.map(c => Math.max(1, maxQ - c.quality + 1));
     const total = weights.reduce((s, w) => s + w, 0);
     let r = Math.random() * total, card = pool[0];
     for (let i = 0; i < pool.length; i++) { r -= weights[i]; if (r <= 0) { card = pool[i]; break; } }
+    if (item.cardPoolQuality) card = pickExactTierCard(pool, item.cardPoolQuality);
     const res = cardInventory.addCard(card.id, 0, { craftQuality: 1, strengthLv: 0 });
     if (!res.ok) return { ok: false, error: '卡牌背包已满' };
     inventory.consumeAt(slotIndex, 1);

@@ -93,5 +93,14 @@ jobs:
       - name: Verify uncapped rendering, shared snapshots and corrected animation cache
         run: node scripts/verify-render-server-performance-20260909.mjs
 
+      - name: Verify actual snapshot cadence under load
+        run: node scripts/verify-snapshot-cadence-20260909.mjs
+
+      - name: Verify authoritative quest rewards and fixed-tier eggs
+        run: node scripts/verify-quest-rewards-20260909.mjs
+
+      - name: Verify compressed Socket.IO transport
+        run: node scripts/verify-authority-transport-20260909.mjs
+
       - name: Build production bundle
         run: npm run build:deploy

@@ -11,5 +11,10 @@
   {"item_id":89,"item_name":"经验转移符","item_img":89,"desc":"选择两张卡牌，将第一张卡牌已积累的卡牌经验转移到第二张。","function":29,"max_num":99,"item_type":1,"show_type":"功能道具","effect_value":1,"quality":4,"sell_price":1500},
   {"item_id":90,"item_name":"星辰命名笔","item_img":90,"desc":"选择一张卡牌，为该卡牌实例设置自定义名称。","function":30,"max_num":99,"item_type":1,"show_type":"功能道具","effect_value":1,"quality":4,"sell_price":500},
   {"item_id":91,"item_name":"羁绊觉醒石","item_img":91,"desc":"激活下一场PVE战斗的生命护盾，护盾值为基地最大生命的20%。","function":31,"max_num":99,"item_type":1,"show_type":"战斗道具","effect_value":20,"quality":4,"sell_price":3500},
-  {"item_id":92,"item_name":"背包扩容符","item_img":92,"desc":"永久增加10个道具背包格，不能超过背包最大容量。","function":32,"max_num":99,"item_type":1,"show_type":"功能道具","effect_value":10,"quality":4,"sell_price":2000}
+  {"item_id":92,"item_name":"背包扩容符","item_img":92,"desc":"永久增加10个道具背包格，不能超过背包最大容量。","function":32,"max_num":99,"item_type":1,"show_type":"功能道具","effect_value":10,"quality":4,"sell_price":2000},
+  {"item_id":93,"item_name":"随机1级卡蛋","item_img":11,"desc":"打开后随机获得1张1级卡牌，不包含其他等级；初始强化为+0。","function":13,"max_num":99,"item_type":1,"show_type":"卡蛋","effect_value":1,"quality":1,"card_pool_quality":1,"sell_price":100},
+  {"item_id":94,"item_name":"随机2级卡蛋","item_img":11,"desc":"打开后随机获得1张2级卡牌，不包含其他等级；初始强化为+0。","function":13,"max_num":99,"item_type":1,"show_type":"卡蛋","effect_value":1,"quality":2,"card_pool_quality":2,"sell_price":200},
+  {"item_id":95,"item_name":"随机3级卡蛋","item_img":12,"desc":"打开后随机获得1张3级卡牌，不包含其他等级；初始强化为+0。","function":13,"max_num":99,"item_type":1,"show_type":"卡蛋","effect_value":1,"quality":3,"card_pool_quality":3,"sell_price":300},
+  {"item_id":96,"item_name":"随机4级卡蛋","item_img":12,"desc":"打开后随机获得1张4级卡牌，不包含其他等级；初始强化为+0。","function":13,"max_num":99,"item_type":1,"show_type":"卡蛋","effect_value":1,"quality":4,"card_pool_quality":4,"sell_price":400},
+  {"item_id":97,"item_name":"随机5级卡蛋","item_img":13,"desc":"打开后随机获得1张5级卡牌，不包含其他等级；初始强化为+0。","function":13,"max_num":99,"item_type":1,"show_type":"卡蛋","effect_value":1,"quality":5,"card_pool_quality":5,"sell_price":500}
 ]

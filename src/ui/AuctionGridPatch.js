@@ -1,6 +1,6 @@
 import { AuctionView } from './AuctionView.js';
 import { ItemDatabase } from '../core/ItemDatabase.js';
-import { getCraftMaterialImage } from './SmithyMaterialArtwork.js';
+import { itemIconMarkup as iconMarkup } from './ItemIcon.js';
 import './EconomyGridUi.css';
 
 const PATCH_FLAG = Symbol.for('clbwzzz.auctionGrid20260905');
@@ -15,11 +15,7 @@ function esc(text) {
     .replaceAll('"', '&quot;');
 }
 function itemName(id) { return itemDb.getById(Number(id))?.name ?? `道具#${id}`; }
-function iconMarkup(id, size = 48) {
-  const src = getCraftMaterialImage(Number(id));
-  if (src) return `<img class="bag-item-image" src="${src}" alt="" style="width:${size}px;height:${size}px" draggable="false">`;
-  return `<span class="fallback-icon" style="width:${size}px;height:${size}px">${Number(id) || '?'}</span>`;
-}
+
 function bagSlots(items) {
   const rows = Array.isArray(items) ? items : [];
   const size = Math.max(BAG_SLOT_COUNT, rows.length);

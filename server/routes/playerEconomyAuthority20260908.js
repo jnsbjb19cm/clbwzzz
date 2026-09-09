@@ -1,3 +1,4 @@
+import { pickExactTierCard } from '../../src/core/CardEgg.js';
 import { Router } from 'express';
 import { createRequire } from 'node:module';
 import { db, withTransaction } from '../database.js';
@@ -253,7 +254,7 @@ playerEconomyAuthorityRouter20260908.post('/inventory/use', async (req, res) => 
       const fn = Number(def.function);
       const showType = String(def.show_type ?? '');
       if (fn === 13 || /卡包|卡蛋/.test(showType)) {
-        const card = pickWeightedCard(def.quality ?? 2);
+        const card = def.card_pool_quality ? pickExactTierCard(COLLECTIBLE_CARDS, def.card_pool_quality) : pickWeightedCard(def.quality ?? 2);
         await consumeItem(conn, userId, itemId, 1, requestedBound);
         await addCard(conn, userId, card.card_id);
         return { message: `获得 ${card.card_name}`, cardId: Number(card.card_id) };

@@ -79,9 +79,8 @@ assert.match(guildSource, /升职为/);
 assert.match(guildSource, /降职为/);
 
 const questPinSource = fs.readFileSync(new URL('../src/ui/QuestPinPersistence20260908.js', import.meta.url), 'utf8');
-assert.match(questPinSource, /quest-pin-toggle-20260908/);
-assert.match(questPinSource, /\/player\/quest-pins/);
-assert.match(questPinSource, /sortActiveItems/);
+// Manual pin UI is retired; automatic ordering is exercised in the browser regression.
+assert.doesNotMatch(questPinSource, /quest-pin-toggle|authStore|MutationObserver/);
 
 const bootstrapSource = fs.readFileSync(new URL('../src/bootstrap.js', import.meta.url), 'utf8');
 assert.match(bootstrapSource, /installQuestPinPersistence20260908\(\)/);

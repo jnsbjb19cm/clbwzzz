@@ -10,6 +10,7 @@ export class Item {
     this.type = raw.item_type;
     this.showType = raw.show_type ?? '';
     this.quality = raw.quality ?? 1;
+    this.cardPoolQuality = raw.card_pool_quality ?? null;
     this.maxStack = BAG_MAX_STACK;
     this.sellPrice = raw.sell_price ?? 0;
     this.function = raw.function;

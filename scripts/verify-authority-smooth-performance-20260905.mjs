@@ -119,7 +119,7 @@ await check('authority snapshots stay frequent enough for smooth movement under 
     `normal snapshot interval too slow: ${AUTHORITY_SNAPSHOT_BACKPRESSURE_20260905.normalIntervalMs}ms`,
   );
   assert.ok(
-    AUTHORITY_SNAPSHOT_BACKPRESSURE_20260905.heavyIntervalMs <= 66,
+    AUTHORITY_SNAPSHOT_BACKPRESSURE_20260905.heavyIntervalMs <= 1000 / 15,
     `heavy snapshot interval too slow: ${AUTHORITY_SNAPSHOT_BACKPRESSURE_20260905.heavyIntervalMs}ms`,
   );
   assert.ok(

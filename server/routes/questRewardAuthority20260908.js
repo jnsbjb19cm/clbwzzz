@@ -1,3 +1,4 @@
+import { findQuestReward } from '../../src/data/QuestCatalog.js';
 import { Router } from 'express';
 import { db, withTransaction } from '../database.js';
 import { requireAuth } from '../middleware/auth.js';
@@ -112,7 +113,9 @@ questRewardAuthorityRouter20260908.post('/quests/claim-reward', async (req, res)
   try {
     await ensureClaimTable();
     const { category, questId } = normalizeIdentity(req.body);
-    const reward = normalizeReward(req.body?.reward);
+    const definition = findQuestReward(category, questId);
+    if (!definition) throw new Error('任务不存在');
+    const reward = normalizeReward(definition);
 
     await withTransaction(async (conn) => {
       const existing = await conn.get(
@@ -123,6 +126,7 @@ questRewardAuthorityRouter20260908.post('/quests/claim-reward', async (req, res)
 
       const profile = await conn.get('SELECT level, exp FROM player_profiles WHERE user_id=?', [userId]);
       if (!profile) throw new Error('玩家数据不存在');
+      if (category === 'level' && Number(profile.level) < definition.lv) throw new Error('尚未达到领取等级');
       const progress = { level: Number(profile.level) || 1, exp: Number(profile.exp) || 0 };
       if (reward.exp > 0) grantPlayerExp(progress, reward.exp);
 

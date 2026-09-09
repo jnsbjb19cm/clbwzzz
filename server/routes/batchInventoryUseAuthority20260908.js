@@ -1,3 +1,4 @@
+import { pickExactTierCard } from '../../src/core/CardEgg.js';
 import { Router } from 'express';
 import { createRequire } from 'node:module';
 import { db, withTransaction } from '../database.js';
@@ -23,7 +24,8 @@ const FIXED_GIFTS = new Map([
   [5, { exp: 200 }],
 ]);
 const RANDOM_ITEM_POOL = [1, 2, 3, 4, 5, 10001, 10002, 30055];
-const ITEM_DEFS = new Map(itemRows.map((row) => [Number(row.item_id), row]));
+const functionalRows = require('../../src/data/functionalItems.json');
+const ITEM_DEFS = new Map([...itemRows, ...functionalRows].map((row) => [Number(row.item_id), row]));
 const EXPERIENCE_CARD_IDS = new Set([122, 123, 124]);
 const COLLECTIBLE_CARDS = cardRows.filter((row) => (
   Number(row?.show_card) === 1
@@ -125,7 +127,7 @@ function pickWeightedCard(maxQuality) {
   return pool[pool.length - 1];
 }
 
-async function addCards(conn, userId, count, maxQuality) {
+async function addCards(conn, userId, count, maxQuality, exactTier = null) {
   const bag = await conn.get('SELECT slot_count AS slotCount FROM player_card_bags WHERE user_id=?', [userId]);
   const slotCount = clampInt(bag?.slotCount, 1, 500);
   const rows = await conn.all('SELECT slot_index AS slotIndex FROM player_cards WHERE user_id=?', [userId]);
@@ -138,7 +140,7 @@ async function addCards(conn, userId, count, maxQuality) {
 
   const cards = [];
   for (let index = 0; index < count; index += 1) {
-    const card = pickWeightedCard(maxQuality);
+    const card = exactTier ? pickExactTierCard(COLLECTIBLE_CARDS, exactTier) : pickWeightedCard(maxQuality);
     await conn.run(
       'INSERT INTO player_cards(user_id,slot_index,card_id,star,craft_quality) VALUES(?,?,?,?,?)',
       [userId, free[index], Number(card.card_id), 0, 1],
@@ -233,7 +235,7 @@ batchInventoryUseAuthorityRouter20260908.post('/inventory/use', async (req, res,
       const fn = Number(def.function);
       const showType = String(def.show_type ?? '');
       if (fn === 13 || /卡包|卡蛋/.test(showType)) {
-        const cards = await addCards(conn, userId, requestedCount, def.quality ?? 2);
+        const cards = await addCards(conn, userId, requestedCount, def.quality ?? 2, def.card_pool_quality);
         await consumeItem(conn, userId, itemId, requestedCount, requestedBound);
         return { used: requestedCount, cards, message: `已打开 ${requestedCount} 个卡包` };
       }

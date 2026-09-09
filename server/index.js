@@ -1,3 +1,4 @@
+import { AUTHORITY_TRANSPORT_OPTIONS } from './socket/AuthorityTransportOptions.js';
 import http from 'node:http';
 import fs from 'node:fs';
 import path from 'node:path';
@@ -149,6 +150,7 @@ const socketCorsOrigin = config.corsAllowAll ? true : (origin, callback) => {
   return callback(new Error('该来源不允许跨域访问'));
 };
 const io = new Server(server, {
+  ...AUTHORITY_TRANSPORT_OPTIONS,
   cors: { origin: socketCorsOrigin, credentials: true },
   transports: ['websocket', 'polling'],
 });

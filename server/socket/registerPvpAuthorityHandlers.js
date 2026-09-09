@@ -7,12 +7,12 @@ import { db, withTransaction } from '../database.js';
 
 // 服务端战斗逻辑以30Hz推进；客户端自身用 RAF 插值单位/子弹。
 // 周期世界快照只承担状态校准，不再用30Hz全量 JSON 驱动画面：
-// 普通场约12.5Hz、重场约8.3Hz、极重场约6.25Hz。
+// 普通场20Hz、重场15Hz、极重场12.5Hz；由这里统一调度。
 // straight/parabola projectile 由 spawn/despawn 可靠事件独立同步。
-const STEP_SECONDS = 0.0333333333;
-const BROADCAST_SECONDS = 0.08;
-const HEAVY_BROADCAST_SECONDS = 0.12;
-const VERY_HEAVY_BROADCAST_SECONDS = 0.16;
+const STEP_SECONDS = 1 / 30;
+const BROADCAST_SECONDS = 0.05;
+const HEAVY_BROADCAST_SECONDS = 1 / 15;
+const VERY_HEAVY_BROADCAST_SECONDS = 0.08;
 const HEAVY_UNIT_SNAPSHOT_THRESHOLD = 24;
 const VERY_HEAVY_UNIT_SNAPSHOT_THRESHOLD = 48;
 const MAX_CATCHUP_SECONDS = 0.2;
@@ -573,8 +573,9 @@ function ensureAuthorityBattle(roomId, io, cardDb) {
       : unitCount >= HEAVY_UNIT_SNAPSHOT_THRESHOLD
         ? HEAVY_BROADCAST_SECONDS
         : BROADCAST_SECONDS;
-    if (entry.broadcastAccumulator >= broadcastInterval || entry.battle.status !== 'playing') {
-      entry.broadcastAccumulator = 0;
+    if (entry.broadcastAccumulator + 1e-8 >= broadcastInterval || entry.battle.status !== 'playing') {
+      // Keep the remainder so the 30Hz timer does not round every send interval upward.
+      entry.broadcastAccumulator = Math.max(0, entry.broadcastAccumulator - broadcastInterval) % broadcastInterval;
       broadcastSnapshots(io, room, entry, { includeProjectiles: false });
       if (entry.battle.status !== 'playing') {
         broadcastFinished(io, room, entry);
