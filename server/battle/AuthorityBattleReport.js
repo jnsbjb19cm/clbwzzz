@@ -1,6 +1,17 @@
+import craftMaterials from '../../src/data/craftMaterials.json' with { type: 'json' };
 import { grantPlayerExp } from '../../src/core/PlayerProgression.js';
 
-const DROP_IDS = [10001, 10002, 10003, 10004, 10005, 30055];
+function rollUpgradeMaterial(maxTier = 1, rng = Math.random) {
+  const tier = 1 + Math.floor(rng() * Math.max(1, Math.min(4, Math.floor(maxTier))));
+  const material = craftMaterials.levels.find(row => row.level === tier) ?? craftMaterials.levels[0];
+  const roll = rng();
+  // 直接使用铁匠铺材料表：羊皮纸35%、宝石30%、强化粉15%、DNA10%、保护符10%。
+  if (roll < 0.35) return material.parchment;
+  if (roll < 0.65) return material.gem;
+  if (roll < 0.80) return 10000 + tier;
+  if (roll < 0.90) return material.dna;
+  return material.charm;
+}
 
 export function attachBattleReport(battle, room) {
   const rows = [...room.members.values()].map(member => ({
@@ -59,7 +70,7 @@ export function attachBattleReport(battle, room) {
     const eligible = recipients.filter(row => row.items.reduce((n, item) => n + item.count, 0) < 5);
     const recipient = eligible.find(row => row.userId === killerId) ?? eligible[(this._lootDropSeq || 0) % eligible.length];
     if (!recipient) return null;
-    const itemId = 10000 + Math.floor(level);
+    const itemId = rollUpgradeMaterial(level, () => this.rng());
     const existing = recipient.items.find(item => item.itemId === itemId);
     if (existing) existing.count += 1;
     else recipient.items.push({ itemId, count: 1 });
@@ -86,7 +97,10 @@ export async function settleBattleReport(conn, battle) {
     if (!profile) throw new Error('结算玩家资料不存在');
     row.level = Number(profile.level) || 1;
     // 保留原有每场结算材料奖励，并额外发放对局中实际分配的掉落。
-    const itemId = DROP_IDS[Math.floor(Math.random() * DROP_IDS.length)];
+    const tier = report.mode === 'boss'
+      ? ({ '简单': 1, '普通': 2, '困难': 4 }[battle.difficulty] || 1)
+      : Math.max(1, Math.min(4, Math.ceil(row.level / 10)));
+    const itemId = rollUpgradeMaterial(tier);
     const existing = row.items.find(item => item.itemId === itemId);
     if (existing) existing.count += 1;
     else row.items.push({ itemId, count: 1 });

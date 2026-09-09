@@ -78,7 +78,7 @@ function rememberLastHit(target, attacker) {
 function withOwnerResources(engine, attacker, callback) {
   const battle = engine.__authorityBattle;
   const ownerId = Number(attacker?.pvpOwnerUserId);
-  if (!battle?.resourcesOf || !Number.isInteger(ownerId) || ownerId <= 0) return callback();
+  if (!battle?.resourcesOf || !Number.isInteger(ownerId) || ownerId === 0 || !battle.teamOf?.(ownerId)) return callback();
   const resource = battle.resourcesOf(ownerId);
   const previousSun = engine.sunlight;
   const previousFood = engine.food;
@@ -163,8 +163,9 @@ function tickSpiritAuras(battle, dt) {
     if (!unit.alive || !unit.__pvpBarrierSummon) continue;
     normalizeSpirit(unit);
     unit.__pvpSpiritAuraTimer = (Number(unit.__pvpSpiritAuraTimer) || 0) + dt;
-    if (unit.__pvpSpiritAuraTimer < 1) continue;
-    unit.__pvpSpiritAuraTimer %= 1;
+    const interval = Number(unit.cardId) === 1007 ? 2 : 1;
+    if (unit.__pvpSpiritAuraTimer < interval) continue;
+    unit.__pvpSpiritAuraTimer %= interval;
     applySpiritAura(engine, unit);
   }
 }

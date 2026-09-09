@@ -38,9 +38,9 @@ function stateFor(battle, userId) {
   const id = Number(userId);
   if (!battle.__smartBotState.has(id)) {
     battle.__smartBotState.set(id, {
-      // 人机放卡节奏整体减半：开局观察时间也按同一倍率延长。
+      // 开局只观察 3~6 秒，后续仍使用独立的慢速出牌节奏。
       startedAt: (Number(battle.engine?.time) || 0)
-        + scaledDeployDelay(6.0 + Math.random() * 2.0),
+        + 3.0 + Math.random() * 3.0,
       thinkAt: 0,
       globalReadyAt: 0,
       cardReadyAt: new Map(),
@@ -91,7 +91,6 @@ function laneStats(battle, team, lane) {
 
 function configureBotSkills(battle, member, state) {
   if (state.skillsConfigured) return;
-  state.skillsConfigured = true;
   const unlocked = new Set(['core']);
   let budget = getTalentPointBudget(member.level);
   const branches = ['north', 'east', 'south', 'west'];
@@ -111,6 +110,7 @@ function configureBotSkills(battle, member, state) {
   const preferred = Array.isArray(member.skillLoadout) ? member.skillLoadout : [504, ...learned.reverse(), 503, 505];
   const loadout = [...new Set(preferred)].filter(id => allowed.has(id) && battle.db.getById(id) && getSkillEffect(id)).slice(0, 6);
   battle.setSkillLoadout(member.userId, [...loadout, ...Array(6 - loadout.length).fill(null)]);
+  state.skillsConfigured = true;
 }
 
 function chooseDeployment(battle, userId, state) {
@@ -126,7 +126,8 @@ function chooseDeployment(battle, userId, state) {
     .filter(card => card.id !== 35 && card.id !== 38 && cardQuality(card) <= 4)
     .filter(card => now >= Number(state.cardReadyAt.get(Number(card.id)) || 0))
     .filter(card => !(serverCooldowns[card.id] > 0) && affordable(battle, userId, card));
-  let best = null;
+  const choices = [];
+  const canAffordMoving = legal.some(isMovable);
   for (let lane = 0; lane < 5; lane += 1) {
     const stats = laneStats(battle, team, lane);
     const flying = stats.enemy.filter(u => u.isFlying?.()).length;
@@ -142,11 +143,11 @@ function chooseDeployment(battle, userId, state) {
       const cost = battle.deployCost(card);
       // 常态以推进为主：至少两次移动卡部署后才考虑一次固定防守卡。
       const urgent = stats.enemyNearBase >= 2;
-      if (!movable && !urgent && (personalFixed >= 2 || state.deployCount < 2 || (state.movingSinceFixed || 0) < 2)) continue;
+      if (!movable && !urgent && (personalFixed >= 2 || (canAffordMoving && (state.deployCount < 2 || (state.movingSinceFixed || 0) < 2)))) continue;
       if (!movable && personalFixed >= 3) continue;
       if (guard && (defenders || !stats.enemy.length)) continue;
       if (healer && wounded < 2) continue;
-      if (!urgent && ((cost.sun > 0 && resource.sun - cost.sun < 10) || (cost.food > 0 && resource.food - cost.food < 10))) continue;
+      if (!urgent && personalUnits.length >= 2 && ((cost.sun > 0 && resource.sun - cost.sun < 2) || (cost.food > 0 && resource.food - cost.food < 2))) continue;
       let score = stats.enemyNearBase * 8 + stats.enemy.length * 2 - stats.own.length * 1.2;
       score += movable ? (personalMoving < 3 ? 12 : 7) : (stats.enemy.length ? 0 : -12);
       if (flying) score += antiAir ? 12 + flying * 3 : -8;
@@ -159,12 +160,12 @@ function chooseDeployment(battle, userId, state) {
       score += Math.random() * 1.5;
       for (const col of candidateCols(team, movable, guard)) {
         if (!movable && (battle.engine.getUnitsAt?.(lane, col) || []).some(u => u.alive && !u.pvpNeutral && !u.isMovable?.())) continue;
-        if (!best || score > best.score) best = { card, lane, col, score };
+        choices.push({ card, lane, col, score });
         break;
       }
     }
   }
-  return best;
+  return choices.sort((a, b) => b.score - a.score);
 }
 
 function trySmartSkill(battle, member, state) {
@@ -185,6 +186,7 @@ function trySmartSkill(battle, member, state) {
   const reserve = Math.max(35, [503, 504].filter(id => skills.loadout.includes(id)).reduce((sum, id) => sum + getSkillMpCost(battle.db.getById(id)), 0));
   battle.__botEffectUntil ??= new Map();
   const emergency = danger > 0 && hp < maxHp * 0.25;
+  if (state.deployCount === 0 && !emergency) return;
   const candidates = [];
   for (const skillId of skills.loadout.filter(Boolean)) {
     const effect = getSkillEffect(skillId), card = battle.db.getById(skillId);
@@ -260,20 +262,19 @@ function trySmartDeploy(battle, userId, state) {
   // 判断频率保持较快，保证人机仍会响应战线变化；真正出卡受独立部署间隔和原始卡牌 CD 限制。
   state.thinkAt = now + 0.70 + Math.random() * 0.45;
 
-  const choice = chooseDeployment(battle, userId, state);
-  if (!choice) return false;
-  const { card, lane } = choice;
-  const orderedCols = [choice.col];
-
-  for (const col of orderedCols) {
+  const choices = chooseDeployment(battle, userId, state);
+  for (const choice of choices.slice(0, 10)) {
+    const { card, lane, col } = choice;
     state.smartDeployPermit = true;
     try {
       battle.deploy(userId, { cardId: Number(card.id), lane, col });
+      state.lastDeployError = null;
       recordLane(state, lane);
       state.movingSinceFixed = isMovable(card) ? (state.movingSinceFixed || 0) + 1 : 0;
       return true;
-    } catch {
-      // 资源、CD 或位置不满足时，不透支、不强放，等下一轮正常判断。
+    } catch (error) {
+      // 不绕过校验、不扣负资源；当前候选失败时尝试另一个合法选择。
+      state.lastDeployError = String(error?.message || error);
     } finally {
       state.smartDeployPermit = false;
     }
@@ -318,9 +319,13 @@ export function installPvpBotAi20260905() {
       const userId = Number(member?.userId);
       if (!isBotUserId(userId)) continue;
       const state = stateFor(this, userId);
-      configureBotSkills(this, member, state);
-      trySmartSkill(this, member, state);
-      trySmartDeploy(this, userId, state);
+      // 各人机独立决策；单个技能配置/候选异常不能让其余人机停止行动。
+      try { configureBotSkills(this, member, state); }
+      catch (error) { state.lastSkillError = String(error?.message || error); }
+      try { trySmartDeploy(this, userId, state); }
+      catch (error) { state.lastDeployError = String(error?.message || error); }
+      try { trySmartSkill(this, member, state); }
+      catch (error) { state.lastSkillError = String(error?.message || error); }
     }
     return result;
   };
@@ -328,7 +333,7 @@ export function installPvpBotAi20260905() {
 
 export const PVP_BOT_AI_TIMING_20260906 = Object.freeze({
   deployTimeScale: BOT_DEPLOY_TIME_SCALE_20260906,
-  openingDelaySec: [12.0, 16.0],
+  openingDelaySec: [3.0, 6.0],
   personalDeployDelaySec: [12.0, 18.0],
   teamDeployDelaySec: [0, 0],
 });
