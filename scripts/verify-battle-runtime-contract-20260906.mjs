@@ -1,8 +1,8 @@
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 
-const gameplay = await readFile(new URL('../server/battle/PvpGameplayInstall.js', import.meta.url), 'utf8');
-const engine = await readFile(new URL('../src/battle/BattleEngine.js', import.meta.url), 'utf8');
+const gameplay = (await readFile(new URL('../server/battle/PvpGameplayInstall.js', import.meta.url), 'utf8')).replaceAll('\r\n', '\n');
+const engine = (await readFile(new URL('../src/battle/BattleEngine.js', import.meta.url), 'utf8')).replaceAll('\r\n', '\n');
 
 function contains(source, needle, message) {
   assert.ok(source.includes(needle), message);

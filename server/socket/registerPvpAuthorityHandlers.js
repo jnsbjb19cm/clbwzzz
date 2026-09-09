@@ -253,21 +253,13 @@ function stripPrivateAggregateFields(basic) {
   return shared;
 }
 
-function buildSnapshot(
-  entry,
-  userId,
-  seq = ++entry.seq,
-  basicOverride = null,
-  { includeProjectiles = true } = {},
-) {
+// 每次广播只包装一次公共战场；私有资源和技能仍按接收者单独生成。
+function buildWorldSnapshot(entry, seq, { includeProjectiles = true } = {}) {
   const battle = entry.battle;
   const engine = battle.engine;
-  const basic = basicOverride ?? battle.snapshot();
+  const basic = battle.snapshot();
   const decoratedUnits = new Map((basic.units ?? []).map((unit) => [Number(unit.uid), unit]));
   const sharedBasic = stripPrivateAggregateFields(basic);
-  const team = battle.teamOf(userId);
-  const resources = battle.publicResources(userId);
-  const skill = battle.publicSkillState(userId);
   const serverTimeMs = monotonicNowMs();
   return {
     ...sharedBasic,
@@ -275,14 +267,6 @@ function buildSnapshot(
     seq,
     serverNow: Date.now(),
     serverTimeMs,
-    viewerUserId: Number(userId),
-    viewerTeam: team,
-    resources,
-    skill,
-    energy: {
-      blue: team === 'blue' ? resources.sun : 0,
-      red: team === 'red' ? resources.sun : 0,
-    },
     heroMaxHp: {
       blue: Math.round(engine.heroMaxHp),
       red: Math.round(engine.enemyHeroMaxHp),
@@ -299,6 +283,30 @@ function buildSnapshot(
         .map((projectile) => projectileSnapshot(projectile, serverTimeMs)),
     } : {}),
     impactEvents: (engine.impactFx ?? []).map((impact) => impactSnapshot(entry, impact)),
+  };
+}
+
+function buildSnapshot(
+  entry,
+  userId,
+  seq = ++entry.seq,
+  worldOverride = null,
+  { includeProjectiles = true } = {},
+) {
+  const battle = entry.battle;
+  const world = worldOverride ?? buildWorldSnapshot(entry, seq, { includeProjectiles });
+  const team = battle.teamOf(userId);
+  const resources = battle.publicResources(userId);
+  return {
+    ...world,
+    viewerUserId: Number(userId),
+    viewerTeam: team,
+    resources,
+    skill: battle.publicSkillState(userId),
+    energy: {
+      blue: team === 'blue' ? resources.sun : 0,
+      red: team === 'red' ? resources.sun : 0,
+    },
   };
 }
 
@@ -314,21 +322,13 @@ function buildSpectatorSnapshot(
   entry,
   userId,
   seq = ++entry.seq,
-  basicOverride = null,
+  worldOverride = null,
   { includeProjectiles = true } = {},
 ) {
   const battle = entry.battle;
-  const engine = battle.engine;
-  const basic = basicOverride ?? battle.snapshot();
-  const decoratedUnits = new Map((basic.units ?? []).map((unit) => [Number(unit.uid), unit]));
-  const sharedBasic = stripPrivateAggregateFields(basic);
-  const serverTimeMs = monotonicNowMs();
+  const world = worldOverride ?? buildWorldSnapshot(entry, seq, { includeProjectiles });
   return {
-    ...sharedBasic,
-    protocol: battle.mode === 'boss' ? 'server-authoritative-boss-v2' : 'server-authoritative-v5',
-    seq,
-    serverNow: Date.now(),
-    serverTimeMs,
+    ...world,
     viewerUserId: Number(userId),
     viewerTeam: 'blue',
     resources: null,
@@ -337,22 +337,6 @@ function buildSpectatorSnapshot(
       blue: teamRepresentativeSun(battle, 'blue'),
       red: teamRepresentativeSun(battle, 'red'),
     },
-    heroMaxHp: {
-      blue: Math.round(engine.heroMaxHp),
-      red: Math.round(engine.enemyHeroMaxHp),
-    },
-    units: engine.units
-      .filter((unit) => unit.alive)
-      .map((unit) => ({
-        ...(decoratedUnits.get(Number(unit.uid)) ?? {}),
-        ...unitSnapshot(battle, unit),
-      })),
-    ...(includeProjectiles ? {
-      projectiles: engine.projectiles
-        .filter((projectile) => !projectile.done)
-        .map((projectile) => projectileSnapshot(projectile, serverTimeMs)),
-    } : {}),
-    impactEvents: (engine.impactFx ?? []).map((impact) => impactSnapshot(entry, impact)),
   };
 }
 
@@ -364,21 +348,20 @@ function emitPersonalized(
   { excludeUserId = null, includeProjectiles = false } = {},
 ) {
   const seq = ++entry.seq;
-  // 基础战斗快照只算一次；每个玩家只附带自己的资源/技能。
-  const basic = entry.battle.snapshot();
+  const world = buildWorldSnapshot(entry, seq, { includeProjectiles });
   const excluded = excludeUserId == null ? null : Number(excludeUserId);
   for (const member of room.members.values()) {
     if (!member.socketId || (excluded != null && Number(member.userId) === excluded)) continue;
     io.to(member.socketId).emit(
       eventName,
-      buildSnapshot(entry, member.userId, seq, basic, { includeProjectiles }),
+      buildSnapshot(entry, member.userId, seq, world, { includeProjectiles }),
     );
   }
   for (const [spectatorUserId, socketId] of entry.spectators ?? []) {
     if (!socketId || (excluded != null && Number(spectatorUserId) === excluded)) continue;
     io.to(socketId).emit(
       eventName,
-      buildSpectatorSnapshot(entry, spectatorUserId, seq, basic, { includeProjectiles }),
+      buildSpectatorSnapshot(entry, spectatorUserId, seq, world, { includeProjectiles }),
     );
   }
 }

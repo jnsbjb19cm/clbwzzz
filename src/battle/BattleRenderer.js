@@ -79,8 +79,6 @@ const PART_SPRITES = [
 ];
 
 const UNIT_DRAW_SCALE = 1.68;
-const HEAVY_RENDER_FRAME_MS = 1000 / 30;
-const HEAVY_UNIT_COUNT = 24;
 const LOW_QUALITY_UNIT_COUNT = 20;
 const LOW_QUALITY_EFFECT_COUNT = 40;
 const EFFECT_DRAW_CAP_NORMAL = 64;
@@ -312,7 +310,7 @@ function drawBumpDeployVfx(ctx, fx) {
     const flash = 1 - progress / 0.18;
     drawBumpEllipse(ctx, cx, footY, baseW * 0.42, baseH * 0.42, '#ffffff', flash * 0.72);
   }
-  // 召唤瞬间的透明法阵细线已按用户要求移除；保留品质底座/椭圆扩散/中心闪白。
+  // 召唤瞬间的透明法阵细线已移除；保留品质底座/椭圆扩散/中心闪白。
 }
 
 export class BattleRenderer {
@@ -1210,7 +1208,6 @@ export class BattleRenderer {
   }
 
   draw(engine) {
-    const now = typeof performance !== 'undefined' ? performance.now() : Date.now();
     let aliveUnits = 0;
     for (const unit of engine?.units ?? []) if (unit?.alive) aliveUnits += 1;
     const skillEffects = engine?.skillFx ?? engine?.skillEffects ?? [];
@@ -1239,13 +1236,7 @@ export class BattleRenderer {
       effectDrawCap: this._effectDrawCap,
       isBossBattle: this._isBossBattle,
     };
-    const throttled = aliveUnits >= HEAVY_UNIT_COUNT || hasFullscreenSkill;
-    if (throttled && this._lastHeavyDrawAt != null
-      && now - this._lastHeavyDrawAt < HEAVY_RENDER_FRAME_MS) {
-      return;
-    }
-    if (throttled) this._lastHeavyDrawAt = now;
-    else this._lastHeavyDrawAt = null;
+    // 每次 RAF 都绘制；单位数量和全屏技能不再限制整帧刷新频率。
 
     const ctx = this.ctx;
     const { width, height } = this.canvas;

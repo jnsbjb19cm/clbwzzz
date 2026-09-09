@@ -73,6 +73,11 @@ async function loadSkipAnimRes() {
 import { drawOffsetYForUnit, FOOT_ANCHOR_RES, resNum } from './unitDisplayTuning.js';
 
 const ANIM_CACHE_BUST = '20260826a';
+// 31/57 已重新烘焙黑色面部细节，JSON 与 PNG 必须同时避开修复前的缓存。
+const DARK_FEATURE_ANIM_CACHE_BUST = '20260909-dark-features';
+function animationCacheVersion(res) {
+  return ['31', '57'].includes(String(res)) ? DARK_FEATURE_ANIM_CACHE_BUST : ANIM_CACHE_BUST;
+}
 const FROZEN_DEATH_DURATION = 0.16;
 const TUNNEL_RUNTIME_SHEET_RES = new Set(['41', '43']);
 const COMPACT_RUNTIME_STATE_SHEET_RES = new Set(['45']);
@@ -82,11 +87,11 @@ const LAND_HP_RATIO = 0.5;
 const FULL_FRAME_ATTACK_RES = new Set([20, 22, 34, 36, 38, 41, 43, 48, 54, 56, 58, 62, 64, 72, 75, 77, 92, 101, 118]);
 
 function animUrl(res) {
-  return `/sprites/unit_anim/${res}.json?v=${ANIM_CACHE_BUST}`;
+  return `/sprites/unit_anim/${res}.json?v=${animationCacheVersion(res)}`;
 }
 
 function sheetUrl(res) {
-  return `/sprites/unit_anim/${res}.png?v=${ANIM_CACHE_BUST}`;
+  return `/sprites/unit_anim/${res}.png?v=${animationCacheVersion(res)}`;
 }
 
 function tunnelStateMetaUrl(res) {

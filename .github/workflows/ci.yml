@@ -90,5 +90,8 @@ jobs:
       - name: Verify high-star render performance contract
         run: node scripts/verify-high-star-render-performance-20260905.mjs
 
+      - name: Verify uncapped rendering, shared snapshots and corrected animation cache
+        run: node scripts/verify-render-server-performance-20260909.mjs
+
       - name: Build production bundle
         run: npm run build:deploy

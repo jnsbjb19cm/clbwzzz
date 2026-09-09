@@ -76,14 +76,7 @@ export function installBattleRenderLoadShedding20260905() {
 
     installManualLowQualityAccessor(this);
 
-    // 旧 Renderer 在 >=24 单位/全屏技能时还会整帧节流到约 30 FPS。
-    // 清掉时间戳仅用于保持 RAF 刷新频率；不删星星、不删品质圈、不强制低画质。
-    this._lastHeavyDrawAt = null;
-    try {
-      return previousDraw.call(this, engine);
-    } finally {
-      this._lastHeavyDrawAt = null;
-    }
+    return previousDraw.call(this, engine);
   };
 
   // 名称文本在大军团里每帧 measureText N 次会制造额外 CPU 压力。
@@ -115,7 +108,7 @@ export function installBattleRenderLoadShedding20260905() {
     window.__battleRenderLoadShedding20260905 = () => ({
       enabled: true,
       policy: {
-        renderCadence: 'requestAnimationFrame; internal 30FPS throttle neutralized',
+        renderCadence: 'requestAnimationFrame; no internal frame throttle',
         visualQuality: 'manual only; unit/effect counts never force low quality',
         decorativeHaloDisabledAt: 'only when explicit low-quality mode chooses a cheaper halo implementation',
         unitNames: 'setting read once per frame; text width cached per label',
