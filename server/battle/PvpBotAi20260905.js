@@ -23,6 +23,10 @@ function cardQuality(card) {
   return Number(card?.quality ?? card?.card_quality) || 1;
 }
 
+function isMonsterCard(card) {
+  return Number(card?.card_category) === 1;
+}
+
 function cardCooldown(card) {
   return Math.max(0.8, Number(card?.cooldown ?? card?.card_cd) || 2.5);
 }
@@ -45,6 +49,7 @@ function stateFor(battle, userId) {
       globalReadyAt: 0,
       cardReadyAt: new Map(),
       deployCount: 0,
+      monsterDeployCount: 0,
       laneHistory: [],
       laneDeployCount: [0, 0, 0, 0, 0],
       smartDeployPermit: false,
@@ -179,6 +184,10 @@ function chooseDeployment(battle, userId, state) {
       if (healer && wounded < 2 && (stats.own.length < 2 || stats.own.some(u => u.viewType === 4))) continue;
       if (!urgent && personalUnits.length >= 2 && ((cost.sun > 0 && resource.sun - cost.sun < 2) || (cost.food > 0 && resource.food - cost.food < 2))) continue;
       let score = stats.enemyNearBase * 8 + stats.enemy.length * 2 - stats.own.length * 1.2;
+      // 保证人机也会按正常比例放怪物卡：当前怪物卡占比低于约 1/3 时提高选择权重。
+      if (isMonsterCard(card) && state.monsterDeployCount < Math.max(1, Math.floor((state.deployCount + 1) / 3))) {
+        score += 28;
+      }
       const role = movable ? 'moving' : guard ? 'guard' : 'support';
       if (role === preferredRole) score += 32;
       if (lane === homeLane) score += 5;
@@ -305,9 +314,10 @@ function trySmartSkill(battle, member, state) {
     const cast = battle.castSkill(userId, choice);
     if (choice.focusUid != null) battle.__botFocusUntil.set(team + ':' + choice.focusUid, Math.max(now + 2, Number(cast?.applyAt || now) + 0.5));
     state.lastSkillId = choice.skillId;
-    state.skillReadyAt = now + 24 + Math.random() * 12;
+    // 人机技能最多每 60 秒释放一次，避免玩家面对人机时被连续技能压制。
+    state.skillReadyAt = now + 60;
     battle.__botTeamSkillReadyAt ??= new Map();
-    battle.__botTeamSkillReadyAt.set(team, now + 8 + Math.random() * 4);
+    battle.__botTeamSkillReadyAt.set(team, now + 60);
     const effect = getSkillEffect(choice.skillId);
     battle.__botEffectUntil.set(team + ':' + effect.kind, now + Math.max(5, effect.duration || effect.freezeSec || 0));
   } catch { /* 正常技能接口负责装备、MP、冷却及落点校验。 */ }
@@ -369,6 +379,7 @@ function trySmartDeploy(battle, userId, state) {
       state.lastDeployError = null;
       recordLane(state, lane);
       state.movingSinceFixed = isMovable(card) ? (state.movingSinceFixed || 0) + 1 : 0;
+      if (isMonsterCard(card)) state.monsterDeployCount = (Number(state.monsterDeployCount) || 0) + 1;
       return true;
     } catch (error) {
       // 不绕过校验、不扣负资源；当前候选失败时尝试另一个合法选择。
