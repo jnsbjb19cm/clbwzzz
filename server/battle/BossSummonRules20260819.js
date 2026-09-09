@@ -12,6 +12,14 @@ const MONSTER_TOASTER_CARD_ID = 20;
 const WALNUT_GUARD_CARD_ID = 2;
 const BURROW_CARD_IDS = new Set([43, 41]); // 钻地大蒜 / 地道工兵
 const REAR_SUPPORT_CARD_IDS = new Set([36]); // 蒲公英精灵
+const PHANTOM_FLYING_NINJA_CARD_ID = 45; // 幻.飞行忍者
+const GIANT_HEAD_CARD_ID = 5; // 巨头怪
+const SLIME_NINJA_CARD_ID = 28; // 软泥忍者怪
+const DANDELION_CARD_ID = 36; // 蒲公英精灵
+
+// 循环波次里的特殊召唤数量：简单/普通/困难。
+const DIFFICULTY_BURROW_COUNT = Object.freeze({ 简单: 1, 普通: 2, 困难: 5 });
+const DIFFICULTY_FLYING_NINJA_COUNT = Object.freeze({ 简单: 3, 普通: 5, 困难: 5 });
 
 // 每个 BOSS 固定最多 10 种部署卡，单位数量另外计算。
 const FIXED_HIGH_CARD_IDS = Object.freeze([36, 32, 54, 41, 43, 45, 64, MONSTER_TOASTER_CARD_ID]);
@@ -84,6 +92,10 @@ const DIFFICULTY_SUMMON_PROFILE = Object.freeze({
 
 function profileOf(battle) {
   return DIFFICULTY_SUMMON_PROFILE[battle.difficulty] ?? DIFFICULTY_SUMMON_PROFILE.简单;
+}
+
+function isTargetBoss(battle) {
+  return ['boss_dot', 'boss_gravo'].includes(String(battle?.bossInfo?.id || ''));
 }
 
 function rosterOf(battle) {
@@ -211,12 +223,16 @@ function spawnUnit(battle, card, lane, col, wave, { sentinel = false } = {}) {
   const formation = FORMATION.find(slot => slot.id === Number(card.id));
   if (formation && activeCardCount(battle, card.id) >= formation.lanes.length) return null;
 
+  // 多特/沃里尔 BOSS 战中，敌方蒲公英精灵固定为普通品质、0 星。
+  const isDandelion = isTargetBoss(battle) && Number(card.id) === DANDELION_CARD_ID;
   const unit = new BattleUnit({
     card,
     lane,
     col,
     team: 'enemy',
-    instance: instanceForWave(battle, wave),
+    instance: isDandelion
+      ? { craftQuality: 2, strengthLv: 0, star: 0 }
+      : instanceForWave(battle, wave),
   });
   unit.uid = ++battle.uidSeq;
   unit.pvpBossMinion = true;
@@ -254,6 +270,7 @@ function spawnUnit(battle, card, lane, col, wave, { sentinel = false } = {}) {
 function batchCountForCard(battle, card, wave) {
   const cardId = Number(card?.id ?? card?.card_id);
   if (cardId === STONE_GIANT_CARD_ID) return 1;
+  if (isTargetBoss(battle) && (cardId === GIANT_HEAD_CARD_ID || cardId === SLIME_NINJA_CARD_ID)) return 5;
   if (BURROW_CARD_IDS.has(cardId)) return 1;
   return profileOf(battle).batch(wave);
 }
@@ -264,7 +281,12 @@ function spawnMainBatch(battle, wave, limit = profileOf(battle).batch(wave)) {
   const card = chooseCard(battle, movablePool, wave - 1);
   if (!card) return [];
 
-  const count = Math.min(limit, batchCountForCard(battle, card, wave));
+  const cardId = Number(card?.id ?? card?.card_id);
+  const target = batchCountForCard(battle, card, wave);
+  // 多特/沃里尔 BOSS 战中，巨头怪/软泥忍者怪固定 5 只，不因普通波批次上限被压到 3。
+  const count = (isTargetBoss(battle) && (cardId === GIANT_HEAD_CARD_ID || cardId === SLIME_NINJA_CARD_ID))
+    ? target
+    : Math.min(limit, target);
   const lanes = laneOrder(count, wave);
   const col = chooseColumn(battle, lanes, { card });
   if (col == null) return [];
@@ -286,6 +308,47 @@ function spawnFormation(battle, wave, limit) {
       if (unit) spawned.push(unit);
     }
   }
+  return spawned;
+}
+
+// 循环波次特殊召唤：
+// - 第 4 波（4,14,24...）加钻地大蒜/地道工兵：简单1 / 普通2 / 困难5
+// - 第 11 波（11,21,31...）加幻.飞行忍者：简单3 / 普通5 / 困难5
+function spawnWaveSpecific(battle, wave) {
+  const spawned = [];
+  const bossId = String(battle.bossInfo?.id || '');
+  // 仅针对多特/沃里尔（格拉沃）这两个 BOSS 生效，不影响其他 BOSS。
+  if (!['boss_dot', 'boss_gravo'].includes(bossId)) return spawned;
+  const difficulty = String(battle.difficulty || '简单');
+
+  if (wave % 10 === 4) {
+    const count = Math.max(1, Number(DIFFICULTY_BURROW_COUNT[difficulty]) || 1);
+    const burrowIds = [...BURROW_CARD_IDS];
+    for (let i = 0; i < count; i += 1) {
+      const cardId = burrowIds[i % burrowIds.length];
+      const card = battle.db?.getById?.(cardId);
+      if (!card) continue;
+      const lane = Math.max(0, (wave + i) % 5);
+      const col = chooseColumn(battle, [lane], { card });
+      if (col == null) continue;
+      const unit = spawnUnit(battle, card, lane, col, wave);
+      if (unit) spawned.push(unit);
+    }
+  }
+
+  if (wave > 10 && wave % 10 === 1) {
+    const count = Math.max(1, Number(DIFFICULTY_FLYING_NINJA_COUNT[difficulty]) || 3);
+    const card = battle.db?.getById?.(PHANTOM_FLYING_NINJA_CARD_ID);
+    if (!card) return spawned;
+    const lanes = laneOrder(count, wave);
+    const col = chooseColumn(battle, lanes, { card });
+    if (col == null) return spawned;
+    for (const lane of lanes) {
+      const unit = spawnUnit(battle, card, lane, col, wave);
+      if (unit) spawned.push(unit);
+    }
+  }
+
   return spawned;
 }
 
@@ -340,6 +403,7 @@ export function installBossSummonRules20260819() {
     const budget = profileOf(this).batch(wave);
     const spawned = spawnFormation(this, wave, Math.ceil(budget / 2));
     spawned.push(...spawnMainBatch(this, wave, budget - spawned.length));
+    spawned.push(...spawnWaveSpecific(this, wave));
     this.engine.pushLog?.('【' + this.bossInfo.name + '】第' + wave + '批：补充' + spawned.length + '个单位（卡池' + fullPoolOf(this).length + '种）');
     return spawned;
   };
