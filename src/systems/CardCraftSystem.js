@@ -198,7 +198,9 @@ export class CardCraftSystem {
       dnaRefunded,
       message: resultCard?.isExperienceCard
         ? `制作成功：${displayName}`
-        : `${outcomeLabel}：${displayName}(${cqInfo.baseLabel}底座)${dnaNote}`,
+        : outcome === 'target'
+          ? `恭喜您，制作成功出【${cqInfo.name}】的${resultCard?.name ?? displayName}${dnaNote}`
+          : `${outcomeLabel}：${displayName}(${cqInfo.baseLabel}底座)${dnaNote}`,
     };
   }
 

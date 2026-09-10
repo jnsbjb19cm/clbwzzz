@@ -178,7 +178,7 @@
   min-height: 0;
   padding: 10px 12px !important;
   display: grid !important;
-  grid-template-columns: minmax(330px, 31%) minmax(420px, 1fr) minmax(245px, 25%);
+  grid-template-columns: minmax(330px, 30%) minmax(420px, 1fr) minmax(200px, 19%);
   gap: 12px !important;
   overflow: hidden;
   background: rgba(89, 139, 48, .18);
@@ -430,7 +430,7 @@
 }
 
 @media (max-width: 1180px) {
-  .classic-bag-screen .bag-body { grid-template-columns: 310px minmax(360px, 1fr) 235px; }
+  .classic-bag-screen .bag-body { grid-template-columns: 300px minmax(360px, 1fr) 200px; }
   .classic-bag-screen .bag-role-frame { min-height: 250px; }
   .classic-bag-footer .bag-currency { min-width: 82px; }
   .classic-bag-footer { gap: 6px; }

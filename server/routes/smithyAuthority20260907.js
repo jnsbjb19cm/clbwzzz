@@ -59,6 +59,8 @@ function isCraftable(card) {
 function defaultSmithyState() {
   return {
     craftPity: {},
+    // 每张目标卡独立保存：{ count: 连续成功未出完美的次数, guarantee: 下次成功必完美 }
+    perfectPity: {},
     star: { failures: {}, pity: {}, protections: {}, escrow: [] },
   };
 }
@@ -69,6 +71,7 @@ function normalizeSmithyState(raw) {
   const star = raw.star && typeof raw.star === 'object' ? raw.star : {};
   return {
     craftPity: raw.craftPity && typeof raw.craftPity === 'object' ? raw.craftPity : {},
+    perfectPity: raw.perfectPity && typeof raw.perfectPity === 'object' ? raw.perfectPity : {},
     star: {
       failures: star.failures && typeof star.failures === 'object' ? star.failures : {},
       pity: star.pity && typeof star.pity === 'object' ? star.pity : {},
@@ -281,6 +284,14 @@ function rollCraftQuality(useCharm) {
   return 1;
 }
 
+function craftQualityName(quality) {
+  const id = Math.max(1, Math.min(5, int(quality, 1)));
+  const entry = (craftRules.craftQualityWeights ?? []).find(
+    (row) => Math.max(1, Math.min(5, int(row.id, 0) + 1)) === id,
+  );
+  return String(entry?.name || '');
+}
+
 async function responseSnapshot(userId, extra = {}) {
   const [cardInventory, snapshot, smithyState, items] = await Promise.all([
     readCardInventory(userId),
@@ -378,7 +389,36 @@ smithyAuthorityRouter20260907.post('/craft', async (req, res) => {
         resultCard = randomPick(pool, targetId) ?? target;
       }
 
-      const craftQuality = rollCraftQuality(useCharm);
+      const perfectKey = String(targetId);
+      const previousPerfect = state.perfectPity[perfectKey] ?? {};
+      let perfectCount = Math.max(0, int(previousPerfect.count));
+      let perfectGuarantee = Boolean(previousPerfect.guarantee);
+      let craftQuality;
+      if (perfectGuarantee) {
+        // 30 次保底命中了 3% 精良 → 本次成功必完美
+        craftQuality = 5;
+        perfectCount = 0;
+        perfectGuarantee = false;
+      } else if (perfectCount >= 30) {
+        // 30 次保底：3% 精良 / 97% 完美
+        craftQuality = Math.random() < 0.03 ? 3 : 5;
+        if (craftQuality === 3) {
+          perfectCount = 0;
+          perfectGuarantee = true;
+        } else {
+          perfectCount = 0;
+          perfectGuarantee = false;
+        }
+      } else {
+        craftQuality = rollCraftQuality(useCharm);
+        if (craftQuality === 5) {
+          perfectCount = 0;
+          perfectGuarantee = false;
+        } else {
+          perfectCount += 1;
+        }
+      }
+      state.perfectPity[perfectKey] = { count: perfectCount, guarantee: perfectGuarantee };
       await insertCard(conn, userId, {
         cardId: int(resultCard.card_id),
         star: 0,
@@ -389,6 +429,11 @@ smithyAuthorityRouter20260907.post('/craft', async (req, res) => {
       else delete state.craftPity[String(targetId)];
       await writeSmithyState(conn, userId, state);
       const label = outcome === 'target' ? '制作成功' : outcome === 'ascend' ? '升变' : '歪了';
+      const resultName = String(resultCard.card_name || resultCard.card_id);
+      const qualityName = craftQualityName(craftQuality);
+      const message = outcome === 'target'
+        ? `恭喜您，制作成功出【${qualityName}】的${resultName}${dnaRefunded ? '，DNA已返还' : ''}`
+        : `${label}：${resultName}${dnaRefunded ? '，DNA已返还' : ''}`;
       return {
         result: outcome,
         outcome,
@@ -397,7 +442,7 @@ smithyAuthorityRouter20260907.post('/craft', async (req, res) => {
         craftQuality,
         bound: outputBound,
         dnaRefunded,
-        message: `${label}：${String(resultCard.card_name || resultCard.card_id)}${dnaRefunded ? '，DNA已返还' : ''}`,
+        message,
       };
     });
     const response = await responseSnapshot(userId, result);
