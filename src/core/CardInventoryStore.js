@@ -215,24 +215,36 @@ export class CardInventoryStore {
       .filter(({ slot }) => slot && isCraftableCard(this.cardDb.getById(slot.cardId)));
   }
 
-  organize() {
+  organize(mode = 'level') {
     const filled = this.state.slots.filter(Boolean);
     filled.sort((a, b) => {
       const ca = this.cardDb.getById(a.cardId);
       const cb = this.cardDb.getById(b.cardId);
       if (!ca || !cb) return 0;
-      if (cb.quality !== ca.quality) return cb.quality - ca.quality;
+      const levelA = Number(ca.quality) || 0;
+      const levelB = Number(cb.quality) || 0;
       const cqA = a.craftQuality ?? 1;
       const cqB = b.craftQuality ?? 1;
-      if (cqB !== cqA) return cqB - cqA;
       const stA = a.strengthLv ?? 0;
       const stB = b.strengthLv ?? 0;
+      if (mode === 'star') {
+        if (stB !== stA) return stB - stA;
+        if (levelB !== levelA) return levelB - levelA;
+        if (cqB !== cqA) return cqB - cqA;
+        return ca.id - cb.id;
+      }
+      if (mode === 'id') {
+        return ca.id - cb.id;
+      }
+      // level（默认）：等级 → 底座品质 → 星级 → ID
+      if (levelB !== levelA) return levelB - levelA;
+      if (cqB !== cqA) return cqB - cqA;
       if (stB !== stA) return stB - stA;
       return ca.id - cb.id;
     });
     const n = this.state.slotCount;
     this.state.slots = [...filled, ...Array(Math.max(0, n - filled.length)).fill(null)];
     this.save();
-    return { ok: true, count: filled.length };
+    return { ok: true, count: filled.length, mode };
   }
 }

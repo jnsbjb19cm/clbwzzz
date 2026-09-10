@@ -353,10 +353,11 @@ export class InventoryStore {
   }
 
   /** 整理：合并堆叠 + 按类型/ID排序，空格子靠后 */
-  organize() {
+  organize(mode = 'default') {
     this.consolidateSlots();
     const filled = this.state.slots.filter(Boolean);
     filled.sort((a, b) => {
+      if (mode === 'id') return a.itemId - b.itemId;
       const ia = this.itemDb.getById(a.itemId);
       const ib = this.itemDb.getById(b.itemId);
       const ta = ia?.type ?? 0;
@@ -367,6 +368,6 @@ export class InventoryStore {
     const n = this.state.slotCount;
     this.state.slots = [...filled, ...Array(Math.max(0, n - filled.length)).fill(null)];
     this.save();
-    return { ok: true, count: filled.length };
+    return { ok: true, count: filled.length, mode };
   }
 }

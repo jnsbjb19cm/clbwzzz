@@ -55,6 +55,10 @@ export class BagView {
     this.cardQuality = '';
     this.selectedIndex = -1;
     this._imeComposing = false;
+    this._organizeModeIndex = 0;
+    this.autoOrganize = (() => {
+      try { return localStorage.getItem('clbwz_bag_auto_organize') === '1'; } catch { return false; }
+    })();
   }
 
   render(root) {
@@ -185,6 +189,7 @@ export class BagView {
           ).join('')}
         </div>
         <button type="button" id="bag-organize" class="bag-deck-btn">整理背包</button>
+        <button type="button" id="bag-auto-organize" class="bag-deck-btn${this.autoOrganize ? ' active' : ''}">自动整理：${this.autoOrganize ? '开' : '关'}</button>
         <button type="button" id="bag-expand" class="bag-expand-btn">扩容背包</button>
         <button type="button" id="bag-test-gem" class="bag-deck-btn" title="测试用">测试+红钻</button>
         <button type="button" id="bag-grant-mat" class="bag-deck-btn" title="补发羊皮纸/宝石/保护符等">补发材料</button>
@@ -219,6 +224,7 @@ export class BagView {
         });
       });
       toolbar.querySelector('#bag-organize')?.addEventListener('click', () => this.handleOrganize(root));
+      toolbar.querySelector('#bag-auto-organize')?.addEventListener('click', () => this.toggleAutoOrganize(root));
       toolbar.querySelector('#bag-expand').addEventListener('click', () => this.handleExpand(root));
       toolbar.querySelector('#bag-test-gem')?.addEventListener('click', () => this.handleTestGem(root));
       toolbar.querySelector('#bag-reset').addEventListener('click', () => this.handleReset(root));
@@ -245,6 +251,7 @@ export class BagView {
         </select>
       </label>
       <button type="button" id="bag-organize" class="bag-deck-btn">整理背包</button>
+      <button type="button" id="bag-auto-organize" class="bag-deck-btn${this.autoOrganize ? ' active' : ''}">自动整理：${this.autoOrganize ? '开' : '关'}</button>
       <button type="button" id="bag-expand" class="bag-expand-btn">扩容卡牌背包</button>
       <button type="button" id="bag-test-gem" class="bag-deck-btn" title="测试用">测试+红钻</button>
       <button type="button" id="bag-grant-all" class="bag-deck-btn" title="补齐当前缺少的可战斗卡牌">补全卡</button>
@@ -283,6 +290,7 @@ export class BagView {
       this.refresh(root, { rebuildToolbar: false });
     });
     toolbar.querySelector('#bag-organize')?.addEventListener('click', () => this.handleOrganize(root));
+    toolbar.querySelector('#bag-auto-organize')?.addEventListener('click', () => this.toggleAutoOrganize(root));
     toolbar.querySelector('#bag-expand').addEventListener('click', () => this.handleExpand(root));
     toolbar.querySelector('#bag-test-gem')?.addEventListener('click', () => this.handleTestGem(root));
     toolbar.querySelector('#bag-grant-all')?.addEventListener('click', () => {
@@ -305,11 +313,35 @@ export class BagView {
   handleOrganize(root) {
     audio.playSfx('click');
     const store = this.getActiveStore();
-    const res = store.organize();
+    let mode = 'default';
+    let modeLabel = '默认排序';
+    if (this.mode === 'card') {
+      const modes = ['level', 'star', 'id'];
+      mode = modes[this._organizeModeIndex % modes.length];
+      this._organizeModeIndex = (this._organizeModeIndex + 1) % modes.length;
+      modeLabel = mode === 'level' ? '等级排序' : mode === 'star' ? '星级排序' : '默认ID排序';
+    }
+    const res = store.organize(mode);
     this.selectedIndex = -1;
     this.refresh(root);
     const unit = this.mode === 'card' ? '张卡牌' : '格物品';
-    this.toast(root, `已整理 ${res.count} ${unit}`);
+    this.toast(root, `已整理 ${res.count} ${unit}（${modeLabel}）`);
+  }
+
+  hasFrontGaps() {
+    const store = this.getActiveStore();
+    const slots = store?.state?.slots ?? [];
+    const lastFilled = slots.reduce((last, slot, index) => (slot ? index : last), -1);
+    if (lastFilled <= 0) return false;
+    return slots.slice(0, lastFilled).some((slot) => !slot);
+  }
+
+  toggleAutoOrganize(root) {
+    audio.playSfx('click');
+    this.autoOrganize = !this.autoOrganize;
+    try { localStorage.setItem('clbwz_bag_auto_organize', this.autoOrganize ? '1' : '0'); } catch { /* ignore */ }
+    this.refresh(root);
+    this.toast(root, this.autoOrganize ? '已开启自动整理：背包前方有空位时自动整理' : '已关闭自动整理');
   }
 
   handleTestGem(root) {
@@ -449,6 +481,7 @@ export class BagView {
   }
 
   renderItemGrid(root, grid) {
+    if (this.autoOrganize && this.hasFrontGaps()) this.inventory.organize('default');
     const entries = this.getVisibleItemSlots();
     grid.innerHTML = entries
       .map(({ slot, index }) => {
@@ -479,6 +512,7 @@ export class BagView {
   }
 
   renderCardGrid(root, grid) {
+    if (this.autoOrganize && this.hasFrontGaps()) this.cardInventory.organize('level');
     const entries = this.getVisibleCardSlots();
     grid.innerHTML = entries
       .map(({ slot, index }) => {
