@@ -502,6 +502,17 @@ export class CoopBossBattle {
       target = { lane, col: 2 };
     }
 
+    // 沃里尔的雷鸣之箭：从全屏改为单格，选取玩家最多的线路中血量最高的单位所在格。
+    if (skillId === 527 && players.length) {
+      const laneCounts = new Map();
+      for (const unit of players) laneCounts.set(unit.lane, (laneCounts.get(unit.lane) || 0) + 1);
+      const lane = [...laneCounts].sort((a, b) => b[1] - a[1] || a[0] - b[0])[0][0];
+      const focus = players
+        .filter((unit) => unit.lane === lane)
+        .sort((a, b) => Number(b.maxHp) - Number(a.maxHp) || Number(a.uid) - Number(b.uid))[0];
+      target = { lane, col: Math.max(0, Math.min(11, Math.round(Number(focus?.col) || 0))) };
+    }
+
     this.pushVisualEvent({
       kind: 'boss-skill',
       team: 'red',
@@ -578,16 +589,14 @@ export class CoopBossBattle {
       return;
     }
     if (skillId === 527) {
-      const living = players.filter((unit) => unit.alive);
-      for (const unit of living) {
-        this.engine.skills.hitUnit(unit, effect.damage * this.difficultyMult);
+      // 沃里尔的雷鸣之箭：单格 80 点伤害（基础值 80 × 难度倍率）。
+      if (target == null) return;
+      const damage = 80 * this.difficultyMult;
+      for (const unit of players.filter((entry) => entry.lane === target.lane
+        && Math.round(Number(entry.col) || 0) === target.col)) {
+        this.engine.skills.hitUnit(unit, damage);
       }
-      const focus = living
-        .filter((unit) => unit.alive)
-        .sort((a, b) => Number(b.maxHp) - Number(a.maxHp) || Number(a.uid) - Number(b.uid))[0];
-      if (focus) {
-        this.engine.skills.hitUnit(focus, effect.damage * living.length * this.difficultyMult);
-      }
+      return;
     }
   }
 
