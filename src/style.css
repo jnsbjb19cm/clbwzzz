@@ -3231,25 +3231,33 @@ body.battle-immersive .top-ui {
 
 /* 铁匠铺卡牌列表滚动条：使用与铁匠铺面板一致的蓝绿色系。 */
 .classic-smithy-screen .smithy-card-pick-grid,
-.game-room .room-tool-smithy .smithy-card-pick-grid {
+.classic-smithy-screen .smithy-card-catalogue,
+.game-room .room-tool-smithy .smithy-card-pick-grid,
+.game-room .room-tool-smithy .smithy-card-catalogue {
   scrollbar-width: thin;
   scrollbar-color: rgba(104, 196, 232, .78) rgba(4, 49, 69, .65);
 }
 
 .classic-smithy-screen .smithy-card-pick-grid::-webkit-scrollbar,
-.game-room .room-tool-smithy .smithy-card-pick-grid::-webkit-scrollbar {
+.classic-smithy-screen .smithy-card-catalogue::-webkit-scrollbar,
+.game-room .room-tool-smithy .smithy-card-pick-grid::-webkit-scrollbar,
+.game-room .room-tool-smithy .smithy-card-catalogue::-webkit-scrollbar {
   width: 10px;
   height: 10px;
 }
 
 .classic-smithy-screen .smithy-card-pick-grid::-webkit-scrollbar-track,
-.game-room .room-tool-smithy .smithy-card-pick-grid::-webkit-scrollbar-track {
+.classic-smithy-screen .smithy-card-catalogue::-webkit-scrollbar-track,
+.game-room .room-tool-smithy .smithy-card-pick-grid::-webkit-scrollbar-track,
+.game-room .room-tool-smithy .smithy-card-catalogue::-webkit-scrollbar-track {
   border-radius: 8px;
   background: rgba(4, 49, 69, .65);
 }
 
 .classic-smithy-screen .smithy-card-pick-grid::-webkit-scrollbar-thumb,
-.game-room .room-tool-smithy .smithy-card-pick-grid::-webkit-scrollbar-thumb {
+.classic-smithy-screen .smithy-card-catalogue::-webkit-scrollbar-thumb,
+.game-room .room-tool-smithy .smithy-card-pick-grid::-webkit-scrollbar-thumb,
+.game-room .room-tool-smithy .smithy-card-catalogue::-webkit-scrollbar-thumb {
   border: 2px solid rgba(4, 49, 69, .65);
   border-radius: 8px;
   background: linear-gradient(180deg, #3aa8d2, #0a6a91);

@@ -639,35 +639,55 @@ smithyAuthorityRouter20260907.post('/decompose', async (req, res) => {
   const userId = req.user.id;
   try {
     const result = await withTransaction(async (conn) => {
-      const slotIndex = int(req.body?.slotIndex, -1);
-      const slot = await readCardSlot(conn, userId, slotIndex);
-      if (!slot) throw new Error('未选择卡牌');
-      const card = CARD_BY_ID.get(slot.cardId);
-      if (!card) throw new Error('无效卡牌');
-      const quality = cardQuality(card);
-      const base = craftRules.decomposeBase[String(quality)] ?? craftRules.decomposeBase['1'];
-      const craftBonus = Number(slot.craftQuality ?? 1) >= 3 ? 1 : 0;
-      const materialLevel = Math.min(4, Math.max(1, quality));
-      const material = LEVEL_CONFIG.get(materialLevel);
-      const piece = PIECE_BY_CARD.get(slot.cardId);
-      const rewards = {
-        gem: int(base.gem) + craftBonus,
-        gemId: material?.gem ?? null,
-        parchmentChance: Number(base.parchmentChance) || 0,
-        parchmentId: material?.parchment ?? null,
-        pieceItemId: piece?.item_id ?? null,
-        pieceCount: piece ? Math.max(1, Math.floor(Number(piece.need_num) / 4)) : 0,
-        bound: Boolean(slot.bound),
-      };
-      await removeCard(conn, userId, slotIndex);
-      if (rewards.gemId) await addItem(conn, userId, rewards.gemId, rewards.gem, rewards.bound);
-      if (rewards.parchmentId && Math.random() < rewards.parchmentChance) {
-        await addItem(conn, userId, rewards.parchmentId, 1, rewards.bound);
+      const rawIndices = Array.isArray(req.body?.slotIndices) ? req.body.slotIndices : [req.body?.slotIndex];
+      const indices = [...new Set(rawIndices.map((value) => int(value, -1)).filter((value) => value >= 0))];
+      if (!indices.length) throw new Error('未选择卡牌');
+
+      const entries = [];
+      for (const index of indices) {
+        const slot = await readCardSlot(conn, userId, index);
+        if (!slot) throw new Error('卡牌不存在');
+        const card = CARD_BY_ID.get(slot.cardId);
+        if (!card) throw new Error('无效卡牌');
+        entries.push({ index, slot, card });
       }
-      if (rewards.pieceItemId && rewards.pieceCount > 0) {
-        await addItem(conn, userId, rewards.pieceItemId, rewards.pieceCount, rewards.bound);
+
+      const rewards = { count: entries.length, gem: 0, gemId: null, parchmentId: null, pieceItemId: null, pieceCount: 0 };
+      // 多选分解必须从高到低删除，避免前面的删除导致后面的索引位移。
+      for (const entry of [...entries].sort((a, b) => b.index - a.index)) {
+        const { index, slot, card } = entry;
+        const quality = cardQuality(card);
+        const base = craftRules.decomposeBase[String(quality)] ?? craftRules.decomposeBase['1'];
+        const craftBonus = Number(slot.craftQuality ?? 1) >= 3 ? 1 : 0;
+        const materialLevel = Math.min(4, Math.max(1, quality));
+        const material = LEVEL_CONFIG.get(materialLevel);
+        const piece = PIECE_BY_CARD.get(slot.cardId);
+        const bound = Boolean(slot.bound);
+        const gem = int(base.gem) + craftBonus;
+        const pieceItemId = piece?.item_id ?? null;
+        const pieceCount = piece ? Math.max(1, Math.floor(Number(piece.need_num) / 4)) : 0;
+
+        await removeCard(conn, userId, index);
+        if (material?.gem) {
+          await addItem(conn, userId, material.gem, gem, bound);
+          rewards.gemId = material.gem;
+          rewards.gem += gem;
+        }
+        if (material?.parchment && Math.random() < (Number(base.parchmentChance) || 0)) {
+          await addItem(conn, userId, material.parchment, 1, bound);
+          rewards.parchmentId = material.parchment;
+        }
+        if (pieceItemId && pieceCount > 0) {
+          await addItem(conn, userId, pieceItemId, pieceCount, bound);
+          rewards.pieceItemId = pieceItemId;
+          rewards.pieceCount += pieceCount;
+        }
       }
-      return { rewards, message: `已分解「${String(card.card_name || slot.cardId)}」` };
+
+      const message = entries.length === 1
+        ? `已分解「${String(entries[0].card.card_name || entries[0].slot.cardId)}」`
+        : `已分解 ${entries.length} 张卡牌`;
+      return { rewards, message };
     });
     return res.json(await responseSnapshot(userId, result));
   } catch (error) {

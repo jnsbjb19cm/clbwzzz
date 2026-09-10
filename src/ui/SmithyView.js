@@ -485,24 +485,38 @@ export class SmithyView {
     this.renderUpgradeRoute(root, body, 'powder');
   }
   renderDecompose(root, body) {
-    const entries = this.cardInventory.getSlots()
+    const slots = this.cardInventory.getSlots();
+    const entries = slots
       .map((slot, index) => ({ slot, index }))
       .filter(({ slot }) => slot && !this.db.getById(slot.cardId)?.isExperienceCard);
-    const sel = this.cardIndex >= 0 ? this.cardInventory.getSlots()[this.cardIndex] : null;
-    const card = sel ? this.db.getById(sel.cardId) : null;
-    const pv = sel && card ? this.decomposeSys.preview(sel, card) : null;
+    if (!(this.decomposeIndices instanceof Set)) this.decomposeIndices = new Set();
+    for (const index of [...this.decomposeIndices]) {
+      const slot = slots[index];
+      if (!slot || this.db.getById(slot.cardId)?.isExperienceCard) this.decomposeIndices.delete(index);
+    }
+    const selected = [...this.decomposeIndices].sort((a, b) => a - b);
+    const previews = selected
+      .map((index) => {
+        const slot = slots[index];
+        const card = slot ? this.db.getById(slot.cardId) : null;
+        return slot && card ? { index, slot, card, pv: this.decomposeSys.preview(slot, card) } : null;
+      })
+      .filter(Boolean);
+    const totalGem = previews.reduce((sum, entry) => sum + (entry.pv?.gem ?? 0), 0);
+    const totalPiece = previews.reduce((sum, entry) => sum + (entry.pv?.pieceCount ?? 0), 0);
+    const maxParchment = previews.reduce((max, entry) => Math.max(max, entry.pv?.parchmentChance ?? 0), 0);
 
     body.innerHTML = `
       <div class="smithy-craft-layout smithy-decompose-layout">
         <section class="smithy-panel smithy-card-catalogue">
-          <h2>选择要分解的卡</h2>
+          <h2>选择要分解的卡（可多选）</h2>
           <div class="smithy-card-pick-grid">
             ${entries.map(({ slot, index }) => {
               const c = this.db.getById(slot.cardId);
               const cq = resolveCraftQuality(slot.craftQuality);
               const label = formatCraftCardName(slot.craftQuality, c.name);
               return `
-                <button type="button" class="smithy-pick-card${index === this.cardIndex ? ' selected' : ''}" data-idx="${index}"
+                <button type="button" class="smithy-pick-card${this.decomposeIndices.has(index) ? ' selected' : ''}" data-idx="${index}"
                   style="--quality:${cq.color}" title="${label}">
                   <img src="/sprites/cards/${c.spriteRes}.png" alt="" />
                   <span class="smithy-card-label">${label}</span>
@@ -511,17 +525,14 @@ export class SmithyView {
           </div>
         </section>
         <aside class="smithy-panel smithy-craft-side smithy-decompose-side">
-          ${pv ? `
-            <div class="classic-forge-preview">
-              <img src="/sprites/cards/${card.spriteRes}.png" alt="" />
-              <strong>${formatCraftCardName(sel.craftQuality, card.name)}</strong>
-            </div>
-            <h2 style="color:${resolveCraftQuality(sel.craftQuality).color}">${formatCraftCardName(sel.craftQuality, card.name)}</h2>
-            <p>返还宝石 x${pv.gem}</p>
-            <p>羊皮纸概率 ${(pv.parchmentChance * 100).toFixed(0)}%</p>
-            ${pv.pieceItemId ? `<p> x${pv.pieceCount}</p>` : ''}
-            <button type="button" id="do-decompose" class="bag-action danger">分解</button>
-          ` : '<p>点击左侧卡牌</p>'}
+          ${previews.length ? `
+            <h2>已选 ${previews.length} 张卡</h2>
+            <p>返还宝石 x${totalGem}</p>
+            <p>羊皮纸概率最高 ${(maxParchment * 100).toFixed(0)}%</p>
+            ${totalPiece > 0 ? `<p>碎片 x${totalPiece}</p>` : ''}
+            <button type="button" id="do-decompose" class="bag-action danger">一键分解(${previews.length})</button>
+            <button type="button" id="do-decompose-clear" class="bag-action">清空选择</button>
+          ` : '<p>点击左侧卡牌，可多选后一键分解</p>'}
         </aside>
       </div>
     `;
@@ -529,15 +540,32 @@ export class SmithyView {
     body.querySelectorAll('[data-idx]').forEach((btn) => {
       btn.addEventListener('click', () => {
         audio.playClickCard();
-        this.cardIndex = Number(btn.dataset.idx);
+        const index = Number(btn.dataset.idx);
+        if (this.decomposeIndices.has(index)) this.decomposeIndices.delete(index);
+        else this.decomposeIndices.add(index);
+        this.cardIndex = index;
         this.renderBody(root);
       });
     });
-    body.querySelector('#do-decompose')?.addEventListener('click', () => {
-      if (!confirm(`确定分解「${formatCraftCardName(sel.craftQuality, card?.name ?? '')}」？`)) return;
-      const res = this.decomposeSys.decompose(this.inventory, this.cardInventory, this.cardIndex);
+    body.querySelector('#do-decompose-clear')?.addEventListener('click', () => {
+      this.decomposeIndices.clear();
       this.cardIndex = -1;
-      this.toast(root, res.message ?? res.error ?? '');
+      this.renderBody(root);
+    });
+    body.querySelector('#do-decompose')?.addEventListener('click', () => {
+      if (!previews.length) return;
+      const confirmText = previews.length === 1
+        ? `确定分解「${formatCraftCardName(previews[0].slot.craftQuality, previews[0].card.name)}」？`
+        : `确定分解选中的 ${previews.length} 张卡牌？`;
+      if (!confirm(confirmText)) return;
+      let count = 0;
+      for (const entry of [...previews].sort((a, b) => b.index - a.index)) {
+        const res = this.decomposeSys.decompose(this.inventory, this.cardInventory, entry.index);
+        if (res.ok) count += 1;
+      }
+      this.decomposeIndices.clear();
+      this.cardIndex = -1;
+      this.toast(root, `已分解 ${count} 张卡牌`);
       this.renderBody(root);
     });
   }

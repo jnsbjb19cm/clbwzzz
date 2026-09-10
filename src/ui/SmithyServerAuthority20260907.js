@@ -124,20 +124,35 @@ function bindServerActions(view, root) {
   });
 
   replaceAction(root, '#do-decompose', async () => {
-    const cardIndex = view.cardIndex;
-    const selected = view.cardInventory?.getSlots?.()?.[cardIndex];
-    const card = selected ? view.db?.getById?.(selected.cardId) : null;
-    if (!selected || !card) {
+    const slots = view.cardInventory?.getSlots?.() ?? [];
+    const indices = [...(view.decomposeIndices instanceof Set ? view.decomposeIndices : [])]
+      .map(Number)
+      .filter((index) => Number.isInteger(index) && index >= 0 && slots[index]);
+    if (!indices.length && view.cardIndex >= 0 && slots[view.cardIndex]) indices.push(Number(view.cardIndex));
+    if (!indices.length) {
       view.toast(root, '未选择卡牌');
       view.renderBody(root);
       return;
     }
-    if (!globalThis.confirm?.(`确定分解「${formatCraftCardName(selected.craftQuality, card.name)}」？`)) {
+    const names = indices
+      .map((index) => {
+        const slot = slots[index];
+        const card = slot ? view.db?.getById?.(slot.cardId) : null;
+        return card ? formatCraftCardName(slot.craftQuality, card.name) : String(slot?.cardId ?? '');
+      })
+      .filter(Boolean);
+    const confirmText = indices.length === 1
+      ? `确定分解「${names[0]}」？`
+      : `确定分解选中的 ${indices.length} 张卡牌？`;
+    if (!globalThis.confirm?.(confirmText)) {
       view.renderBody(root);
       return;
     }
-    const data = await callAuthority(view, '/decompose', { slotIndex: cardIndex });
-    if (data?.ok) view.cardIndex = -1;
+    const data = await callAuthority(view, '/decompose', { slotIndices: indices });
+    if (data?.ok) {
+      view.decomposeIndices?.clear?.();
+      view.cardIndex = -1;
+    }
     view.toast(root, data?.message ?? data?.error ?? '分解完成');
     view.renderBody(root);
   });
