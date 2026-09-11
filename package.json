@@ -60,7 +60,9 @@
     "start:prod": "npm run build:deploy && node server/index.js",
     "encrypt:db": "node scripts/encrypt-db-password.mjs",
     "build": "npm run build:data && npm run build:sprites && vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "verify:auction-cards": "node scripts/verify-auction-cards-20260909.mjs",
+    "verify:auction-ui": "node scripts/verify-auction-ui-20260909.mjs"
   },
   "dependencies": {
     "bcryptjs": "^3.0.2",
@@ -79,6 +81,7 @@
     "atf2png": "^1.1.1",
     "concurrently": "^9.2.0",
     "fast-xml-parser": "^5.2.5",
+    "jsdom": "30.0.1",
     "sharp": "^0.35.1",
     "vite": "^6.3.5"
   }

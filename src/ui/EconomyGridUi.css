@@ -185,3 +185,11 @@
   .economy-item-grid { max-height: 330px; }
   .economy-market-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
+
+/* A 72px icon canvas keeps atlas crops and gem proportions identical to BagView. */
+.economy-art{position:relative;display:inline-block;flex:none;vertical-align:middle;overflow:hidden;margin:0 auto}
+.economy-art-canvas{position:absolute;left:0;top:0;width:72px;height:72px;display:flex;align-items:center;justify-content:center;transform-origin:top left}
+.economy-art .bag-item-atlas{position:relative;display:block;width:64px;height:64px}
+.economy-art .bag-item-atlas>i{position:absolute;left:50%;top:50%;display:block;background-image:url('/atlas/items.png');background-repeat:no-repeat;transform-origin:center}
+.economy-art .bag-item-material{display:inline-grid;place-items:center;width:72px;height:72px;flex:none}
+.economy-art .bag-item-material img{width:100%;height:100%;object-fit:contain;margin:0;max-width:none}

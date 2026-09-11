@@ -1,6 +1,6 @@
 import { GuildView } from './GuildView.js';
 import { ItemDatabase } from '../core/ItemDatabase.js';
-import { getCraftMaterialImage } from './SmithyMaterialArtwork.js';
+import { economyItemIcon } from './EconomyItemIcon.js';
 import './EconomyGridUi.css';
 
 const PATCH_FLAG = Symbol.for('clbwzzz.guildWarehouseGrid20260905');
@@ -19,11 +19,7 @@ function itemName(id) {
   return itemDb.getById(Number(id))?.name ?? `道具#${id}`;
 }
 
-function iconMarkup(id, size = 48) {
-  const src = getCraftMaterialImage(Number(id));
-  if (src) return `<img class="bag-item-image" src="${src}" alt="" style="width:${size}px;height:${size}px" draggable="false">`;
-  return `<span class="fallback-icon" style="width:${size}px;height:${size}px">${Number(id) || '?'}</span>`;
-}
+function iconMarkup(id, size = 48) { return economyItemIcon(id, size); }
 
 function backpackSlots(items, source) {
   const rows = Array.isArray(items) ? items : [];
