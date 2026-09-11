@@ -62,7 +62,9 @@
     "build": "npm run build:data && npm run build:sprites && vite build",
     "preview": "vite preview",
     "verify:auction-cards": "node scripts/verify-auction-cards-20260909.mjs",
-    "verify:auction-ui": "node scripts/verify-auction-ui-20260909.mjs"
+    "verify:auction-ui": "node scripts/verify-auction-ui-20260909.mjs",
+    "verify:adventure-coop": "node scripts/verify-adventure-coop-20260911.mjs",
+    "verify:adventure-client": "node scripts/verify-adventure-client-20260911.mjs"
   },
   "dependencies": {
     "bcryptjs": "^3.0.2",

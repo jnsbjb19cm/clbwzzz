@@ -486,11 +486,13 @@ function enterPvpBattle(view) {
     cardInventory: view.cardInventory,
     heroSkills: null,
     pvp: {
+      mode: view.room.mode,
+      stageId: view.room.stageId,
       roomId: view.room.id,
       room: view.room,
       team: view.myTeam,
       socket: view.socket,
-      deckSlots,
+      deckSlots: view.room.mode === 'pve' ? normalizeDeck(view.deckSelect?._selected?.length ? view.deckSelect._selected : DeckSelectView.loadSavedDeck(view.cardInventory, view.db)) : deckSlots,
       mapId: view.room.mapId || '4',
       mapScene,
     },
@@ -547,7 +549,7 @@ export function installPvpWildernessRoomFinal() {
   // 房间界面保持原始实现(DeckSelectView 准备房间)，本补丁只接管 PVP 战斗场地
   const originalEnterBattle = RoomView.prototype.enterBattle;
   RoomView.prototype.enterBattle = function enterBattleWithWildernessPvp() {
-    if (this.room?.mode !== 'pvp') return originalEnterBattle.call(this);
+    if (!['pvp', 'pve'].includes(this.room?.mode)) return originalEnterBattle.call(this);
     return enterPvpBattle(this);
   };
 

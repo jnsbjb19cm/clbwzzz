@@ -75,8 +75,12 @@ function decorate(view, root) {
   const label = root?.querySelector?.('.immersive-stage');
   if (label) {
     label.textContent = view.pvp?.spectator
-      ? `观众 · ${view.pvp?.mode === 'boss' ? 'BOSS' : 'PVP'} · ${stageName(view.pvp?.mapId)}`
-      : `⚔ PVP · ${stageName(view.pvp?.mapId)}`;
+      ? `观众 · ${view.pvp?.mode === 'pve' ? '合作冒险' : view.pvp?.mode === 'boss' ? 'BOSS' : 'PVP'} · ${view.pvp?.mode === 'pve' ? view.engine.stage.stage_name : stageName(view.pvp?.mapId)}`
+      : view.pvp?.mode === 'pve' ? `合作冒险 · ${view.engine.stage.stage_name}` : `⚔ PVP · ${stageName(view.pvp?.mapId)}`;
+  }
+  if (view.pvp?.mode === 'pve') {
+    if (ownLabel) ownLabel.textContent = '我方基地';
+    if (enemyLabel) enemyLabel.textContent = view.engine.stage.enemy_name || '敌方基地';
   }
   root?.querySelector?.('.immersive-wave')?.remove?.();
   root?.querySelector?.('#stage-picker')?.closest?.('label')?.remove?.();
@@ -107,7 +111,7 @@ export function installPvpBattleBridgeFinal() {
       ? preferred
       : DeckSelectView.loadSavedDeck(this.cardInventory, this.db)
         ?? DeckSelectView.defaultDeckSlots(this.cardInventory, this.db);
-    return this.enterBattle(this.deckSlots, 1, {});
+    return this.enterBattle(this.deckSlots, this.pvp.mode === 'pve' ? Number(this.pvp.stageId) : 1, {});
   };
 
   const originalEnterBattle = BattleView.prototype.enterBattle;
@@ -128,7 +132,7 @@ export function installPvpBattleBridgeFinal() {
     this.engine.pvp = true;
     this.engine.waveNumber = 0;
     this.engine.totalWaves = 0;
-    this.engine.stage = {
+    if (this.pvp.mode !== 'pve') this.engine.stage = {
       ...this.engine.stage,
       mapBg_res: Number(this.pvp.mapId) || 4,
       stage_name: `PVP · ${stageName(this.pvp.mapId)}`,

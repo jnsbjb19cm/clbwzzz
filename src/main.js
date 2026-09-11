@@ -1,3 +1,4 @@
+import { installAdventureCoopClient20260911 } from './ui/AdventureCoopClient20260911.js';
 import './battle/BattleEngineBaseEdgeCompat.js';
 import './ui/BattleRoomExact.css';
 import './ui/BattleRoomStability.css';
@@ -223,6 +224,8 @@ installSystemAnnouncementClient();
 installCardLoreDetailPatch();
 // 最终性能收口必须在全部战斗表现补丁之后：只限制纯视觉队列，不改变伤害/目标/技能语义。
 installBattleRuntimePerformance20260905();
+
+installAdventureCoopClient20260911();
 
 const app = new App(document.getElementById('app'));
 const roomUtilityOverlay = new RoomUtilityOverlay(app);

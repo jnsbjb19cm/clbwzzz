@@ -1,3 +1,4 @@
+import { authStore } from '../core/AuthStore.js';
 import { audio } from '../core/AudioManager.js';
 import worldMapData from '../data/worldMap.json';
 import stageInfoData from '../data/stageInfo.json';
@@ -120,6 +121,10 @@ export class WorldMapView {
   }
 
   render(root) {
+    for (const progress of authStore.snapshot?.stages ?? []) {
+      if (progress.cleared) markWorldStageCleared(progress.stageId);
+    }
+    this.state = loadState();
     root.innerHTML = '<div class="page worldmap-page" style="position:absolute;inset:0;"><div class="worldmap-content" id="worldmap-content" style="position:absolute;inset:0;"></div><p class="bag-toast hidden" id="worldmap-toast"></p></div>';
     if (this.selectedMap === null) this.renderMapSelect(root);
     else this.renderMap(root);
@@ -369,7 +374,7 @@ export class WorldMapView {
       detail.innerHTML = '<div class="ch-stage-detail-inner claimed"><div class="ch-detail-left"><h3>\u5df2\u5b8c\u6210\uff1a' + escapeHtml(stageName(stage, index)) + '</h3><p>' + escapeHtml(desc) + '</p><p class="ch-detail-muted">\u5956\u52b1\u5df2\u9886\u53d6\uff1b\u53ef\u91cd\u590d\u6311\u6218\uff0c\u4e0d\u91cd\u590d\u53d1\u5956\u3002</p><div class="ch-detail-btns"><button type="button" class="ch-battle-btn ch-battle-replay">\u518d\u6b21\u6311\u6218</button></div></div><div class="ch-detail-right"><span class="ch-chest-icon">🎁</span><span>\u5df2\u9886\u53d6</span></div></div>';
       detail.querySelector('.ch-battle-replay')?.addEventListener('click', () => {
         audio.playSfx('click');
-        this.onNavigate?.('battle', { stageId: stage.id, chapterId: this.selectedChapter, enemyRandomMode: this.state.randomEnemy });
+        this.onNavigate?.('room', { stageId: stage.id, mapId: stage.map_id, stageName: stageName(stage, index), enemyRandomMode: this.state.randomEnemy, autoCreate: true });
       });
       return;
     }    const enemy = brokenText(stage.enemy_name) ? '未知' : (stage.enemy_name || '未知');
@@ -377,7 +382,7 @@ export class WorldMapView {
     detail.innerHTML = [
       '<div class="ch-stage-detail-inner"><div class="ch-detail-left"><h3>主线：', escapeHtml(stageName(stage, index)), '</h3><p>', escapeHtml(desc), '</p>',
       '<p class="ch-detail-muted">敌人：', escapeHtml(enemy), '</p><p class="ch-detail-muted">特殊奖励：', escapeHtml(rewardText(rewards)), '</p>',
-      '<div class="ch-detail-btns"><button type="button" class="ch-battle-btn">进入战斗</button></div><p class="ch-detail-muted">首次通关后自动发放特殊奖励。</p></div>',
+      '<div class="ch-detail-btns"><button type="button" class="ch-battle-btn">创建冒险房间</button></div><p class="ch-detail-muted">支持1～3人合作，队友可从游戏大厅加入；首次通关奖励由服务器发放。</p></div>',
       '<div class="ch-detail-right"><span class="ch-chest-icon">🎁</span><span class="ch-detail-ready">未领取</span></div></div>',
     ].join('');
 

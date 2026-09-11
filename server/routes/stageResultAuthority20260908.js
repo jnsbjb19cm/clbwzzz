@@ -89,96 +89,101 @@ async function addCard(conn, userId, cardId) {
   return true;
 }
 
+export async function settleStageResult(conn, userId, payload = {}) {
+  const won = Boolean(payload?.won);
+  const stageId = String(payload?.stageId ?? '').trim();
+  const stage = STAGE_BY_ID.get(stageId) ?? null;
+  const drops = won ? normalizeBattleDrops20260908(payload?.drops) : [];
+
+
+
+  const profile = await conn.get(
+    'SELECT level, exp, gold, honor FROM player_profiles WHERE user_id=?',
+    [userId],
+  );
+  if (!profile) throw new Error('玩家数据不存在');
+
+  let clearCount = 0;
+  let bestTimeMs = 0;
+  let honorGain = 0;
+  let firstClear = false;
+
+  if (won && stageId) {
+    const durationMs = clampInt(payload?.durationMs, 0, 3_600_000);
+    const bestStars = clampInt(payload?.bestStars ?? 1, 0, 3);
+    const existing = await conn.get(
+      'SELECT * FROM player_stage_progress WHERE user_id=? AND stage_id=?',
+      [userId, stageId],
+    );
+    firstClear = !existing || !Boolean(existing.cleared);
+    clearCount = Number(existing?.clear_count ?? 0) + 1;
+    bestTimeMs = Number(existing?.best_time_ms)
+      ? Math.min(Number(existing.best_time_ms), durationMs)
+      : durationMs;
+    const newBestStars = Math.max(Number(existing?.best_stars ?? 0), bestStars);
+    if (existing) {
+      await conn.run(`
+        UPDATE player_stage_progress
+        SET cleared=1, clear_count=?, best_stars=?, best_time_ms=?, updated_at=CURRENT_TIMESTAMP
+        WHERE user_id=? AND stage_id=?
+      `, [clearCount, newBestStars, bestTimeMs, userId, stageId]);
+    } else {
+      await conn.run(`
+        INSERT INTO player_stage_progress(user_id,stage_id,cleared,best_stars,clear_count,best_time_ms)
+        VALUES(?,?,1,?,?,?)
+      `, [userId, stageId, newBestStars, clearCount, bestTimeMs]);
+    }
+    honorGain = firstClear ? 50 : 10;
+  }
+
+  const base = getBattleRewards(stage, won);
+  let goldGain = Math.max(0, Number(base.gold) || 0);
+  let expGain = Math.max(0, Number(base.exp) || 0);
+  const firstRewards = won && firstClear ? parseFirstClearRewards(stage) : [];
+
+  for (const reward of firstRewards) {
+    if (reward.type === 3) goldGain += reward.amount;
+    else if (reward.type === 27) expGain += reward.amount;
+    else if (reward.type === 1) await addItem(conn, userId, reward.amount, 1, 0);
+    else if (reward.type === 2) await addCard(conn, userId, reward.amount);
+  }
+
+  for (const drop of drops) {
+    await addItem(conn, userId, drop.itemId, 1, 0);
+  }
+
+  const player = {
+    level: Number(profile.level) || 1,
+    exp: Number(profile.exp) || 0,
+  };
+  grantPlayerExp(player, expGain);
+  await conn.run(`
+    UPDATE player_profiles
+    SET level=?, exp=?, gold=gold+?, honor=honor+?, updated_at=CURRENT_TIMESTAMP
+    WHERE user_id=?
+  `, [player.level, player.exp, goldGain, honorGain, userId]);
+
+  const freshProfile = await conn.get(`
+    SELECT user_id AS userId, nickname, level, exp, hp, gold,
+           diamond, honor, arena, selected_deck_no AS selectedDeckNo
+    FROM player_profiles WHERE user_id=?
+  `, [userId]);
+  return {
+    clearCount,
+    bestTimeMs,
+    honorGain,
+    firstClear,
+    goldGain,
+    expGain,
+    persistedDrops: drops,
+    profile: freshProfile,
+  };
+}
+
 stageResultAuthorityRouter20260908.post('/stage-result', async (req, res) => {
   const userId = Number(req.user.id);
-  const won = Boolean(req.body?.won);
-  const stageId = String(req.body?.stageId ?? '').trim();
-  const stage = STAGE_BY_ID.get(stageId) ?? null;
-  const drops = won ? normalizeBattleDrops20260908(req.body?.drops) : [];
+  const result = await withTransaction(conn => settleStageResult(conn, userId, req.body));
 
-  const result = await withTransaction(async (conn) => {
-    const profile = await conn.get(
-      'SELECT level, exp, gold, honor FROM player_profiles WHERE user_id=?',
-      [userId],
-    );
-    if (!profile) throw new Error('玩家数据不存在');
-
-    let clearCount = 0;
-    let bestTimeMs = 0;
-    let honorGain = 0;
-    let firstClear = false;
-
-    if (won && stageId) {
-      const durationMs = clampInt(req.body?.durationMs, 0, 3_600_000);
-      const bestStars = clampInt(req.body?.bestStars ?? 1, 0, 3);
-      const existing = await conn.get(
-        'SELECT * FROM player_stage_progress WHERE user_id=? AND stage_id=?',
-        [userId, stageId],
-      );
-      firstClear = !existing || !Boolean(existing.cleared);
-      clearCount = Number(existing?.clear_count ?? 0) + 1;
-      bestTimeMs = Number(existing?.best_time_ms)
-        ? Math.min(Number(existing.best_time_ms), durationMs)
-        : durationMs;
-      const newBestStars = Math.max(Number(existing?.best_stars ?? 0), bestStars);
-      if (existing) {
-        await conn.run(`
-          UPDATE player_stage_progress
-          SET cleared=1, clear_count=?, best_stars=?, best_time_ms=?, updated_at=CURRENT_TIMESTAMP
-          WHERE user_id=? AND stage_id=?
-        `, [clearCount, newBestStars, bestTimeMs, userId, stageId]);
-      } else {
-        await conn.run(`
-          INSERT INTO player_stage_progress(user_id,stage_id,cleared,best_stars,clear_count,best_time_ms)
-          VALUES(?,?,1,?,?,?)
-        `, [userId, stageId, newBestStars, clearCount, bestTimeMs]);
-      }
-      honorGain = firstClear ? 50 : 10;
-    }
-
-    const base = getBattleRewards(stage, won);
-    let goldGain = Math.max(0, Number(base.gold) || 0);
-    let expGain = Math.max(0, Number(base.exp) || 0);
-    const firstRewards = won && firstClear ? parseFirstClearRewards(stage) : [];
-
-    for (const reward of firstRewards) {
-      if (reward.type === 3) goldGain += reward.amount;
-      else if (reward.type === 27) expGain += reward.amount;
-      else if (reward.type === 1) await addItem(conn, userId, reward.amount, 1, 0);
-      else if (reward.type === 2) await addCard(conn, userId, reward.amount);
-    }
-
-    for (const drop of drops) {
-      await addItem(conn, userId, drop.itemId, 1, 0);
-    }
-
-    const player = {
-      level: Number(profile.level) || 1,
-      exp: Number(profile.exp) || 0,
-    };
-    grantPlayerExp(player, expGain);
-    await conn.run(`
-      UPDATE player_profiles
-      SET level=?, exp=?, gold=gold+?, honor=honor+?, updated_at=CURRENT_TIMESTAMP
-      WHERE user_id=?
-    `, [player.level, player.exp, goldGain, honorGain, userId]);
-
-    const freshProfile = await conn.get(`
-      SELECT user_id AS userId, nickname, level, exp, hp, gold,
-             diamond, honor, arena, selected_deck_no AS selectedDeckNo
-      FROM player_profiles WHERE user_id=?
-    `, [userId]);
-    return {
-      clearCount,
-      bestTimeMs,
-      honorGain,
-      firstClear,
-      goldGain,
-      expGain,
-      persistedDrops: drops,
-      profile: freshProfile,
-    };
-  });
 
   return res.json({
     ok: true,

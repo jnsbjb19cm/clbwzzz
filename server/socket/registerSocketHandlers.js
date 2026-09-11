@@ -93,6 +93,7 @@ export function registerSocketHandlers(io) {
           user: { ...socket.user, socketId: socket.id },
           mode: payload.mode,
           stageId: payload.stageId,
+          enemyRandomMode: payload.enemyRandomMode,
           mapId: payload.mapId,
           size: payload.size,
           name: payload.name,

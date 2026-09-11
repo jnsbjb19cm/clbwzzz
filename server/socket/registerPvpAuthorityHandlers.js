@@ -1,3 +1,5 @@
+import { randomUUID } from 'node:crypto';
+import { settleAdventureBattle } from '../domain/adventureSettlement20260911.js';
 import { recordAuthorityPvpResult } from './SystemAnnouncementService.js';
 import { roomManager } from '../rooms/RoomManager.js';
 import { CoopBossBattle } from '../battle/CoopBossBattle.js';
@@ -271,11 +273,12 @@ function buildSnapshot(
   const serverTimeMs = monotonicNowMs();
   return {
     ...sharedBasic,
-    protocol: battle.mode === 'boss' ? 'server-authoritative-boss-v2' : 'server-authoritative-v5',
+    protocol: battle.mode === 'pve' ? 'server-authoritative-adventure-v1' : battle.mode === 'boss' ? 'server-authoritative-boss-v2' : 'server-authoritative-v5',
     seq,
     serverNow: Date.now(),
     serverTimeMs,
     viewerUserId: Number(userId),
+    adventureResult: entry.adventureResults?.[Number(userId)] ?? null,
     viewerTeam: team,
     resources,
     skill,
@@ -325,11 +328,12 @@ function buildSpectatorSnapshot(
   const serverTimeMs = monotonicNowMs();
   return {
     ...sharedBasic,
-    protocol: battle.mode === 'boss' ? 'server-authoritative-boss-v2' : 'server-authoritative-v5',
+    protocol: battle.mode === 'pve' ? 'server-authoritative-adventure-v1' : battle.mode === 'boss' ? 'server-authoritative-boss-v2' : 'server-authoritative-v5',
     seq,
     serverNow: Date.now(),
     serverTimeMs,
     viewerUserId: Number(userId),
+    adventureResult: entry.adventureResults?.[Number(userId)] ?? null,
     viewerTeam: 'blue',
     resources: null,
     skill: null,
@@ -437,6 +441,20 @@ async function awardAuthorityBattleDrops(room, entry) {
 }
 
 function broadcastFinished(io, room, entry) {
+  if (room.mode === 'pve') {
+    room.status = 'finished';
+    if (!entry.finishSettlement) {
+      entry.finishSettlement = settleAdventureBattle(entry.battleId, entry.battle, entry.announcementMembers)
+        .then(results => {
+          entry.adventureResults = results;
+          emitPersonalized(io, room, entry, 'pvp:authority:finished', { includeProjectiles: true });
+        }).catch(error => {
+          entry.finishSettlement = null;
+          console.error('[adventure] settlement failed', error);
+        });
+    }
+    return;
+  }
   if (!entry.finishSettlement) {
     entry.finishSettlement = awardAuthorityBattleDrops(room, entry)
       .catch((error) => console.error('[clbwzzz] award drops failed', error))
@@ -472,7 +490,7 @@ function scheduleFinishedCleanup(roomId, entry) {
 
 function createBattle(teams, cardDb) {
   const { room } = teams;
-  if (room.mode === 'boss') {
+  if (['boss', 'pve'].includes(room.mode)) {
     return new CoopBossBattle({
       roomId: room.id,
       members: [...room.members.values()].map((member) => ({
@@ -481,6 +499,8 @@ function createBattle(teams, cardDb) {
       })),
       db: cardDb,
       bossId: room.bossId,
+      stageId: room.mode === 'pve' ? room.stageId : undefined,
+      enemyRandomMode: room.enemyRandomMode,
       difficulty: room.difficulty,
     });
   }
@@ -533,7 +553,7 @@ function ensureAuthorityBattle(roomId, io, cardDb) {
   if (existing) return existing;
 
   const teams = roomManager.getTeams(numericRoomId);
-  if (!teams?.room || !['pvp', 'boss'].includes(teams.room.mode)) {
+  if (!teams?.room || !['pvp', 'boss', 'pve'].includes(teams.room.mode)) {
     throw new Error('权威战斗房间不存在');
   }
   if (!['starting', 'battling'].includes(teams.room.status)) {
@@ -542,6 +562,7 @@ function ensureAuthorityBattle(roomId, io, cardDb) {
   teams.room.status = 'battling';
 
   const entry = {
+    battleId: randomUUID(),
     battle: createBattle(teams, cardDb),
     announcementMembers: [...teams.room.members.values()].map((member) => ({
       userId: Number(member.userId), nickname: member.nickname,

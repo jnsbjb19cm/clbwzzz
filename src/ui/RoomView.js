@@ -107,6 +107,7 @@ export class RoomView {
         .createRoom({
           mode: 'pve',
           stageId: this.stageId,
+          enemyRandomMode: this.enemyRandomMode,
           mapId: this.mapId,
           name: this.stageName,
         })
@@ -480,6 +481,7 @@ export class RoomView {
         team: 'blue',
         spectator: true,
         mode: room.mode || 'pvp',
+        stageId: room.stageId,
         mapId: room.mapId || '4',
         socket: this.socket,
         deckSlots: [],

@@ -1,5 +1,8 @@
 // 先建立无头浏览器环境，再动态载入客户端共用战斗引擎。
 import './PvpBattle.js';
+import { createRequire } from 'node:module';
+import { WaveManager } from '../../src/battle/WaveManager.js';
+const adventureStages = createRequire(import.meta.url)('../../src/data/stageInfo.json');
 import { sanitizeCustomCardName } from '../../src/core/constants.js';
 
 const { BattleEngine } = await import('../../src/battle/BattleEngine.js');
@@ -101,8 +104,12 @@ function animState(engine, unit) {
 }
 
 export class CoopBossBattle {
-  constructor({ roomId, members, db, bossId, difficulty }) {
-    this.mode = 'boss';
+  constructor({ roomId, members, db, bossId, difficulty, stageId, enemyRandomMode = false }) {
+    const adventure = stageId != null ? adventureStages.find(stage => Number(stage.stage_id) === Number(stageId)) : null;
+    if (stageId != null && !adventure) throw new Error('冒险关卡不存在');
+    if (adventure) db = { ...db, stages: adventureStages };
+    this.mode = adventure ? 'pve' : 'boss';
+    this.stageId = adventure?.stage_id ?? null;
     this.roomId = Number(roomId);
     this.db = db;
     this.members = members.map((member) => ({
@@ -113,37 +120,42 @@ export class CoopBossBattle {
     this.teamBlue = this.members;
     this.teamRed = [];
     this.bossInfo = getBossById(bossId);
-    if (!this.bossInfo) throw new Error('BOSS数据不存在');
-    this.difficulty = String(difficulty || this.bossInfo.difficulty || '简单');
+    if (!adventure && !this.bossInfo) throw new Error('BOSS数据不存在');
+    this.difficulty = String(difficulty || this.bossInfo?.difficulty || '简单');
     this.difficultyMult = Number(BOSS_DIFFICULTY_MULT[this.difficulty]) || 1;
 
-    this.engine = new BattleEngine(db, 1, [], null, {
+    this.engine = new BattleEngine(db, adventure?.stage_id ?? 1, [], null, {
       trainingMode: false,
       pvp: false,
     });
     this.engine.onBurrowReturn = (unit) => this.refundBurrowReturn(unit);
     this.engine.pvp = false;
-    this.engine.coopBoss = true;
-    this.engine.stage = {
-      stage_id: 1,
-      stage_name: `${this.bossInfo.name}：${this.difficulty}`,
-      enemy_name: this.bossInfo.name,
-      enemy_res: Number(this.bossInfo.cardId),
-      hp: PLAYER_BASE_HP,
-    };
-    this.engine.wave.queue = [];
-    this.engine.wave.done = true;
-    this.engine.wave.totalWaves = 1;
-    this.engine.totalWaves = 1;
-    this.engine.waveNumber = 1;
-    this.engine.heroMaxHp = PLAYER_BASE_HP;
-    this.engine.heroHp = PLAYER_BASE_HP;
-    this.engine.enemyHeroMaxHp = HIDDEN_ENEMY_BASE_HP;
-    this.engine.enemyHeroHp = HIDDEN_ENEMY_BASE_HP;
-    this.engine.units = [];
-    this.engine.projectiles = [];
-    this.engine.floats = [];
-    this.engine.status = 'playing';
+    this.engine.coopBoss = !adventure;
+    this.engine.__authorityBattle = this;
+    if (!adventure) {
+      this.engine.stage = {
+        stage_id: 1,
+        stage_name: `${this.bossInfo.name}：${this.difficulty}`,
+        enemy_name: this.bossInfo.name,
+        enemy_res: Number(this.bossInfo.cardId),
+        hp: PLAYER_BASE_HP,
+      };
+      this.engine.wave.queue = [];
+      this.engine.wave.done = true;
+      this.engine.wave.totalWaves = 1;
+      this.engine.totalWaves = 1;
+      this.engine.waveNumber = 1;
+      this.engine.heroMaxHp = PLAYER_BASE_HP;
+      this.engine.heroHp = PLAYER_BASE_HP;
+      this.engine.enemyHeroMaxHp = HIDDEN_ENEMY_BASE_HP;
+      this.engine.enemyHeroHp = HIDDEN_ENEMY_BASE_HP;
+      this.engine.units = [];
+      this.engine.projectiles = [];
+      this.engine.floats = [];
+      this.engine.status = 'playing';
+    } else {
+      this.engine.wave = new WaveManager(adventure, db, { randomMode: Boolean(enemyRandomMode) });
+    }
 
     this.resources = new Map();
     this.skillStates = new Map();
@@ -170,8 +182,10 @@ export class CoopBossBattle {
     this.pendingBossSkills = [];
     this.bossMinionTimer = 0;
     this.bossMinionCount = 0;
-    this.spawnBoss();
-    this.installBossDamageRoute();
+    if (!adventure) {
+      this.spawnBoss();
+      this.installBossDamageRoute();
+    }
   }
 
   spawnBoss() {
@@ -183,7 +197,7 @@ export class CoopBossBattle {
     unit.uid = ++this.uidSeq;
     unit.isBoss = true;
     unit.pvpBoss = true;
-    unit.bossScale = Math.max(1, Number(this.bossInfo.displayScale) || 4);
+    unit.bossScale = Math.max(1, Number(this.bossInfo?.displayScale) || 4);
     if (this.bossInfo.immobile !== false) {
       unit.moveSpeed = 0;
       unit._bossImmobile = true;
@@ -625,6 +639,16 @@ export class CoopBossBattle {
   tick(dt) {
     if (this.status !== 'playing') return;
     const step = Math.max(0, Number(dt) || 0);
+    if (this.mode === 'pve') {
+      this.engine.tick(step);
+      this.tickPlayerStates(step);
+      this.tickResources(step);
+      if (['win', 'lose'].includes(this.engine.status)) {
+        this.status = 'finished';
+        this.winner = this.engine.status === 'win' ? 'blue' : 'red';
+      }
+      return;
+    }
     // 敌方“基地”只是命中入口；damageBase(enemy) 已被重定向到真实 BOSS 实体。
     this.engine.enemyHeroHp = HIDDEN_ENEMY_BASE_HP;
     this.engine.enemyHeroMaxHp = HIDDEN_ENEMY_BASE_HP;
@@ -711,21 +735,22 @@ export class CoopBossBattle {
       aerialLandingUntil: round2(unit._aerialLandingUntil),
       attackingBase: Boolean(unit.attackingBase),
       boss: Boolean(unit.isBoss || unit.pvpBoss),
-      bossScale: unit.isBoss || unit.pvpBoss ? Math.max(1, Number(unit.bossScale) || Number(this.bossInfo.displayScale) || 4) : 1,
+      bossScale: unit.isBoss || unit.pvpBoss ? Math.max(1, Number(unit.bossScale) || Number(this.bossInfo?.displayScale) || 4) : 1,
       bossMinion: Boolean(unit.pvpBossMinion),
     };
   }
 
   snapshot() {
-    this.syncBossHud();
+    if (this.mode === 'boss') this.syncBossHud();
     const now = Number(this.engine.time) || 0;
     return {
-      mode: 'boss',
+      mode: this.mode,
+      stageId: this.stageId,
       t: round2(now),
       status: this.status,
       winner: this.winner,
-      title: `${this.bossInfo.name}：${this.difficulty}`,
-      boss: {
+      title: this.mode === 'pve' ? this.engine.stage.stage_name : `${this.bossInfo.name}：${this.difficulty}`,
+      boss: this.mode === 'boss' ? {
         id: this.bossInfo.id,
         name: this.bossInfo.name,
         difficulty: this.difficulty,
@@ -735,11 +760,11 @@ export class CoopBossBattle {
         atk: round2(this.bossUnit?.atk ?? 0),
         lane: Number(this.bossUnit?.lane ?? this.bossInfo.lane ?? 2),
         col: Number(this.bossUnit?.col ?? this.bossInfo.col ?? 10),
-        displayScale: Math.max(1, Number(this.bossInfo.displayScale) || 4),
-      },
+        displayScale: Math.max(1, Number(this.bossInfo?.displayScale) || 4),
+      } : null,
       heroHp: {
         blue: round2(this.engine.heroHp),
-        red: round2(this.bossUnit?.hp ?? 0),
+        red: round2(this.mode === 'pve' ? this.engine.enemyHeroHp : this.bossUnit?.hp ?? 0),
       },
       players: this.members.map((member) => ({ ...member })),
       units: this.engine.units

@@ -298,7 +298,7 @@ export class BattleView {
       )
       .join('');
 
-    const bg = resolveBattleBackground(stage, { trainingMode: training, pvpMode: Boolean(this.pvp), bossId: this.pvp?.bossId ?? this.bossId, trainingMap: this.trainingMap });
+    const bg = resolveBattleBackground(stage, { trainingMode: training, pvpMode: Boolean(this.pvp) && this.pvp?.mode !== 'pve', bossId: this.pvp?.bossId ?? this.bossId, trainingMap: this.trainingMap });
     const bgStyle = [
       `--field-left:${FIELD_LEFT}px`,
       `--field-top:${FIELD_TOP}px`,
@@ -1404,7 +1404,7 @@ export class BattleView {
     if (picker) picker.value = stageId;
     // 换场地：刷新战斗背景(grass/map/base)
     try {
-      const bg = resolveBattleBackground(this.engine.stage, { trainingMode: this.trainingMode, pvpMode: Boolean(this.pvp), bossId: this.pvp?.bossId ?? this.bossId, trainingMap: this.trainingMap });
+      const bg = resolveBattleBackground(this.engine.stage, { trainingMode: this.trainingMode, pvpMode: Boolean(this.pvp) && this.pvp?.mode !== 'pve', bossId: this.pvp?.bossId ?? this.bossId, trainingMap: this.trainingMap });
       const scene = this.viewRoot.querySelector('.battle-game-wrap.battle-scene');
       if (scene) {
         scene.style.setProperty('--bg-grass', `url('${bg.baseUrl}')`);

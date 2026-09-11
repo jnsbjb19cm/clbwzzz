@@ -1,0 +1,37 @@
+import assert from 'node:assert/strict';
+import { JSDOM } from 'jsdom';
+import { createServer } from 'vite';
+const dom=new JSDOM('<div id="root"><div id="ch-stage-detail"></div></div>',{url:'http://localhost'});
+for(const key of ['window','document','localStorage','sessionStorage','CustomEvent','Image'])globalThis[key]=dom.window[key];
+const vite=await createServer({optimizeDeps:{noDiscovery:true,include:[]},server:{middlewareMode:true,hmr:false},appType:'custom'});
+try {
+ const {SocketClient}=await vite.ssrLoadModule('/src/network/SocketClient.js');
+ const transport=Object.create(SocketClient.prototype);let request;transport.emitAck=(event,payload)=>{request=payload;return Promise.resolve({room:{}});};await transport.createRoom({mode:'pve',stageId:2,enemyRandomMode:true});assert.equal(request.enemyRandomMode,true);
+ const {WorldMapView}=await vite.ssrLoadModule('/src/ui/WorldMapView.js');
+ const {BattleView}=await vite.ssrLoadModule('/src/ui/BattleView.js');
+ const {RoomView}=await vite.ssrLoadModule('/src/ui/RoomView.js');
+ const {authStore}=await vite.ssrLoadModule('/src/core/AuthStore.js');
+ const {audio}=await vite.ssrLoadModule('/src/core/AudioManager.js');audio.playSfx=()=>{};
+ const root=document.querySelector('#root'); const calls=[];
+ const world=Object.create(WorldMapView.prototype);Object.assign(world,{state:{stageClaimed:[],randomEnemy:true},selectedChapter:1,onNavigate:(...args)=>calls.push(args)});
+ const stage={id:1,stage_id:1,map_id:1,stage_name:'测试关卡',reward:'3|0|5',desc:'测试',enemy_name:'敌人'};
+ world.showStageDetail(root,root,stage,0);root.querySelector('.ch-battle-btn').click();
+ assert.equal(calls[0][0],'room');assert.equal(calls[0][1].enemyRandomMode,true);
+ world.state.stageClaimed=[1];world.showStageDetail(root,root,stage,0);root.querySelector('.ch-battle-replay').click();assert.equal(calls[1][0],'room','repeat also co-op');
+ BattleView.prototype.renderBattle=async function(){};BattleView.prototype.updateResultOverlay=function(){};BattleView.prototype.destroy=function(){};
+ RoomView.prototype.bindEvents=function(){};
+ const {installAdventureCoopClient20260911}=await vite.ssrLoadModule('/src/ui/AdventureCoopClient20260911.js');installAdventureCoopClient20260911();
+ const handlers=new Map();const socket={on:(event,fn)=>{handlers.set(event,fn);return()=>handlers.delete(event);}};
+ const view=Object.create(BattleView.prototype);Object.assign(view,{pvp:{mode:'pve'},pvpSocket:socket,engine:{status:'win'},cardInventory:{applyServerSnapshot(){}}});
+ let gets=0;authStore.api={get:async path=>{assert.equal(path,'/player/snapshot');gets++;return{cardInventory:{cards:[]}};},post:()=>{throw Error('client must never award rewards');}};
+ await view.renderBattle(root);
+ const payload={mode:'pve',stageId:1,winner:'blue',adventureResult:{goldGain:100,expGain:50,firstClear:true}};
+ handlers.get('pvp:authority:finished')(payload);handlers.get('pvp:authority:snapshot')(payload);await Promise.resolve();assert.equal(gets,1);
+ root.innerHTML='<div id="result-desc"></div>';view.updateResultOverlay(root);assert.match(root.textContent,/金币 \+100/);
+ assert.ok(JSON.parse(localStorage.getItem('clbwz_worldmap_v1')).stageClaimed.includes(1));
+ view.destroy();assert.equal(handlers.size,0);
+ const room=Object.create(RoomView.prototype);Object.assign(room,{socket,unsubs:[],currentUserId:()=>1,enterRoom(data){this.room=data;},enterBattle(){this.roomBattleView={};}});room.bindEvents();
+ handlers.get('room:snapshot')({mode:'pve',id:2,status:'battling',members:[{userId:1}]});assert.ok(room.roomBattleView,'reconnect resumes battle');
+ await vite.ssrLoadModule('/src/ui/ClassicShopController.js');
+ console.log('PASS adventure UI: create/replay room, one snapshot refresh, no client rewards, world progress, result summary, reconnect, listener cleanup');
+} finally {await vite.close();dom.window.close();}

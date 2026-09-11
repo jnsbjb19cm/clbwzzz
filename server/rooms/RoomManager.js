@@ -1,3 +1,5 @@
+import { createRequire } from 'node:module';
+const adventureStages = createRequire(import.meta.url)('../../src/data/stageInfo.json');
 const DISCONNECT_GRACE_MS = 30_000;
 import { getBossById } from '../../src/data/bossList.js';
 
@@ -30,6 +32,7 @@ function cloneRoom(room) {
     size: room.size,
     maxTeamSize: room.maxTeamSize,
     stageId: room.stageId,
+    enemyRandomMode: Boolean(room.enemyRandomMode),
     mapId: room.mapId,
     status: room.status,
     createdAt: room.createdAt,
@@ -67,10 +70,15 @@ export class RoomManager {
     return this.rooms.get(Number(roomId)) ?? null;
   }
 
-  createRoom({ user, mode, stageId, mapId, size = '3v3', name, bossId, difficulty }) {
+  createRoom({ user, mode, stageId, mapId, size = '3v3', name, bossId, difficulty, enemyRandomMode = false }) {
     if (this.getRoomByUser(user.id)) throw new Error('你已经在其他房间中');
     if (!['pve', 'boss', 'pvp'].includes(mode)) throw new Error('房间模式无效');
 
+    if (mode === 'pve') {
+      const stage = adventureStages.find(entry => Number(entry.stage_id) === Number(stageId));
+      if (!stage) throw new Error('冒险关卡不存在');
+      stageId = stage.stage_id; mapId = stage.map_id; name = stage.stage_name; size = '3v3';
+    }
     const maxTeamSize = SIZE_TO_TEAM[size] ?? 3;
     const id = this.allocateRoomId();
     // 房间简介：PVP={昵称}的房间；BOSS={BOSS名}[难度]；PVE/其它=传入名称或关卡名
@@ -96,6 +104,7 @@ export class RoomManager {
       size,
       maxTeamSize,
       stageId: String(stageId || ''),
+      enemyRandomMode: mode === 'pve' && Boolean(enemyRandomMode),
       // PVP 默认黄沙场景(7=黄沙/沙丘)；房主可 dice 随机 2=草地/4=冰川
       mapId: String(mapId || (mode === 'pvp' ? '7' : '')),
       status: 'waiting',
@@ -115,13 +124,14 @@ export class RoomManager {
     if (room.status !== 'waiting') throw new Error('房间已经开始战斗');
 
     // PVP：未指定队伍时自动进入人数较少的队伍(自动平衡)；指定红队才强制红队
-    let team = preferredTeam === 'red' ? 'red' : 'blue';
+    let team = room.mode === 'pvp' && preferredTeam === 'red' ? 'red' : 'blue';
     if (room.mode === 'pvp' && preferredTeam !== 'red') {
       const blueCount = this.teamCount(room, 'blue');
       const redCount = this.teamCount(room, 'red');
       if (redCount < blueCount) team = 'red';
     }
     if (this.teamCount(room, team) >= room.maxTeamSize) {
+      if (room.mode !== 'pvp') throw new Error('合作房间人数已满');
       // 该队满：尝试另一队
       const other = team === 'blue' ? 'red' : 'blue';
       if (this.teamCount(room, other) < room.maxTeamSize) team = other;

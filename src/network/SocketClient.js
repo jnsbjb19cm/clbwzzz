@@ -45,11 +45,12 @@ export class SocketClient {
     return this.emitAck('rooms:list').then((r) => r.rooms);
   }
 
-  createRoom({ mode = 'pvp', size = '3v3', stageId, mapId, bossId, difficulty, name } = {}) {
+  createRoom({ mode = 'pvp', size = '3v3', stageId, mapId, bossId, difficulty, name, enemyRandomMode = false } = {}) {
     return this.emitAck('room:create', {
       mode,
       size,
       stageId,
+      enemyRandomMode: Boolean(enemyRandomMode),
       mapId,
       bossId,
       difficulty,
