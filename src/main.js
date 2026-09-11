@@ -51,6 +51,7 @@ import './ui/BattleHandTransparentFinal20260903.css';
 // 2026-09-10：滚动条统一适配（滑块配色跟随所在面板），必须最后引入才能盖住各面板早期规则。
 import './ui/ScrollbarTheme20260910.css';
 import './ui/CardGalleryChrome20260910.css';
+import './ui/SettingsChrome20260910.css';
 import { installExactBattleRoom } from './ui/BattleRoomExact.js';
 import { installBattleRoomFlowPatch } from './ui/BattleRoomFlowPatch.js';
 import { installBattleRoomStabilityPatch } from './ui/BattleRoomStabilityPatch.js';

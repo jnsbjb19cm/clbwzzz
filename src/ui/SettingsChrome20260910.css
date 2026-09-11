@@ -1,0 +1,290 @@
+/**
+ * 2026-09-10：设置页（SettingsView）样式。
+ *
+ * 为什么单独一份文件、类名统一用 gset- 前缀：
+ * style.css 里已有一份「战斗内设置面板」的 .settings-panel（position:absolute + flex-flow:row），
+ * 上一版设置页复用了同名类，结果整块被绝对定位拉走、内部被强制横排，标签被挤成一个字一行。
+ * 所以这里：① 类名全部加 gset- 前缀避免再撞车；② 关键布局属性显式写死，不依赖继承。
+ *
+ * 布局：全屏木牌背景 → 居中面板（宽度封顶 + 内容超高时面板内部滚动）→ 分组卡片纵向排列。
+ */
+.gset-page {
+  position: fixed !important;
+  inset: 0;
+  z-index: 26;
+  box-sizing: border-box;
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center;
+  justify-content: center;
+  width: 100vw !important;
+  height: 100vh !important;
+  margin: 0 !important;
+  padding: 18px 16px 112px !important; /* 底部给主城导航留位 */
+  overflow: hidden !important;
+  color: #3a2a12;
+  background:
+    radial-gradient(circle at 50% 0%, rgba(255, 236, 168, .22), transparent 46%),
+    linear-gradient(160deg, #2f2415 0%, #4a3720 42%, #241a0e 100%) !important;
+}
+
+.gset-page::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  /* 2026-09-10：原来这里叠了一层竖向木纹线（repeating-linear-gradient），用户反馈“竖条太瘆人”，
+     已删除；只保留一层柔和的暖光，背景干净一些。 */
+  background: radial-gradient(circle at 50% 0%, rgba(255, 226, 150, .14), transparent 52%);
+}
+
+.gset-panel {
+  position: static !important;
+  box-sizing: border-box;
+  display: flex !important;
+  flex-direction: column !important;
+  flex-wrap: nowrap !important;
+  align-items: stretch !important;
+  justify-content: flex-start !important;
+  gap: 12px !important;
+  width: min(620px, 100%) !important;
+  max-height: 100%;
+  min-height: 0;
+  margin: 0 auto !important;
+  padding: 14px !important;
+  overflow-y: auto;
+  overflow-x: hidden;
+  border: 3px solid #8a5a20;
+  border-radius: 16px;
+  background: linear-gradient(180deg, #fffaea, #ecd9ab 70%, #e0c893);
+  box-shadow: inset 0 0 0 2px #fff3cd, 0 10px 26px rgba(0, 0, 0, .5);
+}
+
+.gset-title {
+  position: static !important;
+  display: block !important;
+  width: 100% !important;
+  margin: 0 0 4px !important;
+  padding: 9px 8px !important;
+  box-sizing: border-box;
+  text-align: center !important;
+  font-size: 22px;
+  line-height: 1.2;
+  letter-spacing: 3px;
+  white-space: nowrap;
+  color: #ffe9a8;
+  text-shadow: 0 2px 0 #6c4210;
+  border: 2px solid #c99226;
+  border-radius: 10px;
+  background: linear-gradient(180deg, #8a5a22, #5d3a12);
+  box-shadow: inset 0 1px #ffdf8c;
+}
+
+.gset-block {
+  position: static !important;
+  box-sizing: border-box;
+  display: flex !important;
+  flex-direction: column !important;
+  flex-wrap: nowrap !important;
+  align-items: stretch !important;
+  gap: 8px !important;
+  width: 100% !important;
+  margin: 0 !important;
+  padding: 12px 14px !important;
+  border: 2px solid rgba(169, 128, 60, .55);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, .58);
+}
+
+/* 分组标题做成小木牌条，和页面风格统一（原来只是一行小字，显得很草率）。 */
+.gset-block h3 {
+  display: block !important;
+  margin: 0 0 2px !important;
+  padding: 5px 10px !important;
+  font-size: 13px;
+  line-height: 1.3;
+  letter-spacing: 2px;
+  color: #ffe9a8;
+  text-shadow: 0 1px 0 #5c3708;
+  border: 2px solid #b1832a;
+  border-radius: 8px;
+  background: linear-gradient(180deg, #8a5a22, #63400f);
+  box-shadow: inset 0 1px #ffdf8c;
+}
+
+/* 行间加虚线分隔，长列表读起来有节奏；控件列固定宽度，滑条能对齐成一列。 */
+.gset-row + .gset-row {
+  padding-top: 8px !important;
+  border-top: 1px dashed rgba(138, 90, 32, .32);
+}
+
+.gset-row {
+  display: flex !important;
+  flex-direction: row !important;
+  flex-wrap: nowrap !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 16px !important;
+  width: 100% !important;
+  margin: 0 !important;
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.4;
+  color: #4a3512;
+  /* 关键：标签绝不能被挤成一字一行 */
+  white-space: nowrap !important;
+}
+
+.gset-row > span,
+.gset-row > label {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.gset-row input[type='range'] {
+  flex: 0 0 auto;
+  width: 240px;
+  max-width: 46%;
+  margin: 0;
+  accent-color: #7ab63f;
+}
+
+.gset-row-check {
+  justify-content: space-between !important;
+}
+
+.gset-row-check input[type='checkbox'] {
+  flex: 0 0 auto;
+  width: 20px;
+  height: 20px;
+  margin: 0;
+  accent-color: #7ab63f;
+}
+
+.gset-hint {
+  margin: 0 !important;
+  font-size: 12px;
+  line-height: 1.5;
+  color: #7d6435;
+  white-space: normal;
+}
+
+.gset-hint b {
+  color: #2f6c2a;
+}
+
+.gset-actions {
+  position: static !important;
+  display: flex !important;
+  flex-direction: row !important;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100% !important;
+  margin: 2px 0 0 !important;
+}
+
+.gset-btn {
+  display: inline-flex !important;
+  align-items: center;
+  justify-content: center;
+  width: auto !important;
+  padding: 8px 20px !important;
+  font-size: 14px;
+  font-weight: 800;
+  white-space: nowrap;
+  color: #23310f;
+  cursor: pointer;
+  border: 2px solid #5f7a2a;
+  border-radius: 10px;
+  background: linear-gradient(180deg, #e6f5b4, #a9d264);
+  box-shadow: inset 0 1px #fbffe6, 0 2px 4px rgba(60, 40, 10, .35);
+}
+
+.gset-btn:hover {
+  transform: translateY(-1px);
+}
+
+.gset-btn-ghost {
+  color: #4a3512;
+  border-color: #a9803c;
+  background: linear-gradient(180deg, #fff6dc, #e2cd9b);
+}
+
+/* 窄屏：标签与控制上下排，避免挤成竖排字。 */
+@media (max-width: 560px) {
+  .gset-row {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 6px !important;
+  }
+
+  .gset-row input[type='range'] {
+    width: 100%;
+    max-width: 100%;
+  }
+}
+
+/* ---------- 危险操作的游戏内确认弹窗（与铁匠铺一致，不用浏览器 confirm） ---------- */
+.gset-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: rgba(18, 12, 4, .62);
+}
+
+.gset-modal-card {
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  width: min(420px, 100%);
+  padding: 18px;
+  border: 3px solid #8a5a20;
+  border-radius: 14px;
+  background: linear-gradient(180deg, #fffaea, #ecd9ab 72%, #e0c893);
+  box-shadow: inset 0 0 0 2px #fff3cd, 0 14px 30px rgba(0, 0, 0, .55);
+}
+
+.gset-modal-text {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1.7;
+  color: #402d0d;
+  white-space: pre-line;
+}
+
+/* 一行的按钮区（声音/数据块里用），别让它像页脚那样占满宽度 */
+.gset-actions-inline {
+  justify-content: flex-start !important;
+}
+
+/* 面板底部的短暂提示（原来的常驻说明块已按用户要求移除） */
+.gset-toast {
+  position: static !important;
+  display: block !important;
+  width: 100% !important;
+  box-sizing: border-box;
+  margin: 2px 0 0 !important;
+  padding: 8px 12px !important;
+  text-align: center;
+  font-size: 13px;
+  font-weight: 800;
+  color: #23310f;
+  border: 2px solid #5f7a2a;
+  border-radius: 10px;
+  background: linear-gradient(180deg, #e6f5b4, #a9d264);
+  box-shadow: inset 0 1px #fbffe6;
+}
+
+.gset-toast[hidden] {
+  display: none !important;
+}
