@@ -14,6 +14,7 @@
 import { audio } from '../core/AudioManager.js';
 import { authStore } from '../core/AuthStore.js';
 import { DeckSelectView } from './DeckSelectView.js';
+import { loadBattleDeckSlots20260911 } from './DeckGroupPreference20260911.js';
 import { BattleView } from './BattleView.js';
 import { QuestView } from './QuestView.js';
 import { RoomView } from './RoomView.js';
@@ -32,6 +33,67 @@ function stageTitle(view, snapshot = null) {
     || view.pvp?.room?.name
     || view.__pvpLatestSnapshot?.stage?.name
     || '冒险';
+}
+
+function settleSignatureOf(report) {
+  const rows = Array.isArray(report?.rows) ? report.rows : [];
+  return `${report?.status ?? ''}|${report?.winner ?? ''}|`
+    + rows.map((row) => `${row?.userId}:${row?.gold}/${row?.exp}/${row?.honor}`).join(',');
+}
+
+/**
+ * 等服务端结算报告就位。
+ * 战斗刚结束时 view.__authorityBattleReport 还是结算前那份（各行奖励都是 0），
+ * 真正的 settled 报告要等权威快照回来才覆盖上去。
+ */
+async function awaitSettledReport(view, { timeoutMs = 20000 } = {}) {
+  const deadline = Date.now() + timeoutMs;
+  let report = view.__authorityBattleReport ?? null;
+  while (Date.now() < deadline) {
+    report = view.__authorityBattleReport ?? report;
+    if (report && (report.status === 'settled' || report.status === 'error')) return report;
+    await new Promise((resolve) => setTimeout(resolve, 250));
+  }
+  return report;
+}
+
+/**
+ * 结算提示 + 任务计数：必须用"服务端实发数额"，不能在结算前把 0 当奖励弹出来。
+ */
+async function reportCoopSettlement(view, result) {
+  const report = await awaitSettledReport(view);
+  const signature = settleSignatureOf(report);
+  if (view.__coopSettlementSignature20260911 === signature) return;
+  view.__coopSettlementSignature20260911 = signature;
+
+  const userId = Number(authStore.user?.id ?? authStore.snapshot?.profile?.userId ?? 0);
+  const row = (report?.rows ?? []).find((item) => Number(item.userId) === userId) ?? null;
+  const gold = Math.max(0, Number(row?.gold) || 0);
+  const exp = Math.max(0, Number(row?.exp) || 0);
+  const honor = Math.max(0, Number(row?.honor) || 0);
+  if (gold > 0) QuestView.dispatch('gold_gain', { amount: gold });
+  if (honor > 0) QuestView.dispatch('honor_gain', { amount: honor });
+  // 服务端已入账，这里拉回最新金币/经验/背包（PlayerSnapshotAuthority 会应用到界面）。
+  void authStore.api.get('/player/snapshot').catch(() => {});
+
+  const app = globalThis.__clbwzAppInstance;
+  if (!app) return;
+  if (report?.status === 'error') {
+    app.showGlobalNotice?.('战斗结束', '<div>奖励结算失败，尚未发放</div>');
+    return;
+  }
+  if (!row) {
+    // 结算还没回来（超时）：不要显示 +0 的假奖励。
+    if (report?.status && report.status !== 'settled') {
+      app.showGlobalNotice?.(result?.won ? '冒险胜利' : '战斗结束', '<div>奖励结算中，稍后自动到账</div>');
+    }
+    return;
+  }
+  app.showGlobalNotice?.(
+    result?.won ? '冒险胜利' : '战斗结束',
+    `<div>金币 +${gold}；经验 +${exp}；功勋 +${honor}</div>`
+      + (row.firstClear ? '<div>首次通关奖励已发放</div>' : ''),
+  );
 }
 
 function decoratePveBattle(view, snapshot = null) {
@@ -109,9 +171,9 @@ function enterCoopAdventureBattle(roomView) {
   document.body.classList.add('battle-immersive', 'pvp-battle-active', 'coop-pve-active');
 
   const stageId = Number(roomView.room?.stageId) || 1;
+  // 2026-09-11：按"玩家选中的卡组"取卡组，而不是无参调用（无参会落到默认组）。
   const deckSlots = normalizeDeck(
-    DeckSelectView.loadSavedDeck(roomView.cardInventory, roomView.db)
-      ?? DeckSelectView.defaultDeckSlots(roomView.cardInventory, roomView.db),
+    loadBattleDeckSlots20260911(roomView.cardInventory, roomView.db),
   );
   roomView.roomBattleView?.destroy?.();
   const view = new BattleView(roomView.db, {
@@ -135,31 +197,13 @@ function enterCoopAdventureBattle(roomView) {
     // 「通关/战斗完成/击杀数/时长/零伤亡」，这里之前没传这个回调，
     // 于是野外冒险联机的战斗打完也不会推进任何任务（累计冒险/击杀/金币等全部不动）。
     onQuestEvent: (event, data) => QuestView.dispatch(event, data),
-    // 2026-09-11：PVE 联机改为「服务端权威结算」——战斗结束时服务端已经按冒险规则
-    // 给每名玩家发好金币/经验/首通/功勋/掉落，客户端只刷新显示、不再重复发放。
+    // 2026-09-11：PVE 联机为「服务端权威结算」——战斗结束时服务端按冒险规则给每名玩家
+    // 发好金币/经验/首通/功勋/掉落，客户端只刷新显示、不重复发放。
+    // 结算报告是异步回来的：等 settled 报告再提示，避免把结算前的 0 当奖励弹出来。
     onBattleResult: (result) => {
-      const report = view.__authorityBattleReport;
-      const userId = Number(authStore.user?.id ?? authStore.snapshot?.profile?.userId ?? 0);
-      const row = Array.isArray(report?.rows)
-        ? report.rows.find((item) => Number(item.userId) === userId)
-        : null;
       // 本地地图进度（星星/已通关）与服务端 player_stage_progress 对齐；不在此发奖。
       try { markWorldStageCleared(view.engine?.stage?.stage_id ?? roomView.room?.stageId ?? stageId); } catch { /* ignore */ }
-      // 服务端发的是金币/功勋，本地的任务计数也要跟上（单机在这里给的是 gold_gain）。
-      const settledGold = Math.max(0, Number(row?.gold) || 0);
-      const settledHonor = Math.max(0, Number(row?.honor) || 0);
-      if (settledGold > 0) QuestView.dispatch('gold_gain', { amount: settledGold });
-      if (settledHonor > 0) QuestView.dispatch('honor_gain', { amount: settledHonor });
-      // 从服务器拉回最新金币/经验/背包（服务端已入账，PlayerSnapshotAuthority 会应用到界面）。
-      void authStore.api.get('/player/snapshot').catch(() => {});
-      const app = globalThis.__clbwzAppInstance;
-      if (app && row) {
-        app.showGlobalNotice?.(
-          result?.won ? '冒险胜利' : '战斗结束',
-          `<div>金币 +${settledGold}；经验 +${Number(row.exp) || 0}；功勋 +${settledHonor}</div>`
-            + (row.firstClear ? '<div>首次通关奖励已发放</div>' : ''),
-        );
-      }
+      void reportCoopSettlement(view, result);
     },
   });
   roomView.roomBattleView = view;
