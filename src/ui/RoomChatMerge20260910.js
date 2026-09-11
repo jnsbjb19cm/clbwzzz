@@ -163,6 +163,8 @@ function installUi(view) {
   }
 
   selectChannel(view, activeChannel(view));
+  // 2026-09-11：装配完成后挂上「新消息自动置底」观察器（隐藏时追加也能在显示后补上）
+  watchRoomChatScroll(chat);
 }
 
 function handleRoomChatSend(view, detail = {}) {
@@ -209,6 +211,60 @@ function restoreLobbyChat(view) {
   if (stage && !stage.contains(chat)) stage.append(chat);
   // 分离期间聊天列表不参与 querySelector，挂回后按当前频道重绘一次。
   chat.querySelector('.lobby-chat-channel.active')?.click();
+}
+
+/**
+ * 2026-09-11：保证「发出去的消息一定看得见」。
+ *
+ * 之前只在追加后写一次 `log.scrollTop = log.scrollHeight`，有两种情况会失效：
+ *   1) 追加时聊天面板还处于隐藏（display:none）→ scrollHeight 为 0，scrollTop 被设成 0，
+ *      面板显示出来后停在最上面；
+ *   2) 房间 DOM 被其它补丁重建（innerHTML 换血）→ 新日志元素的 scrollTop 又是 0。
+ * 这里改成用 MutationObserver 盯着日志：内容一变就置底；日志元素被换掉自动重新挂上；
+ * 聊天区从隐藏变可见时（内容没变也算）再补一次置底。
+ */
+const CHAT_SCROLL_FLAG = Symbol.for('clbwz.roomChatScroll20260911');
+
+function scrollRoomChatToBottom(log = null) {
+  const target = log ?? document.querySelector('.game-room.room-exact .exact-room-chat-log');
+  if (!target) return false;
+  const apply = () => {
+    try {
+      target.scrollTop = target.scrollHeight;
+    } catch {
+      // 隐藏中或已卸载：忽略，下一次 mutation/可见性变化会再来一次
+    }
+  };
+  apply();
+  requestAnimationFrame(apply);
+  return true;
+}
+
+function watchRoomChatScroll(root) {
+  const room = root?.closest?.('.game-room.room-exact')
+    ?? (root?.matches?.('.game-room.room-exact') ? root : null)
+    ?? root?.querySelector?.('.game-room.room-exact')
+    ?? null;
+  if (!room || room[CHAT_SCROLL_FLAG]) return;
+  room[CHAT_SCROLL_FLAG] = true;
+
+  let watched = null;
+  let observer = null;
+  const attach = () => {
+    const log = room.querySelector('.exact-room-chat-log');
+    if (!log || log === watched) return;
+    watched = log;
+    observer?.disconnect();
+    observer = new MutationObserver(() => scrollRoomChatToBottom(log));
+    observer.observe(log, { childList: true });
+    // 面板可能一开始是隐藏的：显示出来时补一次置底
+    observer.observe(log.closest('.exact-room-chat') ?? room, { attributes: true, attributeFilter: ['class', 'style', 'hidden'] });
+    scrollRoomChatToBottom(log);
+  };
+
+  // 日志元素本身可能被别的补丁重建，所以盯着房间的子树
+  new MutationObserver(attach).observe(room, { childList: true, subtree: true });
+  attach();
 }
 
 export function installRoomChatMerge20260910() {
@@ -307,6 +363,11 @@ export function installRoomChatMerge20260910() {
 
   // 验证/调试用：允许直接用任意 root 装配一次合并聊天 UI。
   window.__installRoomChatMergeUi20260910 = (view) => installUi(view);
+  // 验证/调试用：手动置底 / 查看观察器状态
+  window.__scrollRoomChatToBottom20260911 = () => scrollRoomChatToBottom();
+  window.__roomChatScrollWatching20260911 = () => Boolean(
+    document.querySelector('.game-room.room-exact')?.[CHAT_SCROLL_FLAG],
+  );
 
   window.__verifyRoomChatMerge20260910 = () => {
     const chat = document.querySelector('.game-room.room-exact .exact-room-chat');

@@ -305,3 +305,112 @@
   background: var(--sb-thumb, rgba(85, 111, 45, .64)) !important;
   background-clip: padding-box !important;
 }
+
+/* ==========================================================================
+   2026-09-11：按用户反馈修（统一白底板 / 纯黑字 / 新消息必须看得见）
+
+   为什么选择器要重复写类名（.exact-room-chat.exact-room-chat）：
+   聊天区还有更晚加载的样式表（房间参考层等）用 3~4 个类名 + !important 设了绿底/绿渐变，
+   同特异性下"后加载者胜"，所以这里把类名重复一次抬高特异性（匹配范围不变），
+   确保白底黑字一定生效，而不是靠加载顺序碰运气。
+   ========================================================================== */
+
+/* 面板：一张白底，不再有渐变 */
+.game-room.room-exact .exact-room-chat.exact-room-chat {
+  background: #ffffff !important;
+  background-color: #ffffff !important;
+  background-image: none !important;
+  border: 2px solid #2f3d26 !important;
+  color: #000000 !important;
+}
+
+/* 标题行 / 私聊行 / 输入行：同底，只用细线分区 */
+.game-room.room-exact .exact-room-chat.exact-room-chat .exact-room-chat-head,
+.game-room.room-exact .exact-room-chat.exact-room-chat .exact-room-chat-private,
+.game-room.room-exact .exact-room-chat.exact-room-chat .exact-room-chat-form {
+  background: #ffffff !important;
+  background-color: #ffffff !important;
+  background-image: none !important;
+  border-color: #c9d3ba !important;
+}
+
+.game-room.room-exact .exact-room-chat.exact-room-chat .exact-room-chat-title {
+  color: #000000 !important;
+  text-shadow: none !important;
+}
+
+/* 频道胶囊：白底黑字，选中绿底黑字 */
+.game-room.room-exact .exact-room-chat.exact-room-chat .exact-room-chat-tabs button {
+  border: 1px solid #7d8b6a !important;
+  background: #ffffff !important;
+  background-image: none !important;
+  color: #000000 !important;
+  text-shadow: none !important;
+  font-weight: 800 !important;
+}
+
+.game-room.room-exact .exact-room-chat.exact-room-chat .exact-room-chat-tabs button.active,
+.game-room.room-exact .exact-room-chat.exact-room-chat .exact-room-chat-tabs button.active[data-merge-channel] {
+  border-color: #2f6c2a !important;
+  background: #b6e08a !important;
+  background-image: none !important;
+  color: #000000 !important;
+}
+
+/* 日志：白底纯黑字、去掉内框与投影，高度交给布局（这样才真的能滚动） */
+.game-room.room-exact .exact-room-chat.exact-room-chat .exact-room-chat-log {
+  height: auto !important;
+  background: #ffffff !important;
+  background-color: #ffffff !important;
+  background-image: none !important;
+  color: #000000 !important;
+  border: 0 !important;
+  border-top: 1px solid #c9d3ba !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  font-weight: 700 !important;
+  font-size: 13px !important;
+  line-height: 1.6 !important;
+  text-shadow: none !important;
+}
+
+.game-room.room-exact .exact-room-chat.exact-room-chat .exact-room-chat-message,
+.game-room.room-exact .exact-room-chat.exact-room-chat .exact-room-chat-message b,
+.game-room.room-exact .exact-room-chat.exact-room-chat .exact-room-chat-message span,
+.game-room.room-exact .exact-room-chat.exact-room-chat .exact-room-chat-message.channel-current b,
+.game-room.room-exact .exact-room-chat.exact-room-chat .exact-room-chat-message.channel-team b,
+.game-room.room-exact .exact-room-chat.exact-room-chat .exact-room-chat-message.channel-world b,
+.game-room.room-exact .exact-room-chat.exact-room-chat .exact-room-chat-message.channel-guild b,
+.game-room.room-exact .exact-room-chat.exact-room-chat .exact-room-chat-message.channel-private b,
+.game-room.room-exact .exact-room-chat.exact-room-chat .exact-room-chat-message.system,
+.game-room.room-exact .exact-room-chat.exact-room-chat .exact-room-chat-message.system b,
+.game-room.room-exact .exact-room-chat.exact-room-chat .exact-room-chat-message.system span {
+  color: #000000 !important;
+  text-shadow: none !important;
+}
+
+/* 输入行 + 频道标签 + 下拉：白底黑字 */
+.game-room.room-exact .exact-room-chat.exact-room-chat .exact-room-chat-current {
+  color: #000000 !important;
+  background: #ffffff !important;
+  border-color: #7d8b6a !important;
+}
+
+.game-room.room-exact .exact-room-chat.exact-room-chat .exact-room-chat-form input,
+.game-room.room-exact .exact-room-chat.exact-room-chat .exact-room-chat-private select {
+  border: 1px solid #7d8b6a !important;
+  background: #ffffff !important;
+  background-image: none !important;
+  color: #000000 !important;
+}
+
+.game-room.room-exact .exact-room-chat.exact-room-chat .exact-room-chat-form input::placeholder {
+  color: #5b5b5b !important;
+}
+
+.game-room.room-exact .exact-room-chat.exact-room-chat .exact-room-chat-form button {
+  border: 1px solid #2f6c2a !important;
+  background: #b6e08a !important;
+  background-image: none !important;
+  color: #000000 !important;
+}
