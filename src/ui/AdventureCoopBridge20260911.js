@@ -120,6 +120,8 @@ function enterCoopAdventureBattle(roomView) {
       room: roomView.room,
       team: 'blue',
       socket: roomView.socket,
+      // 2026-09-11：冒险场地统一草地（左蘑菇柱/右蘑菇柱），与单机 PVE 一致。
+      mapScene: 'grass',
       deckSlots,
       mapId: roomView.room.mapId || stageId,
       stageId,

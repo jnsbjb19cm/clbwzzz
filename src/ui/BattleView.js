@@ -300,7 +300,8 @@ export class BattleView {
       )
       .join('');
 
-    const bg = resolveBattleBackground(stage, { trainingMode: training, pvpMode: Boolean(this.pvp), bossId: this.pvp?.bossId ?? this.bossId, trainingMap: this.trainingMap });
+    // 2026-09-11：PVE 联机改用冒险场地背景(与单机一致)，PVP/BOSS 仍用竞技场随机场景。
+    const bg = resolveBattleBackground(stage, { trainingMode: training, pvpMode: Boolean(this.pvp) && this.pvp?.mode !== 'pve', bossId: this.pvp?.bossId ?? this.bossId, trainingMap: this.trainingMap });
     const bgStyle = [
       `--field-left:${FIELD_LEFT}px`,
       `--field-top:${FIELD_TOP}px`,
@@ -346,9 +347,9 @@ export class BattleView {
         </div>
         <div class="battle-game-wrap battle-scene" style="${bgStyle}">
           <!-- 左右柱：锚定在战斗容器边缘(wrap 层)，不随战场缩放。
-               PVP/BOSS 已改用 pvp-authority-column 作为唯一侧柱层，这里不再生成两套。 -->
-          ${this.pvp ? '' : '<div class="bg-layer bg-layer-left-column" aria-hidden="true"></div>'}
-          ${this.pvp ? '' : (bg.showRightColumn ? '<div class="bg-layer bg-layer-right-column" aria-hidden="true"></div>' : '')}
+               PVP/BOSS 已改用 pvp-authority-column 作为唯一侧柱层；PVE 联机用冒险场地柱子。 -->
+          ${this.pvp && this.pvp.mode !== 'pve' ? '' : '<div class="bg-layer bg-layer-left-column" aria-hidden="true"></div>'}
+          ${this.pvp && this.pvp.mode !== 'pve' ? '' : (bg.showRightColumn ? '<div class="bg-layer bg-layer-right-column" aria-hidden="true"></div>' : '')}
           <div class="game-container">
             <div class="bg-stack" aria-hidden="true">
               <div class="bg-layer bg-layer-base"></div>
@@ -1419,7 +1420,7 @@ export class BattleView {
     if (picker) picker.value = stageId;
     // 换场地：刷新战斗背景(grass/map/base)
     try {
-      const bg = resolveBattleBackground(this.engine.stage, { trainingMode: this.trainingMode, pvpMode: Boolean(this.pvp), bossId: this.pvp?.bossId ?? this.bossId, trainingMap: this.trainingMap });
+      const bg = resolveBattleBackground(this.engine.stage, { trainingMode: this.trainingMode, pvpMode: Boolean(this.pvp) && this.pvp?.mode !== 'pve', bossId: this.pvp?.bossId ?? this.bossId, trainingMap: this.trainingMap });
       const scene = this.viewRoot.querySelector('.battle-game-wrap.battle-scene');
       if (scene) {
         scene.style.setProperty('--bg-grass', `url('${bg.baseUrl}')`);
