@@ -133,6 +133,8 @@ function updateUnitFromSnapshot(view, unit, data, immediate) {
 
   unit._prevRenderX = unit.col;
   unit.team = localTeam(view, data.team);
+  // 2026-09-11：保留服务端权威归属（联机战斗里用于区分是谁部署的单位）。
+  if (data.ownerUserId != null) unit.pvpOwnerUserId = Number(data.ownerUserId) || null;
   unit.hp = finite(data.hp, unit.hp);
   unit.maxHp = Math.max(1, finite(data.maxHp, unit.maxHp));
   unit.atk = finite(data.atk, unit.atk);
@@ -377,7 +379,10 @@ function applySnapshot(view, snapshot, { force = false } = {}) {
     ? (snapshot.winner === ownTeam ? 'win' : 'lose')
     : 'playing';
   engine.waveNumber = Number(snapshot.wave?.number) || 0;
-  engine.totalWaves = Number(snapshot.wave?.total) || 0;
+  // 冒险联机是无尽波次：total=null 表示「∞」，与单机一致。
+  engine.totalWaves = snapshot.wave
+    ? (snapshot.wave.total == null ? Infinity : (Number(snapshot.wave.total) || 0))
+    : 0;
 
   engine.floats ??= [];
   engine.deployEffects ??= [];

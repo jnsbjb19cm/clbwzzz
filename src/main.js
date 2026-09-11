@@ -235,6 +235,8 @@ installCardLoreDetailPatch();
 installBattleRuntimePerformance20260905();
 
 const app = new App(document.getElementById('app'));
+// 2026-09-11：暴露应用实例，供联机排障/自动化与旧补丁(PvpDropNotice)使用。
+globalThis.__clbwzAppInstance = app;
 const roomUtilityOverlay = new RoomUtilityOverlay(app);
 roomUtilityOverlay.install();
 app.mount();

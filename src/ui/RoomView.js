@@ -50,10 +50,13 @@ export class RoomView {
     autoCreate = false,
     onPlayerUpdate,
     onNavigate,
+    onBattleResult,
   } = {}) {
     this.db = db;
     this.cardInventory = cardInventory;
     this.onNavigate = onNavigate;
+    // 2026-09-11：野外冒险(PVE)联机战斗结束后，回到 App 走现有冒险结算（各自结算）。
+    this.onBattleResult = onBattleResult;
     this.createBoss = createBoss || null;
     this.itemDb = itemDb;
     this.inventory = inventory;

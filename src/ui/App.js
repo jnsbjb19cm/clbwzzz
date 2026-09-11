@@ -495,6 +495,7 @@ export class App {
         autoCreate: opts?.autoCreate,
         onPlayerUpdate: () => this.updatePlayerDisplay(),
         onNavigate: (r, o) => this.navigate(r, o),
+        onBattleResult: (result) => this.handleBattleResult(result),
       });
       room.render(renderRoot);
       this.views.room = room;

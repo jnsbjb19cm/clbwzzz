@@ -129,7 +129,10 @@ function enterCoopAdventureBattle(roomView) {
     onBattleResult: (result) => {
       const snapshot = view.__pvpLatestSnapshot;
       const drops = result?.won && Array.isArray(snapshot?.lootDrops) ? snapshot.lootDrops : [];
-      globalThis.__clbwzAppInstance?.handleBattleResult?.({ ...result, mode: 'pve', drops });
+      const payload = { ...result, mode: 'pve', drops };
+      // 正式接线：App 通过 RoomView 传下来的结算回调（优先）。
+      if (typeof roomView.onBattleResult === 'function') roomView.onBattleResult(payload);
+      else globalThis.__clbwzAppInstance?.handleBattleResult?.(payload);
     },
   });
   roomView.roomBattleView = view;

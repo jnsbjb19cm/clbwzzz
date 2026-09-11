@@ -810,7 +810,8 @@ export class CoopBossBattle {
       },
       wave: {
         number: Number(this.engine.waveNumber) || 0,
-        total: Number(this.engine.totalWaves) || 0,
+        // 冒险是无尽波次(Infinity)，JSON 会变成 null —— 统一用 null 表示「无限」，客户端显示 ∞。
+        total: Number.isFinite(Number(this.engine.totalWaves)) ? Number(this.engine.totalWaves) : null,
       },
       heroHp: {
         blue: round2(this.engine.heroHp),
