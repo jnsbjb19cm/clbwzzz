@@ -8,12 +8,14 @@
  * 现在：mode==='pve' 的房间启动后，所有成员进入**同一个服务端权威合作战斗**
  * （复用 BOSS 联机那套 CoopBossBattle + pvp:authority:* 快照管线），
  * 共享同一波敌人、各自部署；胜负由服务端判定，奖励按「各自结算」由每个客户端
- * 走现有冒险结算（App.handleBattleResult → /player/stage-result）。
+ * 奖励由服务端按冒险规则各自结算（server/battle/PveStageSettlement20260911.js），
+ * 客户端只负责刷新显示与上报任务事件。
  */
 import { audio } from '../core/AudioManager.js';
 import { authStore } from '../core/AuthStore.js';
 import { DeckSelectView } from './DeckSelectView.js';
 import { BattleView } from './BattleView.js';
+import { QuestView } from './QuestView.js';
 import { RoomView } from './RoomView.js';
 import { markWorldStageCleared } from './WorldMapView.js';
 
@@ -129,6 +131,10 @@ function enterCoopAdventureBattle(roomView) {
       stageId,
     },
     onNavigate: roomView.onNavigate,
+    // 2026-09-11：任务事件必须接上。单机战斗由 BattleView 通过 onQuestEvent 上报
+    // 「通关/战斗完成/击杀数/时长/零伤亡」，这里之前没传这个回调，
+    // 于是野外冒险联机的战斗打完也不会推进任何任务（累计冒险/击杀/金币等全部不动）。
+    onQuestEvent: (event, data) => QuestView.dispatch(event, data),
     // 2026-09-11：PVE 联机改为「服务端权威结算」——战斗结束时服务端已经按冒险规则
     // 给每名玩家发好金币/经验/首通/功勋/掉落，客户端只刷新显示、不再重复发放。
     onBattleResult: (result) => {
@@ -139,13 +145,18 @@ function enterCoopAdventureBattle(roomView) {
         : null;
       // 本地地图进度（星星/已通关）与服务端 player_stage_progress 对齐；不在此发奖。
       try { markWorldStageCleared(view.engine?.stage?.stage_id ?? roomView.room?.stageId ?? stageId); } catch { /* ignore */ }
-      // 从服务器拉回最新金币/经验/背包（服务端已入账）。
+      // 服务端发的是金币/功勋，本地的任务计数也要跟上（单机在这里给的是 gold_gain）。
+      const settledGold = Math.max(0, Number(row?.gold) || 0);
+      const settledHonor = Math.max(0, Number(row?.honor) || 0);
+      if (settledGold > 0) QuestView.dispatch('gold_gain', { amount: settledGold });
+      if (settledHonor > 0) QuestView.dispatch('honor_gain', { amount: settledHonor });
+      // 从服务器拉回最新金币/经验/背包（服务端已入账，PlayerSnapshotAuthority 会应用到界面）。
       void authStore.api.get('/player/snapshot').catch(() => {});
       const app = globalThis.__clbwzAppInstance;
       if (app && row) {
         app.showGlobalNotice?.(
           result?.won ? '冒险胜利' : '战斗结束',
-          `<div>金币 +${Number(row.gold) || 0}；经验 +${Number(row.exp) || 0}；功勋 +${Number(row.honor) || 0}</div>`
+          `<div>金币 +${settledGold}；经验 +${Number(row.exp) || 0}；功勋 +${settledHonor}</div>`
             + (row.firstClear ? '<div>首次通关奖励已发放</div>' : ''),
         );
       }
