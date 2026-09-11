@@ -83,6 +83,8 @@ const SHOP_ITEMS = [
   { cat:'功能', name:'羁绊觉醒石',   desc:'使用后,选择一张卡牌,解锁羁绊(PVP无效）',     price:35000, icon:'💫', effect:{type:'inventory',realId:91,count:1} },
   { cat:'功能', name:'背包扩容符',   desc:'使用后,增加10个背包格',   price:20000, icon:'📦', effect:{type:'inventory',realId:92,count:1} },
   { cat:'功能', name:'逆转卡',       desc:'还原铁匠铺中尚未过期的副卡', price:12000, icon:'🔄', effect:{type:'inventory',realId:50041,count:1} },
+  // 2026-09-11：改名卡（1 金币），使用后修改游戏昵称并写入数据库。
+  { cat:'功能', name:'改名卡',       desc:'使用后修改一次游戏昵称（服务端入库）', price:1, icon:'📝', effect:{type:'inventory',realId:98,count:1} },
 
   { cat:'战斗', name:'攻击卷轴',    desc:'使用后下次战斗攻击+25%(PVP无效)',     price:6000,  icon:'⚡', effect:{type:'inventory',realId:60001,count:1} },
   { cat:'战斗', name:'防御卷轴',    desc:'使用后下次战斗防御+25%(PVP无效)',     price:6000,  icon:'🛡️', effect:{type:'inventory',realId:60002,count:1} },

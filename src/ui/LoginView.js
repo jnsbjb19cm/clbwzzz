@@ -6,6 +6,7 @@
  * - 注册与老账号首次升级会展示一次恢复码；忘记密码使用“账号 + 恢复码”重置。
  */
 import { authStore } from '../core/AuthStore.js';
+import { validateNickname } from '../core/ContentFilter.js';
 
 export class LoginView {
   constructor({ onSuccess } = {}) {
@@ -195,8 +196,9 @@ export class LoginView {
     const nickname = this.root.querySelector('#login-nickname')?.value?.trim() ?? '';
     if (username.length < 3) return this.setError('账号至少 3 位');
     if (password.length < 6) return this.setError('密码至少 6 位');
-    if (this.mode === 'register' && (nickname.length < 1 || nickname.length > 20)) {
-      return this.setError('游戏昵称需要 1～20 个字符');
+    if (this.mode === 'register') {
+      const nicknameCheck = validateNickname(nickname);
+      if (!nicknameCheck.ok) return this.setError(nicknameCheck.message);
     }
 
     this.busy = true;

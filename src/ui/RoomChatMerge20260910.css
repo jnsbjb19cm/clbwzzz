@@ -427,9 +427,13 @@
    效果：输入行在底部，消息自下往上堆、最新一条紧贴输入行上方（标准聊天）。
    ========================================================================== */
 
+/* 2026-09-11（第三版）：聊天面板顶栏/日志/输入行用「固定行高」而不是 auto 最后一行。
+   原因：输入行作为 auto 轨道时，若面板高度非确定，会被压成 0，输入框被 overflow 裁掉
+   （用户截图）。把输入行改成固定 34px 轨道后，日志一定吃掉剩余高度并能滚动。
+   同时日志改为 flex-start：最早的消息在上、最新的在下，新消息把旧消息往上顶。 */
 .game-room.room-exact .exact-room-chat.exact-room-chat {
   display: grid !important;
-  grid-template-rows: auto auto minmax(0, 1fr) auto !important;
+  grid-template-rows: auto auto minmax(0, 1fr) 34px !important;
   align-content: stretch !important;
   align-items: stretch !important;
   overflow: hidden !important;
@@ -504,27 +508,28 @@
   display: none !important;
 }
 
-/* 日志：吃掉剩余高度，内部滚动；行从下往上堆（flex-end） */
+/* 日志：吃掉剩余高度，内部滚动；最早在上、最新在下（flex-start + 自动置底） */
 .game-room.room-exact .exact-room-chat.exact-room-chat .exact-room-chat-log {
   display: flex !important;
   flex-direction: column !important;
-  justify-content: flex-end !important;
+  justify-content: flex-start !important;
   min-height: 0 !important;
   height: auto !important;
+  max-height: 100% !important;
   overflow-y: auto !important;
   overflow-x: hidden !important;
 }
 
-/* 输入行：贴底、单行、完整可见 */
+/* 输入行：固定 34px 贴在面板最下方，永远完整可见 */
 .game-room.room-exact .exact-room-chat.exact-room-chat .exact-room-chat-form {
   display: flex !important;
   flex-direction: row !important;
   flex-wrap: nowrap !important;
   align-items: center !important;
   gap: 6px !important;
-  min-height: 0 !important;
-  height: auto !important;
-  max-height: 26px !important;
+  min-height: 34px !important;
+  height: 34px !important;
+  max-height: 34px !important;
   padding: 2px 6px !important;
   overflow: hidden !important;
 }

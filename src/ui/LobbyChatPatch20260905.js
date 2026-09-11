@@ -1,5 +1,6 @@
 import './LobbyChatPatch20260905.css';
 import { authStore } from '../core/AuthStore.js';
+import { containsBlockedWord, maskBlockedWords } from '../core/ContentFilter.js';
 import { RoomView } from './RoomView.js';
 
 const PATCH_FLAG = Symbol.for('clbwzzz.lobbyChatPatch20260905');
@@ -62,7 +63,7 @@ function recordEntry(state, item) {
   const entry = {
     channel: normalizeChannel(item?.channel, 'current'),
     nickname: cleanText(item?.nickname) || (item?.system ? '系统' : '玩家'),
-    text: cleanText(item?.text),
+    text: maskBlockedWords(cleanText(item?.text)),
     system: Boolean(item?.system),
     spectator: Boolean(item?.spectator),
   };
@@ -282,6 +283,11 @@ export function installLobbyChatPatch20260905() {
     const input = this.root?.querySelector?.('#lobby-chat-input');
     const text = cleanText(input?.value);
     if (!text) return;
+    // 2026-09-11：发送前拦截违规词（服务端还有一层同样的校验）。
+    if (containsBlockedWord(text)) {
+      this.notice?.('消息包含违规词汇，已拦截');
+      return;
+    }
     const state = ensureState(this);
 
     try {

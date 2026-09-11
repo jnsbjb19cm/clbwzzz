@@ -6,6 +6,8 @@ const RANDOM_ITEM_POOL = [1,2,3,4,5,10001,10002,30055];
 
 const CARD_PICKER_ITEMS = new Set([80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91]);
 const DIRECT_ITEMS = new Set([92]);
+/** 2026-09-11：改名卡（98）不改卡牌，由 BagView 弹窗 + 服务端 /player/rename 处理。 */
+const PLAYER_RENAME_ITEM = 98;
 
 export class ItemUseSystem {
   constructor(cardDb, itemDb) { this.cardDb = cardDb; this.itemDb = itemDb; }
@@ -13,6 +15,7 @@ export class ItemUseSystem {
   isUsable(item) {
     if (!item || item.type !== 1) return false;
     const id = Number(item.id);
+    if (id === PLAYER_RENAME_ITEM) return true;
     if (CARD_PICKER_ITEMS.has(id) || DIRECT_ITEMS.has(id)) return true;
     if (item.function === 13) return true;
     if (item.function === 2) return /礼盒|礼包|卡包|卡蛋|药水/.test(item.showType ?? '');
@@ -25,6 +28,7 @@ export class ItemUseSystem {
     const slot = inventory.getSlots()[slotIndex];
     if (!slot || slot.itemId !== item.id || slot.count < 1) return { ok: false, error: '物品不存在' };
     const id = Number(item.id);
+    if (id === PLAYER_RENAME_ITEM) return { ok: true, requiresRename: true };
     if (CARD_PICKER_ITEMS.has(id)) return { ok: true, picker: true };
     if (DIRECT_ITEMS.has(id)) return this._useDirect(id, slotIndex, inventory, player);
     if (item.function === 13 || /卡包|卡蛋/.test(item.showType ?? '')) {

@@ -3,6 +3,7 @@ import { verifyToken } from '../middleware/auth.js';
 import { roomManager } from '../rooms/RoomManager.js';
 import { registerSocket, unregisterSocket, socketsForUser } from '../online.js';
 import { stopAuthorityBattleByRoom } from './registerPvpAuthorityHandlers.js';
+import { containsBlockedWord } from '../../src/core/ContentFilter.js';
 import { createRequire } from 'node:module';
 
 const require = createRequire(import.meta.url);
@@ -222,6 +223,8 @@ export function registerSocketHandlers(io) {
         ? payload.channel
         : 'current';
       if (!text) return ackError(ack, new Error('消息不能为空'));
+      // 2026-09-11：服务端权威过滤（大厅/世界/公会/私聊共用）。
+      if (containsBlockedWord(text)) return ackError(ack, new Error('消息包含违规词汇，已拦截'));
       const senderId = Number(socket.user.id);
       const message = {
         nickname: socket.user.nickname || socket.user.username,
@@ -261,6 +264,10 @@ export function registerSocketHandlers(io) {
 
     socket.on('room:chat', (payload = {}, ack) => {
       try {
+        // 2026-09-11：服务端权威过滤（旧版房间聊天通道）。
+        if (containsBlockedWord(String(payload.text || ''))) {
+          return ackError(ack, new Error('消息包含违规词汇，已拦截'));
+        }
         const result = roomManager.addChat(userId, payload.text);
         io.to(`room:${result.room.id}`).emit('room:chat', result.message);
         ackOk(ack, { message: result.message });

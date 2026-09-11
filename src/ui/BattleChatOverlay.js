@@ -1,5 +1,6 @@
 import { BattleView } from './BattleView.js';
 import { authStore } from '../core/AuthStore.js';
+import { containsBlockedWord, maskBlockedWords } from '../core/ContentFilter.js';
 
 const PATCH_FLAG = Symbol.for('clbwzzz.battleChatOverlay');
 const MINIMIZED_KEY = 'clbwz_battle_chat_minimized';
@@ -108,6 +109,8 @@ function createState() {
 function pushMessage(state, channel, message) {
   const target = state.buffers.get(channel) ?? state.buffers.get('current');
   if (!target || !message?.text) return;
+  // 2026-09-11：显示兜底——违规词打码。
+  message = { ...message, text: maskBlockedWords(message.text) };
   const id = message.id ? String(message.id) : null;
   if (id && state.seenIds.has(id)) return;
   if (id) {
@@ -316,6 +319,11 @@ function mountBattleChatOverlay(view) {
     const input = shell.querySelector('.battle-chat-form input');
     const text = input?.value.trim();
     if (!text) return;
+    // 2026-09-11：发送前拦截违规词（服务端还有一层同样的校验）。
+    if (containsBlockedWord(text)) {
+      appendSystemMessage(shell, state, '消息包含违规词汇，已拦截');
+      return;
+    }
     input.value = '';
 
     try {

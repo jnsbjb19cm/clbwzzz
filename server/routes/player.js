@@ -3,9 +3,13 @@ import { db, getPlayerSnapshot, withTransaction } from '../database.js';
 import { requireAuth } from '../middleware/auth.js';
 import { getCardInventoryHandler, putCardInventoryHandler } from './cardInventoryPersistence20260906.js';
 import { refillCollectibleCardsHandler } from './cardInventoryRefill20260907.js';
+import { containsBlockedWord, randomFallbackNickname, validateNickname } from '../../src/core/ContentFilter.js';
 
 export const playerRouter = Router();
 playerRouter.use(requireAuth);
+
+/** 改名卡道具 ID（商城 1 金币）。与 src/data/functionalItems.json / ShopView SHOP_ITEMS 保持一致。 */
+export const RENAME_CARD_ITEM_ID = 98;
 
 function clampInt(value, min, max) {
   const n = Number(value);
@@ -37,13 +41,73 @@ playerRouter.put('/settings', async (req, res) => {
 
 playerRouter.put('/profile', async (req, res) => {
   const nickname = String(req.body.nickname || '').trim();
-  if (nickname.length < 1 || nickname.length > 20) {
-    return res.status(400).json({ message: '昵称长度必须为1到20个字符' });
-  }
+  const check = validateNickname(nickname);
+  if (!check.ok) return res.status(400).json({ message: check.message });
   await db.run(`
     UPDATE player_profiles SET nickname=?, updated_at=CURRENT_TIMESTAMP WHERE user_id=?
-  `, [nickname, req.user.id]);
-  return res.json({ ok: true, nickname });
+  `, [check.value, req.user.id]);
+  return res.json({ ok: true, nickname: check.value });
+});
+
+/**
+ * 2026-09-11：改名。
+ *  - 当前昵称违规（需要整改）→ 免费改，随便改成什么合规名都行；
+ *  - 正常玩家改名 → 必须消耗 1 张改名卡（道具 98，商城 1 金币）；
+ *  - 新昵称一律过内容过滤，违规直接拒绝。
+ */
+playerRouter.post('/rename', async (req, res) => {
+  const nickname = String(req.body?.nickname || '').trim();
+  const check = validateNickname(nickname);
+  if (!check.ok) return res.status(400).json({ message: check.message });
+
+  const current = await db.get('SELECT nickname FROM player_profiles WHERE user_id=?', [req.user.id]);
+  const moderationFree = containsBlockedWord(current?.nickname || '');
+
+  try {
+    const result = await withTransaction(async (conn) => {
+      if (!moderationFree) {
+        const row = await conn.get(
+          'SELECT count, is_bound AS isBound FROM player_items WHERE user_id=? AND item_id=? AND count>0 ORDER BY is_bound ASC LIMIT 1',
+          [req.user.id, RENAME_CARD_ITEM_ID],
+        );
+        if (!row) throw new Error('缺少改名卡（可在商城用 1 金币购买）');
+        const next = Number(row.count) - 1;
+        if (next > 0) {
+          await conn.run(
+            'UPDATE player_items SET count=? WHERE user_id=? AND item_id=? AND is_bound=?',
+            [next, req.user.id, RENAME_CARD_ITEM_ID, row.isBound ? 1 : 0],
+          );
+        } else {
+          await conn.run(
+            'DELETE FROM player_items WHERE user_id=? AND item_id=? AND is_bound=?',
+            [req.user.id, RENAME_CARD_ITEM_ID, row.isBound ? 1 : 0],
+          );
+        }
+      }
+      await conn.run(
+        'UPDATE player_profiles SET nickname=?, updated_at=CURRENT_TIMESTAMP WHERE user_id=?',
+        [check.value, req.user.id],
+      );
+      return { consumedCard: !moderationFree };
+    });
+    return res.json({ ok: true, nickname: check.value, ...result, snapshot: await getPlayerSnapshot(req.user.id) });
+  } catch (error) {
+    return res.status(400).json({ message: error?.message || '改名失败' });
+  }
+});
+
+/** 违规昵称兜底：改名接口外的直接兜底（把当前昵称改成「违规昵称+随机字符」）。 */
+playerRouter.post('/moderation/nickname-fallback', async (req, res) => {
+  const current = await db.get('SELECT nickname FROM player_profiles WHERE user_id=?', [req.user.id]);
+  if (!containsBlockedWord(current?.nickname || '')) {
+    return res.status(400).json({ message: '当前昵称不违规，无需强制改名' });
+  }
+  const fallback = randomFallbackNickname();
+  await db.run(
+    'UPDATE player_profiles SET nickname=?, updated_at=CURRENT_TIMESTAMP WHERE user_id=?',
+    [fallback, req.user.id],
+  );
+  return res.json({ ok: true, nickname: fallback, snapshot: await getPlayerSnapshot(req.user.id) });
 });
 
 playerRouter.put('/selected-deck', async (req, res) => {

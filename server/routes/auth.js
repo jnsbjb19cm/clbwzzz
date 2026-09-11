@@ -4,6 +4,7 @@ import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { db, createPlayerData } from '../database.js';
 import { config } from '../config.js';
+import { validateNickname } from '../../src/core/ContentFilter.js';
 /* 此为用户注册 / 登录 / 密码找回 auth.js */
 export const authRouter = Router();
 
@@ -97,6 +98,9 @@ authRouter.post('/register', async (req, res) => {
   if (nickname.length < 1 || nickname.length > 20) {
     return res.status(400).json({ message: '游戏昵称长度必须为1到20个字符' });
   }
+  // 2026-09-11：注册昵称先过内容过滤（低俗/色情/涉政/广告词）。
+  const nicknameCheck = validateNickname(nickname);
+  if (!nicknameCheck.ok) return res.status(400).json({ message: nicknameCheck.message });
   const exists = await db.get('SELECT id FROM users WHERE username=?', [username]);
   if (exists) return res.status(409).json({ message: '用户名已存在' });
 

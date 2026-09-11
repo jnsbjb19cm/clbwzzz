@@ -19,6 +19,7 @@ import { HallView } from './HallView.js';
 import { GuildView } from './GuildView.js';
 import { AuctionView } from './AuctionView.js';
 import { SettingsView } from './SettingsView.js';
+import { enforceNicknameCompliance20260911 } from './ForcedRename20260911.js';
 import { ShopView } from './ShopView.js';
 import { WorldMapView, markWorldStageCleared } from './WorldMapView.js';
 import { RoomView } from './RoomView.js';
@@ -113,6 +114,8 @@ export class App {
     this.bindGlobalNotices();
     this.navigate('main');
     this.bindNav();
+    // 2026-09-11：上线检查昵称，违规立即要求整改（不修改则自动改名）。
+    enforceNicknameCompliance20260911();
   }
 
   bindInteractionGuards() {

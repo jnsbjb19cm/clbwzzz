@@ -16,5 +16,6 @@
   {"item_id":94,"item_name":"随机2级卡蛋","item_img":11,"desc":"打开后随机获得1张2级卡牌，不包含其他等级；初始强化为+0。","function":13,"max_num":99,"item_type":1,"show_type":"卡蛋","effect_value":1,"quality":2,"card_pool_quality":2,"sell_price":200},
   {"item_id":95,"item_name":"随机3级卡蛋","item_img":12,"desc":"打开后随机获得1张3级卡牌，不包含其他等级；初始强化为+0。","function":13,"max_num":99,"item_type":1,"show_type":"卡蛋","effect_value":1,"quality":3,"card_pool_quality":3,"sell_price":300},
   {"item_id":96,"item_name":"随机4级卡蛋","item_img":12,"desc":"打开后随机获得1张4级卡牌，不包含其他等级；初始强化为+0。","function":13,"max_num":99,"item_type":1,"show_type":"卡蛋","effect_value":1,"quality":4,"card_pool_quality":4,"sell_price":400},
-  {"item_id":97,"item_name":"随机5级卡蛋","item_img":13,"desc":"打开后随机获得1张5级卡牌，不包含其他等级；初始强化为+0。","function":13,"max_num":99,"item_type":1,"show_type":"卡蛋","effect_value":1,"quality":5,"card_pool_quality":5,"sell_price":500}
+  {"item_id":97,"item_name":"随机5级卡蛋","item_img":13,"desc":"打开后随机获得1张5级卡牌，不包含其他等级；初始强化为+0。","function":13,"max_num":99,"item_type":1,"show_type":"卡蛋","effect_value":1,"quality":5,"card_pool_quality":5,"sell_price":500},
+  {"item_id":98,"item_name":"改名卡","item_img":98,"desc":"使用后可以修改一次游戏昵称（服务端入库保存）。","function":33,"max_num":99,"item_type":1,"show_type":"功能道具","effect_value":1,"quality":4,"sell_price":1}
 ]

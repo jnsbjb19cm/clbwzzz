@@ -219,6 +219,8 @@ playerEconomyAuthorityRouter20260908.post('/inventory/use', async (req, res) => 
   const requestedBound = req.body?.bound === true ? true : req.body?.bound === false ? false : null;
   const def = itemDef(itemId);
   if (!def) return res.status(400).json({ message: '道具配置不存在' });
+  // 2026-09-11：改名卡（98）必须走 /player/rename（改昵称+扣卡同一事务），禁止被通用使用接口白扣。
+  if (itemId === 98) return res.status(400).json({ message: '改名卡请在背包中点击「使用」进行改名' });
 
   try {
     const result = await withTransaction(async (conn) => {

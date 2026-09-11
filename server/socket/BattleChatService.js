@@ -1,5 +1,6 @@
 import { roomManager } from '../rooms/RoomManager.js';
 import { socketsForUser } from '../online.js';
+import { containsBlockedWord } from '../../src/core/ContentFilter.js';
 
 const MAX_ROOM_CHAT = 100;
 
@@ -77,6 +78,8 @@ export function installBattleChatService(io) {
 
         const text = String(payload.text || '').trim().slice(0, 200);
         if (!text) throw new Error('消息不能为空');
+        // 2026-09-11：服务端权威过滤，客户端被绕过也发不出违规词。
+        if (containsBlockedWord(text)) throw new Error('消息包含违规词汇，已拦截');
 
         const channel = String(payload.channel || 'current').toLowerCase();
         if (channel === 'system') throw new Error('系统频道为只读频道');
@@ -109,6 +112,7 @@ export function installBattleChatService(io) {
         if (!resolved?.room) throw new Error('当前没有可聊天的战斗房间');
         const text = String(payload.text || '').trim().slice(0, 200);
         if (!text) throw new Error('消息不能为空');
+        if (containsBlockedWord(text)) throw new Error('消息包含违规词汇，已拦截');
 
         const { room, spectator } = resolved;
         const entry = roomChatEntry(socket, room, text, { channel: 'current', spectator });

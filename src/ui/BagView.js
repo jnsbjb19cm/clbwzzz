@@ -12,6 +12,8 @@ import {
 const craftQualityLabel = (craftQuality) => resolveCraftQuality(craftQuality).name;
 import { roundBattleAmount } from '../battle/BattleConfig.js';
 import { audio } from '../core/AudioManager.js';
+import { authStore } from '../core/AuthStore.js';
+import { validateNickname } from '../core/ContentFilter.js';
 import { ItemUseSystem } from '../systems/ItemUseSystem.js';
 import itemAtlasData from '../data/atlas/preload_items.json';
 import {
@@ -615,6 +617,11 @@ export class BagView {
 
     detail.querySelector('#bag-use').addEventListener('click', () => {
       if (!canUse) return;
+      // 2026-09-11：改名卡（98）不改卡牌，走独立的「改游戏昵称」弹窗。
+      if (Number(item.id) === 98) {
+        this._openRenameDialog(root);
+        return;
+      }
       const res = this.itemUse.use(item, this.selectedIndex, this.inventory, this.cardInventory, this.player);
       if (res.picker) {
         this._showCardPicker(item.id, this.selectedIndex, item, root);
@@ -708,6 +715,62 @@ export class BagView {
       this.selectedIndex = -1;
       this.refresh(root);
       this.toast(root, `已移除 1 张「${displayName}」`);
+    });
+  }
+
+  /**
+   * 2026-09-11：改名卡（道具 98）。
+   * 服务端 /player/rename 会把新昵称写进数据库并扣掉 1 张改名卡（当前昵称违规时免费），
+   * 成功后本地再扣 1 张保持同步。
+   */
+  _openRenameDialog(root) {
+    document.getElementById('rename-card-overlay')?.remove();
+    const current = authStore.snapshot?.profile?.nickname || authStore.user?.nickname || '玩家';
+    const overlay = document.createElement('div');
+    overlay.id = 'rename-card-overlay';
+    overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:99999;display:flex;align-items:center;justify-content:center;';
+    overlay.innerHTML = `<div style="width:min(420px,92vw);background:#1a1a2e;border:2px solid #8b6914;border-radius:8px;color:#fff;padding:16px;box-shadow:0 0 30px rgba(0,0,0,.8);">
+      <h3 style="margin:0 0 10px;font-size:16px;">使用改名卡</h3>
+      <p style="margin:0 0 10px;color:#bbb;font-size:12px;">当前昵称：<b style="color:#ffd700;">${current}</b>。新昵称 1~20 个字符，且不能包含违规词汇。</p>
+      <input id="rename-card-input" maxlength="20" autocomplete="off" placeholder="输入新昵称" style="width:100%;box-sizing:border-box;padding:8px 10px;border-radius:6px;border:1px solid #555;background:#111;color:#fff;font-size:14px;" />
+      <div id="rename-card-msg" style="min-height:18px;color:#ff6b6b;font-size:12px;margin-top:8px;"></div>
+      <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:8px;">
+        <button type="button" id="rename-card-cancel" style="padding:6px 16px;background:#555;border:0;color:#fff;border-radius:6px;cursor:pointer;">取消</button>
+        <button type="button" id="rename-card-confirm" style="padding:6px 16px;background:#c8960c;border:0;color:#000;font-weight:700;border-radius:6px;cursor:pointer;">确认改名</button>
+      </div>
+    </div>`;
+    document.body.appendChild(overlay);
+
+    const input = overlay.querySelector('#rename-card-input');
+    const msg = overlay.querySelector('#rename-card-msg');
+    const confirmBtn = overlay.querySelector('#rename-card-confirm');
+    const close = () => overlay.remove();
+    input.focus();
+    overlay.querySelector('#rename-card-cancel').addEventListener('click', close);
+
+    confirmBtn.addEventListener('click', async () => {
+      const nickname = String(input.value || '').trim();
+      const check = validateNickname(nickname);
+      if (!check.ok) { msg.textContent = check.message; return; }
+      confirmBtn.disabled = true;
+      confirmBtn.textContent = '提交中…';
+      try {
+        const data = await authStore.api.post('/player/rename', { nickname });
+        if (data?.snapshot) authStore.snapshot = data.snapshot;
+        if (authStore.snapshot?.profile) authStore.snapshot.profile.nickname = nickname;
+        if (authStore.user) authStore.user.nickname = nickname;
+        if (this.player) this.player.nickname = nickname;
+        this.inventory.consumeAt(this.selectedIndex, 1);
+        if (!this.inventory.getSlots()[this.selectedIndex]) this.selectedIndex = -1;
+        this.onPlayerUpdate?.();
+        close();
+        this.refresh(root);
+        this.toast(root, `昵称已修改为「${nickname}」`);
+      } catch (error) {
+        msg.textContent = error?.message || '改名失败';
+        confirmBtn.disabled = false;
+        confirmBtn.textContent = '确认改名';
+      }
     });
   }
 

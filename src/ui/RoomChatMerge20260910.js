@@ -18,6 +18,7 @@
  * 同时保留原有职责：进房间时把重复的 `.lobby-chat` 从 DOM 摘下来，退出再挂回。
  */
 import { authStore } from '../core/AuthStore.js';
+import { containsBlockedWord, maskBlockedWords } from '../core/ContentFilter.js';
 import { RoomView } from './RoomView.js';
 import './RoomChatMerge20260910.css';
 
@@ -86,7 +87,8 @@ function entryKey(entry) {
 }
 
 function recordRoomMessage(view, message = {}) {
-  const text = cleanText(message.text ?? message.message);
+  // 2026-09-11：显示兜底——收到的（或被绕过的）消息里的违规词一律打码。
+  const text = maskBlockedWords(cleanText(message.text ?? message.message));
   if (!text) return null;
   const state = chatState(view);
   const channel = normalizeIncomingChannel(message);
@@ -313,6 +315,11 @@ function installUi(view) {
 function handleRoomChatSend(view, detail = {}) {
   const text = cleanText(detail.message);
   if (!text) return;
+  // 2026-09-11：发送前拦截违规词（服务端还有一层同样的校验）。
+  if (containsBlockedWord(text)) {
+    view.notice?.('消息包含违规词汇，已拦截');
+    return;
+  }
   // BattleRoomExact 自己的频道闭包会被本补丁的捕获监听拦住而不更新，
   // 所以发送目标一律以「当前高亮的标签」为准。
   const id = activeChannel(view);

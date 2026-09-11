@@ -96,7 +96,10 @@ function installBagAuthority() {
     if (!picked) return;
     const { slot, item } = picked;
 
-    if (!FUNCTIONAL_CARD_ITEMS.has(Number(item.id))) {
+    if (Number(item.id) === 98) {
+      // 2026-09-11：改名卡（98）走独立改名弹窗；改名由服务端 /player/rename 扣卡+入库。
+      replaceButton(root.querySelector('#bag-detail #bag-use'), () => this._openRenameDialog(root));
+    } else if (!FUNCTIONAL_CARD_ITEMS.has(Number(item.id))) {
       replaceButton(root.querySelector('#bag-detail #bag-use'), async (event) => {
         const button = event.currentTarget;
         if (button.disabled) return;

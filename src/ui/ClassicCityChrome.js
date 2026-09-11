@@ -1,4 +1,5 @@
 import { authStore } from '../core/AuthStore.js';
+import { containsBlockedWord, maskBlockedWords } from '../core/ContentFilter.js';
 import { SocketClient } from '../network/SocketClient.js';
 
 const DEFAULT_MESSAGES = [
@@ -45,7 +46,7 @@ function appendChatLine(root, text, tone = 'normal') {
   if (!log) return;
   const line = document.createElement('p');
   line.className = `is-${tone}`;
-  line.textContent = String(text ?? '');
+  line.textContent = maskBlockedWords(String(text ?? ''));
   log.append(line);
   while (log.children.length > 80) log.firstElementChild?.remove();
   log.scrollTop = log.scrollHeight;
@@ -189,6 +190,11 @@ export function bindClassicChat(root, { onSend } = {}) {
   const send = async () => {
     const value = input?.value?.trim();
     if (!value) return;
+    // 2026-09-11：发送前拦截违规词（服务端还有一层同样的校验）。
+    if (containsBlockedWord(value)) {
+      appendChatLine(root, '消息包含违规词汇，已拦截', 'system');
+      return;
+    }
     const channel = normalizeChatChannel(input?.dataset.channel);
     input.value = '';
     diagnostics.sendAttempts += 1;
