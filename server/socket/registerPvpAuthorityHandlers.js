@@ -432,7 +432,8 @@ function scheduleFinishedCleanup(roomId, entry) {
 
 function createBattle(teams, cardDb) {
   const { room } = teams;
-  if (room.mode === 'boss') {
+  // 2026-09-11：BOSS 联机与野外冒险(PVE)联机共用同一套服务端权威合作战斗，靠 mode 区分。
+  if (room.mode === 'boss' || room.mode === 'pve') {
     return new CoopBossBattle({
       roomId: room.id,
       members: [...room.members.values()].map((member) => ({
@@ -440,8 +441,11 @@ function createBattle(teams, cardDb) {
         nickname: member.nickname,
       })),
       db: cardDb,
+      mode: room.mode,
       bossId: room.bossId,
       difficulty: room.difficulty,
+      stageId: room.stageId,
+      mapId: room.mapId,
     });
   }
   return new PvpBattle({
@@ -459,7 +463,7 @@ function ensureAuthorityBattle(roomId, io, cardDb) {
   if (existing) return existing;
 
   const teams = roomManager.getTeams(numericRoomId);
-  if (!teams?.room || !['pvp', 'boss'].includes(teams.room.mode)) {
+  if (!teams?.room || !['pvp', 'boss', 'pve'].includes(teams.room.mode)) {
     throw new Error('权威战斗房间不存在');
   }
   if (!['starting', 'battling'].includes(teams.room.status)) {

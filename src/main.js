@@ -108,6 +108,7 @@ import { installPvpAnimationContinuityFinal } from './ui/PvpAnimationContinuityF
 import { installPvpRound2VisualFix } from './ui/PvpRound2VisualFix.js';
 import { installPvpImpactFxFinal } from './ui/PvpImpactFxFinal.js';
 import { installBossCoopBridgeFinal } from './ui/BossCoopBridgeFinal.js';
+import { installAdventureCoopBridge20260911 } from './ui/AdventureCoopBridge20260911.js';
 import { installBossCoopDiagnostics } from './ui/BossCoopDiagnostics.js';
 import { installPvpWildernessDeckEditorFinal } from './ui/PvpWildernessDeckEditorFinal.js';
 import { installPvpWildernessRoomDiagnostics } from './ui/PvpWildernessRoomDiagnostics.js';
@@ -195,6 +196,7 @@ installPvpAnimationContinuityFinal();
 installPvpRound2VisualFix();
 installPvpImpactFxFinal();
 installBossCoopBridgeFinal();
+installAdventureCoopBridge20260911();
 installBossCoopDiagnostics();
 installPvpWildernessDeckEditorFinal();
 installPvpWildernessRoomDiagnostics();

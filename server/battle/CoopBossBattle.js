@@ -101,10 +101,14 @@ function animState(engine, unit) {
 }
 
 export class CoopBossBattle {
-  constructor({ roomId, members, db, bossId, difficulty }) {
-    this.mode = 'boss';
+  constructor({ roomId, members, db, bossId, difficulty, mode = 'boss', stageId = null, mapId = null }) {
+    // 2026-09-11：同一套服务端权威合作战斗同时服务 BOSS 联机与野外冒险(PVE)联机。
+    // mode='boss' 走 BOSS 逻辑（默认，保持原有行为不变）；mode='pve' 走关卡波次逻辑。
+    this.mode = mode === 'pve' ? 'pve' : 'boss';
     this.roomId = Number(roomId);
     this.db = db;
+    this.stageId = Number(stageId) || 1;
+    this.mapId = mapId == null ? null : String(mapId);
     this.members = members.map((member) => ({
       userId: Number(member.userId),
       nickname: member.nickname || '玩家',
@@ -112,38 +116,55 @@ export class CoopBossBattle {
     }));
     this.teamBlue = this.members;
     this.teamRed = [];
-    this.bossInfo = getBossById(bossId);
-    if (!this.bossInfo) throw new Error('BOSS数据不存在');
-    this.difficulty = String(difficulty || this.bossInfo.difficulty || '简单');
-    this.difficultyMult = Number(BOSS_DIFFICULTY_MULT[this.difficulty]) || 1;
 
-    this.engine = new BattleEngine(db, 1, [], null, {
-      trainingMode: false,
-      pvp: false,
-    });
-    this.engine.onBurrowReturn = (unit) => this.refundBurrowReturn(unit);
-    this.engine.pvp = false;
-    this.engine.coopBoss = true;
-    this.engine.stage = {
-      stage_id: 1,
-      stage_name: `${this.bossInfo.name}：${this.difficulty}`,
-      enemy_name: this.bossInfo.name,
-      enemy_res: Number(this.bossInfo.cardId),
-      hp: PLAYER_BASE_HP,
-    };
-    this.engine.wave.queue = [];
-    this.engine.wave.done = true;
-    this.engine.wave.totalWaves = 1;
-    this.engine.totalWaves = 1;
-    this.engine.waveNumber = 1;
-    this.engine.heroMaxHp = PLAYER_BASE_HP;
-    this.engine.heroHp = PLAYER_BASE_HP;
-    this.engine.enemyHeroMaxHp = HIDDEN_ENEMY_BASE_HP;
-    this.engine.enemyHeroHp = HIDDEN_ENEMY_BASE_HP;
-    this.engine.units = [];
-    this.engine.projectiles = [];
-    this.engine.floats = [];
-    this.engine.status = 'playing';
+    if (this.mode === 'boss') {
+      this.bossInfo = getBossById(bossId);
+      if (!this.bossInfo) throw new Error('BOSS数据不存在');
+      this.difficulty = String(difficulty || this.bossInfo.difficulty || '简单');
+      this.difficultyMult = Number(BOSS_DIFFICULTY_MULT[this.difficulty]) || 1;
+
+      this.engine = new BattleEngine(db, 1, [], null, {
+        trainingMode: false,
+        pvp: false,
+      });
+      this.engine.onBurrowReturn = (unit) => this.refundBurrowReturn(unit);
+      this.engine.pvp = false;
+      this.engine.coopBoss = true;
+      this.engine.stage = {
+        stage_id: 1,
+        stage_name: `${this.bossInfo.name}：${this.difficulty}`,
+        enemy_name: this.bossInfo.name,
+        enemy_res: Number(this.bossInfo.cardId),
+        hp: PLAYER_BASE_HP,
+      };
+      this.engine.wave.queue = [];
+      this.engine.wave.done = true;
+      this.engine.wave.totalWaves = 1;
+      this.engine.totalWaves = 1;
+      this.engine.waveNumber = 1;
+      this.engine.heroMaxHp = PLAYER_BASE_HP;
+      this.engine.heroHp = PLAYER_BASE_HP;
+      this.engine.enemyHeroMaxHp = HIDDEN_ENEMY_BASE_HP;
+      this.engine.enemyHeroHp = HIDDEN_ENEMY_BASE_HP;
+      this.engine.units = [];
+      this.engine.projectiles = [];
+      this.engine.floats = [];
+      this.engine.status = 'playing';
+    } else {
+      this.bossInfo = null;
+      this.difficulty = null;
+      this.difficultyMult = 1;
+      // PVE：直接复用客户端战斗引擎，按关卡自动铺波次/基地血量（与单机冒险完全一致）。
+      this.engine = new BattleEngine(db, this.stageId, [], null, {
+        trainingMode: false,
+        pvp: false,
+        lootEnabled: true,
+      });
+      this.engine.onBurrowReturn = (unit) => this.refundBurrowReturn(unit);
+      this.engine.pvp = false;
+      this.engine.coopBoss = false;
+      this.engine.status = 'playing';
+    }
 
     this.resources = new Map();
     this.skillStates = new Map();
@@ -170,11 +191,14 @@ export class CoopBossBattle {
     this.pendingBossSkills = [];
     this.bossMinionTimer = 0;
     this.bossMinionCount = 0;
-    this.spawnBoss();
-    this.installBossDamageRoute();
+    if (this.mode === 'boss') {
+      this.spawnBoss();
+      this.installBossDamageRoute();
+    }
   }
 
   spawnBoss() {
+    if (this.mode !== 'boss') return;
     const card = this.db.getById(Number(this.bossInfo.cardId));
     if (!card) throw new Error(`BOSS卡牌${this.bossInfo.cardId}不存在`);
     const lane = Math.max(0, Math.min(4, Math.floor(Number(this.bossInfo.lane ?? 2))));
@@ -201,6 +225,7 @@ export class CoopBossBattle {
   }
 
   installBossDamageRoute() {
+    if (this.mode !== 'boss') return;
     const originalDamageBase = this.engine.damageBase.bind(this.engine);
     this.engine.damageBase = (side, amount) => {
       const damage = Math.max(0, round2(amount));
@@ -226,6 +251,7 @@ export class CoopBossBattle {
   }
 
   spawnBossMinion() {
+    if (this.mode !== 'boss') return null;
     if (!this.bossUnit?.alive) return null;
     const cardIds = Array.isArray(this.bossInfo.minionCardIds)
       ? this.bossInfo.minionCardIds.map(Number).filter((id) => Number.isInteger(id) && id > 0)
@@ -266,6 +292,7 @@ export class CoopBossBattle {
   }
 
   tickBossMinions(dt) {
+    if (this.mode !== 'boss') return;
     if (!this.bossUnit?.alive) return;
     const interval = Math.max(3, Number(this.bossInfo.minionInterval) || 8);
     this.bossMinionTimer += Math.max(0, Number(dt) || 0);
@@ -276,6 +303,7 @@ export class CoopBossBattle {
   }
 
   syncBossHud() {
+    if (this.mode !== 'boss') return;
     const boss = this.bossUnit;
     this.engine.enemyHeroMaxHp = boss?.maxHp ?? 1;
     this.engine.enemyHeroHp = boss?.alive ? Math.max(0, boss.hp) : 0;
@@ -482,6 +510,7 @@ export class CoopBossBattle {
   }
 
   castBossSpecial() {
+    if (this.mode !== 'boss') return;
     const boss = this.bossUnit;
     if (!boss?.alive) return;
     const configured = Array.isArray(this.bossInfo.skillIds) ? this.bossInfo.skillIds : [];
@@ -601,6 +630,7 @@ export class CoopBossBattle {
   }
 
   tickPendingBossSkills() {
+    if (this.mode !== 'boss') return;
     if (!this.pendingBossSkills.length) return;
     const waiting = [];
     for (const cast of this.pendingBossSkills) {
@@ -625,6 +655,7 @@ export class CoopBossBattle {
   }
 
   getBossSkillInterval() {
+    if (this.mode !== 'boss') return Infinity;
     const base = Math.max(5, Number(this.bossInfo.cd) || 10);
     if (this.difficulty === '困难') return Math.max(4, base * 0.6);
     if (this.difficulty === '普通') return Math.max(5, base * 0.8);
@@ -634,6 +665,26 @@ export class CoopBossBattle {
   tick(dt) {
     if (this.status !== 'playing') return;
     const step = Math.max(0, Number(dt) || 0);
+    // 2026-09-11：PVE 联机——敌人波次/基地血量完全交给引擎，按「打爆敌方基地=胜 / 己方基地=负」结算。
+    if (this.mode === 'pve') {
+      this.engine.status = 'playing';
+      this.engine.tick(step);
+      this.tickPlayerStates(step);
+      this.tickResources(step);
+      if (this.engine.heroHp <= 0) {
+        this.status = 'finished';
+        this.winner = 'red';
+        this.engine.status = 'lose';
+      } else if (this.engine.enemyHeroHp <= 0) {
+        this.status = 'finished';
+        this.winner = 'blue';
+        this.engine.status = 'win';
+      } else {
+        this.status = 'playing';
+        this.engine.status = 'playing';
+      }
+      return;
+    }
     // 敌方“基地”只是命中入口；damageBase(enemy) 已被重定向到真实 BOSS 实体。
     this.engine.enemyHeroHp = HIDDEN_ENEMY_BASE_HP;
     this.engine.enemyHeroMaxHp = HIDDEN_ENEMY_BASE_HP;
@@ -720,14 +771,72 @@ export class CoopBossBattle {
       aerialLandingUntil: round2(unit._aerialLandingUntil),
       attackingBase: Boolean(unit.attackingBase),
       boss: Boolean(unit.isBoss || unit.pvpBoss),
-      bossScale: unit.isBoss || unit.pvpBoss ? Math.max(1, Number(unit.bossScale) || Number(this.bossInfo.displayScale) || 4) : 1,
+      bossScale: unit.isBoss || unit.pvpBoss ? Math.max(1, Number(unit.bossScale) || Number(this.bossInfo?.displayScale) || 4) : 1,
       bossMinion: Boolean(unit.pvpBossMinion),
+    };
+  }
+
+  /**
+   * 2026-09-11：PVE 联机的共享掉落拾取（每个玩家各自拾取一份，真正的发放由客户端
+   * /player/stage-result 按「各自结算」入库）。BOSS 没有掉落，不受影响。
+   */
+  collectLootDrop(userId, dropId) {
+    if (this.mode !== 'pve') throw new Error('该战斗不支持拾取掉落');
+    if (!this.teamOf(userId)) throw new Error('你不是本房间玩家');
+    const drop = (this.engine.lootDrops ?? []).find((entry) => Number(entry.id) === Number(dropId));
+    if (!drop) throw new Error('掉落不存在或已被拾取');
+    if (!drop.collected) {
+      drop.collected = true;
+      drop.collectedAt = this.engine.time;
+    }
+    return { ...drop };
+  }
+
+  /** 2026-09-11：PVE 联机快照（关卡/波次/双方基地血量），客户端按同一套 applySnapshot 渲染。 */
+  pveSnapshot(now) {
+    const stage = this.engine.stage ?? {};
+    return {
+      mode: 'pve',
+      t: round2(now),
+      status: this.status,
+      winner: this.winner,
+      title: String(stage.stage_name ?? '冒险'),
+      stage: {
+        id: Number(stage.stage_id) || this.stageId,
+        name: String(stage.stage_name ?? ''),
+        enemyRes: Number(stage.enemy_res) || null,
+        hp: Number(stage.hp) || 0,
+        mapId: this.mapId,
+      },
+      wave: {
+        number: Number(this.engine.waveNumber) || 0,
+        total: Number(this.engine.totalWaves) || 0,
+      },
+      heroHp: {
+        blue: round2(this.engine.heroHp),
+        red: round2(this.engine.enemyHeroHp),
+      },
+      heroMaxHp: {
+        blue: round2(this.engine.heroMaxHp),
+        red: round2(this.engine.enemyHeroMaxHp),
+      },
+      players: this.members.map((member) => ({ ...member })),
+      units: this.engine.units
+        .filter((unit) => unit.alive || (unit._deathUntil && now < unit._deathUntil))
+        .map((unit) => this.publicUnit(unit)),
+      lootDrops: (this.engine.lootDrops ?? []).map((drop) => ({ ...drop })),
+      logs: this.engine.logs?.slice(-5) ?? this.engine.log?.slice(-5) ?? [],
+      visualEvents: this.visualEvents.filter(
+        (event) => now - Number(event.startedAt || 0) <= Math.max(5, Number(event.duration || 0) + 1),
+      ),
+      coopPveVersion: 'coop-pve-v1',
     };
   }
 
   snapshot() {
     this.syncBossHud();
     const now = Number(this.engine.time) || 0;
+    if (this.mode === 'pve') return this.pveSnapshot(now);
     return {
       mode: 'boss',
       t: round2(now),

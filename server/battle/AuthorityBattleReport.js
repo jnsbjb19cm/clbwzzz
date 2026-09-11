@@ -23,7 +23,9 @@ export function attachBattleReport(battle, room) {
   const byId = new Map(rows.map(row => [row.userId, row]));
   const report = battle.battleReport = {
     status: 'playing', mode: room.mode, winner: null, rows,
-    rewardsEnabled: room.mode !== 'pvp' || !room.allowUnbalanced,
+    // 2026-09-11：PVE 联机由各客户端按现有冒险规则自行结算（/player/stage-result），
+    // 服务端不再重复发 PVP/BOSS 式奖励，避免双倍。
+    rewardsEnabled: room.mode === 'boss' || (room.mode === 'pvp' && !room.allowUnbalanced),
     bossName: battle.bossInfo?.name ?? null,
   };
   const engine = battle.engine;
@@ -47,7 +49,7 @@ export function attachBattleReport(battle, room) {
     if (killer && killer !== owner && (!owner || owner.team !== killer.team)) killer.kills += 1;
     return result;
   };
-  const skillMethod = room.mode === 'boss' ? 'applyPlayerSkill' : 'applySkillCast';
+  const skillMethod = room.mode === 'pvp' ? 'applySkillCast' : 'applyPlayerSkill';
   const previousSkill = battle[skillMethod];
   battle[skillMethod] = function (cast, ...args) {
     const prior = this.__reportSkillCaster;

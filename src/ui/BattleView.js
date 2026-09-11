@@ -183,9 +183,10 @@ export class BattleView {
       return;
     }
     if (this.pvp) {
-      // PVP：房间容器内渲染野外战斗(本地引擎 + 部署转发，不出怪)
+      // PVP / 联机：房间容器内渲染战斗(本地引擎 + 服务端权威快照，不出怪)
+      // 2026-09-11：PVE 联机需要真实关卡(波形/背景/结算)，优先用 pvp.stageId。
       this.deckSlots = DeckSelectView.loadSavedDeck(this.cardInventory, this.db) ?? DeckSelectView.defaultDeckSlots(this.cardInventory, this.db);
-      this.enterBattle(this.deckSlots, 1, { trainingMode: this.trainingMode, boss: this.boss });
+      this.enterBattle(this.deckSlots, Number(this.pvp?.stageId) || 1, { trainingMode: this.trainingMode, boss: this.boss });
       return;
     }
     // 训练营：直接进训练战斗（跳过选卡组界面，保证试用卡/教学条/背景/资源开关生效）

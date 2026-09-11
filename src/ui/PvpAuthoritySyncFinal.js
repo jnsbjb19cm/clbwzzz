@@ -376,8 +376,8 @@ function applySnapshot(view, snapshot, { force = false } = {}) {
   engine.status = snapshot.status === 'finished'
     ? (snapshot.winner === ownTeam ? 'win' : 'lose')
     : 'playing';
-  engine.waveNumber = 0;
-  engine.totalWaves = 0;
+  engine.waveNumber = Number(snapshot.wave?.number) || 0;
+  engine.totalWaves = Number(snapshot.wave?.total) || 0;
 
   engine.floats ??= [];
   engine.deployEffects ??= [];

@@ -300,6 +300,8 @@ export function registerSocketHandlers(io) {
         ackOk(ack, { room });
         // PVP 房间：启动服务端权威对战(快照广播 + 部署/结束事件)
         // PVP 房间启动服务端权威对战；PVE(冒险)房间由客户端进入单机战斗
+        // 2026-09-11：PVP 启动「本地引擎+部署转发」；BOSS 与野外冒险(PVE)联机由客户端
+        // 进入房间后调用 pvp:authority:join，服务端再按房间 mode 创建权威合作战斗。
         if (room.mode === 'pvp') startPvpBattle(room.id, io);
       } catch (error) { ackError(ack, error); }
     });
