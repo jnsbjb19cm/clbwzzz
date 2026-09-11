@@ -9,6 +9,7 @@ const CHANNELS = Object.freeze([
   { id: 'guild', label: '公会' },
   { id: 'private', label: '私聊' },
 ]);
+const CHANNEL_LABEL = Object.freeze({ current: '当前', world: '世界', guild: '公会', private: '私聊' });
 const MAX_LINES = 80;
 
 function cleanText(value) {
@@ -32,6 +33,9 @@ function ensureState(view) {
   if (!view.__lobbyChatState) {
     view.__lobbyChatState = {
       active: 'current',
+      // 2026-09-11：单一日志——所有频道消息按时间顺序留在 entries 里，
+      // 切换频道只改发送目标/高亮，不再重建列表（用户要求「切换不刷新信息」）。
+      entries: [],
       buffers: new Map(CHANNELS.map((channel) => [channel.id, []])),
       privateTarget: null,
       privateTargetName: '',
@@ -45,11 +49,27 @@ function trimBuffer(buffer) {
   if (buffer.length > MAX_LINES) buffer.splice(0, buffer.length - MAX_LINES);
 }
 
+/** 只更新分频道缓冲（兼容旧逻辑），不动单一日志。 */
 function pushOne(state, channel, item) {
   const buffer = state.buffers.get(channel);
   if (!buffer || !item?.text) return;
   buffer.push(item);
   trimBuffer(buffer);
+}
+
+/** 往单一日志追加一条（系统消息只进这里一次，避免多频道重复）。 */
+function recordEntry(state, item) {
+  const entry = {
+    channel: normalizeChannel(item?.channel, 'current'),
+    nickname: cleanText(item?.nickname) || (item?.system ? '系统' : '玩家'),
+    text: cleanText(item?.text),
+    system: Boolean(item?.system),
+    spectator: Boolean(item?.spectator),
+  };
+  if (!entry.text) return null;
+  state.entries.push(entry);
+  if (state.entries.length > MAX_LINES) state.entries.splice(0, state.entries.length - MAX_LINES);
+  return entry;
 }
 
 function pushSystemAll(state, text, title = '') {
@@ -60,6 +80,8 @@ function pushSystemAll(state, text, title = '') {
     nickname: '系统',
     text: title ? `${cleanText(title)}：${body}` : body,
   };
+  recordEntry(state, item);
+  // 保留分频道缓冲：旧调用点/其它补丁若读取 buffers，仍能拿到系统消息。
   for (const { id } of CHANNELS) pushOne(state, id, item);
 }
 
@@ -67,51 +89,46 @@ function renderMessages(view) {
   const state = ensureState(view);
   const list = view.root?.querySelector?.('#lobby-chat-list');
   if (!list) return;
-  list.replaceChildren();
 
-  const messages = state.buffers.get(state.active) ?? [];
-  if (!messages.length) {
+  const signature = state.entries.map((entry) => `${entry.channel}|${entry.system ? 1 : 0}|${entry.nickname}|${entry.text}`).join('\n');
+  if (list.dataset.chatSignature20260911 === signature
+    && list.childElementCount === state.entries.length && state.entries.length > 0) {
+    return;
+  }
+
+  list.replaceChildren();
+  if (!state.entries.length) {
     const empty = document.createElement('div');
     empty.className = 'lobby-chat-item lobby-chat-empty';
-    empty.textContent = `${channelLabel(state.active)}频道暂无消息`;
+    empty.textContent = '暂无消息';
     list.append(empty);
   } else {
-    for (const item of messages) {
+    for (const entry of state.entries) {
       const row = document.createElement('div');
-      row.className = `lobby-chat-item${item.system ? ' is-system' : ''} is-${state.active}`;
-      const prefix = item.system
+      row.className = `lobby-chat-item is-${entry.channel}${entry.system ? ' is-system' : ''}`;
+      const prefix = entry.system
         ? '[系统] '
-        : state.active === 'private'
-          ? '[私聊] '
-          : state.active === 'guild'
-            ? '[公会] '
-            : state.active === 'world'
-              ? '[世界] '
-              : '';
-      const nickname = cleanText(item.nickname) || (item.system ? '' : '玩家');
-      row.textContent = item.system
-        ? `${prefix}${item.text}`
-        : `${prefix}${nickname}：${item.text}`;
+        : entry.channel === 'current'
+          ? ''
+          : `[${CHANNEL_LABEL[entry.channel] ?? entry.channel}] `;
+      const nickname = entry.system ? '' : `${entry.spectator ? '[观战] ' : ''}${entry.nickname || '玩家'}：`;
+      row.textContent = `${prefix}${nickname}${entry.text}`;
       list.append(row);
     }
   }
+  list.dataset.chatSignature20260911 = signature;
   list.scrollTop = list.scrollHeight;
 }
 
-function appendExactRoomLog(view, { nickname, text, spectator = false }) {
-  const log = view.root?.querySelector?.('.exact-room-chat-log');
-  if (!log || !text) return;
-  const row = document.createElement('div');
-  row.className = 'exact-room-chat-message';
-  const name = `${spectator ? '[观战] ' : ''}${cleanText(nickname) || '玩家'}`;
-  const strong = document.createElement('b');
-  strong.textContent = `${name}：`;
-  const span = document.createElement('span');
-  span.textContent = text;
-  row.append(strong, span);
-  log.append(row);
-  while (log.children.length > MAX_LINES) log.firstElementChild?.remove();
-  log.scrollTop = log.scrollHeight;
+function clearLobbyChat(view) {
+  const state = ensureState(view);
+  state.entries = [];
+  for (const { id } of CHANNELS) state.buffers.set(id, []);
+  const list = view.root?.querySelector?.('#lobby-chat-list');
+  if (list) {
+    list.replaceChildren();
+    list.dataset.chatSignature20260911 = '';
+  }
 }
 
 async function loadFriends(view) {
@@ -141,6 +158,7 @@ async function loadFriends(view) {
   if (Number(state.privateTarget) > 0) select.value = String(state.privateTarget);
 }
 
+/** 切换频道：只改高亮/私聊对象行，不重建日志。 */
 function selectChannel(view, channel) {
   const state = ensureState(view);
   state.active = normalizeChannel(channel);
@@ -150,7 +168,6 @@ function selectChannel(view, channel) {
   const privateBox = view.root?.querySelector?.('.lobby-chat-private-target');
   privateBox?.classList.toggle('hidden', state.active !== 'private');
   if (state.active === 'private') void loadFriends(view);
-  renderMessages(view);
 }
 
 function mountLobbyChat(view) {
@@ -170,9 +187,10 @@ function mountLobbyChat(view) {
       <div class="lobby-chat-channels">
         ${CHANNELS.map((channel, index) => `
           <button type="button" class="lobby-chat-channel${index === 0 ? ' active' : ''}" data-lobby-chat-channel="${channel.id}">${channel.label}</button>`).join('')}
+        <button type="button" class="lobby-chat-clear" title="清空聊天记录">清屏</button>
       </div>
     </div>
-    <div id="lobby-chat-list" class="lobby-chat-list"></div>
+    <div id="lobby-chat-list" class="lobby-chat-list" role="log" aria-live="polite" aria-relevant="additions" aria-atomic="false" aria-label="大厅聊天记录"></div>
     <div class="lobby-chat-private-target hidden">
       <span>私聊对象</span>
       <select id="lobby-private-target-select"><option value="">选择好友…</option></select>
@@ -182,17 +200,19 @@ function mountLobbyChat(view) {
       <button id="lobby-chat-send" class="btn-sm" type="button">发送</button>
     </div>`;
 
-  pushOne(state, 'current', {
-    system: true,
-    nickname: '系统',
-    text: '欢迎来到游戏大厅，请选择房间或快速加入。',
-  });
+  recordEntry(state, { channel: 'current', system: true, nickname: '系统', text: '欢迎来到游戏大厅，请选择房间或快速加入。' });
 
   const latest = globalThis.__clbwzLastSystemAnnouncement;
   if (latest?.text) pushSystemAll(state, latest.text, latest.title);
 
   host.querySelectorAll('[data-lobby-chat-channel]').forEach((button) => {
     button.addEventListener('click', () => selectChannel(view, button.dataset.lobbyChatChannel));
+  });
+
+  host.querySelector('.lobby-chat-clear')?.addEventListener('click', (event) => {
+    event.preventDefault();
+    event.stopPropagation();
+    clearLobbyChat(view);
   });
 
   host.querySelector('#lobby-private-target-select')?.addEventListener('change', (event) => {
@@ -218,6 +238,7 @@ function mountLobbyChat(view) {
     renderMessages(view);
   };
   window.addEventListener('clbwz:system-announcement', view.__lobbySystemHandler);
+  selectChannel(view, state.active);
   renderMessages(view);
 }
 
@@ -252,10 +273,9 @@ export function installLobbyChatPatch20260905() {
     const nickname = cleanText(message.nickname ?? message.username ?? message.sender) || '玩家';
     const item = { nickname, text, spectator: Boolean(message.spectator) };
     pushOne(state, channel, item);
-    if (channel === state.active) renderMessages(this);
-
-    // 房间内原有 DeckSelectView 聊天框仍保留，不因大厅分频道改造而丢消息。
-    if (this.room && channel === 'current') appendExactRoomLog(this, item);
+    // 大厅里所有频道共用一条日志；房间内由 RoomChatMerge20260910 接管，不会走到这里。
+    recordEntry(state, { ...item, channel });
+    renderMessages(this);
   };
 
   RoomView.prototype.sendChat = async function sendChannelChat() {
@@ -298,7 +318,13 @@ export function installLobbyChatPatch20260905() {
     enabled: true,
     mounted: Boolean(document.querySelector('.classic-game-hall .lobby-chat-channels')),
     activeChannel: document.querySelector('.classic-game-hall .lobby-chat-channel.active')?.dataset?.lobbyChatChannel || null,
+    hasClearButton: Boolean(document.querySelector('.classic-game-hall .lobby-chat-clear')),
+    rows: document.querySelectorAll('.classic-game-hall .lobby-chat-item').length,
   });
+
+  // 验证/调试用：不经过整页 renderShell 也能装配一次大厅聊天。
+  window.__mountLobbyChat20260911 = (view) => mountLobbyChat(view);
+  window.__lobbyChatEntries20260911 = (view) => view?.__lobbyChatState?.entries ?? [];
 }
 
 installLobbyChatPatch20260905();

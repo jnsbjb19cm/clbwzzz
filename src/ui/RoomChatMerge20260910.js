@@ -1,11 +1,21 @@
 /**
  * 2026-09-10：战斗准备房间聊天合并。
+ * 2026-09-11：改为「单一合并日志」并加清屏（按用户反馈）。
  *
- * 此前房间里有两套聊天：大厅的 `.lobby-chat`（进房间后只是被加上 hidden，DOM 仍然存在）
- * 和房间自己的 `.exact-room-chat > .exact-room-chat-log`。这里把两者合并成一套：
- *  - 保留房间内的 `.exact-room-chat`，频道扩到 当前/队伍/系统/世界/公会/私聊 + 私聊对象；
- *  - 世界/公会/私聊沿用大厅的 socket 通道（lobby:chat），消息统一落进房间聊天日志；
- *  - 进入房间时把重复的 `.lobby-chat` 从 DOM 摘下来，退出房间再挂回去（节点与监听都保留）。
+ * 房间里有好几套聊天补丁叠在一起，历史问题：
+ *   - 大厅聊天 `.lobby-chat` 进房间后只是被 hidden，DOM 还在；
+ *   - `RoomChatChannelFix` / `RoomChatRuntimePatch` 在切换频道 / 收到快照时会
+ *     `replaceChildren()` 只重放「当前频道」，其它频道消息立刻消失；
+ *   - `DeckSelectView.render()` 每次房间快照刷新都会重建整个 `.game-room`，
+ *     连带把聊天日志整块清掉（只剩 BattleRoomExact 的欢迎语）。
+ *
+ * 本补丁是最后安装的一层，直接**接管房间聊天日志**：
+ *   - 每个 RoomView 维护一份 `entries`（当前/队伍/系统/世界/公会/私聊都进同一份）；
+ *   - 切换频道只改发送目标与高亮，永远不动日志内容；
+ *   - 房间 DOM 被重建后，在 `clbwz:room-exact-ready` 上把 entries 重新贴回去；
+ *   - 提供「清屏」按钮，清空日志与本地记录（之后可继续收新消息）；
+ *   - 世界/公会/私聊沿用大厅的 socket 通道（lobby:chat）。
+ * 同时保留原有职责：进房间时把重复的 `.lobby-chat` 从 DOM 摘下来，退出再挂回。
  */
 import { authStore } from '../core/AuthStore.js';
 import { RoomView } from './RoomView.js';
@@ -22,6 +32,8 @@ const CHANNEL_LABEL = Object.freeze({
   guild: '公会',
   private: '私聊',
 });
+
+const LOBBY_CHANNELS = new Set(['world', 'guild', 'private']);
 
 function cleanText(value) {
   return String(value ?? '')
@@ -44,45 +56,137 @@ function chatLog(view) {
   return roomChat(view)?.querySelector?.('.exact-room-chat-log') ?? null;
 }
 
-/** 大厅频道 id（世界/公会/私聊），其余返回 null。 */
-function lobbyChannelOf(value) {
-  const raw = String(value ?? '').trim().toLowerCase();
-  return raw === 'world' || raw === 'guild' || raw === 'private' ? raw : null;
+/** 把来自 socket / 快照的消息归一到六个频道之一。 */
+function normalizeIncomingChannel(message = {}) {
+  if (message?.system || String(message?.nickname ?? '').trim() === '系统') return 'system';
+  const raw = String(message?.channel ?? message?.type ?? '').trim().toLowerCase();
+  if (raw === '当前' || raw === 'current' || raw === '') return 'current';
+  if (raw === '队伍' || raw === 'team') return 'team';
+  if (raw === '系统' || raw === 'system') return 'system';
+  if (raw === '世界' || raw === 'world') return 'world';
+  if (raw === '公会' || raw === 'guild') return 'guild';
+  if (raw === '私聊' || raw === 'private') return 'private';
+  return 'current';
 }
 
-function appendRoomLog(view, { channel = 'current', nickname = '玩家', text = '', system = false, spectator = false } = {}) {
-  const log = chatLog(view);
-  const body = cleanText(text);
-  if (!log || !body) return false;
-  const id = Object.hasOwn(CHANNEL_LABEL, channel) ? channel : 'current';
+/** 每个 RoomView 一份聊天记录（跨房间 DOM 重建保留）。 */
+function chatState(view) {
+  if (!view.__roomChatState20260911) {
+    view.__roomChatState20260911 = { entries: [], seenIds: new Set(), localSeq: 0 };
+  }
+  return view.__roomChatState20260911;
+}
+
+function resetChatState(view) {
+  view.__roomChatState20260911 = { entries: [], seenIds: new Set(), localSeq: 0 };
+}
+
+function entryKey(entry) {
+  return entry.id ? `id:${entry.id}` : null;
+}
+
+function recordRoomMessage(view, message = {}) {
+  const text = cleanText(message.text ?? message.message);
+  if (!text) return null;
+  const state = chatState(view);
+  const channel = normalizeIncomingChannel(message);
+  const rawId = String(message.id ?? message.messageId ?? message.chatId ?? '').trim();
+  const id = rawId || `local-${++state.localSeq}`;
+  const key = `id:${id}`;
+  if (state.seenIds.has(key)) return null;
+  state.seenIds.add(key);
+
+  const entry = {
+    id,
+    channel,
+    nickname: cleanText(message.nickname ?? message.username ?? message.sender) || '玩家',
+    text,
+    system: Boolean(message.system || channel === 'system'),
+    spectator: Boolean(message.spectator),
+  };
+  state.entries.push(entry);
+  if (state.entries.length > MAX_LOG_ROWS) {
+    const dropped = state.entries.splice(0, state.entries.length - MAX_LOG_ROWS);
+    for (const row of dropped) {
+      const k = entryKey(row);
+      if (k) state.seenIds.delete(k);
+    }
+  }
+  return entry;
+}
+
+function createRoomChatRow(entry) {
   const row = document.createElement('div');
-  row.className = `exact-room-chat-message channel-${id}${system ? ' system' : ''}`;
+  row.className = `exact-room-chat-message channel-${entry.channel}${entry.system ? ' system' : ''}`;
   const name = document.createElement('b');
-  const prefix = system ? '[系统] ' : id === 'current' ? '' : `[${CHANNEL_LABEL[id]}] `;
-  name.textContent = `${prefix}${spectator ? '[观战] ' : ''}${cleanText(nickname) || '玩家'}：`;
+  const prefix = entry.system
+    ? '[系统] '
+    : entry.channel === 'current'
+      ? ''
+      : `[${CHANNEL_LABEL[entry.channel] ?? entry.channel}] `;
+  name.textContent = `${prefix}${entry.spectator ? '[观战] ' : ''}${entry.nickname || '玩家'}：`;
   const span = document.createElement('span');
-  span.textContent = body;
+  span.textContent = entry.text;
   row.append(name, span);
-  log.append(row);
-  while (log.children.length > MAX_LOG_ROWS) log.firstElementChild?.remove();
-  log.scrollTop = log.scrollHeight;
+  return row;
+}
+
+function scrollRoomChatToBottom(log = null) {
+  const target = log ?? chatLog({ root: document });
+  if (!target) return false;
+  const apply = () => {
+    try {
+      target.scrollTop = target.scrollHeight;
+    } catch {
+      // 隐藏中或已卸载：忽略，下一次 mutation/可见性变化会再来一次
+    }
+  };
+  apply();
+  requestAnimationFrame(apply);
   return true;
 }
 
-/** 大厅频道消息只存在于客户端缓冲里，房间刷新重放日志时要重新贴回去，避免消息一闪就没。 */
-function rememberExtra(view, entry) {
-  if (!view || typeof view !== 'object') return;
-  if (!Array.isArray(view.__roomChatExtras20260910)) view.__roomChatExtras20260910 = [];
-  view.__roomChatExtras20260910.push(entry);
-  if (view.__roomChatExtras20260910.length > MAX_LOG_ROWS) {
-    view.__roomChatExtras20260910.splice(0, view.__roomChatExtras20260910.length - MAX_LOG_ROWS);
+/**
+ * 把当前 RoomView 的全部记录画进日志。
+ * 内容没变就跳过 replaceChildren，避免切换频道/快照刷新时闪一下或丢滚动位置。
+ */
+function renderRoomChat(view) {
+  const log = chatLog(view);
+  if (!log) return false;
+  const entries = chatState(view).entries;
+  const signature = entries.map((entry) => `${entry.id}|${entry.channel}|${entry.text}`).join('\n');
+  if (log.dataset.chatSignature20260911 === signature
+    && log.childElementCount === entries.length && entries.length > 0) {
+    return true;
+  }
+  log.replaceChildren();
+  for (const entry of entries) log.append(createRoomChatRow(entry));
+  log.dataset.chatSignature20260911 = signature;
+  scrollRoomChatToBottom(log);
+  return true;
+}
+
+function clearRoomChat(view) {
+  resetChatState(view);
+  // 清屏后在当前房间内不再从快照把旧历史补回来（新消息照常接收显示）。
+  view.__roomChatCleared20260911 = true;
+  const log = chatLog(view);
+  if (log) {
+    log.replaceChildren();
+    log.dataset.chatSignature20260911 = '';
   }
 }
 
-function replayExtras(view) {
-  const extras = view?.__roomChatExtras20260910;
-  if (!Array.isArray(extras) || !extras.length || !chatLog(view)) return;
-  for (const entry of extras) appendRoomLog(view, entry);
+/** 首次进房间时补一条系统欢迎 + 服务端公开历史（current/team/system）。 */
+function hydrateRoomChat(view) {
+  if (!view?.room || view.__roomChatCleared20260911) return;
+  const state = chatState(view);
+  if (!state.entries.length) {
+    recordRoomMessage(view, { id: 'local-welcome', nickname: '系统', text: '欢迎进入战斗房间。', system: true });
+  }
+  for (const message of Array.isArray(view.room.chat) ? view.room.chat : []) {
+    recordRoomMessage(view, message);
+  }
 }
 
 async function loadPrivateTargets(view) {
@@ -111,10 +215,15 @@ async function loadPrivateTargets(view) {
   }
 }
 
+/**
+ * 切换频道：只改发送目标与高亮，**不碰日志内容**（用户明确要求切换不刷新信息）。
+ */
 function selectChannel(view, value) {
   const chat = roomChat(view);
   if (!chat) return;
   const id = Object.hasOwn(CHANNEL_LABEL, value) ? value : 'current';
+  // 记住选择：房间 DOM 被快照刷新重建后要恢复到同一频道。
+  view.__roomChatActiveChannel20260911 = id;
 
   chat.querySelectorAll('.exact-room-chat-tabs button').forEach((button) => {
     button.classList.toggle('active', button.dataset.mergeChannel === id);
@@ -141,14 +250,46 @@ function selectChannel(view, value) {
   }
 }
 
+/** 在标题行右侧补一个「清屏」按钮（房间 DOM 重建后会自动补回）。 */
+function ensureClearButton(view, chat) {
+  let button = chat.querySelector('.exact-room-chat-clear');
+  if (!button) {
+    button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'exact-room-chat-clear';
+    button.textContent = '清屏';
+    button.title = '清空聊天记录';
+    chat.querySelector('.exact-room-chat-head')?.append(button);
+  }
+  if (button.dataset.bound === '1') return;
+  button.dataset.bound = '1';
+  button.addEventListener('click', (event) => {
+    event.preventDefault();
+    event.stopPropagation();
+    clearRoomChat(view);
+  });
+}
+
 function installUi(view) {
   const chat = roomChat(view);
   if (!chat) return;
 
+  // 无障碍：把日志声明成 live log，只播报新增消息。
+  const log = chat.querySelector('.exact-room-chat-log');
+  if (log) {
+    log.setAttribute('role', 'log');
+    log.setAttribute('aria-live', 'polite');
+    log.setAttribute('aria-relevant', 'additions');
+    log.setAttribute('aria-atomic', 'false');
+    log.setAttribute('aria-label', '房间聊天记录');
+  }
+
+  ensureClearButton(view, chat);
+
   if (chat.dataset.mergeChat20260910 !== '1') {
     chat.dataset.mergeChat20260910 = '1';
     const tabs = chat.querySelector('.exact-room-chat-tabs');
-    // 捕获阶段拦下频道点击：既更新本站，也避免上层补丁按旧频道重放日志。
+    // 捕获阶段拦下频道点击：既更新本站，也避免上层补丁按旧频道重放日志（会清空历史）。
     tabs?.addEventListener('click', (event) => {
       const button = event.target?.closest?.('.exact-room-chat-tabs button');
       if (!button) return;
@@ -162,14 +303,18 @@ function installUi(view) {
     });
   }
 
-  selectChannel(view, activeChannel(view));
-  // 2026-09-11：装配完成后挂上「新消息自动置底」观察器（隐藏时追加也能在显示后补上）
+  // 房间 DOM 重建后优先恢复用户上次选的频道（activeChannel 此时只会读到 HTML 默认的「当前」）。
+  selectChannel(view, view.__roomChatActiveChannel20260911 ?? activeChannel(view));
+  renderRoomChat(view);
+  // 装配完成后挂上「新消息自动置底」观察器（隐藏时追加也能在显示后补上）
   watchRoomChatScroll(chat);
 }
 
 function handleRoomChatSend(view, detail = {}) {
   const text = cleanText(detail.message);
   if (!text) return;
+  // BattleRoomExact 自己的频道闭包会被本补丁的捕获监听拦住而不更新，
+  // 所以发送目标一律以「当前高亮的标签」为准。
   const id = activeChannel(view);
 
   if (id === 'system') {
@@ -187,7 +332,7 @@ function handleRoomChatSend(view, detail = {}) {
       ?.catch?.((error) => view.notice?.(error?.message || '私聊发送失败'));
     return;
   }
-  if (id === 'world' || id === 'guild') {
+  if (LOBBY_CHANNELS.has(id)) {
     view.socket?.sendLobbyChat?.(text, id)?.catch?.((error) => view.notice?.(error?.message || '消息发送失败'));
     return;
   }
@@ -213,32 +358,7 @@ function restoreLobbyChat(view) {
   chat.querySelector('.lobby-chat-channel.active')?.click();
 }
 
-/**
- * 2026-09-11：保证「发出去的消息一定看得见」。
- *
- * 之前只在追加后写一次 `log.scrollTop = log.scrollHeight`，有两种情况会失效：
- *   1) 追加时聊天面板还处于隐藏（display:none）→ scrollHeight 为 0，scrollTop 被设成 0，
- *      面板显示出来后停在最上面；
- *   2) 房间 DOM 被其它补丁重建（innerHTML 换血）→ 新日志元素的 scrollTop 又是 0。
- * 这里改成用 MutationObserver 盯着日志：内容一变就置底；日志元素被换掉自动重新挂上；
- * 聊天区从隐藏变可见时（内容没变也算）再补一次置底。
- */
 const CHAT_SCROLL_FLAG = Symbol.for('clbwz.roomChatScroll20260911');
-
-function scrollRoomChatToBottom(log = null) {
-  const target = log ?? document.querySelector('.game-room.room-exact .exact-room-chat-log');
-  if (!target) return false;
-  const apply = () => {
-    try {
-      target.scrollTop = target.scrollHeight;
-    } catch {
-      // 隐藏中或已卸载：忽略，下一次 mutation/可见性变化会再来一次
-    }
-  };
-  apply();
-  requestAnimationFrame(apply);
-  return true;
-}
 
 function watchRoomChatScroll(root) {
   const room = root?.closest?.('.game-room.room-exact')
@@ -283,6 +403,27 @@ export function installRoomChatMerge20260910() {
     retryHandle = requestAnimationFrame(() => scheduleInstall(view, attempts - 1));
   };
 
+  // 房间 DOM 被 DeckSelectView 整块重建后，BattleRoomExact 会重新装配聊天并广播 ready。
+  const onRoomExactReady = (view) => {
+    scheduleInstall(view);
+    // 新 DOM 可能先画了欢迎语，这里覆盖成统一的记录。
+    queueMicrotask(() => renderRoomChat(view));
+  };
+
+  // 全局系统公告：房间内也落进「系统」频道（之前只在 detached 的大厅列表里更新，房间看不到）。
+  window.addEventListener('clbwz:system-announcement', (event) => {
+    const view = window.__activeRoomView;
+    if (!view?.room) return;
+    const data = event.detail || {};
+    if (data.clear || !data.text) return;
+    recordRoomMessage(view, {
+      system: true,
+      nickname: '系统',
+      text: data.title ? `${data.title}：${data.text}` : data.text,
+    });
+    renderRoomChat(view);
+  });
+
   const previousRenderRoomInside = RoomView.prototype.renderRoomInside;
   RoomView.prototype.renderRoomInside = function renderRoomInsideMergedChat20260910(...args) {
     const result = previousRenderRoomInside.apply(this, args);
@@ -292,17 +433,27 @@ export function installRoomChatMerge20260910() {
 
   const previousEnterRoom = RoomView.prototype.enterRoom;
   RoomView.prototype.enterRoom = function enterRoomMergedChat20260910(...args) {
-    // 新房间的聊天从空白开始，不要带上一个房间的大厅频道消息。
-    this.__roomChatExtras20260910 = [];
+    // 新房间的聊天从空白开始，不要带上一个房间的消息。
+    resetChatState(this);
+    this.__roomChatPrivateTarget20260910 = null;
+    this.__roomChatCleared20260911 = false;
+    this.__roomChatActiveChannel20260911 = 'current';
     const result = previousEnterRoom.apply(this, args);
+    window.__activeRoomView = this;
     detachLobbyChat(this);
+    hydrateRoomChat(this);
+    if (!this._roomChatReady20260911) {
+      this._roomChatReady20260911 = () => onRoomExactReady(this);
+      this.root?.addEventListener?.('clbwz:room-exact-ready', this._roomChatReady20260911);
+    }
     queueMicrotask(() => scheduleInstall(this));
     return result;
   };
 
   const previousExitRoom = RoomView.prototype.exitRoom;
   RoomView.prototype.exitRoom = function exitRoomMergedChat20260910(...args) {
-    this.__roomChatExtras20260910 = [];
+    if (window.__activeRoomView === this) window.__activeRoomView = null;
+    resetChatState(this);
     restoreLobbyChat(this);
     return previousExitRoom.apply(this, args);
   };
@@ -323,32 +474,35 @@ export function installRoomChatMerge20260910() {
     if (this.chatSendHandler) window.removeEventListener('clbwz:room-chat-send', this.chatSendHandler);
     this.chatSendHandler = (event) => handleRoomChatSend(this, event.detail || {});
     window.addEventListener('clbwz:room-chat-send', this.chatSendHandler);
+    if (!this._roomChatReady20260911) {
+      this._roomChatReady20260911 = () => onRoomExactReady(this);
+      this.root?.addEventListener?.('clbwz:room-exact-ready', this._roomChatReady20260911);
+    }
     installUi(this);
     return result;
   };
 
+  /**
+   * 房间内由本补丁独占：直接写自己的统一日志。
+   * 不再调用旧链路（LobbyChatPatch 只会把当前频道贴进房间日志、团队/系统会漏），
+   * 也从根上避免旧补丁按频道 replaceChildren 清历史。
+   */
   const previousAppendChat = RoomView.prototype.appendChat;
   RoomView.prototype.appendChat = function appendChatMerged20260910(message = {}) {
-    const result = previousAppendChat.call(this, message);
-    if (!message || !this.room) return result;
-    const channel = lobbyChannelOf(message.channel);
-    if (!channel) return result; // 当前/队伍/系统已由既有链路写进房间聊天
-    const entry = {
-      channel,
-      nickname: message.nickname ?? message.username ?? message.sender ?? '玩家',
-      text: message.text ?? message.message,
-      spectator: Boolean(message.spectator),
-    };
-    appendRoomLog(this, entry);
-    rememberExtra(this, entry);
-    return result;
+    if (!this.room) return previousAppendChat.call(this, message);
+    if (!message) return undefined;
+    const entry = recordRoomMessage(this, message);
+    if (entry) renderRoomChat(this);
+    return undefined;
   };
 
-  // 房间快照刷新会重放房间历史（replaceChildren），把大厅频道的消息补回去。
+  // 房间快照刷新会重建房间 DOM（聊天日志被整块换掉），重建后把记录补回去。
   const previousRefreshRoom = RoomView.prototype.refreshRoom;
   RoomView.prototype.refreshRoom = function refreshRoomMergedChat20260910(...args) {
     const result = previousRefreshRoom.apply(this, args);
-    replayExtras(this);
+    hydrateRoomChat(this);
+    // 房间 DOM 已在 refreshRoom 里重建；installUi 会按记住的频道恢复选中态并重贴记录。
+    scheduleInstall(this);
     return result;
   };
 
@@ -356,8 +510,16 @@ export function installRoomChatMerge20260910() {
   RoomView.prototype.destroy = function destroyMergedChat20260910(...args) {
     if (retryHandle) cancelAnimationFrame(retryHandle);
     retryHandle = 0;
+    if (window.__activeRoomView === this) window.__activeRoomView = null;
+    if (this._roomChatReady20260911) {
+      this.root?.removeEventListener?.('clbwz:room-exact-ready', this._roomChatReady20260911);
+      this._roomChatReady20260911 = null;
+    }
     this.__roomChatPrivateTarget20260910 = null;
+    this.__roomChatCleared20260911 = false;
+    this.__roomChatActiveChannel20260911 = 'current';
     this.__lobbyChatDetached20260910 = null;
+    resetChatState(this);
     return previousDestroy.apply(this, args);
   };
 
@@ -368,12 +530,18 @@ export function installRoomChatMerge20260910() {
   window.__roomChatScrollWatching20260911 = () => Boolean(
     document.querySelector('.game-room.room-exact')?.[CHAT_SCROLL_FLAG],
   );
+  // 验证/调试用：读取/清空当前房间聊天记录
+  window.__roomChatEntries20260911 = (view = window.__activeRoomView) => (
+    view?.__roomChatState20260911?.entries ?? []
+  );
 
   window.__verifyRoomChatMerge20260910 = () => {
     const chat = document.querySelector('.game-room.room-exact .exact-room-chat');
     return {
       enabled: true,
       tabs: [...(chat?.querySelectorAll('.exact-room-chat-tabs button') ?? [])].map((b) => b.dataset.mergeChannel),
+      hasClearButton: Boolean(chat?.querySelector('.exact-room-chat-clear')),
+      rows: chat?.querySelectorAll('.exact-room-chat-message').length ?? 0,
       duplicatedLobbyChatInRoom: Boolean(
         document.querySelector('.game-room.room-exact .lobby-chat')
         || document.querySelector('#lobby-room-inside .lobby-chat'),

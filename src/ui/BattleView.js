@@ -67,6 +67,7 @@ import {
 import { DeckSelectView } from './DeckSelectView.js';
 import { SocketClient } from '../network/SocketClient.js';
 import { authStore } from '../core/AuthStore.js';
+import { gameSettings } from '../core/GameSettingsStore20260910.js';
 
 const SKILL_HOTKEY_INDEX = { q: 0, w: 1, e: 2, r: 3, t: 4, y: 5 };
 const MAX_SIMULATION_CATCHUP_SECONDS = 2;
@@ -400,6 +401,7 @@ export class BattleView {
               <button id="settings-mute" type="button">🔊 音效</button>
               <button id="settings-names" type="button">👤 名称：开</button>
               <button id="settings-lowq" type="button">🎨 低画质：关</button>
+              <button id="settings-fps" type="button">📈 帧率：关</button>
               <button id="settings-restart" type="button">重新开始</button>
               <button id="settings-close" type="button">关闭</button>
             </div>
@@ -1299,6 +1301,18 @@ export class BattleView {
       syncLowqBtn();
     });
     syncLowqBtn();
+
+    // 2026-09-11：战斗内也能开/关显示帧率（写主城设置页同一份 GameSettingsStore，FPS 面板立即响应）。
+    const fpsBtn = root.querySelector('#settings-fps');
+    const syncFpsBtn = () => {
+      if (fpsBtn) fpsBtn.textContent = gameSettings.get('showPerfPanel') === true ? '📈 帧率：开' : '📈 帧率：关';
+    };
+    fpsBtn?.addEventListener('click', () => {
+      audio.playSfx('click');
+      gameSettings.set('showPerfPanel', gameSettings.get('showPerfPanel') !== true);
+      syncFpsBtn();
+    });
+    syncFpsBtn();
 
     root.querySelector('#settings-restart').addEventListener('click', () => {
       audio.playSfx('click');

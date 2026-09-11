@@ -176,3 +176,27 @@
   color: #3d2a50;
   padding: 0 6px;
 }
+
+/* 2026-09-11：清屏按钮（和频道胶囊同排，视觉上区分成「操作」而不是第 5 个频道）。 */
+.classic-game-hall .lobby-chat-clear {
+  min-width: 0;
+  height: 27px;
+  box-sizing: border-box;
+  margin-left: 4px;
+  padding: 0 9px;
+  border: 1px solid rgba(120, 88, 34, .62);
+  border-radius: 7px;
+  background: rgba(255, 246, 214, .82);
+  color: #6b4a12;
+  font-size: 12px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.classic-game-hall .lobby-chat-clear:hover {
+  background: rgba(255, 252, 236, .96);
+}
+
+.classic-game-hall .lobby-chat-clear:active {
+  background: rgba(238, 222, 178, .96);
+}

@@ -825,6 +825,9 @@ export class UnitAnimPlayer {
       const previous = this.lastDrawTimes.get(unit.uid);
       frameDelta = previous == null ? 0 : Math.max(0, now - previous);
       this.lastDrawTimes.set(unit.uid, now);
+      // 2026-09-11：冰冻时精灵图也停住（停在当前帧）。lastDrawTimes 仍然更新，
+      // 这样解冻后的第一帧不会因为把整段冰冻时间累进 frameDelta 而跳帧。
+      if (unit.frozenUntil && now < unit.frozenUntil) frameDelta = 0;
       if (requested === 'death' && unit._deathAnimStartedAt != null && unit._deathUntil) {
         const visibleDuration = Math.max(0.001, unit._deathUntil - unit._deathAnimStartedAt);
         const sourceDuration = animationDuration(anim, DEATH_ANIM_DURATION, 'death');

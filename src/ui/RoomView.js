@@ -226,7 +226,7 @@ export class RoomView {
     };
     keepToolInsideRoom('#lobby-fn-backpack', 'bag');
     keepToolInsideRoom('.lobby-menu-btn[data-fn=quest]', 'quest');
-    keepToolInsideRoom('.lobby-menu-btn[data-fn=settings]', 'settings');
+    // 2026-09-11：大厅「设置」不再用旧占位面板，直接打开主城设置页（含帧率开关）。
 
     this.root.querySelectorAll('.lobby-tab').forEach((btn) => {
       btn.addEventListener('click', () => {
@@ -261,7 +261,8 @@ export class RoomView {
     this.root.querySelector('#lobby-exit').addEventListener('click', () => this.onNavigate?.('main'));
     this.root.querySelector('#lobby-fn-backpack').addEventListener('click', () => this.onNavigate?.('bag'));
     this.root.querySelector('.lobby-menu-btn[data-fn="quest"]').addEventListener('click', () => this.onNavigate?.('quest'));
-    this.root.querySelector('.lobby-menu-btn[data-fn="settings"]').addEventListener('click', () => this.notice('设置功能开发中'));
+    // 与主城底部导航的「设置」同一入口：走主城设置页，游戏内也能开显示帧率。
+    this.root.querySelector('.lobby-menu-btn[data-fn="settings"]').addEventListener('click', () => this.onNavigate?.('settings'));
     // 邮件入口先占位，后续接邮件系统。
     this.root.querySelector('.lobby-menu-btn[data-fn="mail"]')?.addEventListener('click', () => this.notice('邮件功能开发中'));
   }
@@ -291,18 +292,6 @@ export class RoomView {
         itemDb: this.itemDb,
         inventory: this.inventory,
       }).render(content);
-    } else if (kind === 'settings') {
-      content.innerHTML = `<div style='max-width:520px;margin:70px auto'><h2>设置</h2><label style='display:block;margin:22px 0'>音乐音量 <input id='lobby-music-volume' type='range' min='0' max='100' value='${Math.round(audio.volume * 100)}'></label><label style='display:block;margin:22px 0'>音效音量 <input id='lobby-sfx-volume' type='range' min='0' max='100' value='${Math.round(audio.sfxVolume * 100)}'></label><button type='button' id='lobby-mute-toggle'>${audio.isMuted() ? '恢复声音' : '静音'}</button></div>`;
-      content.querySelector('#lobby-music-volume')?.addEventListener('input', (event) => {
-        audio.volume = Number(event.target.value) / 100;
-        if (audio.bgm) audio.bgm.volume = audio.volume;
-      });
-      content.querySelector('#lobby-sfx-volume')?.addEventListener('input', (event) => {
-        audio.sfxVolume = Number(event.target.value) / 100;
-      });
-      content.querySelector('#lobby-mute-toggle')?.addEventListener('click', (event) => {
-        event.currentTarget.textContent = audio.toggleMute() ? '恢复声音' : '静音';
-      });
     } else {
       content.innerHTML = '<p>该功能当前不可用。</p>';
     }

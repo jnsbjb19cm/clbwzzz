@@ -201,7 +201,20 @@ export class SettingsView {
       const level = e.target.closest('[data-quality]')?.dataset.quality;
       if (!level) return;
       applyGraphicsQualityPreset(level);
-      this.render(root);   // 预设会改到多个开关，重绘让 UI 跟上
+      // 2026-09-11：原来是 this.render(root) 整页重绘，面板被换掉导致滚动条回顶。
+      // 画质预设只会改到「分段选中态 / 单位名字 / 血条 / 伤害数字」这几个控件，就地同步即可。
+      const syncQualityUi = () => {
+        root.querySelectorAll('#setting-quality [data-quality]').forEach((button) => {
+          button.classList.toggle('active', button.dataset.quality === level);
+        });
+        const names = root.querySelector('#setting-unit-names');
+        if (names) names.checked = readUnitNameFlag();
+        const hp = root.querySelector('#setting-unit-hp');
+        if (hp) hp.checked = gameSettings.get('showUnitHp') !== false;
+        const damage = root.querySelector('#setting-damage-numbers');
+        if (damage) damage.checked = gameSettings.get('showDamageNumbers') === true;
+      };
+      syncQualityUi();
       this.flash(`画质已切换为「${QUALITY_LABEL[level]}」，进行中的战斗下一帧生效。`);
     });
 

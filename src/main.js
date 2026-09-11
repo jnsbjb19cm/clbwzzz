@@ -52,6 +52,7 @@ import './ui/BattleHandTransparentFinal20260903.css';
 import './ui/ScrollbarTheme20260910.css';
 import './ui/CardGalleryChrome20260910.css';
 import './ui/SettingsChrome20260910.css';
+import './ui/BattleSettingsTranslucent20260911.css';
 import './ui/PerfOverlay20260911.css';
 import { installExactBattleRoom } from './ui/BattleRoomExact.js';
 import { installBattleRoomFlowPatch } from './ui/BattleRoomFlowPatch.js';

@@ -1,0 +1,30 @@
+/* ==========================================================================
+   2026-09-11：战斗内设置面板半透明。
+   用户要求：战斗场地也要有设置入口/面板，但面板要透，别整块挡住战场。
+   底图改成半透明 + 背景模糊，按钮也同步成半透明，文字保持高对比。
+   （低画质/低端设备上 backdrop-filter 有开销；这里只作用于一块小面板，影响可控。）
+   ========================================================================== */
+.settings-panel,
+body.battle-immersive .game-container .settings-panel {
+  background: rgba(15, 26, 18, 0.55) !important;
+  border-color: rgba(233, 246, 214, 0.42) !important;
+  -webkit-backdrop-filter: blur(7px) saturate(1.05);
+  backdrop-filter: blur(7px) saturate(1.05);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+}
+
+.settings-panel button {
+  background: rgba(20, 34, 24, 0.62) !important;
+  border-color: rgba(233, 246, 214, 0.38) !important;
+  color: #f2f8e6 !important;
+}
+
+.settings-panel button:hover {
+  border-color: rgba(233, 246, 214, 0.78) !important;
+  background: rgba(32, 52, 36, 0.74) !important;
+}
+
+/* 帧率开关开启时给个轻微高亮，和低画质按钮一样一眼能看出状态。 */
+.settings-panel #settings-fps {
+  border-color: rgba(180, 232, 150, 0.55) !important;
+}

@@ -1499,7 +1499,9 @@ export class BattleEngine {
         continue;
       }
 
-      if (unit.isStunned(this.time)) {
+      if (unit.isStunned(this.time) || unit.isFrozen(this.time)) {
+        // 2026-09-11：冰冻与眩晕一样要停住不动，且检查必须放在钻地分支（地道工兵/钻地大蒜）
+        // 之前——那些分支会先 continue，导致被冻住的地下单位仍继续移动。
         unit.renderX = unit.col;
         unit.renderY = unit.lane;
         continue;

@@ -414,3 +414,192 @@
   background-image: none !important;
   color: #000000 !important;
 }
+
+/* ==========================================================================
+   2026-09-11（第二版，按截图修）：顶栏被挤成竖排导致整块布局崩掉
+   截图症状：6 个频道按钮竖着堆在右边（head 高 ~180px），消息被挤到中间、输入行挤出框外。
+   原因：head 是 flex row + 频道行 flex-wrap: wrap，而频道行可用宽度太窄 → 每个按钮各占一行。
+   修法：
+     1) head 固定为**单行不换行**（flex-wrap: nowrap + 高度封顶）；
+     2) 频道行占满剩余宽度、**不换行**，真要放不下就横向滚动，绝不竖排；
+     3) 面板用 grid：head / 私聊 / **日志(1fr)** / 输入行，日志吃掉剩余高度并滚动；
+     4) 输入行贴底且完整可见（行内布局 + 控件高度固定）。
+   效果：输入行在底部，消息自下往上堆、最新一条紧贴输入行上方（标准聊天）。
+   ========================================================================== */
+
+.game-room.room-exact .exact-room-chat.exact-room-chat {
+  display: grid !important;
+  grid-template-rows: auto auto minmax(0, 1fr) auto !important;
+  align-content: stretch !important;
+  align-items: stretch !important;
+  overflow: hidden !important;
+}
+
+/* 顶栏：单行、不换行、高度封顶 */
+.game-room.room-exact .exact-room-chat.exact-room-chat .exact-room-chat-head {
+  display: flex !important;
+  flex-direction: row !important;
+  flex-wrap: nowrap !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+  gap: 6px !important;
+  min-height: 0 !important;
+  max-height: 26px !important;
+  padding: 2px 6px !important;
+  overflow: hidden !important;
+}
+
+.game-room.room-exact .exact-room-chat.exact-room-chat .exact-room-chat-title {
+  flex: 0 0 auto !important;
+  font-size: 12px !important;
+  line-height: 1 !important;
+}
+
+/* 频道行：占满剩余宽度、绝不换行（放不下就横向滚动） */
+.game-room.room-exact .exact-room-chat.exact-room-chat .exact-room-chat-tabs {
+  display: flex !important;
+  flex-direction: row !important;
+  flex-wrap: nowrap !important;
+  align-items: center !important;
+  justify-content: flex-end !important;
+  gap: 3px !important;
+  flex: 1 1 auto !important;
+  min-width: 0 !important;
+  height: auto !important;
+  max-height: 22px !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  overflow-x: auto !important;
+  overflow-y: hidden !important;
+}
+
+.game-room.room-exact .exact-room-chat.exact-room-chat .exact-room-chat-tabs button {
+  flex: 0 0 auto !important;
+  width: auto !important;
+  min-width: 0 !important;
+  height: 20px !important;
+  max-height: 20px !important;
+  padding: 0 7px !important;
+  margin: 0 !important;
+  font-size: 11px !important;
+  line-height: 18px !important;
+  white-space: nowrap !important;
+  writing-mode: horizontal-tb !important;
+}
+
+/* 私聊行：占位那一行保持紧凑 */
+.game-room.room-exact .exact-room-chat.exact-room-chat .exact-room-chat-private {
+  display: flex !important;
+  flex-direction: row !important;
+  flex-wrap: nowrap !important;
+  align-items: center !important;
+  gap: 6px !important;
+  min-height: 0 !important;
+  max-height: 24px !important;
+  padding: 2px 6px !important;
+  overflow: hidden !important;
+}
+
+.game-room.room-exact .exact-room-chat.exact-room-chat .exact-room-chat-private.hidden {
+  display: none !important;
+}
+
+/* 日志：吃掉剩余高度，内部滚动；行从下往上堆（flex-end） */
+.game-room.room-exact .exact-room-chat.exact-room-chat .exact-room-chat-log {
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: flex-end !important;
+  min-height: 0 !important;
+  height: auto !important;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+}
+
+/* 输入行：贴底、单行、完整可见 */
+.game-room.room-exact .exact-room-chat.exact-room-chat .exact-room-chat-form {
+  display: flex !important;
+  flex-direction: row !important;
+  flex-wrap: nowrap !important;
+  align-items: center !important;
+  gap: 6px !important;
+  min-height: 0 !important;
+  height: auto !important;
+  max-height: 26px !important;
+  padding: 2px 6px !important;
+  overflow: hidden !important;
+}
+
+.game-room.room-exact .exact-room-chat.exact-room-chat .exact-room-chat-current {
+  flex: 0 0 auto !important;
+  height: 20px !important;
+  line-height: 18px !important;
+  padding: 0 6px !important;
+  font-size: 11px !important;
+}
+
+.game-room.room-exact .exact-room-chat.exact-room-chat .exact-room-chat-form input {
+  flex: 1 1 auto !important;
+  min-width: 0 !important;
+  height: 20px !important;
+  font-size: 12px !important;
+}
+
+.game-room.room-exact .exact-room-chat.exact-room-chat .exact-room-chat-form button {
+  flex: 0 0 auto !important;
+  height: 20px !important;
+  padding: 0 10px !important;
+  font-size: 12px !important;
+  line-height: 18px !important;
+}
+
+/* 顶栏 / 私聊行 / 日志 / 输入行：一律回到普通流（旧参考层用绝对定位摆它们，
+   在 grid 里会把输入行顶出面板——截图里输入行被切掉就是这个原因）。 */
+.game-room.room-exact .exact-room-chat.exact-room-chat .exact-room-chat-head,
+.game-room.room-exact .exact-room-chat.exact-room-chat .exact-room-chat-private,
+.game-room.room-exact .exact-room-chat.exact-room-chat .exact-room-chat-log,
+.game-room.room-exact .exact-room-chat.exact-room-chat .exact-room-chat-form {
+  position: static !important;
+  inset: auto !important;
+  top: auto !important;
+  right: auto !important;
+  bottom: auto !important;
+  left: auto !important;
+  width: auto !important;
+  max-width: none !important;
+  margin: 0 !important;
+  transform: none !important;
+  float: none !important;
+}
+
+/* ==========================================================================
+   2026-09-11：清屏按钮（放在标题行最右，白色小胶囊，和频道按钮同一套视觉）。
+   频道行是 flex:1 + 横向滚动，清屏按钮必须 flex:0 且不参与换行。
+   ========================================================================== */
+.game-room.room-exact .exact-room-chat.exact-room-chat .exact-room-chat-clear {
+  flex: 0 0 auto !important;
+  box-sizing: border-box !important;
+  height: 20px !important;
+  min-width: 0 !important;
+  max-height: 20px !important;
+  padding: 0 8px !important;
+  margin: 0 !important;
+  border: 1px solid #7d8b6a !important;
+  border-radius: 5px !important;
+  background: #ffffff !important;
+  background-image: none !important;
+  color: #000000 !important;
+  font-family: inherit !important;
+  font-size: 11px !important;
+  font-weight: 800 !important;
+  line-height: 18px !important;
+  white-space: nowrap !important;
+  cursor: pointer !important;
+}
+
+.game-room.room-exact .exact-room-chat.exact-room-chat .exact-room-chat-clear:hover {
+  background: #eef3d8 !important;
+}
+
+.game-room.room-exact .exact-room-chat.exact-room-chat .exact-room-chat-clear:active {
+  background: #dfe9c4 !important;
+}
