@@ -1,6 +1,7 @@
 import { audio } from '../core/AudioManager.js';
 import { markBossCleared } from '../core/BossProgress.js';
 import { DeckSelectView } from './DeckSelectView.js';
+import { loadBattleDeckSlots20260911 } from './DeckGroupPreference20260911.js';
 import { BattleView } from './BattleView.js';
 import { RoomView } from './RoomView.js';
 import { ensurePlayerStands } from './PvpCombatPolishFinal.js';
@@ -65,9 +66,9 @@ function enterCoopBossBattle(roomView) {
   panel?.classList.remove('hidden');
   document.body.classList.add('battle-immersive', 'pvp-battle-active', 'boss-coop-active');
 
+  // 2026-09-11：按玩家选中的卡组取卡组（无参调用会落到默认组）。
   const deckSlots = normalizeDeck(
-    DeckSelectView.loadSavedDeck(roomView.cardInventory, roomView.db)
-      ?? DeckSelectView.defaultDeckSlots(roomView.cardInventory, roomView.db),
+    loadBattleDeckSlots20260911(roomView.cardInventory, roomView.db),
   );
   roomView.roomBattleView?.destroy?.();
   roomView.roomBattleView = new BattleView(roomView.db, {

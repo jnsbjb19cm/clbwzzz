@@ -65,6 +65,8 @@ import {
   SKILL_HOTKEYS,
 } from '../core/SkillRegistry.js';
 import { DeckSelectView } from './DeckSelectView.js';
+import { loadBattleDeckSlots20260911 } from './DeckGroupPreference20260911.js';
+import { deckNumberToGroup20260906 } from './DeckGroupSelection20260906.js';
 import { SocketClient } from '../network/SocketClient.js';
 import { authStore } from '../core/AuthStore.js';
 import { gameSettings } from '../core/GameSettingsStore20260910.js';
@@ -141,10 +143,7 @@ export class BattleView {
     this.trainingMap = trainingMap || null;
     this.tryCard = tryCard || null;
     this.tryUsage = tryUsage || null;
-    this.deckSlots =
-      deckSlots ??
-      DeckSelectView.loadSavedDeck(this.cardInventory, this.db) ??
-      DeckSelectView.defaultDeckSlots(this.cardInventory, this.db);
+    this.deckSlots = deckSlots ?? loadBattleDeckSlots20260911(this.cardInventory, this.db);
     // 训练营「用这张卡练习」：把指定卡放进卡组首槽（不覆盖玩家已保存卡组）
     if (tryCard && this.db) {
       const card = this.db.getById?.(Number(tryCard));
@@ -177,7 +176,7 @@ export class BattleView {
   render(root) {
     this.viewRoot = root;
     if (this.boss) {
-      this.deckSlots = DeckSelectView.loadSavedDeck(this.cardInventory, this.db) ?? DeckSelectView.defaultDeckSlots(this.cardInventory, this.db);
+      this.deckSlots = loadBattleDeckSlots20260911(this.cardInventory, this.db);
       // 野外冒险 BOSS 战需正常结算（基地血量归零判胜负）；不用 trainingMode(它会跳过 checkEnd 结算)
       this.enterBattle(this.deckSlots, 1, { boss: this.boss });
       return;
@@ -185,7 +184,13 @@ export class BattleView {
     if (this.pvp) {
       // PVP / 联机：房间容器内渲染战斗(本地引擎 + 服务端权威快照，不出怪)
       // 2026-09-11：PVE 联机需要真实关卡(波形/背景/结算)，优先用 pvp.stageId。
-      this.deckSlots = DeckSelectView.loadSavedDeck(this.cardInventory, this.db) ?? DeckSelectView.defaultDeckSlots(this.cardInventory, this.db);
+      // 2026-09-11：按玩家选中的卡组取卡组。原来是无参调用 → 落到默认组，
+      // 于是"切到战团2/3，进战斗卡槽还是默认卡组"。
+      this.deckSlots = loadBattleDeckSlots20260911(
+        this.cardInventory,
+        this.db,
+        this.pvp?.selectedDeckNo != null ? deckNumberToGroup20260906(this.pvp.selectedDeckNo) : null,
+      );
       this.enterBattle(this.deckSlots, Number(this.pvp?.stageId) || 1, { trainingMode: this.trainingMode, boss: this.boss });
       return;
     }
@@ -196,9 +201,7 @@ export class BattleView {
     }
     if (this.phase === 'deck-select') {
       this.stopLoop();
-      this.deckSlots =
-        DeckSelectView.loadSavedDeck(this.cardInventory, this.db) ??
-        DeckSelectView.defaultDeckSlots(this.cardInventory, this.db);
+      this.deckSlots = loadBattleDeckSlots20260911(this.cardInventory, this.db);
       this.deckSelect.render(root, {
         db: this.db,
         cardInventory: this.cardInventory,

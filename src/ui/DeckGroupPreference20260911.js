@@ -14,6 +14,7 @@
  *  - 一旦选过 → 进房时以本地记忆为准，并把该选择同步给房间成员（room:set-deck），
  *    这样房间、开打用的卡组和界面上的页签三者一致。
  */
+import { DeckSelectView } from './DeckSelectView.js';
 import {
   deckGroupToNumber20260906,
   normalizeDeckGroup20260906,
@@ -63,4 +64,29 @@ export function preferredRoomDeckGroup20260911(serverDeckNo) {
     number,
     needsSync: !Number.isFinite(server) || server !== number,
   };
+}
+
+/**
+ * 取"本局战斗要用哪套卡组"。
+ *
+ * 关键点：非默认的战团如果还没配置卡牌，**不能**悄悄退回默认卡组 —— 原来
+ * BattleView 里写的是 `loadSavedDeck(...) ?? defaultDeckSlots(...)`，
+ * 而无参调用还会落到默认组，于是"切了战团2，进去卡槽还是默认卡组"。
+ * 这里按玩家选中的卡组取：
+ *   - 该组有卡组（含明确保存为空组）→ 用它；
+ *   - 默认组没有 → 用系统初始卡组；
+ *   - 其它组没有 → 返回空（尊重玩家的选择，由界面提示去配置）。
+ */
+export function loadBattleDeckSlots20260911(cardInventory, db, group = null) {
+  const normalized = group == null
+    ? normalizeDeckGroup20260906(
+      cardInventory?.__activeDeckGroup20260907
+        ?? readRememberedDeckGroup20260911()
+        ?? 'default',
+    )
+    : normalizeDeckGroup20260906(group);
+  const saved = DeckSelectView.loadSavedDeck(cardInventory, db, normalized);
+  if (Array.isArray(saved)) return saved;
+  if (normalized === 'default') return DeckSelectView.defaultDeckSlots(cardInventory, db) ?? [];
+  return [];
 }

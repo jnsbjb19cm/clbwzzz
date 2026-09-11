@@ -2,6 +2,7 @@ import { BattleEngine } from '../battle/BattleEngine.js';
 import { TRAINING_STAGE_VALUE } from '../battle/BattleConfig.js';
 import { BattleView } from './BattleView.js';
 import { DeckSelectView } from './DeckSelectView.js';
+import { loadBattleDeckSlots20260911 } from './DeckGroupPreference20260911.js';
 import { installRoomLifetimeClientPatch } from './RoomLifetimeClientPatch.js';
 
 let installed = false;
@@ -20,9 +21,8 @@ export function installBattleRoomFlowPatch() {
 
     this.viewRoot = root;
     this.stopLoop();
-    this.deckSlots =
-      DeckSelectView.loadSavedDeck(this.cardInventory, this.db) ??
-      DeckSelectView.defaultDeckSlots(this.cardInventory, this.db);
+    // 2026-09-11：按玩家选中的卡组取卡组（无参调用会落到默认组）。
+    this.deckSlots = loadBattleDeckSlots20260911(this.cardInventory, this.db);
 
     this.deckSelect.render(root, {
       db: this.db,
