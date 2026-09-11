@@ -4,6 +4,10 @@ import { db, withTransaction } from '../database.js';
 import { requireAuth } from '../middleware/auth.js';
 import { readPlayerItems20260908 } from '../domain/playerInventoryAuthority20260908.js';
 import { readCardInventory } from './cardInventoryPersistence20260906.js';
+import { resolveCraftQuality } from '../../src/core/constants.js';
+
+/** 制作品质名（与客户端 core/constants.js 同源）。 */
+const craftQualityLabel = (craftQuality) => resolveCraftQuality(craftQuality).name;
 
 const require = createRequire(import.meta.url);
 const cardRows = require('../../src/data/card.json');
@@ -106,23 +110,29 @@ functionalItemAuthorityRouter20260908.post('/cards/use-functional-item', async (
       let star = Math.max(0, Number(target.star) || 0);
       let craftQuality = Math.max(1, Math.min(5, Number(target.craftQuality) || 1));
       let message = '已使用';
+      // 卡牌显示名：自定义名优先，其次配置表里的卡名
+      const displayName = String(targetState.customName || CARD_BY_ID.get(Number(target.cardId))?.card_name || '卡牌');
 
       if (itemId === 80) {
         const roll = Math.random();
         craftQuality = roll < 0.08 ? 5 : roll < 0.23 ? 4 : roll < 0.43 ? 3 : roll < 0.68 ? 2 : 1;
-        message = `品质洗练完成：当前品质 ${craftQuality}`;
+        message = `成功将${displayName}洗练为${craftQualityLabel(craftQuality)}的`;
       } else if (itemId === 81) {
         const first = Math.random();
         const delta = first < 0.35 ? 2 : Math.random() < 0.70 ? 1 : -1;
         star = Math.max(0, Math.min(maxStar, star + delta));
-        message = `属性洗练完成：当前 ${star} 星`;
+        message = delta > 0
+          ? `成功将${displayName}升星${delta}，当前为${star}`
+          : `很遗憾，${displayName}降低了${star}`;
       } else if (itemId === 82) {
+        // 满品质时不允许使用（事务回滚，道具不会被扣）
+        if (craftQuality >= 5) throw new Error('该卡牌品质已达最高');
         craftQuality = Math.min(5, craftQuality + 1);
-        message = `品质已提升到 ${craftQuality} 阶`;
+        message = `已成功将${displayName}升级一级品质，当前为${craftQualityLabel(craftQuality)}的${displayName}`;
       } else if (itemId === 83) {
         craftQuality = 5;
         targetState.awakened = true;
-        message = '卡牌已觉醒为最高制作品质';
+        message = `成功将${displayName}品质提升至完美的`;
       } else if (itemId === 84) {
         targetState.learnedSkill = 'attack';
         message = '已学习攻击技能';

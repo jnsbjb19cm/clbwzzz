@@ -3,9 +3,13 @@ import {
   CARD_TYPE,
   formatCraftCardName,
   getInstanceStatMultiplier,
+  normalizeCraftQuality,
   resolveCraftQuality,
   sanitizeCustomCardName,
 } from '../core/constants.js';
+
+/** 制作品质名唯一来源：core/constants.js 的 CRAFT_QUALITY（避免各处写死导致 3/4 名写反）。 */
+const craftQualityLabel = (craftQuality) => resolveCraftQuality(craftQuality).name;
 import { roundBattleAmount } from '../battle/BattleConfig.js';
 import { audio } from '../core/AudioManager.js';
 import { ItemUseSystem } from '../systems/ItemUseSystem.js';
@@ -709,8 +713,6 @@ export class BagView {
 
   _showCardPicker(itemId, slotIndex, item, root) {
     const slots = this.cardInventory.getSlots().filter(s => s && s.cardId);
-    const cardQualityNames = {1:'劣质',2:'普通',3:'优秀',4:'精良',5:'完美',6:'逆天'};
-    const craftQualityNames = {1:'劣质',2:'普通',3:'优秀',4:'精良',5:'完美'};
     const cardQColors = {1:'#aaa',2:'#6BFF00',3:'#00BFFF',4:'#C040FF',5:'#FF8C00',6:'#FF0040'};
     const craftQColors = {1:'#888',2:'#aaa',3:'#6BFF00',4:'#00BFFF',5:'#C040FF'};
     const tierColor = {1:'#959565',2:'#238A1A',3:'#106198',4:'#7B368E',5:'#BE6C3C',6:'#CC0033'};
@@ -726,11 +728,11 @@ export class BagView {
       const maxed=isStarItem&&star>=ms;
       const color=tierColor[card.quality||1]||'#aaa';
       // hover tooltip
-      const tip=`品质:${craftQualityNames[q]||q} | ${star}/${ms}星`;
+      const tip=`品质:${craftQualityLabel(q)} | ${star}/${ms}星`;
       return`<button type="button" class="picker-card-slot${maxed?' locked':''}" data-idx="${i}" title="${tip}"
         style="position:relative;width:72px;height:78px;background:${color}33;border:2px solid ${color};border-radius:6px;cursor:${maxed?'not-allowed':'pointer'};opacity:${maxed?'0.4':'1'};overflow:hidden;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:2px;transition:transform 0.15s,box-shadow 0.15s;">
         ${card.spriteRes?`<img src="/sprites/cards/${card.spriteRes}.png" style="width:44px;height:44px;object-fit:contain;">`:''}
-        <span style="color:${color};font-size:9px;font-weight:700;line-height:1.1;text-align:center;max-width:100%;">${craftQualityNames[q]||q}的${(s.customName||card.name||'卡')}</span>
+        <span style="color:${color};font-size:9px;font-weight:700;line-height:1.1;text-align:center;max-width:100%;">${craftQualityLabel(q)}的${(s.customName||card.name||'卡')}</span>
         <span style="color:#ffd700;font-size:8px;">${ss||'0★'}</span>
         ${maxed?'<span style="position:absolute;top:2px;right:2px;color:#f44;font-size:9px;">满</span>':''}
       </button>`;
@@ -787,7 +789,7 @@ export class BagView {
           const a = roundBattleAmount(c2.atk * m);
           const h = Math.round(c2.hp * m);
           info.innerHTML='<div style="text-align:center;"><img src="/sprites/cards/'+c2.spriteRes+'.png" style="width:80px;height:80px;object-fit:contain;border:2px solid '+cc+';border-radius:6px;"></div>'
-            +'<p style="color:'+cc+';font-weight:700;font-size:14px;text-align:center;margin:6px 0 2px;">'+(craftQualityNames[cq2]||cq2)+'的'+ (c2.name||'卡牌') +'</p>'
+            +'<p style="color:'+cc+';font-weight:700;font-size:14px;text-align:center;margin:6px 0 2px;">'+(craftQualityLabel(cq2))+'的'+ (c2.name||'卡牌') +'</p>'
             +'<p style="color:#ffd700;text-align:center;font-size:12px;margin:2px 0;">'+ ('★'.repeat(Math.min(5,ss2))+(ss2>5?'+'+ (ss2-5):'0★'))+' / '+(maxStars[c2.quality||1]||5)+'★</p>'
             +'<div style="margin-top:8px;border-top:1px solid #333;padding-top:6px;">'
             +'<div style="display:flex;justify-content:space-between;"><span>攻击</span><span style="color:#f66;">'+ a +'</span></div>'
@@ -815,11 +817,22 @@ export class BagView {
     };
   }
   _applyCardEffect(itemId,slotIndex,slot,card,extra){
-    const maxStars={1:5,2:7,3:9,4:11,5:13,6:15},cqN={1:'劣质',2:'普通',3:'优秀',4:'精良',5:'完美'};let m='';
+    const maxStars={1:5,2:7,3:9,4:11,5:13,6:15};let m='';
     const tq=card.quality||1;
     switch(itemId){
-      case 82:{slot.craftQuality=Math.min(5,(slot.craftQuality||1)+1);m='品质已提升一阶';break;}
-      case 83:{slot.craftQuality=5;slot.awakened=true;m='卡牌已觉醒为逆天品质';break;}
+      case 82:{
+        // 品质升阶石：满品质时不允许使用（不扣道具），避免白白消耗
+        const cur=normalizeCraftQuality(slot.craftQuality);
+        if(cur>=5) return '该卡牌品质已达最高';
+        slot.craftQuality=cur+1;
+        const nm=slot.customName||card.name;
+        m=`已成功将${nm}升级一级品质，当前为${craftQualityLabel(slot.craftQuality)}的${nm}`;break;
+      }
+      case 83:{
+        const nm=slot.customName||card.name;
+        slot.craftQuality=5;slot.awakened=true;
+        m=`成功将${nm}品质提升至完美的`;break;
+      }
       case 84:{slot.learnedSkill='attack';m='已学习攻击技能';break;}
       case 85:{slot.learnedSkill='defense';m='已学习防御技能';break;}
       case 86:{slot.learnedSkill='support';m='已学习辅助技能';break;}
@@ -833,8 +846,23 @@ export class BagView {
         m='卡牌已更名为「'+slot.customName+'」';break;
       }
       case 91:{slot.awakened=true;m='卡牌羁绊已觉醒';break;}
-      case 80:{const r=Math.random();slot.craftQuality=r<0.08?5:r<0.23?4:r<0.43?3:r<0.68?2:1;m='「'+card.name+'」词条洗练为'+(cqN[slot.craftQuality]||slot.craftQuality);break;}
-      case 81:{const d=Math.random()<0.35?2:Math.random()<0.70?1:-1,cur=slot.strengthLv||0,ms=maxStars[tq]||5,ns=Math.max(0,Math.min(ms,cur+d));slot.strengthLv=ns;m='「'+card.name+'」'+(d>0?'升'+d+'星':'降1星')+'，当前'+ns+'星';break;}
+      case 80:{
+        const r=Math.random();
+        slot.craftQuality=r<0.08?5:r<0.23?4:r<0.43?3:r<0.68?2:1;
+        m=`成功将${slot.customName||card.name}洗练为${craftQualityLabel(slot.craftQuality)}的`;break;
+      }
+      case 81:{
+        // 属性洗练石：升星或降星（沿用原概率 +2 / +1 / -1），星级同时写入 star 与 strengthLv
+        const d=Math.random()<0.35?2:Math.random()<0.70?1:-1;
+        const cur=slot.strengthLv||0, ms=maxStars[tq]||5;
+        const ns=Math.max(0,Math.min(ms,cur+d));
+        slot.strengthLv=ns; slot.star=ns;
+        const nm=slot.customName||card.name;
+        m = d>0
+          ? `成功将${nm}升星${d}，当前为${ns}`
+          : `很遗憾，${nm}降低了${ns}`;
+        break;
+      }
       case 88:{const ref=Math.floor((slot.strengthLv||0)*0.6);slot.strengthLv=0;if(ref>0)this.inventory.addItem(10001+Math.min(4,Math.floor(tq/2)),ref);m='「'+card.name+'」重置为0星，返还'+ref+'强化粉';break;}
     }
     // 消耗物品；失败则回滚本次效果（物品未扣、效果不生效）
