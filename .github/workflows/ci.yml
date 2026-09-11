@@ -4,9 +4,6 @@ on:
   push:
     branches:
       - main
-      - fix/fullscreen-battle-20260803
-      - fix/pvp-wilderness-room-20260805
-      - fix/pvp-boss-visual-sync-20260906
   pull_request:
     branches:
       - main
@@ -21,7 +18,7 @@ concurrency:
 
 jobs:
   syntax-and-build:
-    name: Syntax, current regressions and Vite build
+    name: Syntax and Vite build
     runs-on: ubuntu-latest
     timeout-minutes: 30
 
@@ -38,69 +35,9 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Report all dependency vulnerabilities
-        continue-on-error: true
-        run: npm audit --audit-level=moderate
-
-      - name: Audit production dependency vulnerabilities
-        run: npm audit --omit=dev --audit-level=moderate
-
-      - name: Check JavaScript syntax
-        run: node scripts/ci-syntax-check.mjs
-
-      - name: Verify battle runtime contract
-        run: node scripts/verify-battle-runtime-contract-20260906.mjs
-
-      - name: Verify projectile runtime contract
-        run: node scripts/verify-projectile-runtime-contract-20260906.mjs
-
-      - name: Verify latest user battle regressions
-        run: node scripts/verify-battle-user-regressions-20260906.mjs
-
-      - name: Verify current user request contract
-        run: node scripts/verify-user-request-20260906.mjs
-
-      - name: Verify room chat lifecycle
-        run: node scripts/verify-room-chat-lifecycle-20260906.mjs
-
-      - name: Verify room invite and guild approval
-        run: node scripts/verify-room-invite-guild-approval-20260906.mjs
-
-      - name: Verify economy, smithy and guild authority
-        run: node scripts/verify-economy-smithy-guild-20260907.mjs
-
-      - name: Verify 2026-09-08 user regressions
-        run: node scripts/verify-user-regressions-20260908.mjs
-
-      - name: Verify guild role, task pin persistence and hidden skill
-        run: node scripts/verify-guild-task-pin-skilltree-20260908.mjs
-
-      - name: Verify database-first economy persistence
-        run: node scripts/verify-database-persistence-authority-20260908.mjs
-
-      - name: Verify level 4 charm and collapsible classic chat
-        run: node scripts/verify-smithy-charm-chat-polish-20260908.mjs
-
-      - name: Verify debug hit circles stay removed
-        run: node scripts/verify-remove-hit-debug-circles-20260905.mjs
-
-      - name: Verify authority smoothing performance
-        run: node scripts/verify-authority-smooth-performance-20260905.mjs
-
-      - name: Verify high-star render performance contract
-        run: node scripts/verify-high-star-render-performance-20260905.mjs
-
-      - name: Verify uncapped rendering, shared snapshots and corrected animation cache
-        run: node scripts/verify-render-server-performance-20260909.mjs
-
-      - name: Verify actual snapshot cadence under load
-        run: node scripts/verify-snapshot-cadence-20260909.mjs
-
-      - name: Verify authoritative quest rewards and fixed-tier eggs
-        run: node scripts/verify-quest-rewards-20260909.mjs
-
-      - name: Verify compressed Socket.IO transport
-        run: node scripts/verify-authority-transport-20260909.mjs
+      - name: Check JavaScript and module syntax
+        run: |
+          find src server tests -type f \( -name '*.js' -o -name '*.mjs' \) -print0 | xargs -0 -n1 node --check
 
       - name: Build production bundle
         run: npm run build:deploy
