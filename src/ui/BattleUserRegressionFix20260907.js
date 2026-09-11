@@ -11,6 +11,11 @@ import {
   normalizeDeckGroup20260906,
   storageKeyForDeckGroup20260906,
 } from './DeckGroupSelection20260906.js';
+import {
+  preferredRoomDeckGroup20260911,
+  readRememberedDeckGroup20260911,
+  rememberDeckGroup20260911,
+} from './DeckGroupPreference20260911.js';
 
 let installed = false;
 let preloadPromise = null;
@@ -28,7 +33,13 @@ function fingerprintDeckSlot(index, slot) {
 
 function groupForInventory(cardInventory, requestedGroup) {
   if (requestedGroup != null) return normalizeDeckGroup20260906(requestedGroup);
-  return normalizeDeckGroup20260906(cardInventory?.__activeDeckGroup20260907 ?? 'default');
+  // 2026-09-11：没有显式指定时，优先用玩家上次选的卡组（原来固定回落 default，
+  // 等于把"战团2/3"的选择每次进战斗都抹掉）。
+  return normalizeDeckGroup20260906(
+    cardInventory?.__activeDeckGroup20260907
+      ?? readRememberedDeckGroup20260911()
+      ?? 'default',
+  );
 }
 
 function fallbackDeckForGroup(cardInventory, db, group) {
@@ -144,6 +155,17 @@ function installDeckGroupRuntime() {
             throw error;
           });
       }
+      // 2026-09-11：进房时以"玩家上次选的卡组"为准，并把它同步给房间成员
+      // （服务端的 setDeck 只改房间成员、不写账号，所以不主动同步就会退回账号默认值）。
+      const preference = preferredRoomDeckGroup20260911(roomState.selectedDeckNo);
+      if (preference.group) {
+        roomState.selectedDeckNo = preference.number;
+        if (preference.needsSync && roomOwner?.socket?.setDeck) {
+          Promise.resolve(roomOwner.socket.setDeck(preference.number))
+            .then((room) => { if (room) roomOwner.refreshRoom?.(room); })
+            .catch(() => { /* 同步失败不阻塞渲染，下次进房会再试 */ });
+        }
+      }
     }
 
     const group = roomState
@@ -199,6 +221,8 @@ function installDeckGroupRuntime() {
 
       DeckSelectView.saveDeck(this._selected, this._cardInventory, previousGroup);
       this._deckTab = nextGroup;
+      // 记住玩家选的卡组：离开房间/刷新后仍要生效（服务端只记房间成员，会丢）。
+      rememberDeckGroup20260911(nextGroup);
       if (this._cardInventory) this._cardInventory.__activeDeckGroup20260907 = nextGroup;
       this._selected = DeckSelectView.loadSavedDeck(this._cardInventory, this._db, nextGroup)
         ?? fallbackDeckForGroup(this._cardInventory, this._db, nextGroup);

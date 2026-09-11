@@ -5,6 +5,7 @@ import {
   deckNumberToGroup20260906,
   normalizeDeckGroup20260906,
 } from './DeckGroupSelection20260906.js';
+import { readRememberedDeckGroup20260911 } from './DeckGroupPreference20260911.js';
 
 const INSTALL_FLAG = Symbol.for('clbwz.roomDeckRefreshRegressionFix20260907');
 
@@ -28,6 +29,10 @@ function roomShellChanged(previous, next) {
 }
 
 function roomDeckGroup(room, userId, fallbackGroup = 'default') {
+  // 2026-09-11：玩家上次选过的卡组优先。否则离开房间后成员按账号默认值重新创建，
+  // 战团2/3 的选择会被抹掉，界面又跳回"默认/战团1"。
+  const remembered = readRememberedDeckGroup20260911();
+  if (remembered) return remembered;
   const me = memberFor(room, userId);
   if (!me || me.selectedDeckNo == null) return normalizeDeckGroup20260906(fallbackGroup);
   return deckNumberToGroup20260906(me.selectedDeckNo);
