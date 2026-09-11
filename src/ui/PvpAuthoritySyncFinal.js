@@ -91,8 +91,6 @@ function ensureColumns(view) {
   const wrap = view.viewRoot?.querySelector?.('.battle-game-wrap');
   if (!wrap) return;
   wrap.querySelectorAll('[data-pvp-authority-column]').forEach((node) => node.remove());
-  // 2026-09-11：野外冒险(PVE)联机用关卡场地自带的左右柱，不再叠一层竞技场权威柱。
-  if (view.pvp?.mode === 'pve') return;
   wrap.querySelectorAll('.bg-layer-left-column, .bg-layer-right-column').forEach((node) => {
     node.style.setProperty('display', 'none', 'important');
   });

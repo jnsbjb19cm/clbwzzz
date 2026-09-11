@@ -11,9 +11,11 @@
  * 走现有冒险结算（App.handleBattleResult → /player/stage-result）。
  */
 import { audio } from '../core/AudioManager.js';
+import { authStore } from '../core/AuthStore.js';
 import { DeckSelectView } from './DeckSelectView.js';
 import { BattleView } from './BattleView.js';
 import { RoomView } from './RoomView.js';
+import { markWorldStageCleared } from './WorldMapView.js';
 
 const PATCH_FLAG = Symbol.for('clbwzzz.adventureCoopBridge20260911');
 
@@ -127,14 +129,26 @@ function enterCoopAdventureBattle(roomView) {
       stageId,
     },
     onNavigate: roomView.onNavigate,
-    // 各自结算：把服务端权威战斗里的共享掉落带上，交给 App 走现有冒险结算。
+    // 2026-09-11：PVE 联机改为「服务端权威结算」——战斗结束时服务端已经按冒险规则
+    // 给每名玩家发好金币/经验/首通/功勋/掉落，客户端只刷新显示、不再重复发放。
     onBattleResult: (result) => {
-      const snapshot = view.__pvpLatestSnapshot;
-      const drops = result?.won && Array.isArray(snapshot?.lootDrops) ? snapshot.lootDrops : [];
-      const payload = { ...result, mode: 'pve', drops };
-      // 正式接线：App 通过 RoomView 传下来的结算回调（优先）。
-      if (typeof roomView.onBattleResult === 'function') roomView.onBattleResult(payload);
-      else globalThis.__clbwzAppInstance?.handleBattleResult?.(payload);
+      const report = view.__authorityBattleReport;
+      const userId = Number(authStore.user?.id ?? authStore.snapshot?.profile?.userId ?? 0);
+      const row = Array.isArray(report?.rows)
+        ? report.rows.find((item) => Number(item.userId) === userId)
+        : null;
+      // 本地地图进度（星星/已通关）与服务端 player_stage_progress 对齐；不在此发奖。
+      try { markWorldStageCleared(view.engine?.stage?.stage_id ?? roomView.room?.stageId ?? stageId); } catch { /* ignore */ }
+      // 从服务器拉回最新金币/经验/背包（服务端已入账）。
+      void authStore.api.get('/player/snapshot').catch(() => {});
+      const app = globalThis.__clbwzAppInstance;
+      if (app && row) {
+        app.showGlobalNotice?.(
+          result?.won ? '冒险胜利' : '战斗结束',
+          `<div>金币 +${Number(row.gold) || 0}；经验 +${Number(row.exp) || 0}；功勋 +${Number(row.honor) || 0}</div>`
+            + (row.firstClear ? '<div>首次通关奖励已发放</div>' : ''),
+        );
+      }
     },
   });
   roomView.roomBattleView = view;

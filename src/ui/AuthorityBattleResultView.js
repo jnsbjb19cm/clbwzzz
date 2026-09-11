@@ -20,6 +20,8 @@ function teamTable(report, team) {
     ['杀敌', row => Number(row.kills) || 0],
     ['伤亡', row => Number(row.losses) || 0],
     ['本局积分', row => Number(row.kills) * 10 + (report.winner === team ? 100 : 0)],
+    // 2026-09-11：PVE 冒险结算有金币，单独一列展示。
+    ...(report.mode === 'pve' ? [['金币', row => rewardValue(row.gold ?? 0)]] : []),
     ['功勋', row => rewardValue(row.honor)],
     ['经验', row => rewardValue(row.exp)],
     ['加成', () => '—'],
@@ -101,7 +103,13 @@ export function installAuthorityBattleResultView() {
         : teamTable(report, 'blue')}</div><p class="authority-settlement-note" role="status">${escapeHtml(notice)}</p>`;
     }
     const desc = card.querySelector('#result-desc');
-    if (desc) desc.textContent = report.mode === 'boss' ? report.bossName : '红蓝对决';
+    if (desc) {
+      desc.textContent = report.mode === 'boss'
+        ? report.bossName
+        : report.mode === 'pve'
+          ? (report.stageName || '冒险')
+          : '红蓝对决';
+    }
     return result;
   };
 }

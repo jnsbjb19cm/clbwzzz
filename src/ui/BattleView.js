@@ -347,9 +347,9 @@ export class BattleView {
         </div>
         <div class="battle-game-wrap battle-scene" style="${bgStyle}">
           <!-- 左右柱：锚定在战斗容器边缘(wrap 层)，不随战场缩放。
-               PVP/BOSS 已改用 pvp-authority-column 作为唯一侧柱层；PVE 联机用冒险场地柱子。 -->
-          ${this.pvp && this.pvp.mode !== 'pve' ? '' : '<div class="bg-layer bg-layer-left-column" aria-hidden="true"></div>'}
-          ${this.pvp && this.pvp.mode !== 'pve' ? '' : (bg.showRightColumn ? '<div class="bg-layer bg-layer-right-column" aria-hidden="true"></div>' : '')}
+               PVP/BOSS/PVE 联机统一使用 pvp-authority-column 作为侧柱层，这里不再生成两套。 -->
+          ${this.pvp ? '' : '<div class="bg-layer bg-layer-left-column" aria-hidden="true"></div>'}
+          ${this.pvp ? '' : (bg.showRightColumn ? '<div class="bg-layer bg-layer-right-column" aria-hidden="true"></div>' : '')}
           <div class="game-container">
             <div class="bg-stack" aria-hidden="true">
               <div class="bg-layer bg-layer-base"></div>

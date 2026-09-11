@@ -1,5 +1,6 @@
 import craftMaterials from '../../src/data/craftMaterials.json' with { type: 'json' };
 import { grantPlayerExp } from '../../src/core/PlayerProgression.js';
+import { settlePveStageForPlayer } from './PveStageSettlement20260911.js';
 
 function rollUpgradeMaterial(maxTier = 1, rng = Math.random) {
   const tier = 1 + Math.floor(rng() * Math.max(1, Math.min(4, Math.floor(maxTier))));
@@ -23,10 +24,11 @@ export function attachBattleReport(battle, room) {
   const byId = new Map(rows.map(row => [row.userId, row]));
   const report = battle.battleReport = {
     status: 'playing', mode: room.mode, winner: null, rows,
-    // 2026-09-11：PVE 联机由各客户端按现有冒险规则自行结算（/player/stage-result），
-    // 服务端不再重复发 PVP/BOSS 式奖励，避免双倍。
-    rewardsEnabled: room.mode === 'boss' || (room.mode === 'pvp' && !room.allowUnbalanced),
+    // 2026-09-11：PVE 联机也由服务端结算（金币/经验/首通/功勋/掉落），与单机冒险同一套规则。
+    // PVP 仍保留「不对等战斗无奖励」规则；BOSS 照旧。
+    rewardsEnabled: room.mode === 'pve' || room.mode === 'boss' || (room.mode === 'pvp' && !room.allowUnbalanced),
     bossName: battle.bossInfo?.name ?? null,
+    stageName: String(battle.engine?.stage?.stage_name ?? '') || null,
   };
   const engine = battle.engine;
   const previousHit = engine.applyCardHit;
@@ -111,6 +113,32 @@ export function attachBattleReport(battle, room) {
 export async function settleBattleReport(conn, battle) {
   const report = battle.battleReport;
   const rows = report.rows.map(row => ({ ...row, items: row.items.map(item => ({ ...item })) }));
+
+  // 2026-09-11：PVE 联机走冒险结算（金币/经验/首通/功勋/掉落，每人一份），
+  // 不再套用 PVP/BOSS 的经验功勋公式。
+  if (report.mode === 'pve') {
+    const stage = battle.engine?.stage ?? null;
+    const durationMs = Math.max(0, Math.round((Number(battle.engine?.time) || 0) * 1000));
+    const drops = (battle.engine?.lootDrops ?? [])
+      .map((drop) => ({ itemId: Number(drop?.itemId), count: Number(drop?.count) || 1 }))
+      .filter((drop) => Number.isInteger(drop.itemId) && drop.itemId > 0);
+    const won = battle.winner === 'blue';
+    for (const row of rows) {
+      row.score = won ? 100 : 0;
+      if (!report.rewardsEnabled || row.userId <= 0 || row.isBot) continue;
+      const summary = await settlePveStageForPlayer(conn, row.userId, {
+        stageId: stage?.stage_id, stage, won, durationMs, drops,
+      });
+      row.exp = summary.exp;
+      row.gold = summary.gold;
+      row.honor = summary.honor;
+      row.items = summary.items;
+      row.level = summary.level;
+      row.firstClear = summary.firstClear;
+    }
+    return { ...report, status: 'settled', winner: battle.winner, rows };
+  }
+
   for (const row of rows) {
     const won = row.team === battle.winner;
     row.score = row.kills * 10 + (won ? 100 : 0);
