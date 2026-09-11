@@ -6,7 +6,11 @@
  *   - clbwz_low_quality         BattleView 构造时读入 renderer.forceLowQuality
  *   - clbwz_bag_auto_organize   BagView 构造时读入 autoOrganize
  * 所以设置页不另存一份状态，直接读写同一批键，避免两处状态不一致（顶栏按钮改了设置页也能看到）。
+ *
+ * 2026-09-11：新增的显示开关（血条 / 伤害数字 / FPS 面板 / BGM / 画质预设）统一读
+ * GameSettingsStore，不再新增 localStorage 键；战斗代码只通过本文件取开关，保证只有一处判据。
  */
+import { gameSettings } from './GameSettingsStore20260910.js';
 export const CLIENT_FLAG_KEYS = Object.freeze({
   unitNames: 'clbwz_show_unit_names',
   lowQuality: 'clbwz_low_quality',
@@ -133,4 +137,37 @@ export function clearTrialData() {
     }
   }
   return cleared;
+}
+/* ---------------------------------------------------------------------------
+ * 2026-09-11：新增的显示开关统一读 GameSettingsStore（不再新增 localStorage 键）。
+ * 战斗/背包代码只从这里取开关，保证设置页改完立刻生效、且只有一处判据。
+ * ------------------------------------------------------------------------- */
+
+/** 战斗内是否显示单位血条（默认开）。 */
+export const shouldDrawUnitHpBar = () => gameSettings.get('showUnitHp') !== false;
+
+/** 战斗内是否飘伤害数字（默认关）。 */
+export const shouldShowDamageNumbers = () => gameSettings.get('showDamageNumbers') === true;
+
+/** FPS / 性能面板是否开启（默认关）。 */
+export const perfPanelEnabled = () => gameSettings.get('showPerfPanel') === true;
+
+/** BGM 是否允许在该场景播放；key 为 AudioManager 里的 BGM 键（city/room/battle/boss/ambient）。 */
+export function bgmAllowedFor(key) {
+  if (gameSettings.get('bgmEnabled') !== true) return false;
+  if (key === 'city' || key === 'room' || key === 'battle' || key === 'boss') {
+    return gameSettings.get('bgm' + key[0].toUpperCase() + key.slice(1)) !== false;
+  }
+  return true;
+}
+
+/** 画质预设：低=强制低画质并关掉伤害数字；中=默认；高=默认 + 伤害数字 + 单位名字。 */
+export function applyGraphicsQualityPreset(level) {
+  const next = level === 'low' || level === 'high' ? level : 'medium';
+  gameSettings.set('graphicsQuality', next);
+  setLowQualityFlag(next === 'low');
+  gameSettings.set('showDamageNumbers', next !== 'low');
+  gameSettings.set('showUnitHp', true);
+  if (next === 'high') setUnitNameFlag(true);
+  return next;
 }

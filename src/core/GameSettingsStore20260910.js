@@ -13,7 +13,23 @@ export const GAME_SETTINGS_DEFAULTS = Object.freeze({
   gallerySilhouetteUnowned: false,
   /** 全屏技能特效大小（1 = 铺满整个画布）。0.72 与代码默认值一致。 */
   fullscreenFxScale: 0.72,
+  /** 画质预设：low / medium / high（选中后批量写入下面这些真实开关）。 */
+  graphicsQuality: 'medium',
+  /** 战斗内飘出伤害数字。默认关（与改动前的观感一致）。 */
+  showDamageNumbers: false,
+  /** 战斗内显示单位血条。默认开。 */
+  showUnitHp: true,
+  /** FPS / 性能面板。默认关。 */
+  showPerfPanel: false,
+  /** BGM 总开关；下面三个是各场景开关（战斗含 BOSS）。 */
+  bgmEnabled: true,
+  bgmCity: true,
+  bgmRoom: true,
+  bgmBattle: true,
 });
+
+/** 画质预设可选值。 */
+export const GRAPHICS_QUALITY_LEVELS = Object.freeze(['low', 'medium', 'high']);
 
 /** 全屏特效缩放的可用区间，防止设置页拖出离谱数值。 */
 export const FULLSCREEN_FX_SCALE_RANGE = Object.freeze({ min: 0.4, max: 1, step: 0.02 });
@@ -26,7 +42,15 @@ function clampFxScale(value) {
 
 function normalize(key, value) {
   if (key === 'fullscreenFxScale') return clampFxScale(value);
+  if (key === 'graphicsQuality') {
+    const raw = String(value ?? '');
+    return GRAPHICS_QUALITY_LEVELS.includes(raw) ? raw : GAME_SETTINGS_DEFAULTS.graphicsQuality;
+  }
   if (key === 'gallerySilhouetteUnowned') return Boolean(value);
+  if (key === 'showDamageNumbers' || key === 'showUnitHp' || key === 'showPerfPanel'
+    || key === 'bgmEnabled' || key === 'bgmCity' || key === 'bgmRoom' || key === 'bgmBattle') {
+    return value === true;
+  }
   return value;
 }
 
@@ -75,6 +99,14 @@ export class GameSettingsStore {
     if (this.values[key] === next) return next;
     this.values[key] = next;
     this.save();
+    // 广播给运行时补丁（FPS 面板等）；用事件而不是 import，避免核心存储依赖 UI。
+    try {
+      if (typeof window !== 'undefined' && typeof CustomEvent === 'function') {
+        window.dispatchEvent(new CustomEvent('clbwz:settings-changed', { detail: { key, value: next } }));
+      }
+    } catch {
+      // 非浏览器环境忽略。
+    }
     for (const listener of this.listeners) {
       try {
         listener(key, next, this.all());

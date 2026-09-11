@@ -91,6 +91,11 @@ installSmithyMissingCardGuard20260908();
 installSmithyCardKindFilter20260908();
 installSmithyCharmAndChatPolish20260908();
 
+import { installPerfOverlay20260911 } from './ui/PerfOverlay20260911.js';
+import { installBattleDisplayRuntime20260911 } from './ui/BattleDisplayRuntime20260911.js';
+installBattleDisplayRuntime20260911();
+installPerfOverlay20260911();
+
 void import('./main.js').then(() => {
   installBaseAttackRenderStability20260906();
   installBattleUserRegressionFix20260907();

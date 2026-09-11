@@ -6,13 +6,16 @@ import {
   gameSettings,
 } from '../core/GameSettingsStore20260910.js';
 import {
+  applyGraphicsQualityPreset,
   readBagAutoOrganizeFlag,
-  readLowQualityFlag,
   readUnitNameFlag,
   setBagAutoOrganizeFlag,
-  setLowQualityFlag,
   setUnitNameFlag,
 } from '../core/BattleClientFlags20260910.js';
+import { syncBattleDisplayRuntime } from './BattleDisplayRuntime20260911.js';
+
+/** 画质档位的中文名。 */
+const QUALITY_LABEL = Object.freeze({ low: '低', medium: '中', high: '高' });
 
 const escapeHtml = (value) => String(value ?? '')
   .replace(/&/g, '&amp;')
@@ -22,12 +25,11 @@ const escapeHtml = (value) => String(value ?? '')
 /**
  * 2026-09-10：设置页重做（第二版）。
  *
- * 上一版只有音量 / 卡名 / 静音 + 图鉴剪影 + 特效大小，功能太少。这一版按「有没有真实读取点」
- * 补上：战斗内显示单位名字、低画质模式、背包自动整理，以及两个危险操作（重看教程 / 重置本机
- * 试玩数据）。这些开关都直接读写战斗与背包代码真正读取的 localStorage 键（见
- * BattleClientFlags20260910.js），不是摆设。
- *
- * 危险操作走游戏内弹窗二次确认，不用浏览器 confirm（和铁匠铺保持一致）。
+ * 每个开关都接了真实读取点（见 BattleClientFlags20260910.js / BattleDisplayRuntime20260911.js）：
+ *   - 显示单位名字 / 低画质       → 战斗代码读的 localStorage 键
+ *   - 画质预设（低/中/高）        → 批量写入低画质、伤害数字等真实开关
+ *   - 单位血条 / 伤害数字 / FPS   → 读取时刻判断，改完立即生效
+ *   - BGM 总开关 + 分场景开关      → AudioManager.playBgm 与音效音量互不影响
  */
 export class SettingsView {
   constructor() {
@@ -40,8 +42,15 @@ export class SettingsView {
     const silhouette = gameSettings.get('gallerySilhouetteUnowned') === true;
     const fxScale = Number(gameSettings.get('fullscreenFxScale')) || GAME_SETTINGS_DEFAULTS.fullscreenFxScale;
     const unitNames = readUnitNameFlag();
-    const lowQuality = readLowQualityFlag();
     const bagAuto = readBagAutoOrganizeFlag();
+    const quality = gameSettings.get('graphicsQuality') ?? 'medium';
+    const unitHp = gameSettings.get('showUnitHp') !== false;
+    const damageNumbers = gameSettings.get('showDamageNumbers') === true;
+    const perfPanel = gameSettings.get('showPerfPanel') === true;
+    const bgmOn = gameSettings.get('bgmEnabled') !== false;
+    const bgmCity = gameSettings.get('bgmCity') !== false;
+    const bgmRoom = gameSettings.get('bgmRoom') !== false;
+    const bgmBattle = gameSettings.get('bgmBattle') !== false;
 
     root.innerHTML = `
       <div class="page gset-page gset-chrome">
@@ -50,8 +59,12 @@ export class SettingsView {
 
           <div class="gset-block">
             <h3>声音</h3>
-            <label class="gset-row">音乐音量<input id="setting-music" type="range" min="0" max="100" value="${Math.round(audio.volume * 100)}" /></label>
+            <label class="gset-row">BGM 音量<input id="setting-music" type="range" min="0" max="100" value="${Math.round(audio.volume * 100)}" /></label>
             <label class="gset-row">音效音量<input id="setting-sfx" type="range" min="0" max="100" value="${Math.round(audio.sfxVolume * 100)}" /></label>
+            <label class="gset-row gset-row-check">背景音乐总开关<input id="setting-bgm" type="checkbox" ${bgmOn ? 'checked' : ''} /></label>
+            <label class="gset-row gset-row-check">主城 BGM<input id="setting-bgm-city" type="checkbox" ${bgmCity ? 'checked' : ''} /></label>
+            <label class="gset-row gset-row-check">房间 BGM<input id="setting-bgm-room" type="checkbox" ${bgmRoom ? 'checked' : ''} /></label>
+            <label class="gset-row gset-row-check">战斗 BGM<input id="setting-bgm-battle" type="checkbox" ${bgmBattle ? 'checked' : ''} /></label>
             <div class="gset-actions gset-actions-inline">
               <button id="setting-mute" type="button" class="gset-btn">${audio.isMuted() ? '恢复声音' : '静音'}</button>
             </div>
@@ -67,10 +80,25 @@ export class SettingsView {
 
           <div class="gset-block">
             <h3>战斗表现</h3>
+            <div class="gset-row gset-row-stack">
+              <span>画质</span>
+              <div class="gset-seg" id="setting-quality">
+                <button type="button" class="gset-seg-btn${quality === 'low' ? ' active' : ''}" data-quality="low">低</button>
+                <button type="button" class="gset-seg-btn${quality === 'medium' ? ' active' : ''}" data-quality="medium">中</button>
+                <button type="button" class="gset-seg-btn${quality === 'high' ? ' active' : ''}" data-quality="high">高</button>
+              </div>
+            </div>
             <label class="gset-row gset-row-check">战斗内显示单位名字<input id="setting-unit-names" type="checkbox" ${unitNames ? 'checked' : ''} /></label>
-            <label class="gset-row gset-row-check">低画质模式（性能优先）<input id="setting-low-quality" type="checkbox" ${lowQuality ? 'checked' : ''} /></label>
+            <label class="gset-row gset-row-check">战斗内显示单位血条<input id="setting-unit-hp" type="checkbox" ${unitHp ? 'checked' : ''} /></label>
+            <label class="gset-row gset-row-check">伤害数字<input id="setting-damage-numbers" type="checkbox" ${damageNumbers ? 'checked' : ''} /></label>
             <label class="gset-row">全屏技能特效大小<input id="setting-fx-scale" type="range" min="${FULLSCREEN_FX_SCALE_RANGE.min * 100}" max="${FULLSCREEN_FX_SCALE_RANGE.max * 100}" step="${FULLSCREEN_FX_SCALE_RANGE.step * 100}" value="${Math.round(fxScale * 100)}" /></label>
-            <p class="gset-hint">当前特效 <b id="setting-fx-value">${Math.round(fxScale * 100)}%</b>：陨石雨 / 暴风雪这类全屏技能占战场的比例，越小越不挡视野。低画质会关掉部分特效细节，卡顿时可开。</p>
+            <p class="gset-hint">当前特效 <b id="setting-fx-value">${Math.round(fxScale * 100)}%</b>：陨石雨 / 暴风雪这类全屏技能占战场的比例，越小越不挡视野。低画质=强制简化特效并关掉伤害数字；高画质=完整特效 + 伤害数字。</p>
+          </div>
+
+          <div class="gset-block">
+            <h3>性能</h3>
+            <label class="gset-row gset-row-check">FPS / 性能面板<input id="setting-perf-panel" type="checkbox" ${perfPanel ? 'checked' : ''} /></label>
+            <p class="gset-hint">开启后左上角显示帧率与战斗中的单位 / 特效数量，用于判断卡顿来源（关闭时不产生任何开销）。</p>
           </div>
 
           <p class="gset-toast" id="setting-toast" role="status" aria-live="polite" hidden></p>
@@ -169,10 +197,41 @@ export class SettingsView {
       setUnitNameFlag(e.target.checked);
     });
 
-    root.querySelector('#setting-low-quality').addEventListener('change', (e) => {
-      setLowQualityFlag(e.target.checked);
-      this.flash(e.target.checked ? '已开启低画质模式（进行中的战斗下一帧生效）。' : '已关闭低画质模式。');
+    root.querySelector('#setting-quality').addEventListener('click', (e) => {
+      const level = e.target.closest('[data-quality]')?.dataset.quality;
+      if (!level) return;
+      applyGraphicsQualityPreset(level);
+      this.render(root);   // 预设会改到多个开关，重绘让 UI 跟上
+      this.flash(`画质已切换为「${QUALITY_LABEL[level]}」，进行中的战斗下一帧生效。`);
     });
+
+    root.querySelector('#setting-unit-hp').addEventListener('change', (e) => {
+      gameSettings.set('showUnitHp', e.target.checked);
+      this.flash(e.target.checked ? '已显示单位血条。' : '已隐藏单位血条。');
+    });
+
+    root.querySelector('#setting-damage-numbers').addEventListener('change', (e) => {
+      gameSettings.set('showDamageNumbers', e.target.checked);
+      this.flash(e.target.checked ? '已开启伤害数字。' : '已关闭伤害数字。');
+    });
+
+    root.querySelector('#setting-perf-panel').addEventListener('change', (e) => {
+      gameSettings.set('showPerfPanel', e.target.checked);
+      this.flash(e.target.checked ? 'FPS / 性能面板已开启。' : 'FPS / 性能面板已关闭。');
+    });
+
+    const bgmKeys = [
+      ['#setting-bgm', 'bgmEnabled'],
+      ['#setting-bgm-city', 'bgmCity'],
+      ['#setting-bgm-room', 'bgmRoom'],
+      ['#setting-bgm-battle', 'bgmBattle'],
+    ];
+    for (const [selector, key] of bgmKeys) {
+      root.querySelector(selector).addEventListener('change', (e) => {
+        gameSettings.set(key, e.target.checked);
+        syncBattleDisplayRuntime();   // 关掉的如果是正在放的那首，立即停
+      });
+    }
 
     const fxInput = root.querySelector('#setting-fx-scale');
     fxInput.addEventListener('input', (e) => {

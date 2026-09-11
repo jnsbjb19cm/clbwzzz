@@ -21,6 +21,7 @@ import {
 import { SpriteAtlas, calcFootAnchor } from '../core/SpriteAtlas.js';
 import { isEffectivelyFlying, unitAnimPlayer } from './UnitAnimPlayer.js';
 import { drawFullScreenSkillFx, skillAnimPlayer } from './SkillAnimPlayer.js';
+import { shouldDrawUnitHpBar } from '../core/BattleClientFlags20260910.js';
 import { guardBattleRuntime } from './BattleRuntimeDiagnostics.js';
 import effectAtlas from '../data/atlas/preload_effect.json' with { type: 'json' };
 import skillPosData from '../data/skillPosition.json' with { type: 'json' };
@@ -749,11 +750,14 @@ export class BattleRenderer {
     // 名字始终跟随设置显示；低画质时只省略星级等文字，不省略名称。
     this.drawUnitName(ctx, portraitX, cellTop + 2, portraitW, unit.customName || unit.name, unit.team);
     if (!this._lowQuality) this.drawStrengthStars(ctx, unit, cx, footY, circleSize);
-    const hpPct = unit.hp / unit.maxHp;
-    ctx.fillStyle = '#1a1a1a';
-    ctx.fillRect(barX, barY, barW, 5);
-    ctx.fillStyle = unit.team === 'player' ? '#4ade80' : '#f87171';
-    ctx.fillRect(barX, barY, barW * hpPct, 5);
+    // 2026-09-11：血条可由设置页开关（默认开）。
+    if (shouldDrawUnitHpBar()) {
+      const hpPct = unit.hp / unit.maxHp;
+      ctx.fillStyle = '#1a1a1a';
+      ctx.fillRect(barX, barY, barW, 5);
+      ctx.fillStyle = unit.team === 'player' ? '#4ade80' : '#f87171';
+      ctx.fillRect(barX, barY, barW * hpPct, 5);
+    }
 
     if (engine) this.drawStatusEffects(ctx, unit, engine, layout);
   }

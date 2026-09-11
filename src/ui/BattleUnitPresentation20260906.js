@@ -1,4 +1,5 @@
 import { BattleRenderer } from '../battle/BattleRenderer.js';
+import { shouldDrawUnitHpBar } from '../core/BattleClientFlags20260910.js';
 import { BattleView } from './BattleView.js';
 import { CELL_W } from '../battle/BattleConfig.js';
 import { normalizeCraftQuality, resolveCraftQuality } from '../core/constants.js';
@@ -322,7 +323,8 @@ export function installBattleUnitPresentation20260906() {
       unit.team,
     );
 
-    drawHpBar(ctx, unit, layout);
+    // 2026-09-11：血条开关（默认开）。
+    if (shouldDrawUnitHpBar()) drawHpBar(ctx, unit, layout);
     // 底座已在 drawUnitHalo 阶段绘制，保证它永远位于单位脚下而不是盖住角色。
     if (!this._lowQuality) {
       this.drawStrengthStars(ctx, unit, layout.cx, layout.footY, layout.circleSize);

@@ -1,0 +1,25 @@
+/* 2026-09-11：FPS / 性能面板（默认关闭，设置页开启） */
+.clbwz-perf-panel {
+  position: fixed;
+  left: 8px;
+  top: 8px;
+  z-index: 90;
+  padding: 4px 10px;
+  pointer-events: none;
+  font: 700 12px/1.4 "Microsoft YaHei", monospace;
+  color: #d9ffd0;
+  border: 2px solid #2f6c2a;
+  border-radius: 8px;
+  background: rgba(12, 26, 10, .72);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, .45);
+}
+
+.clbwz-perf-panel[hidden] {
+  display: none !important;
+}
+
+.clbwz-perf-panel.is-low {
+  color: #ffe0b0;
+  border-color: #b1832a;
+  background: rgba(46, 26, 6, .78);
+}
