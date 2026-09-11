@@ -8,7 +8,7 @@ import {
   cellCenterY,
 } from '../battle/BattleConfig.js';
 import { BattleRenderer } from '../battle/BattleRenderer.js';
-import { skillAnimPlayer } from '../battle/SkillAnimPlayer.js';
+import { drawFullScreenSkillFx, skillAnimPlayer } from '../battle/SkillAnimPlayer.js';
 import skillPosData from '../data/skillPosition.json' with { type: 'json' };
 
 const PATCH_FLAG = Symbol.for('clbwzzz.battleSkillPositionFinal');
@@ -74,23 +74,8 @@ function drawSkillFxWithOriginalPositions(ctx, engine) {
 
     if (fullScreen) {
       const viewport = viewportFieldBounds(this);
-      ctx.save();
-      if (effect.pvpDirection < 0) {
-        ctx.translate(2 * viewport.left + viewport.width, 0);
-        ctx.scale(-1, 1);
-      }
-      skillAnimPlayer.drawCover(
-        ctx,
-        skillId,
-        viewport.left,
-        viewport.top,
-        viewport.width,
-        viewport.height,
-        elapsed,
-        alpha * 0.92,
-        effect.loop === true,
-      );
-      ctx.restore();
+      // 统一入口（自然下落/扫入 + 镜像 + 重复播放 + 尾段硬切），见 SkillAnimPlayer.drawFullScreenSkillFx。
+      drawFullScreenSkillFx(ctx, effect, viewport, elapsed, duration);
       this._runtimeViewportCovers.push({ skillId, ...viewport });
       this._runtimeCoordinateSkillAudit.push({
         skillId,

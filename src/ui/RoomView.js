@@ -18,6 +18,16 @@ import { DeckSelectView } from './DeckSelectView.js';
 import { BagView } from './BagView.js';
 import { QuestView } from './QuestView.js';
 
+// 游戏大厅右下角菜单：只有和 resources/img 新图对得上的按钮才换图标
+// （金币按钮本身导航到商城，退出按钮导航回主城，所以分别用商店/返回图）。
+const LOBBY_MENU_ICONS = Object.freeze({
+  gold: new URL('../../resources/img/shop.png', import.meta.url).href,
+  backpack: new URL('../../resources/img/backpack.png', import.meta.url).href,
+  mail: new URL('../../resources/img/mail.png', import.meta.url).href,
+  settings: new URL('../../resources/img/set.png', import.meta.url).href,
+  exit: new URL('../../resources/img/back.png', import.meta.url).href,
+});
+
 const SIZE_OPTIONS = [
   { size: '1v1', label: '1v1' },
   { size: '2v2', label: '2v2' },
@@ -173,14 +183,14 @@ export class RoomView {
           <button class="lobby-btn lobby-btn-recharge" id="lobby-recharge">钻石充值</button>
 
           <div class="lobby-menu">
-            <button class="lobby-menu-btn" data-fn="gold">金币</button>
+            <button class="lobby-menu-btn has-icon-image" data-fn="gold"><img class="lobby-menu-icon" src="${LOBBY_MENU_ICONS.gold}" alt="" aria-hidden="true" draggable="false" />金币</button>
             <button class="lobby-menu-btn" data-fn="trophy">奖杯</button>
-            <button class="lobby-menu-btn" data-fn="mail">邮件</button>
-            <button class="lobby-menu-btn" data-fn="backpack" id="lobby-fn-backpack">背包</button>
+            <button class="lobby-menu-btn has-icon-image" data-fn="mail"><img class="lobby-menu-icon" src="${LOBBY_MENU_ICONS.mail}" alt="" aria-hidden="true" draggable="false" />邮件</button>
+            <button class="lobby-menu-btn has-icon-image" data-fn="backpack" id="lobby-fn-backpack"><img class="lobby-menu-icon" src="${LOBBY_MENU_ICONS.backpack}" alt="" aria-hidden="true" draggable="false" />背包</button>
             <button class="lobby-menu-btn" data-fn="friend">好友</button>
             <button class="lobby-menu-btn" data-fn="quest">任务</button>
-            <button class="lobby-menu-btn" data-fn="settings">设置</button>
-            <button class="lobby-menu-btn lobby-menu-exit" id="lobby-exit">退出</button>
+            <button class="lobby-menu-btn has-icon-image" data-fn="settings"><img class="lobby-menu-icon" src="${LOBBY_MENU_ICONS.settings}" alt="" aria-hidden="true" draggable="false" />设置</button>
+            <button class="lobby-menu-btn lobby-menu-exit has-icon-image" id="lobby-exit"><img class="lobby-menu-icon" src="${LOBBY_MENU_ICONS.exit}" alt="" aria-hidden="true" draggable="false" />退出</button>
           </div>
 
           <!-- 创建说明(只创建 PVP，不选规模) -->
@@ -252,6 +262,8 @@ export class RoomView {
     this.root.querySelector('#lobby-fn-backpack').addEventListener('click', () => this.onNavigate?.('bag'));
     this.root.querySelector('.lobby-menu-btn[data-fn="quest"]').addEventListener('click', () => this.onNavigate?.('quest'));
     this.root.querySelector('.lobby-menu-btn[data-fn="settings"]').addEventListener('click', () => this.notice('设置功能开发中'));
+    // 邮件入口先占位，后续接邮件系统。
+    this.root.querySelector('.lobby-menu-btn[data-fn="mail"]')?.addEventListener('click', () => this.notice('邮件功能开发中'));
   }
 
   openLobbyTool(kind) {

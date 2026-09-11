@@ -1,0 +1,106 @@
+/* ==========================================================================
+   2026-09-10：滚动条统一适配
+   原则：滑块/滑槽用「它所在面板本身的配色」，而不是全站一个颜色。
+   实现：全局一套 ::-webkit-scrollbar 规则，颜色全部取 CSS 变量；
+        每个面板只需要声明 --sb-track / --sb-thumb / --sb-thumb-hover。
+   本文件在 main.js 的样式表里最后引入，保证能盖住各面板早期的滚动条规则。
+   ========================================================================== */
+
+:root {
+  --sb-track: rgba(22, 40, 12, .30);
+  --sb-thumb: rgba(104, 148, 52, .82);
+  --sb-thumb-hover: rgba(134, 186, 66, .96);
+  --sb-size: 10px;
+}
+
+* {
+  scrollbar-color: var(--sb-thumb) var(--sb-track) !important;
+  scrollbar-width: thin !important;
+}
+
+*::-webkit-scrollbar {
+  width: var(--sb-size) !important;
+  height: var(--sb-size) !important;
+}
+
+*::-webkit-scrollbar-track {
+  border: 0 !important;
+  border-radius: 999px !important;
+  background: var(--sb-track) !important;
+}
+
+*::-webkit-scrollbar-thumb {
+  border: 2px solid transparent !important;
+  border-radius: 999px !important;
+  background: var(--sb-thumb) !important;
+  background-clip: padding-box !important;
+  box-shadow: none !important;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background: var(--sb-thumb-hover) !important;
+  background-clip: padding-box !important;
+}
+
+*::-webkit-scrollbar-corner,
+*::-webkit-scrollbar-button {
+  background: transparent !important;
+  display: none !important;
+}
+
+/* ---------- 绿底面板：背包 / 公会仓库 / 拍卖行 / 图鉴 / 榜单 ---------- */
+.economy-grid-shell,
+.economy-grid-panel,
+.backpack-economy-ui,
+.bag-page,
+.classic-page-screen,
+.classic-gallery-screen,
+.classic-rank-screen {
+  --sb-track: rgba(255, 255, 242, .60);
+  --sb-thumb: rgba(85, 111, 45, .70);
+  --sb-thumb-hover: rgba(62, 92, 28, .90);
+}
+
+/* ---------- 铁匠铺：深蓝木牌面板 ---------- */
+.classic-smithy-screen,
+.smithy-panel,
+.smithy-craft-side,
+.smithy-decompose-side,
+.smithy-card-pick-grid,
+.smithy-card-catalogue,
+.smithy-decompose-readout {
+  --sb-track: rgba(3, 38, 55, .74);
+  --sb-thumb: rgba(94, 216, 250, .62);
+  --sb-thumb-hover: rgba(150, 233, 255, .88);
+}
+
+/* ---------- 浅底聊天 / 弹窗：主城闲聊栏、游戏大厅聊天、房间聊天 ---------- */
+.classic-chat,
+.lobby-chat,
+.lobby-chat-list,
+.exact-room-chat,
+.exact-room-chat-log,
+.city-modal,
+.placeholder-card {
+  --sb-track: rgba(255, 255, 238, .58);
+  --sb-thumb: rgba(85, 111, 45, .64);
+  --sb-thumb-hover: rgba(62, 92, 28, .86);
+}
+
+/* ---------- 战斗内深色面板 ---------- */
+.battle-chat-panel,
+.battle-chat-log,
+.battle-game-wrap,
+.pvp-chat-bubble {
+  --sb-track: rgba(4, 36, 52, .66);
+  --sb-thumb: rgba(94, 216, 250, .58);
+  --sb-thumb-hover: rgba(150, 233, 255, .84);
+}
+
+/* ---------- 邀请面板（深绿底） ---------- */
+.room-invite-panel-20260906,
+.room-invite-player-list {
+  --sb-track: rgba(6, 24, 14, .70);
+  --sb-thumb: rgba(214, 182, 74, .62);
+  --sb-thumb-hover: rgba(240, 214, 116, .88);
+}

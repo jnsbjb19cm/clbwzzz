@@ -2,6 +2,9 @@ import { db } from '../database.js';
 import { isOnline, onlineUserIds, socketsForUser } from '../online.js';
 import { roomManager } from '../rooms/RoomManager.js';
 import {
+  ROOM_INVITE_REJECT_MESSAGE_20260910,
+  ROOM_INVITE_SNOOZE_HINT_20260910,
+  ROOM_INVITE_SNOOZE_MS_20260910,
   ROOM_INVITE_TTL_MS_20260906,
   canInviteLobbyPlayer20260906,
   normalizeLobbyPresence20260906,
@@ -10,7 +13,28 @@ import {
 const presenceBySocket = new Map();
 const invitesById = new Map();
 const activeInviteByPair = new Map();
+// 2026-09-10：被邀请方拒绝后写入免打扰，key = `${targetUserId}:${inviterUserId}`。
+const snoozeByPair = new Map();
 let inviteSequence = 0;
+
+function snoozeKey(targetUserId, inviterUserId) {
+  return `${Number(targetUserId)}:${Number(inviterUserId)}`;
+}
+
+function isSnoozedByTarget(targetUserId, inviterUserId, now = Date.now()) {
+  const key = snoozeKey(targetUserId, inviterUserId);
+  const until = Number(snoozeByPair.get(key));
+  if (!until) return false;
+  if (until <= now) {
+    snoozeByPair.delete(key);
+    return false;
+  }
+  return true;
+}
+
+function snoozeInviter(targetUserId, inviterUserId, now = Date.now()) {
+  snoozeByPair.set(snoozeKey(targetUserId, inviterUserId), now + ROOM_INVITE_SNOOZE_MS_20260910);
+}
 
 function ackOk(ack, data = {}) {
   if (typeof ack === 'function') ack({ ok: true, ...data });
@@ -151,7 +175,10 @@ export function installRoomInviteService20260906(io) {
       try {
         assertInviterRoom(socket);
         purgeExpiredInvites();
-        const ids = onlineUserIds().filter((targetId) => targetEligible(io, userId, targetId));
+        // 被对方拒绝过且在免打扰期内的玩家不出现在候选列表里。
+        const ids = onlineUserIds()
+          .filter((targetId) => targetEligible(io, userId, targetId))
+          .filter((targetId) => !isSnoozedByTarget(targetId, userId));
         const profiles = (await Promise.all(ids.map((id) => loadCandidateProfile(id))))
           .filter(Boolean)
           .sort((a, b) => Number(b.level || 0) - Number(a.level || 0) || Number(a.userId) - Number(b.userId));
@@ -166,7 +193,11 @@ export function installRoomInviteService20260906(io) {
         const room = assertInviterRoom(socket);
         const targetUserId = Number(payload.targetUserId);
         if (!targetEligible(io, userId, targetUserId)) {
-          throw new Error('该玩家已不在大厅或当前不可邀请');
+          throw new Error('该玩家当前不空闲，暂时不能邀请');
+        }
+        // 对方刚拒绝过你：免打扰期内直接拦下。
+        if (isSnoozedByTarget(targetUserId, userId)) {
+          throw new Error(ROOM_INVITE_SNOOZE_HINT_20260910);
         }
 
         purgeExpiredInvites();
@@ -216,8 +247,15 @@ export function installRoomInviteService20260906(io) {
         const accepted = Boolean(payload.accept);
         if (!accepted) {
           deleteInvite(invite);
-          emitInviteResult(io, invite, { accepted: false, reason: 'rejected' });
-          return ackOk(ack, { accepted: false });
+          // 拒绝后 5 分钟内不再接收该邀请人的邀请。
+          snoozeInviter(userId, invite.inviterUserId);
+          emitInviteResult(io, invite, {
+            accepted: false,
+            reason: 'rejected',
+            message: ROOM_INVITE_REJECT_MESSAGE_20260910,
+            snoozeMs: ROOM_INVITE_SNOOZE_MS_20260910,
+          });
+          return ackOk(ack, { accepted: false, snoozeMs: ROOM_INVITE_SNOOZE_MS_20260910 });
         }
 
         // Re-check at click time. A player who started watching another room after the invite was

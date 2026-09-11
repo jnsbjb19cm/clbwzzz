@@ -285,7 +285,8 @@ function apply(room) {
   applyReferenceBox(room.querySelector('.skill-btn'), stage, REF.skill, { z: 32, pointer: 'auto' });
   applyReferenceBox(room.querySelector('.team-btn'), stage, REF.team, { z: 32, pointer: 'auto' });
   applyReferenceBox(room.querySelector('#room-ready-btn'), stage, REF.ready, { z: 32, pointer: 'auto' });
-  applyReferenceBox(room.querySelector('.reference-room-recharge'), stage, REF.recharge, { z: 38, pointer: 'auto' });
+  // 2026-09-10：钻石储值入口已删除，这里的位置改放「邀请玩家」按钮。
+  applyReferenceBox(room.querySelector('.room-lobby-invite-btn-20260906'), stage, REF.recharge, { z: 38, pointer: 'auto' });
   stabilizeFooter(room, stage);
 }
 
@@ -341,7 +342,7 @@ function verify() {
     ['标题', q('.room-top-bar')], ['战团', q('.deck-header')], ['卡槽', q('#deck-slots-row')],
     ['VS', q('.room-vs')], ['聊天', q('.exact-room-chat')], ['随机地图', q('.dice-btn')],
     ['技能', q('.skill-btn')], ['换队', q('.team-btn')], ['准备', q('#room-ready-btn')],
-    ['储值', q('.reference-room-recharge')], ['底栏', q('.room-bottom-bar')], ['返回', q('#back-btn')],
+    ['邀请', q('.room-lobby-invite-btn-20260906')], ['底栏', q('.room-bottom-bar')], ['返回', q('#back-btn')],
   ];
   keyRects.forEach(([name, value]) => {
     if (value && outside(value, stageRect, 4)) errors.push(`${name}越出1536参考舞台`);
@@ -354,7 +355,7 @@ function verify() {
     ['技能/换队', q('.skill-btn'), q('.team-btn')],
     ['换队/准备', q('.team-btn'), q('#room-ready-btn')],
     ['随机地图/底栏', q('.dice-btn'), q('.room-bottom-bar')],
-    ['储值/底栏', q('.reference-room-recharge'), q('.room-bottom-bar')],
+    ['邀请/底栏', q('.room-lobby-invite-btn-20260906'), q('.room-bottom-bar')],
   ]) {
     if (overlaps(a, b)) errors.push(`${name}重叠`);
   }

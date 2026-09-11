@@ -60,16 +60,16 @@ export function installGuildWarehouseGridPatch() {
             <h3>我的背包 <span class="muted">${myItems.length}/${BAG_SLOT_COUNT} · 仅可存入非绑定物品</span></h3>
             <div class="economy-item-grid bag-item-grid" id="guild-my-item-grid">${backpackSlots(myItems, 'bag')}</div>
           </div>
-          <div class="economy-grid-panel economy-transfer-panel">
-            <h3 id="guild-transfer-title">物品操作</h3>
-            <div class="economy-transfer-card" id="guild-transfer-card">
-              <div class="empty">从左侧背包选择要存入的物品，或从下方公会仓库选择要取出的物品。</div>
-            </div>
+          <div class="economy-grid-panel">
+            <h3>公会仓库 <span class="muted">${warehouseItems.length}/${BAG_SLOT_COUNT} · 点击格子选择取出</span></h3>
+            <div class="economy-item-grid bag-item-grid" id="guild-storage-grid">${backpackSlots(warehouseItems, 'warehouse')}</div>
           </div>
         </div>
-        <div class="economy-grid-panel">
-          <h3>公会仓库 <span class="muted">${warehouseItems.length}/${BAG_SLOT_COUNT} · 点击格子选择取出</span></h3>
-          <div class="economy-item-grid bag-item-grid" id="guild-storage-grid">${backpackSlots(warehouseItems, 'warehouse')}</div>
+        <div class="economy-grid-panel economy-transfer-panel">
+          <h3 id="guild-transfer-title">物品操作</h3>
+          <div class="economy-transfer-card" id="guild-transfer-card">
+            <div class="empty">从左侧背包选择要存入的物品，或从右侧公会仓库选择要取出的物品。</div>
+          </div>
         </div>
       </section>`;
 

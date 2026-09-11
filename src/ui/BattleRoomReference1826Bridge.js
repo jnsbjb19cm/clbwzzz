@@ -77,14 +77,14 @@ function releaseLegacyRoomGeometry(room) {
   ]);
 }
 
+/**
+ * 2026-09-10：试玩版没有购买入口，战斗准备房间的「钻石储值」按钮已删除。
+ * 该位置改用「邀请玩家」按钮（见 RoomInviteRuntime20260906 + 本文件的 REF.recharge 定位）。
+ * 保留函数名以兼容既有调用点，实际只负责清理旧按钮。
+ */
 function ensureRechargeButton(room) {
-  if (!(room instanceof HTMLElement) || room.querySelector('.reference-room-recharge')) return;
-  const button = document.createElement('button');
-  button.type = 'button';
-  button.className = 'reference-room-recharge';
-  button.setAttribute('aria-label', '钻石储值');
-  button.innerHTML = '<span>钻石储值</span>';
-  room.append(button);
+  if (!(room instanceof HTMLElement)) return;
+  room.querySelectorAll('.reference-room-recharge').forEach((element) => element.remove());
 }
 
 function mapByScene(scene) {

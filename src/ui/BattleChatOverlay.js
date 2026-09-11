@@ -28,6 +28,73 @@ function channelLabel(id) {
   return CHANNELS.find((channel) => channel.id === id)?.label ?? '本局';
 }
 
+/* ---------------------------------------------------------------------------
+   2026-09-10：战斗内发言直接挂在说话人的玩家图标上。
+   气泡里必须带「昵称：」，否则有人可以拿聊天内容伪装成技能/系统提示（骗技能）。
+   --------------------------------------------------------------------------- */
+const BUBBLE_VISIBLE_MS = 7000;
+const BUBBLE_MAX_VISIBLE = 3;
+
+function battleWrapOf(view) {
+  return view?.viewRoot?.querySelector?.('.battle-game-wrap')
+    ?? globalThis.document?.querySelector?.('.battle-game-wrap')
+    ?? null;
+}
+
+function findPlayerStand(view, message = {}) {
+  const wrap = battleWrapOf(view);
+  if (!wrap) return null;
+  const userId = Number(message.userId ?? message.senderId ?? 0);
+  if (Number.isFinite(userId) && userId > 0) {
+    const byId = wrap.querySelector(`.pvp-column-player[data-user-id="${userId}"]`);
+    if (byId) return byId;
+  }
+  const nickname = String(message.nickname ?? '').trim();
+  if (!nickname) return null;
+  return [...wrap.querySelectorAll('.pvp-column-player')]
+    .find((node) => (node.querySelector('span')?.textContent || '').trim() === nickname) ?? null;
+}
+
+function bubbleLayerOf(wrap) {
+  let layer = wrap.querySelector('[data-pvp-chat-bubbles]');
+  if (!layer) {
+    layer = document.createElement('div');
+    layer.className = 'pvp-chat-bubbles';
+    layer.dataset.pvpChatBubbles = 'true';
+    layer.setAttribute('aria-hidden', 'true');
+    wrap.append(layer);
+  }
+  return layer;
+}
+
+export function showBattleChatBubble(view, message = {}) {
+  const text = String(message.text ?? '').trim();
+  if (!text) return false;
+  const nickname = String(message.nickname ?? '').trim() || '玩家';
+  const wrap = battleWrapOf(view);
+  const stand = findPlayerStand(view, message);
+  // 没有对应的玩家图标就不弹，避免出现无归属的气泡。
+  if (!wrap || !stand) return false;
+
+  const layer = bubbleLayerOf(wrap);
+  const wrapRect = wrap.getBoundingClientRect();
+  const rect = stand.getBoundingClientRect();
+
+  const bubble = document.createElement('div');
+  bubble.className = 'pvp-chat-bubble';
+  bubble.innerHTML = `<b>${escapeHtml(nickname)}：</b><span>${escapeHtml(text)}</span>`;
+  bubble.style.left = `${rect.left - wrapRect.left + rect.width / 2}px`;
+  bubble.style.top = `${rect.top - wrapRect.top - 6}px`;
+  layer.append(bubble);
+  while (layer.children.length > BUBBLE_MAX_VISIBLE) layer.firstElementChild?.remove();
+  requestAnimationFrame(() => bubble.classList.add('visible'));
+  setTimeout(() => {
+    bubble.classList.remove('visible');
+    setTimeout(() => bubble.remove(), 280);
+  }, BUBBLE_VISIBLE_MS);
+  return true;
+}
+
 function createState() {
   return {
     active: 'current',
@@ -267,15 +334,18 @@ function mountBattleChatOverlay(view) {
     }
   });
 
-  const onCurrentChat = (message = {}) => {
+  const onCurrentChat = (message = {}, { bubble = true } = {}) => {
     appendMessage(shell, state, 'current', {
       id: message.id,
       nickname: message.nickname || '玩家',
       text: message.text || '',
       spectator: Boolean(message.spectator),
     });
+    // 同一句话同时挂在说话人的玩家图标上（气泡里带昵称，避免被拿去骗技能）。
+    if (bubble) showBattleChatBubble(view, message);
   };
-  const onSkillAnnounced = event => onCurrentChat(event.detail);
+  // 技能播报已有自己的战场表现，只进聊天记录，不再重复弹气泡。
+  const onSkillAnnounced = event => onCurrentChat(event.detail, { bubble: false });
   view.viewRoot?.addEventListener('clbwz:skill-announced', onSkillAnnounced);
   const onLobbyChat = (message = {}) => {
     const channel = ['world', 'guild', 'private'].includes(message.channel) ? message.channel : null;

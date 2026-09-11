@@ -9,7 +9,8 @@ import {
   GAME_W,
   PLAYER_BASE_FRAC,
 } from '../battle/BattleConfig.js';
-import { skillAnimPlayer } from '../battle/SkillAnimPlayer.js';
+import { drawFullScreenSkillFx } from '../battle/SkillAnimPlayer.js';
+
 import { audio } from '../core/AudioManager.js';
 import { getSkillEffect } from '../core/SkillRegistry.js';
 import { BattleView } from './BattleView.js';
@@ -312,27 +313,9 @@ export function installPvpRound2VisualFix() {
     }
 
     for (const fx of directional) {
-      const progress = Math.max(0, Math.min(1, finite(fx.t) / Math.max(0.001, finite(fx.duration, 1))));
-      const remain = 1 - progress;
-      const alpha = fx.t < 0.05 ? fx.t / 0.05 : Math.min(1, remain / 0.15);
-      ctx.save();
-      if (fx.pvpDirection < 0) {
-        ctx.translate(FIELD_W, 0);
-        ctx.scale(-1, 1);
-      }
-      // 全屏技能从第一帧起覆盖完整战场；方向只负责对手视角的水平镜像。
-      skillAnimPlayer.drawCover(
-        ctx,
-        fx.skillId,
-        0,
-        0,
-        FIELD_W,
-        FIELD_H,
-        fx.t,
-        alpha * 0.92,
-        fx.loop === true,
-      );
-      ctx.restore();
+      const duration = Math.max(0.001, finite(fx.duration, 1));
+      // 统一入口：自然下落/扫入 + 镜像 + 重复播放 + 尾段硬切。
+      drawFullScreenSkillFx(ctx, fx, { left: 0, top: 0, width: FIELD_W, height: FIELD_H }, fx.t, duration);
     }
   };
 

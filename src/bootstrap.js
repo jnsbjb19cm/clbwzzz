@@ -31,6 +31,7 @@ import { installBattleUserRegressionFix20260907 } from './ui/BattleUserRegressio
 import { installDeckInventoryAuthorityFix20260907 } from './ui/DeckInventoryAuthorityFix20260907.js';
 import { installRoomDeckRefreshRegressionFix20260907 } from './ui/RoomDeckRefreshRegressionFix20260907.js';
 import { installRoomBattleDeckRuntimeFix20260908 } from './ui/RoomBattleDeckRuntimeFix20260908.js';
+import { installRoomChatMerge20260910 } from './ui/RoomChatMerge20260910.js';
 import { installCardInventoryRemotePatch20260906 } from './core/CardInventoryRemotePatch20260906.js';
 import { authStore } from './core/AuthStore.js';
 
@@ -100,4 +101,7 @@ void import('./main.js').then(() => {
   installBattleLootVariety20260908();
   installBattleQualityHaloFix20260908();
   installBattleLootMaterialIconFix20260908();
+  // 房间聊天合并必须最后装：它要包住 LobbyChatPatch / RoomChatChannelFix 的
+  // appendChat、bindRoomChat、enterRoom/exitRoom。
+  installRoomChatMerge20260910();
 });

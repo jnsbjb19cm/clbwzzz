@@ -1,15 +1,22 @@
+/* 2026-09-10：钻石储值入口删除后，邀请按钮占用原来储值的位置（尺寸由参考层内联给定）。 */
 .game-room.room-exact .room-lobby-invite-btn-20260906 {
   position: absolute;
   top: 1.05em;
   right: 9.2em;
-  z-index: 32;
+  z-index: 38;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   min-width: 8.8em;
-  padding: .42em .9em;
-  border: .12em solid #755019;
+  padding: .4em .8em;
+  border: .12em solid #6b4a12;
   border-radius: .55em;
   background: linear-gradient(180deg, #ffe77f, #d59d2b);
-  color: #402a05;
-  font-weight: 700;
+  color: #3d2804;
+  font-size: 1.05em;
+  font-weight: 800;
+  line-height: 1.15;
+  text-align: center;
   text-shadow: 0 1px rgba(255,255,255,.45);
   box-shadow: 0 .14em .3em rgba(0,0,0,.34), inset 0 .08em rgba(255,255,255,.5);
   cursor: pointer;
@@ -19,13 +26,18 @@
   filter: brightness(1.07);
 }
 
+/* 2026-09-10：邀请面板改为屏幕居中显示，不再贴在右上角。 */
 .room-invite-panel-20260906 {
-  position: absolute;
-  top: 4.3em;
-  right: 2.1em;
-  z-index: 90;
+  position: fixed;
+  left: 50%;
+  top: 50%;
+  right: auto;
+  bottom: auto;
+  transform: translate(-50%, -50%);
+  z-index: 200;
   width: 22em;
-  max-height: 30em;
+  max-width: calc(100vw - 2em);
+  max-height: min(30em, 80vh);
   overflow: hidden;
   border: .16em solid #7b5a24;
   border-radius: .7em;
@@ -122,3 +134,11 @@
 .room-invite-reject-btn { border: .1em solid #75473f; background: #70423b; color: #fff2ed; }
 .room-invite-accept-btn { border: .1em solid #55752a; background: linear-gradient(180deg, #b9da5b, #6f9f32); color: #20310b; }
 .room-invite-prompt-actions button:disabled { opacity: .6; cursor: default; }
+
+/* 2026-09-10：拒绝会带来 5 分钟免打扰，提示单独占一行。 */
+.room-invite-prompt-20260906 .room-invite-prompt-snooze {
+  display: block;
+  margin-top: .35em;
+  color: #ffd977;
+  font-weight: 700;
+}

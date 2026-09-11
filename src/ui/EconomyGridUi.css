@@ -185,3 +185,55 @@
   .economy-item-grid { max-height: 330px; }
   .economy-market-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
+
+/* ==========================================================================
+   2026-09-10：公会仓库 / 拍卖行改成左右两栏
+   左栏 = 我的背包格子，右栏 = 公会仓库格子 / 拍卖行的上架与在售面板；
+   「正在拍卖」「我的上架」的卡片在右栏里竖排（单列）。
+   ========================================================================== */
+@media (min-width: 901px) {
+  .economy-grid-workbench {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    align-items: start;
+  }
+}
+
+.economy-side-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  min-width: 0;
+}
+
+.economy-side-stack .economy-market-grid {
+  grid-template-columns: minmax(0, 1fr);
+  max-height: 250px;
+  overflow-y: auto;
+  scrollbar-gutter: stable;
+}
+
+.economy-side-stack .economy-market-card {
+  min-height: 0;
+  padding: 7px 9px;
+}
+
+.economy-side-stack .economy-market-card .head {
+  min-height: 0;
+}
+
+.economy-side-stack .economy-market-card button {
+  width: auto;
+  min-width: 96px;
+  margin-top: 6px;
+}
+
+/* 公会仓库：操作面板挪到两栏下方整行 */
+.guild-warehouse-grid-shell .economy-transfer-panel {
+  margin-top: 16px;
+}
+
+@media (max-width: 900px) {
+  .economy-side-stack .economy-market-grid {
+    max-height: 220px;
+  }
+}

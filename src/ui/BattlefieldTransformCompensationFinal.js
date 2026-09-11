@@ -192,12 +192,27 @@ function alignPortalColumn(column, side) {
   }
 }
 
+/**
+ * PVP/BOSS 由 `.pvp-authority-column` 独占侧柱层。
+ * 视口门户柱会拿同一张柱图按 clamp(170px,11.5vw,280px) + background-size:100% 100% 再画一遍，
+ * 相当于把 766×1536 的冰川左柱横向压扁约一半（内联 display:block !important 还盖过权威层的隐藏），
+ * 于是冰柱背后会透出一根歪的影子。权威侧柱存在时不再创建门户柱。
+ */
+function authorityOwnsColumns() {
+  if (typeof document === 'undefined') return false;
+  return Boolean(document.querySelector('.pvp-authority-column'));
+}
+
 function portalAndAlignColumns(view) {
   const wrap = view.viewRoot?.querySelector?.('.battle-game-wrap')
     ?? document.querySelector('.battle-game-wrap');
   if (!wrap) return;
 
   removePortalColumns(view);
+  if (authorityOwnsColumns()) {
+    removeLateLegacyColumns();
+    return;
+  }
 
   const left = createPortalColumn(wrap.querySelector('.bg-layer-left-column'), 'left');
   const right = createPortalColumn(wrap.querySelector('.bg-layer-right-column'), 'right');
@@ -216,6 +231,11 @@ function alignExistingPortalColumns(view) {
 }
 
 function scheduleColumnAlignment(view) {
+  if (authorityOwnsColumns()) {
+    removePortalColumns(view);
+    removeLateLegacyColumns();
+    return;
+  }
   alignExistingPortalColumns(view);
   removeLateLegacyColumns();
   requestAnimationFrame(() => {
@@ -231,6 +251,11 @@ function scheduleColumnAlignment(view) {
 function installColumnObserver(view) {
   view.__viewportColumnObserver?.disconnect?.();
   const observer = new MutationObserver(() => {
+    if (authorityOwnsColumns()) {
+      removePortalColumns(view);
+      removeLateLegacyColumns();
+      return;
+    }
     removeLateLegacyColumns();
     alignExistingPortalColumns(view);
   });

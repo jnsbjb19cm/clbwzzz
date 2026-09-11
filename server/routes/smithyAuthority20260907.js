@@ -652,7 +652,7 @@ smithyAuthorityRouter20260907.post('/decompose', async (req, res) => {
         entries.push({ index, slot, card });
       }
 
-      const rewards = { count: entries.length, gem: 0, gemId: null, parchmentId: null, pieceItemId: null, pieceCount: 0 };
+      const rewards = { count: entries.length, gem: 0, gemId: null, parchmentId: null, pieceItemId: null, pieceCount: 0, powderId: null, powderCount: 0 };
       // 多选分解必须从高到低删除，避免前面的删除导致后面的索引位移。
       for (const entry of [...entries].sort((a, b) => b.index - a.index)) {
         const { index, slot, card } = entry;
@@ -668,6 +668,13 @@ smithyAuthorityRouter20260907.post('/decompose', async (req, res) => {
         const pieceCount = piece ? Math.max(1, Math.floor(Number(piece.need_num) / 4)) : 0;
 
         await removeCard(conn, userId, index);
+        // 5 级卡（含更高）分解只给 5 级强化粉，不产 5 级羊皮纸/宝石。
+        if (quality >= 5) {
+          await addItem(conn, userId, 10005, 1, bound);
+          rewards.powderId = 10005;
+          rewards.powderCount += 1;
+          continue;
+        }
         if (material?.gem) {
           await addItem(conn, userId, material.gem, gem, bound);
           rewards.gemId = material.gem;

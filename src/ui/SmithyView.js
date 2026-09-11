@@ -7,10 +7,11 @@ import { CraftStateStore } from '../core/CraftStateStore.js';
 import { CardCraftSystem } from '../systems/CardCraftSystem.js';
 import { CardStrengthenSystem } from '../systems/CardStrengthenSystem.js';
 import { REVERSE_CARD_ID, StarUpgradeSystem } from '../systems/StarUpgradeSystem.js';
-import { CardDecomposeSystem } from '../systems/CardDecomposeSystem.js';
+import { CardDecomposeSystem, LEVEL5_POWDER_ITEM_ID } from '../systems/CardDecomposeSystem.js';
 import { MaterialCombineSystem } from '../systems/MaterialCombineSystem.js';
 import { audio } from '../core/AudioManager.js';
 import { bindClassicChat, classicBroadcastMarkup, classicChatMarkup } from './ClassicCityChrome.js';
+import { itemIconMarkup } from './ItemIcon.js';
 import {
   getCraftMaterialSprite,
   getCraftMaterialSpriteStyle,
@@ -90,6 +91,38 @@ const SMITHY_RULES = Object.freeze({
   ],
 });
 
+/** 铁匠铺里带滚动条的容器；renderBody 重绘后要把滚动位置放回同一批元素上。 */
+const SMITHY_SCROLL_SELECTORS = Object.freeze([
+  '.smithy-card-pick-grid',
+  '.smithy-card-catalogue',
+  '.smithy-decompose-readout',
+  '.starup-card-list',
+  '.smithy-material-chain',
+  '.smithy-material-catalog',
+]);
+
+function captureSmithyScroll(root) {
+  const state = new Map();
+  for (const selector of SMITHY_SCROLL_SELECTORS) {
+    root.querySelectorAll(selector).forEach((element, index) => {
+      if (!element.scrollTop && !element.scrollLeft) return;
+      state.set(`${selector}#${index}`, { top: element.scrollTop, left: element.scrollLeft });
+    });
+  }
+  return state;
+}
+
+function restoreSmithyScroll(root, state) {
+  if (!state?.size) return;
+  for (const [key, value] of state) {
+    const [selector, index] = key.split('#');
+    const element = root.querySelectorAll(selector)[Number(index)];
+    if (!element) continue;
+    if (element.scrollTop !== value.top) element.scrollTop = value.top;
+    if (element.scrollLeft !== value.left) element.scrollLeft = value.left;
+  }
+}
+
 export class SmithyView {
   constructor(db, itemDb, inventory, cardInventory, player, { onPlayerUpdate, onQuestEvent, initialTab, initialCardIndex } = {}) {
     this.db = db;
@@ -117,6 +150,8 @@ export class SmithyView {
     this.highTier = false;
     this.matType = 'gem';
     this.matFromLevel = 1;
+    // 一键分解开关：默认关闭，避免误触批量分解。
+    this.decomposeEnabled = false;
   }
 
   render(root) {
@@ -179,6 +214,9 @@ export class SmithyView {
   }
 
   renderBody(root) {
+    // 重绘会把滚动容器整个换掉；先记住位置，画完再放回去，
+    // 否则在拆解列表里选下方的卡牌会立刻回弹到最顶部。
+    const scrollState = captureSmithyScroll(root);
     const gold = root.querySelector('#smithy-gold');
     const gem = root.querySelector('#smithy-gem');
     if (gold) gold.textContent = Math.max(0, Number(this.player?.gold) || 0);
@@ -190,10 +228,10 @@ export class SmithyView {
     const guide = root.querySelector('.smithy-guide');
     if (guide) {
       const copy = {
-        craft: ['造卡说明', '在右侧选择要制造的卡牌。', '在中央补充羊皮纸、宝石、保护符、幸运草或 DNA。', '调整成功率后点击制造卡牌。'],
-        strengthen: ['强化说明', '在右侧选择要强化的卡牌。', '中央放入强化粉、副卡和保护符。', '四星后失败可能降星，保护符可避免降星。'],
-        material: ['加工说明', '在右侧选择强化粉、羊皮纸或宝石。', '中央放入材料，精炼石可提高加工成功率。'],
-        decompose: ['拆解说明', '从右侧背包中选择卡牌。', '中央会显示可返还的材料；分解后无法撤销。'],
+        craft: ['\u9020\u5361\u8bf4\u660e', '\u5728\u53f3\u4fa7\u9009\u62e9\u8981\u5236\u9020\u7684\u5361\u724c\u3002', '\u5728\u4e2d\u592e\u8865\u5145\u7f8a\u76ae\u7eb8\u3001\u5b9d\u77f3\u3001\u4fdd\u62a4\u7b26\u3001\u5e78\u8fd0\u8349\u6216 DNA\u3002', '\u8c03\u6574\u6210\u529f\u7387\u540e\u70b9\u51fb\u5236\u9020\u5361\u724c\u3002'],
+        strengthen: ['\u5f3a\u5316\u8bf4\u660e', '\u5728\u53f3\u4fa7\u9009\u62e9\u8981\u5f3a\u5316\u7684\u5361\u724c\u3002', '\u4e2d\u592e\u653e\u5165\u5f3a\u5316\u7c89\u3001\u526f\u5361\u548c\u4fdd\u62a4\u7b26\u3002', '\u56db\u661f\u540e\u5931\u8d25\u53ef\u80fd\u964d\u661f\uff0c\u4fdd\u62a4\u7b26\u53ef\u907f\u514d\u964d\u661f\u3002'],
+        material: ['\u52a0\u5de5\u8bf4\u660e', '\u5728\u53f3\u4fa7\u9009\u62e9\u5f3a\u5316\u7c89\u3001\u7f8a\u76ae\u7eb8\u6216\u5b9d\u77f3\u3002', '\u4e2d\u592e\u653e\u5165\u6750\u6599\uff0c\u7cbe\u70bc\u77f3\u53ef\u63d0\u9ad8\u52a0\u5de5\u6210\u529f\u7387\u3002'],
+        decompose: ['\u62c6\u89e3\u8bf4\u660e', '\u4ece\u53f3\u4fa7\u80cc\u5305\u4e2d\u9009\u62e9\u5361\u724c\u3002', '\u4e2d\u592e\u4f1a\u663e\u793a\u53ef\u8fd4\u8fd8\u7684\u6750\u6599\uff1b\u5206\u89e3\u540e\u65e0\u6cd5\u64a4\u9500\u3002'],
       }[this.tab];
       guide.innerHTML = `<h2>${copy[0]}</h2>${copy.slice(1).map((line) => `<p>${line}</p>`).join('')}`;
     }
@@ -202,6 +240,66 @@ export class SmithyView {
     else if (this.tab === 'strengthen') this.renderStrengthen(root, body);
     else if (this.tab === 'decompose') this.renderDecompose(root, body);
     else this.renderMaterial(root, body);
+    restoreSmithyScroll(root, scrollState);
+  }
+
+  /**
+   * 游戏内确认弹窗：替代 window.confirm，避免按下去跳出浏览器网页弹框。
+   * 返回 Promise<boolean>。
+   */
+  confirmDialog(root, message, { title = '\u8bf7\u786e\u8ba4', confirmText = '\u786e\u5b9a', cancelText = '\u53d6\u6d88', danger = true } = {}) {
+    return new Promise((resolve) => {
+      const host = root?.querySelector?.('.classic-smithy-screen') ?? root;
+      if (!host) {
+        resolve(Boolean(globalThis.confirm?.(message)));
+        return;
+      }
+      root.querySelector('.smithy-confirm-dialog')?.remove();
+
+      const dialog = document.createElement('div');
+      dialog.className = 'smithy-confirm-dialog';
+      dialog.setAttribute('role', 'dialog');
+      dialog.setAttribute('aria-modal', 'true');
+      dialog.innerHTML = `
+        <section class="smithy-confirm-card${danger ? ' danger' : ''}">
+          <h3></h3>
+          <p></p>
+          <div class="smithy-confirm-actions">
+            <button type="button" class="bag-action" data-confirm-cancel></button>
+            <button type="button" class="bag-action danger" data-confirm-ok></button>
+          </div>
+        </section>`;
+      dialog.querySelector('h3').textContent = title;
+      dialog.querySelector('p').textContent = message;
+      dialog.querySelector('[data-confirm-cancel]').textContent = cancelText;
+      dialog.querySelector('[data-confirm-ok]').textContent = confirmText;
+
+      const onKey = (event) => {
+        if (event.key === 'Escape') {
+          event.preventDefault();
+          event.stopPropagation();
+          finish(false);
+        } else if (event.key === 'Enter') {
+          event.preventDefault();
+          event.stopPropagation();
+          finish(true);
+        }
+      };
+      const finish = (value) => {
+        document.removeEventListener('keydown', onKey, true);
+        dialog.remove();
+        resolve(value);
+      };
+
+      dialog.querySelector('[data-confirm-cancel]').addEventListener('click', () => finish(false));
+      dialog.querySelector('[data-confirm-ok]').addEventListener('click', () => finish(true));
+      dialog.addEventListener('click', (event) => {
+        if (event.target === dialog) finish(false);
+      });
+      document.addEventListener('keydown', onKey, true);
+      host.append(dialog);
+      dialog.querySelector('[data-confirm-cancel]')?.focus();
+    });
   }
 
   /** 升星系统 - 主卡(右) + 副卡(中) + 保护符选择 */
@@ -494,6 +592,7 @@ export class SmithyView {
       const slot = slots[index];
       if (!slot || this.db.getById(slot.cardId)?.isExperienceCard) this.decomposeIndices.delete(index);
     }
+    if (typeof this.decomposeEnabled !== 'boolean') this.decomposeEnabled = false;
     const selected = [...this.decomposeIndices].sort((a, b) => a - b);
     const previews = selected
       .map((index) => {
@@ -502,9 +601,65 @@ export class SmithyView {
         return slot && card ? { index, slot, card, pv: this.decomposeSys.preview(slot, card) } : null;
       })
       .filter(Boolean);
-    const totalGem = previews.reduce((sum, entry) => sum + (entry.pv?.gem ?? 0), 0);
-    const totalPiece = previews.reduce((sum, entry) => sum + (entry.pv?.pieceCount ?? 0), 0);
-    const maxParchment = previews.reduce((max, entry) => Math.max(max, entry.pv?.parchmentChance ?? 0), 0);
+    // 品质 5 及以上的卡只返还 5 级强化粉，其余卡仍按宝石/羊皮纸/碎片结算。
+    const substanceName = (itemId) => this.itemDb?.getById?.(itemId)?.name ?? `${itemId}`;
+    // 合计按材料 ID 归并（不同等级宝石/羊皮纸/碎片分开列），羊皮纸只标注「概率」。
+    const gemTotals = new Map();
+    const pieceTotals = new Map();
+    const parchmentIds = new Set();
+    let powderTotal = 0;
+    for (const { pv } of previews) {
+      if (!pv) continue;
+      if (pv.powderId) powderTotal += Number(pv.powderCount) || 0;
+      if (pv.gemId && Number(pv.gem) > 0) gemTotals.set(pv.gemId, (gemTotals.get(pv.gemId) ?? 0) + Number(pv.gem));
+      if (pv.pieceItemId && Number(pv.pieceCount) > 0) {
+        pieceTotals.set(pv.pieceItemId, (pieceTotals.get(pv.pieceItemId) ?? 0) + Number(pv.pieceCount));
+      }
+      if (pv.parchmentId && Number(pv.parchmentChance) > 0) parchmentIds.add(pv.parchmentId);
+    }
+    const totalCells = [
+      ...[...gemTotals].map(([itemId, count]) => ({ itemId, count })),
+      ...[...pieceTotals].map(([itemId, count]) => ({ itemId, count })),
+      ...[...parchmentIds].map((itemId) => ({ itemId, count: null })),
+      ...(powderTotal > 0 ? [{ itemId: LEVEL5_POWDER_ITEM_ID, count: powderTotal }] : []),
+    ];
+
+    // 逐张卡告知：卡牌图 + 强化名称（品质名+卡名）+ 星级 + 该卡可返还的材料图片。
+    const rewardCell = (itemId, count, { chance = null } = {}) => {
+      if (!itemId) return '';
+      const name = substanceName(itemId);
+      const percent = chance != null ? ` · ${(chance * 100).toFixed(0)}%` : '';
+      const amount = count == null ? '概率' : `×${count}`;
+      return `<span class="smithy-decompose-reward" title="${name}${percent}">${itemIconMarkup(itemId, 32)}<em>${amount}${percent}</em></span>`;
+    };
+    const cardRows = previews
+      .map(({ slot, card, pv }) => {
+        const quality = resolveCraftQuality(slot.craftQuality);
+        const label = formatCraftCardName(slot.craftQuality, card.name);
+        const star = Math.max(0, Number(slot.star ?? slot.strengthLv) || 0);
+        const rewards = pv?.powderId
+          ? rewardCell(pv.powderId, pv.powderCount)
+          : [
+            rewardCell(pv?.gemId, pv?.gem ?? 0),
+            rewardCell(pv?.parchmentId, null, { chance: pv?.parchmentChance ?? 0 }),
+            rewardCell(pv?.pieceItemId, pv?.pieceCount ?? 0),
+          ].filter(Boolean).join('');
+        return `
+          <li class="smithy-decompose-row" style="--quality:${quality.color}">
+            <img class="smithy-decompose-thumb" src="/sprites/cards/${card.spriteRes}.png" alt="" />
+            <div class="smithy-decompose-meta">
+              <b>${label}</b>
+              <small>${star}星 · 卡牌品质 ${Math.max(1, Math.min(5, Number(card.quality) || 1))} 级</small>
+            </div>
+            <div class="smithy-decompose-rewards">${rewards || '<span class="smithy-decompose-none">无返还</span>'}</div>
+          </li>`;
+      })
+      .join('');
+    const totalLine = totalCells.length
+      ? `<div class="smithy-decompose-total"><small>合计返还</small>${totalCells.map((row) => rewardCell(row.itemId, row.count)).join('')}</div>`
+      : '';
+    const readout = `<ul class="smithy-decompose-list">${cardRows}</ul>${totalLine}`;
+    const locked = !this.decomposeEnabled;
 
     body.innerHTML = `
       <div class="smithy-craft-layout smithy-decompose-layout">
@@ -525,14 +680,22 @@ export class SmithyView {
           </div>
         </section>
         <aside class="smithy-panel smithy-craft-side smithy-decompose-side">
-          ${previews.length ? `
-            <h2>已选 ${previews.length} 张卡</h2>
-            <p>返还宝石 x${totalGem}</p>
-            <p>羊皮纸概率最高 ${(maxParchment * 100).toFixed(0)}%</p>
-            ${totalPiece > 0 ? `<p>碎片 x${totalPiece}</p>` : ''}
-            <button type="button" id="do-decompose" class="bag-action danger">一键分解(${previews.length})</button>
-            <button type="button" id="do-decompose-clear" class="bag-action">清空选择</button>
-          ` : '<p>点击左侧卡牌，可多选后一键分解</p>'}
+          <div class="smithy-decompose-readout">
+            ${previews.length
+              ? `<h2>已选 ${previews.length} 张卡</h2>${readout}`
+              : '<p>点击左侧卡牌，可多选后一键分解</p>'}
+          </div>
+          <div class="smithy-decompose-actions">
+            <label class="smithy-decompose-switch" for="toggle-decompose-enabled">
+              <input type="checkbox" id="toggle-decompose-enabled"${this.decomposeEnabled ? ' checked' : ''} />
+              <span>启用一键分解</span>
+            </label>
+            <p class="smithy-decompose-hint">${locked ? '开关默认关闭；开启后才能批量分解。' : '已开启：确认后会一次分解所选卡牌。'}</p>
+            <div class="smithy-decompose-buttons">
+              <button type="button" id="do-decompose" class="bag-action danger${locked ? ' is-locked' : ''}" aria-disabled="${locked ? 'true' : 'false'}">一键分解(${previews.length})</button>
+              <button type="button" id="do-decompose-clear" class="bag-action">清空选择</button>
+            </div>
+          </div>
         </aside>
       </div>
     `;
@@ -547,17 +710,31 @@ export class SmithyView {
         this.renderBody(root);
       });
     });
+    body.querySelector('#toggle-decompose-enabled')?.addEventListener('change', (event) => {
+      this.decomposeEnabled = Boolean(event.currentTarget.checked);
+      audio.playSfx('click');
+      this.renderBody(root);
+    });
     body.querySelector('#do-decompose-clear')?.addEventListener('click', () => {
       this.decomposeIndices.clear();
       this.cardIndex = -1;
       this.renderBody(root);
     });
-    body.querySelector('#do-decompose')?.addEventListener('click', () => {
+    body.querySelector('#do-decompose')?.addEventListener('click', async () => {
+      if (!this.decomposeEnabled) {
+        this.toast(root, '\u8bf7\u5148\u5f00\u542f\u300c\u4e00\u952e\u5206\u89e3\u300d\u5f00\u5173');
+        return;
+      }
       if (!previews.length) return;
       const confirmText = previews.length === 1
         ? `确定分解「${formatCraftCardName(previews[0].slot.craftQuality, previews[0].card.name)}」？`
         : `确定分解选中的 ${previews.length} 张卡牌？`;
-      if (!confirm(confirmText)) return;
+      // 游戏内确认弹窗，不再用浏览器 confirm。
+      const ok = await this.confirmDialog(root, `${confirmText}\n分解后无法撤销。`, {
+        title: '确认分解',
+        confirmText: '分解',
+      });
+      if (!ok) return;
       let count = 0;
       for (const entry of [...previews].sort((a, b) => b.index - a.index)) {
         const res = this.decomposeSys.decompose(this.inventory, this.cardInventory, entry.index);

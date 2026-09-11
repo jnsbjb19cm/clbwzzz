@@ -13,6 +13,7 @@ export class PlaceholderView {
       talent: '天赋 & 技能',
       hall: '名人堂',
       auction: '拍卖行',
+      mail: '邮件',
     };
     root.innerHTML = `
       <div class="placeholder-page">

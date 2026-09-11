@@ -1,7 +1,7 @@
 import { BattleRenderer } from '../battle/BattleRenderer.js';
 import { BattleView } from './BattleView.js';
 import { SpriteAtlas } from '../core/SpriteAtlas.js';
-import { skillAnimPlayer } from '../battle/SkillAnimPlayer.js';
+import { drawFullScreenSkillFx, skillAnimPlayer } from '../battle/SkillAnimPlayer.js';
 import skillPosData from '../data/skillPosition.json' with { type: 'json' };
 
 const PATCH_FLAG = Symbol.for('clbwzzz.battlefieldVisibleGridMapFinal');
@@ -14,6 +14,14 @@ const SKILL_POSITION = new Map();
 for (const row of skillPosData ?? []) {
   if (row?.position != null) SKILL_POSITION.set(Number(row.cardId), Number(row.position));
 }
+
+/*
+ * 2026-09-10 重要：本文件的 drawSkillFx 才是线上真正生效的实现。
+ * BattlefieldRuntimeStability20260810.installFinalRenderer() 会先重新装一次本文件、
+ * 再把它捕获成自己的 originalSkillFx，因此 BattleSkillPositionFinal 里那套全屏逻辑是被绕过的。
+ * 全屏技能（陨石雨自然下落 / 暴风雪扫入 / 重复播放 / 尾段硬切）统一走
+ * SkillAnimPlayer.drawFullScreenSkillFx，避免再出现「改了不生效」。
+ */
 
 function finite(value, fallback = 0) {
   const n = Number(value);
@@ -430,7 +438,8 @@ export function installBattlefieldVisibleGridMapFinal() {
 
       if (fullScreen) {
         const viewport = viewportFieldBounds(this);
-        skillAnimPlayer.drawCover(ctx, skillId, viewport.left, viewport.top, viewport.width, viewport.height, elapsed, alpha * 0.92, effect.loop === true);
+        // 统一入口：自然下落 / 扫入、镜像、重复播放、尾段硬切都在这里处理。
+        drawFullScreenSkillFx(ctx, effect, viewport, elapsed, duration);
         this._runtimeViewportCovers.push({ skillId, ...viewport });
         this._runtimeCoordinateSkillAudit.push({ skillId, positionType: positionType ?? null, fullScreen: true, targetLane: target.lane, targetCol: target.col, drawX: targetPoint.x, drawY: targetPoint.y, cellX: targetPoint.x, cellY: targetPoint.y, logicalTargetX: targetPoint.x, logicalTargetY: targetPoint.y });
         continue;

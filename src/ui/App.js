@@ -25,21 +25,36 @@ import { RoomView } from './RoomView.js';
 import { LoginView } from './LoginView.js';
 import { getBattleRewards, grantPlayerExp } from '../core/PlayerProgression.js';
 
+// 底部导航图标：只有和 resources/img 新图一一对应的按钮才用图片，
+// 其余按钮继续沿用 scene.png 图集（保持原有按钮与视觉不变）。
+// 用字面量 URL 才能让 Vite 在打包时收集资源。
+const NAV_ICONS = Object.freeze({
+  shop: new URL('../../resources/img/shop.png', import.meta.url).href,
+  bag: new URL('../../resources/img/backpack.png', import.meta.url).href,
+  smithy: new URL('../../resources/img/smithy.png', import.meta.url).href,
+  mail: new URL('../../resources/img/mail.png', import.meta.url).href,
+  gallery: new URL('../../resources/img/handbook.png', import.meta.url).href,
+  worldmap: new URL('../../resources/img/wildadventure.png', import.meta.url).href,
+  settings: new URL('../../resources/img/set.png', import.meta.url).href,
+  main: new URL('../../resources/img/back.png', import.meta.url).href,
+});
+
 const BOTTOM_NAV = [
-  { id: 'shop', label: '\u5546\u57CE' },
-  { id: 'bag', label: '\u80CC\u5305' },
+  { id: 'shop', label: '\u5546\u57CE', icon: NAV_ICONS.shop },
+  { id: 'bag', label: '\u80CC\u5305', icon: NAV_ICONS.bag },
   { id: 'quest', label: '\u4EFB\u52A1' },
-  { id: 'smithy', label: '\u6253\u9020' },
-  { id: 'gallery', label: '\u56FE\u9274' },
+  { id: 'smithy', label: '\u6253\u9020', icon: NAV_ICONS.smithy },
+  { id: 'mail', label: '\u90AE\u4EF6', icon: NAV_ICONS.mail },
+  { id: 'gallery', label: '\u56FE\u9274', icon: NAV_ICONS.gallery },
   { id: 'social', label: '\u597D\u53CB' },
   { id: 'battle', label: '\u5927\u5385' },
-  { id: 'worldmap', label: '\u66F4\u591A' },
-  { id: 'settings', label: '\u8BBE\u7F6E' },
-  { id: 'main', label: '\u8FD4\u56DE' },
+  { id: 'worldmap', label: '\u66F4\u591A', icon: NAV_ICONS.worldmap },
+  { id: 'settings', label: '\u8BBE\u7F6E', icon: NAV_ICONS.settings },
+  { id: 'main', label: '\u8FD4\u56DE', icon: NAV_ICONS.main },
 ];                                                   /*UI索引值  */
 
 const PLACEHOLDER_MODULES = new Set(['guild', 'social', 'hall', 'auction']);
-const CITY_OVERLAY_ROUTES = new Set(['gallery', 'guild', 'quest', 'worldmap', 'social', 'hall', 'auction', 'settings', 'bag', 'shop']);
+const CITY_OVERLAY_ROUTES = new Set(['gallery', 'guild', 'quest', 'worldmap', 'social', 'hall', 'auction', 'settings', 'bag', 'shop', 'mail']);
 
 const CITY_BGM_ROUTES = new Set([
   'main',
@@ -52,6 +67,7 @@ const CITY_BGM_ROUTES = new Set([
   'quest',
   'worldmap',
   'social',
+  'mail',
 ]);
 
 export class App {
@@ -144,7 +160,7 @@ export class App {
     el.innerHTML = `
       <div id="view-root" class="view-root"></div>
       <div id="global-notice" class="global-notice hidden"><div><h2 id="global-notice-title"></h2><p id="global-notice-desc"></p><button type="button" id="global-notice-close">\u786E\u5B9A</button></div></div>
-      <nav class="bottom-nav">${BOTTOM_NAV.map((n) => `<button type="button" class="bottom-nav-btn" data-route="${n.id}">${n.label}</button>`).join('')}
+      <nav class="bottom-nav">${BOTTOM_NAV.map((n) => `<button type="button" class="bottom-nav-btn${n.icon ? ' has-icon-image' : ''}" data-route="${n.id}" title="${n.label}">${n.icon ? `<img class="bottom-nav-icon" src="${n.icon}" alt="" aria-hidden="true" draggable="false" />` : ''}<span>${n.label}</span></button>`).join('')}
         <button type="button" class="bottom-nav-btn bottom-nav-logout" data-route="__logout" title="切换账号">登出</button>
       </nav>
     `;
@@ -364,7 +380,8 @@ export class App {
       city.render(renderRoot);
       this.updateResourceDisplay('--', '--');
     } else if (route === 'gallery') {
-      const gallery = new CardGallery(this.db);
+      // 传入背包，图鉴才能标出「已拥有 / 未获得」（设置里可切换未获得卡是否显示剪影）。
+      const gallery = new CardGallery(this.db, { inventory: this.cardInventory });
       gallery.render(renderRoot);
       this.updateResourceDisplay('--', '--');
     } else if (route === 'bag') {
@@ -497,6 +514,10 @@ export class App {
     } else if (route === 'settings') {
       const settings = new SettingsView();
       settings.render(renderRoot);
+      this.updateResourceDisplay('--', '--');
+    } else if (route === 'mail') {
+      // 邮件系统尚未实现：先用占位界面，占住主城导航里的入口。
+      new PlaceholderView('mail').render(renderRoot);
       this.updateResourceDisplay('--', '--');
     } else if (PLACEHOLDER_MODULES.has(route)) {
       new PlaceholderView(route).render(renderRoot);

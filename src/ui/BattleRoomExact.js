@@ -70,11 +70,23 @@ function installChat(room) {
   const chat = document.createElement('section');
   chat.className = 'exact-room-chat';
   chat.setAttribute('aria-label', '房间聊天');
+  // 2026-09-10：房间聊天合并了大厅聊天的频道，并额外提供私聊对象选择；
+  // 结构对齐游戏大厅聊天（标题行 + 频道胶囊 + 日志 + 输入行），便于统一配色。
   chat.innerHTML = `
-    <div class="exact-room-chat-tabs" role="tablist" aria-label="聊天频道">
-      <button type="button" class="active" data-channel="当前">当前</button>
-      <button type="button" data-channel="队伍">队伍</button>
-      <button type="button" data-channel="系统">系统</button>
+    <div class="exact-room-chat-head">
+      <b class="exact-room-chat-title">聊天</b>
+      <div class="exact-room-chat-tabs" role="tablist" aria-label="聊天频道">
+        <button type="button" class="active" data-channel="当前" data-merge-channel="current">当前</button>
+        <button type="button" data-channel="队伍" data-merge-channel="team">队伍</button>
+        <button type="button" data-channel="系统" data-merge-channel="system">系统</button>
+        <button type="button" data-channel="世界" data-merge-channel="world">世界</button>
+        <button type="button" data-channel="公会" data-merge-channel="guild">公会</button>
+        <button type="button" data-channel="私聊" data-merge-channel="private">私聊</button>
+      </div>
+    </div>
+    <div class="exact-room-chat-private hidden">
+      <span>私聊对象</span>
+      <select class="exact-room-chat-private-select"><option value="">选择好友…</option></select>
     </div>
     <div class="exact-room-chat-log" aria-live="polite"></div>
     <form class="exact-room-chat-form">

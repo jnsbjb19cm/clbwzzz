@@ -20,7 +20,7 @@ import {
 } from '../core/constants.js';
 import { SpriteAtlas, calcFootAnchor } from '../core/SpriteAtlas.js';
 import { isEffectivelyFlying, unitAnimPlayer } from './UnitAnimPlayer.js';
-import { skillAnimPlayer } from './SkillAnimPlayer.js';
+import { drawFullScreenSkillFx, skillAnimPlayer } from './SkillAnimPlayer.js';
 import { guardBattleRuntime } from './BattleRuntimeDiagnostics.js';
 import effectAtlas from '../data/atlas/preload_effect.json' with { type: 'json' };
 import skillPosData from '../data/skillPosition.json' with { type: 'json' };
@@ -1306,9 +1306,9 @@ export class BattleRenderer {
           drawFirebirdFx(ctx, fx, alpha);
           continue;
         }
-        const drawn = skillAnimPlayer.drawCover(
-          ctx, fx.skillId, 0, 0, FIELD_W, FIELD_H, fx.t,
-          alpha * 0.92, fx.loop === true,
+        // 统一入口：自然下落/扫入 + 镜像 + 重复播放 + 尾段硬切。
+        const drawn = drawFullScreenSkillFx(
+          ctx, fx, { left: 0, top: 0, width: FIELD_W, height: FIELD_H }, fx.t, fx.duration,
         );
         // 技能动画资源缺失(fetch 404)时：canvas 旋转法阵 fallback（画在蘑菇位置，完整显示不截断）
         if (!drawn) {

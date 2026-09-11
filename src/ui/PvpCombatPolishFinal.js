@@ -6,7 +6,8 @@ import {
   FIELD_W,
 } from '../battle/BattleConfig.js';
 import { unitAnimPlayer } from '../battle/UnitAnimPlayer.js';
-import { skillAnimPlayer } from '../battle/SkillAnimPlayer.js';
+import { drawFullScreenSkillFx } from '../battle/SkillAnimPlayer.js';
+import { getSkillVisualDuration } from '../battle/SkillAnimationConfig.js';
 import { audio } from '../core/AudioManager.js';
 import { getSkillEffect } from '../core/SkillRegistry.js';
 import { BattleView } from './BattleView.js';
@@ -268,7 +269,16 @@ function playVisualSkillEvent(view, event) {
   const latest = effects.at(-1);
   if (latest && Number(latest.skillId) === skillId) {
     latest.t = Math.max(finite(latest.t), age);
-    if (eventDuration > 0) latest.duration = Math.min(finite(latest.duration, eventDuration), eventDuration);
+    // 重复播放类技能（陨石雨=2 遍）把遍数带到特效上，渲染端据此在同一段时间里切段播放。
+    latest.repeatCount = Math.max(
+      1,
+      Math.floor(Number(event.repeatCount) || 0) || Math.floor(Number(latest.repeatCount) || 0) || 1,
+    );
+    // 同步权威事件时长，但不能把「必须播满 N 遍」的视觉时长截短。
+    const minimumVisual = latest.repeatCount > 1 ? getSkillVisualDuration(skillId, 0.9) : 0;
+    if (eventDuration > 0) {
+      latest.duration = Math.max(minimumVisual, Math.min(finite(latest.duration, eventDuration), eventDuration));
+    }
   }
 }
 
@@ -357,32 +367,9 @@ export function installPvpCombatPolishFinal() {
     }
 
     for (const fx of directional) {
-      const progress = Math.max(0, Math.min(1, finite(fx.t) / Math.max(0.001, finite(fx.duration, 1))));
-      const remain = 1 - progress;
-      const alpha = fx.t < 0.05 ? fx.t / 0.05 : Math.min(1, remain / 0.15);
-      const reveal = Math.min(1, 0.16 + progress * 1.4);
-      const width = FIELD_W * reveal;
-      ctx.save();
-      ctx.beginPath();
-      if (fx.pvpDirection < 0) ctx.rect(FIELD_W - width, 0, width, FIELD_H);
-      else ctx.rect(0, 0, width, FIELD_H);
-      ctx.clip();
-      if (fx.pvpDirection < 0) {
-        ctx.translate(FIELD_W, 0);
-        ctx.scale(-1, 1);
-      }
-      skillAnimPlayer.drawCover(
-        ctx,
-        fx.skillId,
-        0,
-        0,
-        FIELD_W,
-        FIELD_H,
-        fx.t,
-        alpha * 0.92,
-        fx.loop === true,
-      );
-      ctx.restore();
+      const duration = Math.max(0.001, finite(fx.duration, 1));
+      // 统一入口：自然下落/扫入 + 镜像 + 重复播放 + 尾段硬切。
+      drawFullScreenSkillFx(ctx, fx, { left: 0, top: 0, width: FIELD_W, height: FIELD_H }, fx.t, duration);
     }
   };
 

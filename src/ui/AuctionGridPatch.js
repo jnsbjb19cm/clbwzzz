@@ -46,20 +46,22 @@ export function installAuctionGridPatch() {
             <h3>我的背包 <span class="muted" id="auction-bag-count">0/${BAG_SLOT_COUNT} · 仅显示可交易的非绑定物品</span></h3>
             <div id="auction-grid-bag" class="economy-item-grid bag-item-grid"></div>
           </div>
-          <div class="economy-grid-panel economy-transfer-panel">
-            <h3>待上架物品</h3>
-            <div id="auction-grid-target" class="economy-transfer-card">
-              <div class="empty">从左侧背包点击一个物品，放到这里设置数量与价格。</div>
+          <div class="economy-side-stack">
+            <div class="economy-grid-panel economy-transfer-panel">
+              <h3>待上架物品</h3>
+              <div id="auction-grid-target" class="economy-transfer-card">
+                <div class="empty">从左侧背包点击一个物品，放到这里设置数量与价格。</div>
+              </div>
+            </div>
+            <div class="economy-grid-panel">
+              <h3>正在拍卖</h3>
+              <div id="auction-grid-market" class="economy-market-grid backpack-market-grid"></div>
+            </div>
+            <div class="economy-grid-panel">
+              <h3>我的上架</h3>
+              <div id="auction-grid-mine" class="economy-market-grid backpack-market-grid"></div>
             </div>
           </div>
-        </div>
-        <div class="economy-grid-panel" style="margin-bottom:14px">
-          <h3>正在拍卖</h3>
-          <div id="auction-grid-market" class="economy-market-grid backpack-market-grid"></div>
-        </div>
-        <div class="economy-grid-panel">
-          <h3>我的上架</h3>
-          <div id="auction-grid-mine" class="economy-market-grid backpack-market-grid"></div>
         </div>
       </section>`;
     await this.load();

@@ -2896,3 +2896,350 @@ body.main-city-nav-active .bottom-nav .bottom-nav-logout {
 .classic-talent-screen .talent-hover-card small {
   color: #b8c2b0;
 }
+
+/* ==========================================================================
+   2026-09-10：大厅 / 游戏大厅底部图标改为 resources/img 独立图片
+   1) 只有能对上按钮的图标才换图（其余按钮保持原图集不变）；
+   2) 金色圆底盘保留，只把底盘上的图集雪碧图换成新图片；
+   3) 去掉底部深色渐变底条与图标下方黑色投影。
+   ========================================================================== */
+
+/* --- 主城右下角导航 --- */
+body.main-city-nav-active .bottom-nav.main-city-corner-nav {
+  /* 原来是一条 rgba(13,38,33,.72) 的深色渐变底条，去掉后只剩图标本身。 */
+  background: transparent !important;
+}
+
+body.main-city-nav-active .bottom-nav.main-city-corner-nav .bottom-nav-btn::before {
+  /* 只保留内高光，去掉图标下方的黑色投影。 */
+  box-shadow: inset 0 1px #fff0a2 !important;
+}
+
+body.main-city-nav-active .bottom-nav.main-city-corner-nav .bottom-nav-btn.has-icon-image::before {
+  /* 让出底盘，图标改由 <img class="bottom-nav-icon"> 绘制。 */
+  background-image: none !important;
+}
+
+body.main-city-nav-active .bottom-nav.main-city-corner-nav .bottom-nav-btn > img.bottom-nav-icon {
+  position: absolute !important;
+  left: 8px;
+  top: 2px;
+  width: 54px;
+  height: 50px;
+  object-fit: contain;
+  object-position: center;
+  pointer-events: none;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+
+/* 主城右下角导航：返回按钮不再用 ↩ 字符，改用 back.png。 */
+body.main-city-nav-active .bottom-nav-btn[data-route='main']::before {
+  content: '' !important;
+  font-size: 0 !important;
+  line-height: 0 !important;
+}
+
+/* --- 游戏大厅右下角菜单 --- */
+/* 菜单盒子比按钮总宽大，改成右对齐，让图标贴住右下角。 */
+.classic-game-hall .lobby-menu {
+  justify-content: flex-end !important;
+}
+
+.classic-game-hall .lobby-menu-btn.has-icon-image::before {
+  background-image: none !important;
+}
+
+.classic-game-hall .lobby-menu-btn > img.lobby-menu-icon {
+  position: absolute !important;
+  left: 4px;
+  top: 1px;
+  width: 51px;
+  height: 43px;
+  object-fit: contain;
+  object-position: center;
+  pointer-events: none;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+
+@media (max-width: 900px), (max-height: 650px) {
+  body.main-city-nav-active .bottom-nav.main-city-corner-nav .bottom-nav-btn > img.bottom-nav-icon {
+    left: 5px;
+    width: 44px;
+    height: 42px;
+  }
+}
+
+/* ==========================================================================
+   2026-09-10：铁匠铺拆解页
+   1) 右侧面板（已选摘要）整体下移，不再被顶部木牌挡住；
+   2) 底部固定一条操作栏：一键分解开关 + 按钮。
+   ========================================================================== */
+
+.classic-smithy-screen[data-smithy-mode='decompose'] .smithy-decompose-layout > .smithy-decompose-side {
+  display: flex !important;
+  flex-direction: column !important;
+  /* 顶部木牌占掉约 170px（active 木牌下移到 261px、body 从 92px 开始），内容整体下移。 */
+  padding-top: 188px !important;
+  padding-bottom: 14px !important;
+}
+
+.classic-smithy-screen .smithy-decompose-readout {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: auto;
+}
+
+.classic-smithy-screen .smithy-decompose-readout h2 {
+  margin-top: 0;
+}
+
+/* 逐张卡告知：卡牌 + 强化名称 + 星级 + 可能返还的材料图片 */
+.classic-smithy-screen .smithy-decompose-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.classic-smithy-screen .smithy-decompose-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 8px;
+  border: 1px solid rgba(94, 216, 250, .26);
+  border-left: 4px solid var(--quality, #9ec8d8);
+  border-radius: 7px;
+  background: rgba(0, 34, 52, .5);
+}
+
+.classic-smithy-screen .smithy-decompose-thumb {
+  flex: none;
+  width: 38px;
+  height: 38px;
+  object-fit: contain;
+  border-radius: 5px;
+  background: rgba(0, 20, 32, .5);
+}
+
+.classic-smithy-screen .smithy-decompose-meta {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  line-height: 1.25;
+}
+
+.classic-smithy-screen .smithy-decompose-meta > b {
+  color: #fff3b0;
+  font-size: 14px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.classic-smithy-screen .smithy-decompose-meta > small {
+  color: #a9dcec;
+  font-size: 11px;
+}
+
+.classic-smithy-screen .smithy-decompose-rewards {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.classic-smithy-screen .smithy-decompose-reward {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.classic-smithy-screen .smithy-decompose-reward > em {
+  color: #ffe15d;
+  font-size: 12px;
+  font-style: normal;
+  font-weight: 900;
+}
+
+.classic-smithy-screen .smithy-decompose-none {
+  color: #9fb8c4;
+  font-size: 12px;
+}
+
+.classic-smithy-screen .smithy-decompose-total {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: 10px 0 0;
+  padding: 8px 9px;
+  border-radius: 7px;
+  background: rgba(0, 64, 105, .55);
+  border: 1px solid rgba(94, 216, 250, .3);
+}
+
+.classic-smithy-screen .smithy-decompose-total > small {
+  color: #9fd8ea;
+  font-weight: 800;
+}
+
+.classic-smithy-screen .smithy-decompose-actions {
+  flex: 0 0 auto;
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(94, 216, 250, .32);
+}
+
+.classic-smithy-screen .smithy-decompose-switch {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  font-size: 15px;
+  font-weight: 900;
+  color: #ffe15d;
+  text-shadow: 0 1px #003247;
+}
+
+.classic-smithy-screen .smithy-decompose-switch input {
+  width: 18px;
+  height: 18px;
+  margin: 0;
+  cursor: pointer;
+  accent-color: #2fbf5f;
+}
+
+.classic-smithy-screen .smithy-decompose-hint {
+  margin: 6px 0 10px;
+  color: #a9dcec;
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.classic-smithy-screen .smithy-decompose-buttons {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.classic-smithy-screen .smithy-decompose-buttons #do-decompose.is-locked {
+  opacity: .5;
+  filter: grayscale(.45);
+  cursor: not-allowed;
+}
+
+@media (max-width: 900px), (max-height: 650px) {
+  .classic-smithy-screen[data-smithy-mode='decompose'] .smithy-decompose-layout > .smithy-decompose-side {
+    padding-top: 132px !important;
+  }
+}
+
+/* ==========================================================================
+   2026-09-10：战斗准备房间
+   1) 底栏「商城/背包/打造/邮件/返回」改用 resources/img 的图片；
+      房间底栏会被 BattleLayoutPass / BattleRoomRebuild 重写内容，
+      所以图标统一由按钮自身的 ::before 绘制，并把装饰出来的图标藏掉。
+   ========================================================================== */
+.game-room .room-bottom-bar > .bottom-btn.has-icon-image::before,
+.game-room .room-bottom-bar > #back-btn::before {
+  content: '' !important;
+  display: block !important;
+  flex: none !important;
+  width: 64% !important;
+  height: 42% !important;
+  margin: 0 0 2% !important;
+  background-position: center !important;
+  background-repeat: no-repeat !important;
+  background-size: contain !important;
+}
+
+.game-room .room-bottom-bar > .bottom-btn.has-icon-image > .room-vector-icon,
+.game-room .room-bottom-bar > .bottom-btn.has-icon-image > .room-nav-icon,
+.game-room .room-bottom-bar > .bottom-btn.has-icon-image > img,
+.game-room .room-bottom-bar > #back-btn > .room-vector-icon,
+.game-room .room-bottom-bar > #back-btn > .room-nav-icon,
+.game-room .room-bottom-bar > #back-btn > img {
+  display: none !important;
+}
+
+.game-room .room-bottom-bar > .bottom-btn[data-action='shop']::before {
+  background-image: url('../../resources/img/shop.png') !important;
+}
+.game-room .room-bottom-bar > .bottom-btn[data-action='bag']::before {
+  background-image: url('../../resources/img/backpack.png') !important;
+}
+.game-room .room-bottom-bar > .bottom-btn[data-action='smithy']::before {
+  background-image: url('../../resources/img/smithy.png') !important;
+}
+.game-room .room-bottom-bar > .bottom-btn[data-action='mail']::before {
+  background-image: url('../../resources/img/mail.png') !important;
+}
+.game-room .room-bottom-bar > #back-btn::before {
+  background-image: url('../../resources/img/back.png') !important;
+}
+
+
+/* ==========================================================================
+   2026-09-10：游戏内确认弹窗（替代会跳出网页的 window.confirm）
+   ========================================================================== */
+.smithy-confirm-dialog {
+  position: fixed !important;
+  inset: 0 !important;
+  z-index: 500 !important;
+  display: grid !important;
+  place-items: center !important;
+  padding: 24px !important;
+  background: rgba(0, 22, 40, .6) !important;
+  backdrop-filter: blur(2px);
+}
+
+.smithy-confirm-card {
+  width: min(430px, 92vw) !important;
+  box-sizing: border-box !important;
+  padding: 20px 22px 18px !important;
+  border: 3px solid #d7a631 !important;
+  border-radius: 14px !important;
+  background: linear-gradient(160deg, #0a7099, #00496f 62%, #00395c) !important;
+  color: #eaf8ff !important;
+  box-shadow: inset 0 0 0 2px #5ed8fa, 0 16px 40px rgba(0, 0, 0, .5) !important;
+  text-align: center !important;
+}
+
+.smithy-confirm-card h3 {
+  margin: 0 0 10px !important;
+  color: #ffe15d !important;
+  font-size: 22px !important;
+  text-shadow: 0 2px #6a4105 !important;
+}
+
+.smithy-confirm-card p {
+  margin: 0 0 16px !important;
+  color: #eef7c3 !important;
+  font-size: 15px !important;
+  font-weight: 700 !important;
+  line-height: 1.6 !important;
+  white-space: pre-line !important;
+}
+
+.smithy-confirm-card.danger {
+  border-color: #e0684a !important;
+}
+
+.smithy-confirm-actions {
+  display: flex !important;
+  justify-content: center !important;
+  gap: 12px !important;
+}
+
+.smithy-confirm-actions .bag-action {
+  min-width: 100px !important;
+  height: 38px !important;
+  font-weight: 800 !important;
+  cursor: pointer !important;
+}

@@ -29,10 +29,10 @@ async function openInvitePanel(view) {
   const panel = document.createElement('section');
   panel.className = 'room-invite-panel-20260906';
   panel.innerHTML = `
-    <header><strong>邀请大厅玩家</strong><button type="button" class="room-invite-close" aria-label="关闭">×</button></header>
+    <header><strong>邀请空闲玩家</strong><button type="button" class="room-invite-close" aria-label="关闭">×</button></header>
     <div class="room-invite-status">正在读取大厅在线玩家…</div>
     <div class="room-invite-player-list"></div>
-    <footer>仅显示当前在线、仍在大厅且尚未进入其他房间的玩家。</footer>
+    <footer>只显示当前在线且空闲（未进房间、未在战斗）的玩家；近 5 分钟内拒绝过你的玩家会被隐藏。</footer>
   `;
   roomRoot.append(panel);
   panel.querySelector('.room-invite-close')?.addEventListener('click', () => panel.remove());
@@ -91,8 +91,8 @@ function ensureInviteButton(view) {
   const button = document.createElement('button');
   button.type = 'button';
   button.className = 'room-lobby-invite-btn-20260906';
-  button.textContent = '邀请大厅玩家';
-  button.title = '邀请当前仍在游戏大厅的在线玩家加入本房间';
+  button.textContent = '邀请玩家';
+  button.title = '邀请当前在线且空闲（未进房间、未在战斗）的玩家加入本房间';
   button.addEventListener('click', () => void openInvitePanel(view));
   roomRoot.append(button);
 }
@@ -113,6 +113,10 @@ function showInvitePrompt(view, invite = {}) {
   text.textContent = `${inviter} 邀请你加入「${roomName}」 · ${roomModeLabel(invite.room?.mode)}`;
   const remaining = document.createElement('small');
   remaining.textContent = '邀请将在短时间内失效';
+  // 2026-09-10：拒绝会触发 5 分钟免打扰，先告诉被邀请方。
+  const snoozeHint = document.createElement('small');
+  snoozeHint.className = 'room-invite-prompt-snooze';
+  snoozeHint.textContent = '拒绝后 5 分钟内不再接收该玩家的邀请';
   const actions = document.createElement('div');
   actions.className = 'room-invite-prompt-actions';
   const reject = document.createElement('button');
@@ -124,7 +128,7 @@ function showInvitePrompt(view, invite = {}) {
   accept.className = 'room-invite-accept-btn';
   accept.textContent = '接受';
   actions.append(reject, accept);
-  prompt.append(title, text, remaining, actions);
+  prompt.append(title, text, remaining, snoozeHint, actions);
   host.append(prompt);
 
   const lock = (value) => {
@@ -134,8 +138,10 @@ function showInvitePrompt(view, invite = {}) {
   reject.addEventListener('click', async () => {
     lock(true);
     try {
-      await view.socket.respondRoomInvite(invite.inviteId, false);
+      const result = await view.socket.respondRoomInvite(invite.inviteId, false);
       prompt.remove();
+      const minutes = Math.max(1, Math.round((Number(result?.snoozeMs) || 5 * 60 * 1000) / 60_000));
+      view.notice?.(`已拒绝，${minutes} 分钟内不再接收该玩家的邀请`);
     } catch (error) {
       lock(false);
       view.notice?.(error.message);
@@ -172,8 +178,15 @@ export function installRoomInviteRuntime20260906() {
     this.unsubs.push(
       this.socket.on('room:invite', (invite) => showInvitePrompt(this, invite)),
       this.socket.on('room:invite:resolved', ({ inviteId } = {}) => removeInvitePrompt(this, inviteId)),
-      this.socket.on('room:invite:result', ({ accepted, targetUserId } = {}) => {
-        if (accepted) this.notice?.(`玩家 ${targetUserId} 已接受房间邀请`);
+      this.socket.on('room:invite:result', ({ accepted, targetUserId, reason, message } = {}) => {
+        if (accepted) {
+          this.notice?.(`玩家 ${targetUserId} 已接受房间邀请`);
+          return;
+        }
+        // 2026-09-10：被拒绝时按服务端文案提示，让邀请人在房间里就能看到。
+        if (reason === 'rejected' || !reason) {
+          this.notice?.(message || '不好意思，我现在没时间，抱歉啦');
+        }
       }),
     );
     return result;

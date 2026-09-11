@@ -380,16 +380,16 @@ export class DeckSelectView {
             <span class="ready-text">准备</span>
           </button>
 
-          <!-- 底部功能栏 -->
+          <!-- 底部功能栏：商城/背包/打造/邮件/返回 的图标改由 CSS 用 resources/img 的图片绘制 -->
           <div class="room-bottom-bar">
-            <button type="button" class="bottom-btn" data-action="shop">🏪 商城</button>
-            <button type="button" class="bottom-btn" data-action="bag">🎒 背包</button>
-            <button type="button" class="bottom-btn" data-action="smithy">🔨 打造</button>
+            <button type="button" class="bottom-btn has-icon-image" data-action="shop">商城</button>
+            <button type="button" class="bottom-btn has-icon-image" data-action="bag">背包</button>
+            <button type="button" class="bottom-btn has-icon-image" data-action="smithy">打造</button>
             <button type="button" class="bottom-btn" data-action="hero">👤 人物</button>
-            <button type="button" class="bottom-btn" data-action="mail">📧 邮件</button>
+            <button type="button" class="bottom-btn has-icon-image" data-action="mail">邮件</button>
             <button type="button" class="bottom-btn" data-action="friend">👫 好友</button>
             <button type="button" class="bottom-btn more-btn" id="more-btn">⚙ 更多 ▾</button>
-            <button type="button" class="bottom-btn back-btn" id="back-btn">↩ 返回</button>
+            <button type="button" class="bottom-btn back-btn has-icon-image" id="back-btn">返回</button>
           </div>
 
           <!-- 更多下拉菜单 -->

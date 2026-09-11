@@ -124,6 +124,12 @@ function bindServerActions(view, root) {
   });
 
   replaceAction(root, '#do-decompose', async () => {
+    // 一键分解开关默认关闭：没开启时不提交任何分解请求。
+    if (!view.decomposeEnabled) {
+      view.toast(root, '\u8bf7\u5148\u5f00\u542f\u300c\u4e00\u952e\u5206\u89e3\u300d\u5f00\u5173');
+      view.renderBody(root);
+      return;
+    }
     const slots = view.cardInventory?.getSlots?.() ?? [];
     const indices = [...(view.decomposeIndices instanceof Set ? view.decomposeIndices : [])]
       .map(Number)
@@ -144,7 +150,11 @@ function bindServerActions(view, root) {
     const confirmText = indices.length === 1
       ? `确定分解「${names[0]}」？`
       : `确定分解选中的 ${indices.length} 张卡牌？`;
-    if (!globalThis.confirm?.(confirmText)) {
+    // 游戏内确认弹窗（SmithyView.confirmDialog），不要跳出浏览器网页弹框。
+    const confirmed = typeof view.confirmDialog === 'function'
+      ? await view.confirmDialog(root, `${confirmText}\n分解后无法撤销。`, { title: '确认分解', confirmText: '分解' })
+      : Boolean(globalThis.confirm?.(confirmText));
+    if (!confirmed) {
       view.renderBody(root);
       return;
     }
