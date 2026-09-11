@@ -597,6 +597,18 @@ export class UnitAnimPlayer {
   }
 
   pickDrawState(pack, unit, engine) {
+    // 2026-09-11：冰冻 = 精灵动画完全暂停。
+    // 冻结期间固定用「冻结前最后解析出的状态」，空中/攻击等本来会自行切换的状态也不再变化；
+    // 帧序号由 drawUnit 冻结 clock 保证不动，两者合起来就是真正的暂停。
+    const frozen = Boolean(unit.frozenUntil && engine.time < unit.frozenUntil);
+    if (frozen && unit._lastDrawState20260911) return unit._lastDrawState20260911;
+    const resolved = this._resolveDrawStateLive(pack, unit, engine);
+    // 非冻结帧持续记录最新状态，冻结发生的那一刻自然就锁在上一帧的状态上。
+    unit._lastDrawState20260911 = resolved;
+    return resolved;
+  }
+
+  _resolveDrawStateLive(pack, unit, engine) {
     const aerial = resolveAerialAnimState(unit, pack);
     const requested = aerial ?? resolveUnitAnimState(unit, engine);
     if (requested === 'toGround') {

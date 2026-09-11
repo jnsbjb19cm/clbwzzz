@@ -25,6 +25,9 @@ function authoritativeStart(data, now, duration, serverUntil) {
 }
 
 function seedAnimationClock(unit, state, elapsed, now) {
+  // 2026-09-11：冰冻 = 精灵图暂停。冻结期间不允许重置/重播动画时钟，
+  // 否则服务端状态同步会把已经停住的单位又从头播一遍。
+  if (unit?.frozenUntil && now < unit.frozenUntil) return;
   const key = String(unit?.res ?? '');
   let pack = unitAnimPlayer.ready.get(key);
   if (!pack) {

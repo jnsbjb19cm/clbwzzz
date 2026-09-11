@@ -111,6 +111,9 @@ function drawFullSourceFrame(player, ctx, unit, engine, pack, state, boxX, boxY,
     const previous = player.lastDrawTimes.get(unit.uid);
     let delta = previous == null ? 0 : Math.max(0, now - previous);
     player.lastDrawTimes.set(unit.uid, now);
+    // 2026-09-11：冰冻 = 精灵图暂停。这条「全帧绘制」路径也必须冻结时钟，
+    // 否则移动/攻击等 overflow 状态仍然会继续走帧。
+    if (unit.frozenUntil && now < unit.frozenUntil) delta = 0;
 
     if (state === 'death' && unit._deathAnimStartedAt != null && unit._deathUntil) {
       const visibleDuration = Math.max(0.001, unit._deathUntil - unit._deathAnimStartedAt);
