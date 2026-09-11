@@ -93,8 +93,12 @@ installSmithyCharmAndChatPolish20260908();
 
 import { installPerfOverlay20260911 } from './ui/PerfOverlay20260911.js';
 import { installBattleDisplayRuntime20260911 } from './ui/BattleDisplayRuntime20260911.js';
+import { installRoomInviteGlobalRuntime20260911 } from './ui/RoomInviteGlobalRuntime20260911.js';
 installBattleDisplayRuntime20260911();
 installPerfOverlay20260911();
+// 2026-09-11：邀请弹窗全局化——原来只有"房间"界面能收到邀请，
+// 在主城/背包等界面的玩家看不到（好友那边"发了没反应"）。
+installRoomInviteGlobalRuntime20260911();
 
 void import('./main.js').then(() => {
   installBaseAttackRenderStability20260906();
