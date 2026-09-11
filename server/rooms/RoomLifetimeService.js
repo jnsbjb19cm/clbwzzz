@@ -1,8 +1,43 @@
 import { roomManager } from './RoomManager.js';
 
-/** 房间从 createdAt 起最多存在 2 小时。 */
-export const ROOM_LIFETIME_MS = 2 * 60 * 60 * 1000;
+/**
+ * 房间从 createdAt 起最多存在 2 小时。
+ *
+ * 可用环境变量 ROOM_LIFETIME_MS 覆盖（默认 7200000 = 2 小时）。
+ * 用途：运营调整上限；以及用很短的时长（例如 15000）验证"到期才解散、
+ * 不会提前销毁"这条规则 —— 见 scripts/verify-room-lifetime.mjs。
+ */
+const DEFAULT_ROOM_LIFETIME_MS = 2 * 60 * 60 * 1000;
+const MIN_ROOM_LIFETIME_MS = 10_000;
+
+function resolveRoomLifetimeMs() {
+  const raw = Number(process.env.ROOM_LIFETIME_MS);
+  if (!Number.isFinite(raw) || raw <= 0) return DEFAULT_ROOM_LIFETIME_MS;
+  return Math.max(MIN_ROOM_LIFETIME_MS, Math.floor(raw));
+}
+
+export const ROOM_LIFETIME_MS = resolveRoomLifetimeMs();
 const ORPHAN_SWEEP_INTERVAL_MS = 15_000;
+
+/** 统一日志格式：带时间戳与房间年龄，便于核对"到底是多久被解散的"。 */
+function lifetimeLog(message) {
+  const stamp = new Date().toISOString();
+  console.log(`[clbwzzz][room-lifetime] ${stamp} ${message}`);
+}
+
+function ageTextOf(room) {
+  const createdAt = Number(room?.createdAt);
+  if (!Number.isFinite(createdAt) || createdAt <= 0) return 'age=?';
+  const ageMs = Math.max(0, Date.now() - createdAt);
+  const limitMin = (ROOM_LIFETIME_MS / 60000).toFixed(1);
+  return `age=${(ageMs / 1000).toFixed(1)}s limit=${limitMin}min`;
+}
+
+function remainingOf(room) {
+  const expiresAt = Number(room?.expiresAt);
+  if (!Number.isFinite(expiresAt) || expiresAt <= 0) return 0;
+  return Math.max(0, expiresAt - Date.now());
+}
 
 function realMembersOf(room) {
   return [...(room?.members?.values?.() ?? [])].filter((member) => member?.isBot !== true);
@@ -40,7 +75,7 @@ export function startRoomLifetimeService(io, { stopBattle } = {}) {
 
     const isLifetime = reason === 'lifetime';
     const message = isLifetime
-      ? '房间已达到 2 小时存在上限，已自动解散。'
+      ? `房间已达到 ${(ROOM_LIFETIME_MS / 60000).toFixed(0)} 分钟存在上限，已自动解散。`
       : '房间内已没有真人玩家，系统已自动回收该房间。';
 
     try {
@@ -52,13 +87,14 @@ export function startRoomLifetimeService(io, { stopBattle } = {}) {
     } catch {}
 
     try { stopBattle?.(roomId); } catch {}
+    const ageText = ageTextOf(room);
     fullyDestroyRoom(room);
 
     // 让成员和观战者从过期的 Socket.IO room 离开。
     try { io?.in?.(`room:${roomId}`)?.socketsLeave?.(`room:${roomId}`); } catch {}
     try { io?.emit?.('rooms:list', roomManager.listRooms()); } catch {}
 
-    console.log(`[clbwzzz][room-lifetime] destroyed room=${roomId} reason=${reason}`);
+    lifetimeLog(`destroyed room=${roomId} reason=${reason} ${ageText}`);
     return true;
   };
 
@@ -69,6 +105,10 @@ export function startRoomLifetimeService(io, { stopBattle } = {}) {
     const createdAt = Number(room.createdAt) || Date.now();
     const remaining = Math.max(0, createdAt + ROOM_LIFETIME_MS - Date.now());
     room.expiresAt = createdAt + ROOM_LIFETIME_MS;
+    if (remaining <= 0) {
+      // createdAt 异常古老（不该发生）：不要静默立刻解散，先记一条便于排查。
+      lifetimeLog(`warn room=${room.id} 已超过存在上限，立即解散 remaining=0 ${ageTextOf(room)}`);
+    }
     room._lifetimeTimer = setTimeout(() => {
       const current = roomManager.getRoom(room.id);
       if (current) expire(current, 'lifetime');
@@ -83,7 +123,10 @@ export function startRoomLifetimeService(io, { stopBattle } = {}) {
   roomManager.createRoom = function createRoomWithLifetime(args) {
     const snapshot = originalCreateRoom(args);
     const room = roomManager.getRoom(snapshot?.id);
-    if (room) scheduleLifetime(room);
+    if (room) {
+      scheduleLifetime(room);
+      lifetimeLog(`created room=${room.id} expiresIn=${(remainingOf(room) / 60000).toFixed(1)}min expiresAt=${new Date(room.expiresAt).toISOString()}`);
+    }
     return snapshot;
   };
 
