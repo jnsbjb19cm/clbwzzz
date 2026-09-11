@@ -43,7 +43,7 @@ function ellipseArc(ctx, cx, cy, rx, ry, start, end) {
   ctx.ellipse(cx, cy, rx, ry, 0, start, end);
 }
 
-function drawConvergingVortex(ctx, cx, cy, palette, quality) {
+function drawConvergingVortex(ctx, cx, cy, palette, quality, blurScale = 1) {
   const strong = quality >= 4;
   const perfect = quality === 5;
   const armColor = hexToRgba(palette[strong ? 2 : 1], strong ? 0.82 : 0.62);
@@ -53,7 +53,7 @@ function drawConvergingVortex(ctx, cx, cy, palette, quality) {
   ctx.lineCap = 'round';
   ctx.strokeStyle = armColor;
   ctx.shadowColor = hexToRgba(palette[1], 0.82);
-  ctx.shadowBlur = perfect ? 7 : 5;
+  ctx.shadowBlur = (perfect ? 7 : 5) * blurScale;
   ctx.lineWidth = perfect ? 2.6 : strong ? 2.2 : 1.7;
 
   // Four curved energy streams start on the ring and curl into one bright point.
@@ -111,66 +111,123 @@ function drawConvergingVortex(ctx, cx, cy, palette, quality) {
   ctx.restore();
 }
 
+/**
+ * 2026-09-11 性能：品质底座的美术完全静态（与时间/单位无关，只随品质变化），
+ * 但旧实现是「每个单位每帧」现画 3 个线性渐变 + 18 个 colorStop + 6 次带
+ * shadowBlur 的椭圆描边 + 6 条贝塞尔光流。45 个单位时光栅化开销可达 40ms+/帧。
+ * 现在按品质烘焙成一张贴图（同一段绘制代码，只画一次），逐帧只 drawImage。
+ *
+ * 注意：shadowBlur 按规范不随 CTM 缩放，所以按 BAKE_SCALE 放大画布时，
+ * 阴影半径要同步乘 BAKE_SCALE，才能烘焙出与原来一致的外观。
+ */
+const BAKE_SCALE = 2;
+const BAKE_W = Math.ceil((HALO_RX * 2 + 36) * BAKE_SCALE);
+const BAKE_H = Math.ceil((HALO_RY * 2 + 36) * BAKE_SCALE);
+const bakedPedestals = new Map();
+
+/** 以逻辑坐标 (cx, cy) 为圆心绘制品质底座；blurScale 用于高清烘焙时补偿 shadowBlur。 */
+function paintQualityPedestal(ctx, cx, cy, quality, blurScale = 1) {
+  const palette = QUALITY_PALETTES[quality] ?? QUALITY_PALETTES[2];
+  const isPerfect = quality === 5;
+
+  ctx.save();
+  ctx.lineCap = 'round';
+  ctx.lineJoin = 'round';
+
+  // 1) Feathered outer aura around the ring.
+  ctx.shadowColor = hexToRgba(palette[1], 0.88);
+  ctx.shadowBlur = (isPerfect ? 13 : 10) * blurScale;
+  ctx.strokeStyle = makeRingGradient(ctx, cx, palette, 0.36);
+  ctx.lineWidth = isPerfect ? 10 : 8;
+  ellipseArc(ctx, cx, cy, HALO_RX + 1.5, HALO_RY + 0.8, 0, Math.PI * 2);
+  ctx.stroke();
+
+  // 2) Thin rear rim. Character art is rendered after this halo pass, so the
+  // rear part naturally disappears behind the feet/body like the reference.
+  ctx.shadowBlur = 5 * blurScale;
+  ctx.strokeStyle = makeRingGradient(ctx, cx, palette, 0.82);
+  ctx.lineWidth = isPerfect ? 4.8 : 3.8;
+  ellipseArc(ctx, cx, cy - 0.8, HALO_RX, HALO_RY, Math.PI, Math.PI * 2);
+  ctx.stroke();
+
+  // 3) The missing reference detail: energy streams curl toward one centre point.
+  drawConvergingVortex(ctx, cx, cy, palette, quality, blurScale);
+
+  // 4) Thick bright front edge: the visible energy-donut depth.
+  ctx.shadowColor = hexToRgba(palette[3], 0.94);
+  ctx.shadowBlur = (isPerfect ? 10 : 8) * blurScale;
+  ctx.strokeStyle = makeRingGradient(ctx, cx, palette, 1);
+  ctx.lineWidth = isPerfect ? 9.2 : 7.2;
+  ellipseArc(ctx, cx, cy, HALO_RX, HALO_RY, 0, Math.PI);
+  ctx.stroke();
+
+  // 5) Narrow inner/front highlight.
+  ctx.shadowBlur = 3 * blurScale;
+  ctx.strokeStyle = hexToRgba(palette[2], quality >= 4 ? 0.92 : 0.66);
+  ctx.lineWidth = quality >= 4 ? 2.4 : 1.8;
+  ellipseArc(ctx, cx + 3, cy - 0.6, HALO_RX - 7, HALO_RY - 3.6, 0.12 * Math.PI, 0.72 * Math.PI);
+  ctx.stroke();
+
+  ctx.strokeStyle = hexToRgba(palette[1], 0.72);
+  ctx.lineWidth = isPerfect ? 5.6 : 3.6;
+  ctx.shadowBlur = (isPerfect ? 7 : 4) * blurScale;
+  ellipseArc(ctx, cx, cy, HALO_RX + 0.4, HALO_RY + 0.2, 0.78 * Math.PI, 1.17 * Math.PI);
+  ctx.stroke();
+  ellipseArc(ctx, cx, cy, HALO_RX + 0.4, HALO_RY + 0.2, -0.17 * Math.PI, 0.18 * Math.PI);
+  ctx.stroke();
+
+  ctx.restore();
+}
+
+function bakeQualityPedestal(quality) {
+  if (bakedPedestals.has(quality)) return bakedPedestals.get(quality);
+  let sprite = null;
+  try {
+    if (typeof document !== 'undefined' && document.createElement) {
+      const canvas = document.createElement('canvas');
+      canvas.width = BAKE_W;
+      canvas.height = BAKE_H;
+      const c = canvas.getContext('2d');
+      if (c) {
+        // 以画布中心为逻辑原点，按 BAKE_SCALE 放大绘制同一段美术
+        c.setTransform(BAKE_SCALE, 0, 0, BAKE_SCALE, BAKE_W / 2, BAKE_H / 2);
+        paintQualityPedestal(c, 0, 0, quality, BAKE_SCALE);
+        sprite = { canvas, width: BAKE_W / BAKE_SCALE, height: BAKE_H / BAKE_SCALE };
+      }
+    }
+  } catch {
+    sprite = null;
+  }
+  bakedPedestals.set(quality, sprite);
+  return sprite;
+}
+
 export function installBattleQualityHaloFix20260908() {
   if (globalThis[INSTALL_FLAG]) return;
   globalThis[INSTALL_FLAG] = true;
 
   const proto = BattleRenderer.prototype;
+  // 预烘焙 5 个品质的贴图（一次性，几毫秒），避免战斗中出现首次使用的卡顿。
+  for (const quality of Object.keys(QUALITY_PALETTES)) bakeQualityPedestal(Number(quality));
+
   function drawReferenceQualityPedestal20260908(ctx, unit, layout) {
     if (!ctx || !layout || layout.isDying) return;
     const quality = normalizeCraftQuality(unit?.craftQuality ?? 1);
-    const palette = QUALITY_PALETTES[quality] ?? QUALITY_PALETTES[2];
     const cx = Number(layout.cx) || 0;
     const cy = (Number(layout.footY) || 0) + 1;
-    const isPerfect = quality === 5;
-
-    ctx.save();
-    ctx.lineCap = 'round';
-    ctx.lineJoin = 'round';
-
-    // 1) Feathered outer aura around the ring.
-    ctx.shadowColor = hexToRgba(palette[1], 0.88);
-    ctx.shadowBlur = isPerfect ? 13 : 10;
-    ctx.strokeStyle = makeRingGradient(ctx, cx, palette, 0.36);
-    ctx.lineWidth = isPerfect ? 10 : 8;
-    ellipseArc(ctx, cx, cy, HALO_RX + 1.5, HALO_RY + 0.8, 0, Math.PI * 2);
-    ctx.stroke();
-
-    // 2) Thin rear rim. Character art is rendered after this halo pass, so the
-    // rear part naturally disappears behind the feet/body like the reference.
-    ctx.shadowBlur = 5;
-    ctx.strokeStyle = makeRingGradient(ctx, cx, palette, 0.82);
-    ctx.lineWidth = isPerfect ? 4.8 : 3.8;
-    ellipseArc(ctx, cx, cy - 0.8, HALO_RX, HALO_RY, Math.PI, Math.PI * 2);
-    ctx.stroke();
-
-    // 3) The missing reference detail: energy streams curl toward one centre point.
-    drawConvergingVortex(ctx, cx, cy, palette, quality);
-
-    // 4) Thick bright front edge: the visible energy-donut depth.
-    ctx.shadowColor = hexToRgba(palette[3], 0.94);
-    ctx.shadowBlur = isPerfect ? 10 : 8;
-    ctx.strokeStyle = makeRingGradient(ctx, cx, palette, 1);
-    ctx.lineWidth = isPerfect ? 9.2 : 7.2;
-    ellipseArc(ctx, cx, cy, HALO_RX, HALO_RY, 0, Math.PI);
-    ctx.stroke();
-
-    // 5) Narrow inner/front highlight.
-    ctx.shadowBlur = 3;
-    ctx.strokeStyle = hexToRgba(palette[2], quality >= 4 ? 0.92 : 0.66);
-    ctx.lineWidth = quality >= 4 ? 2.4 : 1.8;
-    ellipseArc(ctx, cx + 3, cy - 0.6, HALO_RX - 7, HALO_RY - 3.6, 0.12 * Math.PI, 0.72 * Math.PI);
-    ctx.stroke();
-
-    ctx.strokeStyle = hexToRgba(palette[1], 0.72);
-    ctx.lineWidth = isPerfect ? 5.6 : 3.6;
-    ctx.shadowBlur = isPerfect ? 7 : 4;
-    ellipseArc(ctx, cx, cy, HALO_RX + 0.4, HALO_RY + 0.2, 0.78 * Math.PI, 1.17 * Math.PI);
-    ctx.stroke();
-    ellipseArc(ctx, cx, cy, HALO_RX + 0.4, HALO_RY + 0.2, -0.17 * Math.PI, 0.18 * Math.PI);
-    ctx.stroke();
-
-    ctx.restore();
+    const sprite = bakeQualityPedestal(quality);
+    if (sprite) {
+      // 逐帧只画一张贴图：几何与烘焙时完全一致，外观不变，省掉全部渐变/阴影光栅化。
+      ctx.drawImage(
+        sprite.canvas,
+        cx - sprite.width / 2,
+        cy - sprite.height / 2,
+        sprite.width,
+        sprite.height,
+      );
+      return;
+    }
+    paintQualityPedestal(ctx, cx, cy, quality, 1);
   }
 
   drawReferenceQualityPedestal20260908.__qualityHaloFixed20260908 = true;

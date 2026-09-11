@@ -294,7 +294,28 @@ function registerPack(key, pack, readyMap) {
   return true;
 }
 
+// 2026-09-11 性能：resolveHpAnimKeys 会被 pickAnimState 每单位每帧调用 1~3 次，
+// 每次都 Object.keys + filter + sort 一遍。动画包（pack）本身按 res 缓存、身份稳定，
+// 所以按 pack+prefix 缓存结果数组即可（调用方只读遍历，不再修改）。
+const hpAnimKeysCache = new WeakMap();
+
 function resolveHpAnimKeys(pack, prefix) {
+  if (pack && typeof pack === 'object') {
+    let entry = hpAnimKeysCache.get(pack);
+    if (!entry) {
+      entry = new Map();
+      hpAnimKeysCache.set(pack, entry);
+    } else if (entry.has(prefix)) {
+      return entry.get(prefix);
+    }
+    const computed = computeHpAnimKeys(pack, prefix);
+    entry.set(prefix, computed);
+    return computed;
+  }
+  return computeHpAnimKeys(pack, prefix);
+}
+
+function computeHpAnimKeys(pack, prefix) {
   const metaKeys = prefix === 'default'
     ? pack.meta.hpAnims
     : pack.meta.attackHpAnims;

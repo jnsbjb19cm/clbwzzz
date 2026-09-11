@@ -153,6 +153,7 @@ function drawUnitsV3(ctx, engine) {
   const alive = engine.units.filter(
     (unit) => unit.alive || (unit._deathUntil && engine.time < unit._deathUntil),
   );
+  this._visibleUnitCount = alive.length;
   const layouts = new Map();
   for (const unit of alive) {
     const layout = this.computeUnitLayout(engine, unit);
