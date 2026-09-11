@@ -41,10 +41,8 @@ function syncRoomLabels(room) {
   const title = room.querySelector('.room-title-text');
   if (title) title.textContent = '房间';
 
-  const stage = room.querySelector('#room-stage-display');
-  if (stage && !/[【\[]/.test(stage.textContent) && room.dataset.mode !== 'pvp' && room.dataset.mode !== 'pve') {
-    stage.textContent = `${stage.textContent.trim()} [简单]`;
-  }
+  // 2026-09-11：原来会给非 PVP/PVE 房间硬拼一个「[简单]」，与真实难度无关
+  // （BOSS 房间标题已经是「BOSS名：难度」，PVE 又没有真实难度字段），所以不再追加。
 
   const readyText = room.querySelector('#room-ready-btn .ready-text');
   const readyButton = room.querySelector('#room-ready-btn');

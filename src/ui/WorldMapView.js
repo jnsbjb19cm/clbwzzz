@@ -2,7 +2,7 @@ import { audio } from '../core/AudioManager.js';
 import worldMapData from '../data/worldMap.json';
 import stageInfoData from '../data/stageInfo.json';
 import worldMapAtlas from '../data/atlas/preload_worldMap.json';
-import { BOSS_LIST } from '../data/bossList.js';
+import { BOSS_LIST, bossDialogTitle } from '../data/bossList.js';
 import {
   isBossCleared,
   isBossUnlocked,
@@ -225,7 +225,7 @@ export class WorldMapView {
         dia.style.display = 'flex';
         dia.innerHTML = `<div style="background:#1a1a2e;border:2px solid #c96;border-radius:10px;padding:24px;max-width:420px;text-align:center;">
           <img src="/sprites/cards/${b.sprite}.png" style="width:100px;height:100px;object-fit:contain;margin-bottom:8px;">
-          <h3 style="color:#f96;margin:0 0 4px;">${String(b.name).replace(/([^)]*)$/, '')}(${dl})</h3>
+          <h3 style="color:#f96;margin:0 0 4px;">${bossDialogTitle(b.name, dl)}</h3>
           <p style="color:#aaa;font-size:11px;margin:0;">${b.img}</p>
           <p style="color:#ccc;font-style:italic;margin:8px 0;">"${b.dialog}"</p>
           <div style="text-align:left;color:#aaa;font-size:12px;margin:8px 0;">

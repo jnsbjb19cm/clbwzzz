@@ -331,7 +331,8 @@ function bindEventsStable(root) {
         this._sid = next.stage_id;
         this._stageName = next.stage_name;
         const display = root.querySelector('#room-stage-display');
-        if (display) display.textContent = `${this._stageName} [简单]`;
+        // 2026-09-11：不再硬拼「[简单]」（与真实难度无关）
+        if (display) display.textContent = String(this._stageName ?? '');
         this._members.forEach((member) => { if (!member.owner) member.ready = false; });
         this._renderMembers(root);
         this._showToast(root, `地图已切换为 ${this._stageName}`);

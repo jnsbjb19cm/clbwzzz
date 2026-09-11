@@ -157,6 +157,18 @@ export function getBossById(id) {
   return BOSS_LIST.find((b) => b.id === id) ?? null;
 }
 
+/**
+ * BOSS 挑战确认框的标题：{BOSS名}({难度})。
+ *
+ * 2026-09-11 修正：原来 WorldMapView 用的是 `name.replace(/([^)]*)$/, '')`，
+ * 而 BOSS 名（如「愤怒的沃里尔」）里根本没有括号，这个正则会把**整个名字删掉**，
+ * 弹窗里只剩「(困难)」。这里改成只剥掉名字末尾已有的难度括注（若存在）。
+ */
+export function bossDialogTitle(name, difficulty) {
+  const base = String(name ?? '').replace(/\s*[（(][^（）()]*[）)]\s*$/, '').trim();
+  return `${base || 'BOSS'}(${difficulty ?? '简单'})`;
+}
+
 /** 房间标题规则：PVP={昵称}的房间；BOSS={BOSS名}：{难度}；PVE=关卡名 */
 export function roomDisplayName({ mode, nickname, bossId, difficulty, stageName }) {
   if (mode === 'boss') {
