@@ -135,13 +135,20 @@ export class BattleUnit {
   }
 
   takeDamage(amount, now = 0) {
+    // 2026-09-11：伤害数字只显示「实际扣掉的血量」。
+    // 例：30 血的卡牌挨了 500 点 → 显示 -30，而不是溢出的 -500。
+    // 这里只额外记录一个展示值；扣血结果与返回值保持原样，
+    // 所以吸血/白光斩/反射/联机权威结算等战斗数值完全不受影响。
+    this.lastDamageDealt = 0;
     if (this.invulnUntil && now < this.invulnUntil) return 0;
     const raw = Number(amount);
     if (!Number.isFinite(raw) || raw <= 0) return 0;
     const dmg = roundBattleAmount(raw);
     if (dmg <= 0) return 0;
+    const hpBefore = this.hp;
     this.hp = roundBattleAmount(this.hp - dmg);
     if (this.hp <= 0) this.alive = false;
+    this.lastDamageDealt = roundBattleAmount(Math.min(dmg, Math.max(0, hpBefore)));
     return dmg;
   }
 

@@ -20,6 +20,20 @@ function clamp01(value) {
 }
 
 /**
+ * 2026-09-11：单位伤害数字只显示实际扣掉的血量（致死时不显示溢出伤害）。
+ * 正式战斗走 engine.spawnDamageFloat；这里给没有该方法的兼容引擎兜底。
+ */
+function spawnUnitDamageFloat(engine, unit, fallbackAmount = 0) {
+  if (typeof engine?.spawnDamageFloat === 'function') {
+    engine.spawnDamageFloat(unit, fallbackAmount);
+    return;
+  }
+  const recorded = Number(unit?.lastDamageDealt);
+  const shown = Number.isFinite(recorded) && recorded > 0 ? recorded : Math.max(0, finite(fallbackAmount));
+  if (shown > 0) engine?.spawnFloat?.(unit.lane, unit.col, -shown);
+}
+
+/**
  * 高抛弹道高度在“发射时”确定，之后即使目标移动也不重新计算。
  * 这样不会出现追踪目标时弧线突然塌陷/抬升；中程投掷至少抬高约 2.2 个格高。
  */
@@ -251,7 +265,7 @@ export function resolveProjectileHit(proj, engine, collisionTarget = null) {
     for (const vic of splashVictims(proj, primary, engine)) {
       if (!vic.alive) continue;
       const a = vic.takeDamage(proj.damage, engine.time);
-      if (a > 0) engine.spawnFloat(vic.lane, vic.col, -a);
+      spawnUnitDamageFloat(engine, vic, a);
       if (!vic.alive) engine.onUnitDeath(vic);
     }
     return;
@@ -260,7 +274,7 @@ export function resolveProjectileHit(proj, engine, collisionTarget = null) {
   if (primary) {
     engine.spawnImpactFx?.(primary.lane, primary.col, proj.damage, proj.sourceRes);
     const a = primary.takeDamage(proj.damage, engine.time);
-    if (a > 0) engine.spawnFloat(primary.lane, primary.col, -a);
+    spawnUnitDamageFloat(engine, primary, a);
     if (!primary.alive) engine.onUnitDeath(primary);
     return;
   }

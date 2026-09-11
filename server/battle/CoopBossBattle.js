@@ -234,8 +234,10 @@ export class CoopBossBattle {
         const dealt = round2(boss.takeDamage(damage, this.engine.time));
         if (dealt > 0) {
           this.engine.spawnImpactFx?.(boss.lane, boss.col, dealt, boss.res);
-          this.engine.spawnFloat?.(boss.lane, boss.col, -dealt);
-          this.engine.pushLog?.(`【${boss.name}】-${dealt} HP`);
+          // 伤害数字只显示实际扣掉的血量（BOSS 残血时不再显示溢出的天文数字）
+          const shown = round2(Math.max(0, Number(boss.lastDamageDealt) > 0 ? boss.lastDamageDealt : dealt));
+          if (shown > 0) this.engine.spawnFloat?.(boss.lane, boss.col, -shown);
+          this.engine.pushLog?.(`【${boss.name}】-${shown} HP`);
         }
         if (!boss.alive && !boss._deathUntil) this.engine.onUnitDeath(boss);
         this.syncBossHud();

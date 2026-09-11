@@ -992,7 +992,7 @@ export class BattleEngine {
     this.spawnImpactFx(unit.lane, boomCol, dmg, unit.res);
     for (const v of victims) {
       v.takeDamage(dmg, this.time);
-      this.spawnFloat(v.lane, v.col, -dmg);
+      this.spawnDamageFloat(v, dmg);
       if (!v.alive) {
         v._suicideKilled = true; // 被自爆炸死：不触发死亡分身(如幻飞行忍者45)
         this.onUnitDeath(v);
@@ -1168,7 +1168,7 @@ export class BattleEngine {
 
     for (const v of victims) {
       v.takeDamage(dmg, this.time);
-      this.spawnFloat(v.lane, v.col, -dmg);
+      this.spawnDamageFloat(v, dmg);
       if (!v.alive) {
         this.onUnitDeath(v);
         this.pushLog(`${spike.name} 刺破 ${v.name}`);
@@ -1176,7 +1176,7 @@ export class BattleEngine {
     }
 
     spike.takeDamage(dmg, this.time);
-    this.spawnFloat(spike.lane, spike.col, -dmg);
+    this.spawnDamageFloat(spike, dmg);
     if (!spike.alive) {
       this.onUnitDeath(spike);
       this.pushLog(`${spike.name} 损毁`);
@@ -1912,7 +1912,7 @@ export class BattleEngine {
           if (!u.alive || u.team === unit.team || u.isLowTarget?.()) continue;
           const dmg = roundBattleAmount(Math.max(1, damage));
           const dealt = u.takeDamage(dmg, t);
-          if (dealt > 0) this.spawnFloat(u.lane, u.col, -dealt);
+          this.spawnDamageFloat(u, dealt);
           if (stunSec && u.alive) u.stunnedUntil = Math.max(u.stunnedUntil ?? 0, t + stunSec);
           if (!u.alive) this.onUnitDeath(u);
         }
@@ -1981,7 +1981,7 @@ export class BattleEngine {
       const ah = dir * (Math.round(u.col) - selfC);
       if (ah < 0) continue;
       const dealt = u.takeDamage(damage, this.time);
-      if (dealt > 0) this.spawnFloat(u.lane, u.col, -dealt);
+      this.spawnDamageFloat(u, dealt);
       if (!u.alive) this.onUnitDeath(u);
     }
   }
@@ -2010,7 +2010,7 @@ export class BattleEngine {
     dmg = roundBattleAmount(Math.max(1, dmg));
 
     const dealt = vic.takeDamage(dmg, t);
-    if (dealt > 0) this.spawnFloat(vic.lane, vic.col, -dealt);
+    this.spawnDamageFloat(vic, dealt);
 
     let healedAttacker = false;
     if (traits.lifestealRatio) {
@@ -2233,6 +2233,27 @@ export class BattleEngine {
     this.floats.push({ lane, col, amount: amt, life: 1.2, y: 0 });
     // 卡牌多时浮字数量上限（超出丢最旧，避免每帧渲染大量伤害数字卡顿）
     if (this.floats.length > 40) this.floats.splice(0, this.floats.length - 40);
+  }
+
+  /**
+   * 2026-09-11：伤害数字的专用入口 —— 只显示「实际扣掉的血量」。
+   *
+   * 例：30 血的卡牌挨了 500 点 → 显示 -30，而不是溢出的 -500；
+   * 已经死透的单位再被结算也不会冒出数字。
+   * 只影响显示：血量仍按原逻辑扣减，takeDamage/applyCardHit 的返回值、
+   * 吸血基数、白光斩传播、反射伤害都保持原样。
+   *
+   * @param target 刚受过伤害的单位（读取 takeDamage 记录的 lastDamageDealt）
+   * @param fallbackAmount 兜底值：当 target 没有记录时（兼容路径）用它
+   */
+  spawnDamageFloat(target, fallbackAmount = 0) {
+    if (!target) return;
+    const recorded = Number(target.lastDamageDealt);
+    const shown = Number.isFinite(recorded) && recorded > 0
+      ? recorded
+      : Math.max(0, Number(fallbackAmount) || 0);
+    const dealt = roundBattleAmount(shown);
+    if (dealt > 0) this.spawnFloat(target.lane, target.col, -dealt);
   }
 
   updateFloats(dt) {

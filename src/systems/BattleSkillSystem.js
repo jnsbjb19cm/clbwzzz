@@ -482,7 +482,11 @@ export class BattleSkillSystem {
       : 0;
     const dmg = roundBattleAmount(damage + vulnerability);
     const applied = unit.takeDamage(dmg, this.engine.time);
-    if (applied > 0) this.engine.spawnFloat(unit.lane, unit.col, -applied);
+    if (applied > 0) {
+      // 伤害数字只显示实际扣掉的血量（致死后不显示溢出伤害）。
+      if (typeof this.engine.spawnDamageFloat === 'function') this.engine.spawnDamageFloat(unit, applied);
+      else this.engine.spawnFloat(unit.lane, unit.col, -applied);
+    }
     if (!unit.alive) this.engine.onUnitDeath(unit);
     return applied;
   }

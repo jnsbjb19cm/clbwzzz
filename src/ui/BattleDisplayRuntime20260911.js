@@ -43,9 +43,13 @@ function installDamageNumbers() {
   const previousTakeDamage = BattleUnit.prototype.takeDamage;
   BattleUnit.prototype.takeDamage = function takeDamageWithPop20260911(amount, now = 0) {
     const dealt = previousTakeDamage.call(this, amount, now);
-    if (dealt > 0 && shouldShowDamageNumbers()) {
+    // 2026-09-11：显示实际扣掉的血量（致死后不再是溢出的 -500），
+    // 不影响扣血结果与 takeDamage/applyCardHit 的返回值。
+    const recorded = Number(this.lastDamageDealt);
+    const shown = Number.isFinite(recorded) && recorded > 0 ? recorded : dealt;
+    if (shown > 0 && shouldShowDamageNumbers()) {
       const pops = this.__damagePops20260911 ?? (this.__damagePops20260911 = []);
-      pops.push({ amount: dealt, at: nowMs() });
+      pops.push({ amount: shown, at: nowMs() });
       if (pops.length > POP_LIMIT) pops.splice(0, pops.length - POP_LIMIT);
     }
     return dealt;
