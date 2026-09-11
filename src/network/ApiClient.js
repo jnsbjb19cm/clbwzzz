@@ -1,4 +1,10 @@
-const DEFAULT_BASE_URL = import.meta.env.VITE_API_BASE_URL || (import.meta.env.DEV ? 'http://localhost:3001/api' : '/api');
+// 2026-09-11 跨机：开发模式下用「当前主机名」而不是写死 localhost，
+// 这样别人用 http://<你的局域网IP>:5173 访问时，API 会自动指向 http://<同一IP>:3001/api。
+const DEV_HOST = (() => {
+  try { return globalThis.location?.hostname || 'localhost'; } catch { return 'localhost'; }
+})();
+const DEFAULT_BASE_URL = import.meta.env.VITE_API_BASE_URL
+  || (import.meta.env.DEV ? `http://${DEV_HOST}:3001/api` : '/api');
 
 export class ApiError extends Error {
   constructor(message, status = 0, data = null) {

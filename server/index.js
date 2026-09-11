@@ -1,6 +1,7 @@
 import { AUTHORITY_TRANSPORT_OPTIONS } from './socket/AuthorityTransportOptions.js';
 import http from 'node:http';
 import fs from 'node:fs';
+import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import cors from 'cors';
@@ -164,8 +165,32 @@ installSystemAnnouncementService(io);
 const stopRandomMatchBotService = startRandomMatchBotService(io);
 const stopRoomLifetimeService = startRoomLifetimeService(io, { stopBattle: stopAuthorityBattleByRoom });
 
-server.listen(config.port, () => {
+/** 2026-09-11 跨机：列出本机所有局域网 IPv4，方便把地址发给同网络的朋友。 */
+function lanIPv4List() {
+  const out = [];
+  for (const entries of Object.values(os.networkInterfaces())) {
+    for (const entry of entries ?? []) {
+      if (entry?.family === 'IPv4' && !entry.internal) out.push(entry.address);
+    }
+  }
+  return out;
+}
+
+// 显式绑定 0.0.0.0，确保同局域网/跨机可访问（不只是本机）。
+server.listen(config.port, '0.0.0.0', () => {
+  const distReady = fs.existsSync(indexHtml);
   console.log(`[clbwzzz] server listening on http://localhost:${config.port}`);
+  const ips = lanIPv4List();
+  if (ips.length) {
+    console.log('[clbwzzz] 跨机访问（同一局域网，把这个地址发给别人）：');
+    for (const ip of ips) {
+      console.log(`           ${distReady ? `客户端+服务端: http://${ip}:${config.port}/` : `服务端 API/WS: http://${ip}:${config.port}`}`);
+    }
+    if (!distReady) console.log('           （客户端尚未构建：先执行 npm run build 即可单地址访问）');
+    if (!config.corsAllowAll) console.log(`           （CORS 仅允许: ${config.corsOrigins.join(', ')}；如需放开请设 CORS_ALLOW_ALL=true）`);
+  } else {
+    console.log('[clbwzzz] 未检测到局域网 IPv4（可能只有本机可访问）');
+  }
 });
 
 function shutdown(signal) {

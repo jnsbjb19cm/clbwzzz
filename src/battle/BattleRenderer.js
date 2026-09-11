@@ -235,6 +235,48 @@ function getUnitRenderCol(unit) {
   return unit.col;
 }
 
+/**
+ * 2026-09-11 性能：品质光环原先每单位每帧 createRadialGradient（60 单位占 ~70% 帧耗时，
+ * 单位再多直接掉到个位数帧）。改成每种品质预渲染一张光环贴图，逐帧只 drawImage。
+ */
+const HALO_SPRITE_SIZE = 128;
+const haloSpriteCache = new Map();
+
+function getHaloSprite(cqQuality) {
+  const cq = normalizeCraftQuality(cqQuality);
+  if (haloSpriteCache.has(cq)) return haloSpriteCache.get(cq);
+  let sprite = null;
+  try {
+    if (typeof document !== 'undefined' && document.createElement) {
+      const S = HALO_SPRITE_SIZE;
+      const canvas = document.createElement('canvas');
+      canvas.width = S;
+      canvas.height = S;
+      const c = canvas.getContext('2d');
+      if (c) {
+        const { r, g, b } = parseHexColor(getHaloColor(cq));
+        const centerAlpha = cq === 4 ? 0.82 : 0.75;
+        const w = S;
+        const h = S * 0.88;
+        const cx = S / 2;
+        const footY = S / 2;
+        const ey = footY + h * 0.05;
+        c.beginPath();
+        c.ellipse(cx, ey, w * 0.56, h * 0.46, 0, 0, Math.PI * 2);
+        const grad = c.createRadialGradient(cx, footY, 0, cx, ey, w * 0.6);
+        grad.addColorStop(0, `rgba(${r},${g},${b},${centerAlpha})`);
+        grad.addColorStop(0.55, `rgba(${r},${g},${b},0.58)`);
+        grad.addColorStop(1, `rgba(${r},${g},${b},0.16)`);
+        c.fillStyle = grad;
+        c.fill();
+        sprite = { canvas, size: S };
+      }
+    }
+  } catch { sprite = null; }
+  haloSpriteCache.set(cq, sprite);
+  return sprite;
+}
+
 /** 单色径向渐变椭圆(静态 qualityLightCircle，不叠星芒/溅射) */
 function drawCraftQualityHalo(ctx, cx, footY, size, craftQuality) {
   const cq = normalizeCraftQuality(craftQuality);
@@ -243,19 +285,29 @@ function drawCraftQualityHalo(ctx, cx, footY, size, craftQuality) {
   const w = size;
   const h = size * 0.88;
   const ey = footY + h * 0.05;
-  const centerAlpha = cq === 4 ? 0.82 : 0.75;
 
+  const sprite = getHaloSprite(cq);
+  if (sprite) {
+    const k = size / sprite.size;
+    const half = sprite.size / 2;
+    ctx.drawImage(sprite.canvas, cx - half * k, footY - half * k, sprite.size * k, sprite.size * k);
+  } else {
+    ctx.save();
+    ctx.beginPath();
+    ctx.ellipse(cx, ey, w * 0.56, h * 0.46, 0, 0, Math.PI * 2);
+    const grad = ctx.createRadialGradient(cx, footY, 0, cx, ey, w * 0.6);
+    grad.addColorStop(0, `rgba(${r},${g},${b},${cq === 4 ? 0.82 : 0.75})`);
+    grad.addColorStop(0.55, `rgba(${r},${g},${b},0.58)`);
+    grad.addColorStop(1, `rgba(${r},${g},${b},0.16)`);
+    ctx.fillStyle = grad;
+    ctx.fill();
+    ctx.restore();
+  }
+
+  // 品质描边（闪光加粗：所有品质都有描边，精良/完美更亮更粗）——描边不含渐变，成本很低
   ctx.save();
   ctx.beginPath();
   ctx.ellipse(cx, ey, w * 0.56, h * 0.46, 0, 0, Math.PI * 2);
-  const grad = ctx.createRadialGradient(cx, footY, 0, cx, ey, w * 0.6);
-  grad.addColorStop(0, `rgba(${r},${g},${b},${centerAlpha})`);
-  grad.addColorStop(0.55, `rgba(${r},${g},${b},0.58)`);
-  grad.addColorStop(1, `rgba(${r},${g},${b},0.16)`);
-  ctx.fillStyle = grad;
-  ctx.fill();
-
-  // 品质描边（闪光加粗：所有品质都有描边，精良/完美更亮更粗）
   ctx.strokeStyle = `rgba(${r},${g},${b},${cq === 4 ? 0.9 : cq === 3 ? 0.7 : 0.5})`;
   ctx.lineWidth = cq === 4 ? 3.2 : cq === 3 ? 2.6 : 2;
   ctx.stroke();
@@ -734,6 +786,10 @@ export class BattleRenderer {
         ctx.restore();
         return;
       }
+      // 2026-09-11：低画质下静态图还没就绪时，绝不回退到逐帧动画路径
+      // （90+ 单位时该路径单帧可达数十毫秒）。请求加载后跳过本帧即可。
+      void this.requestSprite?.(unit.res);
+      return;
     }
 
     unitAnimPlayer.draw(
@@ -976,7 +1032,7 @@ export class BattleRenderer {
 
     for (const unit of alive) {
       const layout = ensureLayout(unit);
-      if (layout && !isDeferredTopLayerUnit(unit)) {
+      if (layout && !isDeferredTopLayerUnit(unit) && !this._lowQuality) {
         drawUnitPhase('renderer.unit-halo', unit, () => this.drawUnitHalo(ctx, unit, layout));
       }
     }
@@ -1008,7 +1064,7 @@ export class BattleRenderer {
     for (const unit of deferredGround) {
       const layout = layouts.get(unit);
       if (!layout) continue;
-      drawUnitPhase('renderer.unit-halo', unit, () => this.drawUnitHalo(ctx, unit, layout));
+      if (!this._lowQuality) drawUnitPhase('renderer.unit-halo', unit, () => this.drawUnitHalo(ctx, unit, layout));
       // 仅最终 pass 绘制一次，须推进动画时钟(advanceClock:false 会导致永远停在第 0 帧)
       drawUnitPhase('renderer.unit-sprite', unit, () => {
         this.drawUnitSprite(ctx, engine, unit, layout);

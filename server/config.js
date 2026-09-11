@@ -11,7 +11,10 @@ const __dirname = path.dirname(__filename);
 
 const dbClient = String(process.env.DB_CLIENT || 'sqlite').trim().toLowerCase();
 const clientOrigin = process.env.CLIENT_ORIGIN || 'http://localhost:5173';
-const corsAllowAll = String(process.env.CORS_ALLOW_ALL || 'false').toLowerCase() === 'true';
+// 2026-09-11 跨机：开发环境默认放开跨域（局域网联机免配置）；生产环境必须显式 CORS_ALLOW_ALL/CLIENT_ORIGIN。
+const corsAllowAll = process.env.CORS_ALLOW_ALL != null
+  ? String(process.env.CORS_ALLOW_ALL).toLowerCase() === 'true'
+  : process.env.NODE_ENV !== 'production';
 const corsOrigins = clientOrigin.split(',').map((value) => value.trim()).filter(Boolean);
 const trustProxyRaw = String(process.env.TRUST_PROXY || 'false').toLowerCase();
 const trustProxyValue = trustProxyRaw === 'true'

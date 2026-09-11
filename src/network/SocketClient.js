@@ -1,7 +1,11 @@
 import { io } from 'socket.io-client';
 
+// 2026-09-11 跨机：开发模式用当前主机名（局域网 IP 访问时自动连同一台机器的 3001）。
+const DEV_SOCKET_HOST = (() => {
+  try { return globalThis.location?.hostname || 'localhost'; } catch { return 'localhost'; }
+})();
 const DEFAULT_SOCKET_URL = import.meta.env.VITE_SOCKET_URL || (
-  import.meta.env.DEV ? 'http://localhost:3001' : (globalThis.location?.origin || '')
+  import.meta.env.DEV ? `http://${DEV_SOCKET_HOST}:3001` : (globalThis.location?.origin || '')
 );
 
 export class SocketClient {

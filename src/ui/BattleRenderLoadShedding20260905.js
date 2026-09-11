@@ -4,6 +4,16 @@ const PATCH_FLAG = Symbol.for('clbwz.battleRenderLoadShedding20260905');
 const NAME_WIDTH_CACHE_LIMIT = 256;
 const UNIT_NAME_FONT = 'bold 9px "Microsoft YaHei", sans-serif';
 const MANUAL_LOW_QUALITY_FLAG = Symbol('manualLowQualityAccessor20260905');
+// 2026-09-11：恢复「自动降画质」并在其上叠加自适应。
+// 之前把 _lowQuality 锁成只读镜像(forceLowQuality)，导致单位一多还是全套逐帧动画
+// → 90+ 单位时单帧渲染暴涨。现在：单位/特效超阈值、或帧耗时超预算 → 自动降画质；
+// 负载回落后再自动升回，避免长时间糊。
+// 目标：至少 90fps（1000/90 ≈ 11.1ms/帧），所以渲染预算卡在 ~10ms，留出余量。
+const AUTO_LOW_UNIT_COUNT = 45;
+const AUTO_LOW_EFFECT_COUNT = 40;
+const FRAME_BUDGET_BAD_MS = 10;   // 单帧渲染 >10ms（≈ 90fps 预算）→ 降画质
+const FRAME_BUDGET_GOOD_MS = 6;   // <6ms 且单位不多 → 才逐步升回
+const AUTO_RECOVER_FRAMES = 90;
 
 function countUnitLoad(engine) {
   let units = 0;
@@ -33,27 +43,51 @@ function shouldShowUnitNames() {
 }
 
 /**
- * BattleRenderer 的旧 draw() 会依据单位数/全屏技能/特效数自动写 _lowQuality=true。
- * 现在低画质只能由用户/设置显式 forceLowQuality 开启，因此把 _lowQuality 变为
- * forceLowQuality 的只读镜像；旧 draw 的自动赋值仍可执行，但 setter 不再改变画质。
+ * 2026-09-11：把 _lowQuality 变成可写属性（旧实现用只读 getter 锁死为 forceLowQuality，
+ * 自动降画质因此失效）。现在由 draw 包装器逐帧决定：forceLowQuality(用户画质=低) 或自适应降级。
  */
-function installManualLowQualityAccessor(renderer) {
+function ensureWritableLowQuality(renderer) {
   const current = Object.getOwnPropertyDescriptor(renderer, '_lowQuality');
-  if (current?.get?.[MANUAL_LOW_QUALITY_FLAG]) return;
-
-  const getter = function manualLowQualityGetter20260905() {
-    return Boolean(this.forceLowQuality);
-  };
-  getter[MANUAL_LOW_QUALITY_FLAG] = true;
-
+  if (current?.writable) return;
   Object.defineProperty(renderer, '_lowQuality', {
     configurable: true,
     enumerable: current?.enumerable ?? true,
-    get: getter,
-    set() {
-      // Intentional no-op: automatic load heuristics may not lower visual quality.
-    },
+    writable: true,
+    value: Boolean(renderer.forceLowQuality),
   });
+}
+
+function adaptiveLowQuality(renderer, { units, effects, costMs }) {
+  const state = renderer.__autoLowQuality20260911 ?? (renderer.__autoLowQuality20260911 = {
+    ema: costMs,
+    low: false,
+    recoverFrames: 0,
+  });
+  state.ema = state.ema * 0.85 + costMs * 0.15;
+
+  const overloaded = units >= AUTO_LOW_UNIT_COUNT
+    || effects >= AUTO_LOW_EFFECT_COUNT
+    || state.ema >= FRAME_BUDGET_BAD_MS;
+  if (overloaded) {
+    state.low = true;
+    state.recoverFrames = 0;
+  } else if (state.low && state.ema <= FRAME_BUDGET_GOOD_MS && units < AUTO_LOW_UNIT_COUNT) {
+    state.recoverFrames += 1;
+    if (state.recoverFrames >= AUTO_RECOVER_FRAMES) {
+      state.low = false;
+      state.recoverFrames = 0;
+    }
+  } else {
+    state.recoverFrames = 0;
+  }
+  const low = Boolean(renderer.forceLowQuality) || state.low;
+  renderer._lowQuality = low;
+  renderer.__autoLowQualityActive20260911 = low;
+  return low;
+}
+
+function installManualLowQualityAccessor(renderer) {
+  ensureWritableLowQuality(renderer);
 }
 
 export function installBattleRenderLoadShedding20260905() {
@@ -61,22 +95,24 @@ export function installBattleRenderLoadShedding20260905() {
   globalThis[PATCH_FLAG] = true;
 
   const previousDraw = BattleRenderer.prototype.draw;
-  BattleRenderer.prototype.draw = function drawWithManualVisualQuality20260905(engine) {
+  BattleRenderer.prototype.draw = function drawWithAdaptiveQuality20260911(engine) {
     const { units, highTierUnits } = countUnitLoad(engine);
     const effects = countEffects(engine);
 
     this.__perfUnits20260905 = units;
     this.__perfHighTierUnits20260905 = highTierUnits;
     this.__perfEffects20260905 = effects;
-    this.__perfTargetFrameMs20260905 = 0;
-    // 只保留负载诊断，不再把它转换成画质降级。
-    this.__perfHeavyVisuals20260905 = units >= 20 || effects >= 28;
-    this.__perfSkipHalos20260905 = false;
+    ensureWritableLowQuality(this);
     this.__perfShowUnitNames20260905 = shouldShowUnitNames();
-
-    installManualLowQualityAccessor(this);
-
-    return previousDraw.call(this, engine);
+    // 先用上一帧决定的画质档渲染本帧，再按本帧耗时/负载决定下一帧档位。
+    const startedAt = typeof performance !== 'undefined' ? performance.now() : Date.now();
+    const result = previousDraw.call(this, engine);
+    const costMs = (typeof performance !== 'undefined' ? performance.now() : Date.now()) - startedAt;
+    this.__perfTargetFrameMs20260905 = FRAME_BUDGET_BAD_MS;
+    const low = adaptiveLowQuality(this, { units, effects, costMs });
+    this.__perfHeavyVisuals20260905 = low;
+    this.__perfSkipHalos20260905 = low;
+    return result;
   };
 
   // 名称文本在大军团里每帧 measureText N 次会制造额外 CPU 压力。
