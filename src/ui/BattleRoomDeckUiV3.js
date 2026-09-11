@@ -13,6 +13,7 @@ import {
 } from '../core/constants.js';
 import { audio } from '../core/AudioManager.js';
 import { DeckSelectView } from './DeckSelectView.js';
+import { resolveDeckGroup20260911 } from './DeckGroupPreference20260911.js';
 
 const PATCH_FLAG = Symbol.for('clbwzzz.battleRoomDeckUiV3');
 const STORAGE_KEY = 'clbwz_room_decks_v4';
@@ -155,10 +156,26 @@ function readRawStoredState() {
   return null;
 }
 
+// 2026-09-11：默认组的"按组数组存档"（battle_deck_v2）比旧聚合更可信；
+// 聚合里的 decks.default 可能被别的战团顶替过（见 initializeState 的修复说明）。
+function readGroupKeyedDefault(view) {
+  try {
+    const raw = localStorage.getItem('battle_deck_v2');
+    const parsed = raw ? JSON.parse(raw) : null;
+    if (!Array.isArray(parsed) || !parsed.length) return null;
+    const reconciled = DeckSelectView.reconcileFingerprints?.(parsed, view?._cardInventory);
+    return reconciled?.length ? reconciled : null;
+  } catch {
+    return null;
+  }
+}
+
 function loadStoredState(view) {
   const parsed = readRawStoredState();
   const decks = {};
   for (const tab of TABS) decks[tab] = reconcile(view, parsed?.decks?.[tab]);
+  const groupKeyedDefault = readGroupKeyedDefault(view);
+  if (groupKeyedDefault) decks.default = groupKeyedDefault;
   return {
     activeTab: TABS.includes(parsed?.activeTab) ? parsed.activeTab : 'default',
     decks,
@@ -189,15 +206,25 @@ function persistCommittedState(view) {
   } catch {}
 }
 
+function defaultDeckForView(view) {
+  const groupKeyed = readGroupKeyedDefault(view);
+  if (groupKeyed) return cloneDeck(groupKeyed);
+  return normalizeDeck(view, DeckSelectView.defaultDeckSlots(view?._cardInventory, view?._db));
+}
+
 function initializeState(view, incomingDeck) {
   const stored = loadStoredState(view);
   const incoming = normalizeDeck(view, incomingDeck);
   const decks = cloneDeckMap(stored.decks);
-  if (!decks.default.length) decks.default = incoming;
+  // 2026-09-11：传进来的卡组属于"当前选中的组"（可能是战团2/3）。
+  // 原来这里写的是 `if (!decks.default.length) decks.default = incoming;`，
+  // 于是默认组为空时会被别的战团的卡组顶替（用户报告的"默认卡组变成其他战团卡组"）。
+  const incomingGroup = resolveDeckGroup20260911(view?._cardInventory, null);
+  if (!decks[incomingGroup]?.length) decks[incomingGroup] = incoming;
 
   view._deckTab = stored.activeTab;
-  if (!decks[view._deckTab].length && view._deckTab === 'default') {
-    decks.default = incoming;
+  if (!decks[view._deckTab]?.length && view._deckTab === 'default') {
+    decks.default = defaultDeckForView(view);
   }
 
   view._v3Decks = decks;
@@ -221,7 +248,8 @@ function commitDrafts(view) {
   syncDraft(view);
   view._v3Committed = cloneDeckMap(view._v3Decks);
   persistCommittedState(view);
-  view.__originalSaveDeck?.(view._selected, view._cardInventory);
+  // 提交时带上当前组：不带组会按 __activeDeckGroup 猜，猜错就把卡组写进别的组。
+  view.__originalSaveDeck?.(view._selected, view._cardInventory, view._deckTab);
 }
 
 function cardMeta(view, bagIndex) {
@@ -794,28 +822,32 @@ export function installBattleRoomDeckUiV3() {
   const originalLoadSavedDeck = DeckSelectView.loadSavedDeck.bind(DeckSelectView);
   const originalSaveDeck = DeckSelectView.saveDeck.bind(DeckSelectView);
 
-  DeckSelectView.loadSavedDeck = function loadConfirmedV4Deck(cardInventory, db) {
+  // 2026-09-11：这两个覆盖原本只接两个参数、并且按"上一次的页签 parsed.activeTab"读写，
+  // 于是（a）请求战团2 时读到的却是聚合里 activeTab 那份（看着像默认卡组）；
+  // （b）编辑别的战团会把它的卡组写进 activeTab 那一组，默认卡组就被别的战团覆盖。
+  // 现在统一按"本次请求的组"读写：组参数照传下层，聚合里只动自己那一组。
+  DeckSelectView.loadSavedDeck = function loadConfirmedV4Deck(cardInventory, db, group) {
+    const normalized = resolveDeckGroup20260911(cardInventory, group);
     const parsed = readRawStoredState();
-    const activeTab = TABS.includes(parsed?.activeTab) ? parsed.activeTab : 'default';
-    const saved = reconcileInventory(cardInventory, db, parsed?.decks?.[activeTab]);
-    return saved.length ? saved : originalLoadSavedDeck(cardInventory, db);
+    const saved = reconcileInventory(cardInventory, db, parsed?.decks?.[normalized]);
+    if (saved.length) return saved;
+    return originalLoadSavedDeck(cardInventory, db, normalized);
   };
 
-  DeckSelectView.saveDeck = function saveConfirmedV4Deck(indices, cardInventory) {
-    originalSaveDeck(indices, cardInventory);
-    const parsed = readRawStoredState() ?? { version: 4, activeTab: 'default', decks: {} };
-    const activeTab = TABS.includes(parsed.activeTab) ? parsed.activeTab : 'default';
+  DeckSelectView.saveDeck = function saveConfirmedV4Deck(indices, cardInventory, group) {
+    const normalized = resolveDeckGroup20260911(cardInventory, group);
+    originalSaveDeck(indices, cardInventory, normalized);
+    const parsed = readRawStoredState() ?? { version: 4, activeTab: normalized, decks: {} };
     parsed.version = 4;
-    parsed.activeTab = activeTab;
+    parsed.activeTab = normalized;
     parsed.decks ??= {};
-    parsed.decks[activeTab] = cloneDeck(indices)
+    parsed.decks[normalized] = cloneDeck(indices)
       .map((index) => inventoryFingerprint(cardInventory, index))
       .filter(Boolean);
     parsed.updatedAt = Date.now();
     try {
-      const json = JSON.stringify(parsed);
-      localStorage.setItem(STORAGE_KEY, json);
-      localStorage.setItem(LEGACY_V3_KEY, json);
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(parsed));
+      localStorage.setItem(LEGACY_V3_KEY, JSON.stringify(parsed));
     } catch {}
   };
 

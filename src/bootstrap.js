@@ -28,6 +28,7 @@ import { installBattleUnitPresentation20260906 } from './ui/BattleUnitPresentati
 import { installBattleQualityHaloFix20260908 } from './ui/BattleQualityHaloFix20260908.js';
 import { installBattleLootMaterialIconFix20260908 } from './ui/BattleLootMaterialIconFix20260908.js';
 import { installBattleUserRegressionFix20260907 } from './ui/BattleUserRegressionFix20260907.js';
+import { installDeckGroupStartGuard20260911 } from './ui/DeckGroupPreference20260911.js';
 import { installDeckInventoryAuthorityFix20260907 } from './ui/DeckInventoryAuthorityFix20260907.js';
 import { installRoomDeckRefreshRegressionFix20260907 } from './ui/RoomDeckRefreshRegressionFix20260907.js';
 import { installRoomBattleDeckRuntimeFix20260908 } from './ui/RoomBattleDeckRuntimeFix20260908.js';
@@ -113,4 +114,6 @@ void import('./main.js').then(() => {
   // 房间聊天合并必须最后装：它要包住 LobbyChatPatch / RoomChatChannelFix 的
   // appendChat、bindRoomChat、enterRoom/exitRoom。
   installRoomChatMerge20260910();
+  // 2026-09-11：空战团不允许开打（挂在最后，保证拦得住所有开始入口）。
+  installDeckGroupStartGuard20260911();
 });

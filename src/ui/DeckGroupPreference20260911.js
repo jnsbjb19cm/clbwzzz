@@ -14,6 +14,7 @@
  *  - 一旦选过 → 进房时以本地记忆为准，并把该选择同步给房间成员（room:set-deck），
  *    这样房间、开打用的卡组和界面上的页签三者一致。
  */
+import { SocketClient } from '../network/SocketClient.js';
 import { DeckSelectView } from './DeckSelectView.js';
 import {
   deckGroupToNumber20260906,
@@ -77,16 +78,59 @@ export function preferredRoomDeckGroup20260911(serverDeckNo) {
  *   - 默认组没有 → 用系统初始卡组；
  *   - 其它组没有 → 返回空（尊重玩家的选择，由界面提示去配置）。
  */
+export function resolveDeckGroup20260911(cardInventory, group = null) {
+  if (group != null) return normalizeDeckGroup20260906(group);
+  return normalizeDeckGroup20260906(
+    cardInventory?.__activeDeckGroup20260907
+      ?? readRememberedDeckGroup20260911()
+      ?? 'default',
+  );
+}
+
 export function loadBattleDeckSlots20260911(cardInventory, db, group = null) {
-  const normalized = group == null
-    ? normalizeDeckGroup20260906(
-      cardInventory?.__activeDeckGroup20260907
-        ?? readRememberedDeckGroup20260911()
-        ?? 'default',
-    )
-    : normalizeDeckGroup20260906(group);
+  const normalized = resolveDeckGroup20260911(cardInventory, group);
   const saved = DeckSelectView.loadSavedDeck(cardInventory, db, normalized);
   if (Array.isArray(saved)) return saved;
   if (normalized === 'default') return DeckSelectView.defaultDeckSlots(cardInventory, db) ?? [];
   return [];
+}
+
+const START_GUARD_FLAG = Symbol.for('clbwz.deckGroupStartGuard20260911');
+const DECK_GROUP_LABEL = { default: '默认', team1: '战团1', team2: '战团2', team3: '战团3' };
+
+/**
+ * 空战团不允许开打（用户要求）：选中战团还没配置卡牌时，
+ * 点"开始战斗"只弹提示、不真的开始，避免打起来发现手上没牌。
+ * 挂在 SocketClient.startGame 上，房间内所有开始入口都会被拦到。
+ */
+export function installDeckGroupStartGuard20260911() {
+  if (globalThis[START_GUARD_FLAG]) return;
+  globalThis[START_GUARD_FLAG] = true;
+  const proto = SocketClient.prototype;
+  const previousStartGame = proto.startGame;
+  proto.startGame = function startGameWithDeckGroupGuard(...args) {
+    try {
+      const app = globalThis.__clbwzAppInstance;
+      const view = app?.views?.room ?? null;
+      const inventory = view?.cardInventory ?? null;
+      const db = view?.db ?? null;
+      if (view?.room?.status === 'waiting' && inventory && db) {
+        const group = resolveDeckGroup20260911(inventory, null);
+        if (group !== 'default') {
+          const deck = loadBattleDeckSlots20260911(inventory, db, group);
+          if (!Array.isArray(deck) || deck.length === 0) {
+            const label = DECK_GROUP_LABEL[group] ?? group;
+            const message = `「${label}」还没有配置卡牌，请先配置或切回默认卡组再开始`;
+            try { view.notice?.(message); } catch { /* 忽略 */ }
+            try { app?.showGlobalNotice?.('无法开始战斗', `<div>${message}</div>`); } catch { /* 忽略 */ }
+            // 不发开始请求：服务端不会广播 room:starting，界面停在房间。
+            return Promise.resolve(view.room ?? null);
+          }
+        }
+      }
+    } catch {
+      /* 守卫自身出错不应影响正常开始 */
+    }
+    return previousStartGame.apply(this, args);
+  };
 }
