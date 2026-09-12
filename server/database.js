@@ -132,6 +132,9 @@ CREATE TABLE IF NOT EXISTS player_profiles (
   honor INTEGER NOT NULL DEFAULT 120 CHECK(honor >= 0),
   arena INTEGER NOT NULL DEFAULT 80 CHECK(arena >= 0),
   selected_deck_no INTEGER NOT NULL DEFAULT 1 CHECK(selected_deck_no BETWEEN 1 AND 3),
+  -- 2026-09-11：4 个卡组页签（默认 + 战团1~3）的"当前选择"用组名存这里，
+  -- selected_deck_no 保持 1~3 兼容旧数据（默认组沿用旧值 1）。
+  selected_deck_group TEXT NOT NULL DEFAULT 'default',
   updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE
 );
@@ -165,7 +168,7 @@ CREATE TABLE IF NOT EXISTS player_card_bags (
 CREATE TABLE IF NOT EXISTS player_decks (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   user_id INTEGER NOT NULL,
-  deck_no INTEGER NOT NULL CHECK(deck_no BETWEEN 1 AND 3),
+  deck_no INTEGER NOT NULL CHECK(deck_no BETWEEN 0 AND 3),
   name TEXT NOT NULL,
   UNIQUE(user_id, deck_no),
   FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE
@@ -344,6 +347,7 @@ const MYSQL_TABLES = [
     honor BIGINT NOT NULL DEFAULT 120,
     arena BIGINT NOT NULL DEFAULT 80,
     selected_deck_no INT NOT NULL DEFAULT 1,
+    selected_deck_group VARCHAR(16) NOT NULL DEFAULT 'default',
     updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     CONSTRAINT fk_profiles_user FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE
   ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci`,
@@ -539,6 +543,85 @@ function migrateSqlite() {
     sqlite.exec('ALTER TABLE player_stage_progress ADD COLUMN best_time_ms INTEGER NOT NULL DEFAULT 0');
   }
 
+  // 旧 player_profiles 缺少 selected_deck_group（4 个组的选择）
+  const profileCols = tableColumns('player_profiles');
+  if (!profileCols.has('selected_deck_group')) {
+    sqlite.exec("ALTER TABLE player_profiles ADD COLUMN selected_deck_group TEXT NOT NULL DEFAULT 'default'");
+  }
+
+  // 旧 player_decks 只允许 deck_no 1~3（默认组没地方放），重建为 0~3。
+  // deck_cards 通过 deck_id 关联，主键值原样拷贝，所以外键依然有效。
+  const deckTableSql = String(
+    sqlite.prepare("SELECT sql FROM sqlite_master WHERE type='table' AND name='player_decks'").get()?.sql ?? '',
+  );
+  if (deckTableSql.includes('BETWEEN 1 AND 3')) {
+    // 注意：不能直接 RENAME 旧表——SQLite 会把 deck_cards 的外键一起改指向改名后的表，
+    // 删掉旧表后外键就成了悬空引用。正确顺序：建新表 → 拷数据 → 删旧表 → 把新表改成正式名。
+    sqlite.pragma('foreign_keys = OFF');
+    sqlite.pragma('legacy_alter_table = ON');
+    sqlite.exec(`
+      BEGIN;
+      CREATE TABLE player_decks_new (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER NOT NULL,
+        deck_no INTEGER NOT NULL CHECK(deck_no BETWEEN 0 AND 3),
+        name TEXT NOT NULL,
+        UNIQUE(user_id, deck_no),
+        FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE
+      );
+      INSERT INTO player_decks_new(id,user_id,deck_no,name)
+        SELECT id,user_id,deck_no,name FROM player_decks;
+      DROP TABLE player_decks;
+      ALTER TABLE player_decks_new RENAME TO player_decks;
+      COMMIT;
+    `);
+    sqlite.pragma('legacy_alter_table = OFF');
+    sqlite.pragma('foreign_keys = ON');
+  }
+
+  // 修复：如果 deck_cards 的外键还指向 player_decks_old（曾经用错顺序的迁移会留下
+  // 这种悬空引用，之后任何写 deck_cards 都会报 no such table: main.player_decks_old），
+  // 就按正确结构重建 deck_cards。这里只重建表结构，数据原样搬过去。
+  const deckCardsSql = String(
+    sqlite.prepare("SELECT sql FROM sqlite_master WHERE type='table' AND name='deck_cards'").get()?.sql ?? '',
+  );
+  if (deckCardsSql.includes('player_decks_old')) {
+    sqlite.pragma('foreign_keys = OFF');
+    sqlite.pragma('legacy_alter_table = ON');
+    sqlite.exec(`
+      BEGIN;
+      CREATE TABLE deck_cards_new (
+        deck_id INTEGER NOT NULL,
+        slot_index INTEGER NOT NULL CHECK(slot_index BETWEEN 0 AND 9),
+        card_id INTEGER NOT NULL,
+        PRIMARY KEY(deck_id, slot_index),
+        FOREIGN KEY(deck_id) REFERENCES player_decks(id) ON DELETE CASCADE
+      );
+      INSERT INTO deck_cards_new(deck_id,slot_index,card_id)
+        SELECT deck_id,slot_index,card_id FROM deck_cards;
+      DROP TABLE deck_cards;
+      ALTER TABLE deck_cards_new RENAME TO deck_cards;
+      COMMIT;
+    `);
+    sqlite.pragma('legacy_alter_table = OFF');
+    sqlite.pragma('foreign_keys = ON');
+  }
+
+  // 给每个已有玩家补一个默认组（deck_no=0），内容先沿用战团1，避免"默认组空着被别的组顶替"
+  sqlite.exec(`
+    INSERT INTO player_decks(user_id, deck_no, name)
+    SELECT u.id, 0, '默认' FROM users u
+    WHERE NOT EXISTS (SELECT 1 FROM player_decks d WHERE d.user_id=u.id AND d.deck_no=0);
+  `);
+  sqlite.exec(`
+    INSERT INTO deck_cards(deck_id, slot_index, card_id)
+    SELECT d0.id, dc.slot_index, dc.card_id
+    FROM player_decks d0
+    JOIN player_decks d1 ON d1.user_id=d0.user_id AND d1.deck_no=1
+    JOIN deck_cards dc ON dc.deck_id=d1.id
+    WHERE d0.deck_no=0 AND NOT EXISTS (SELECT 1 FROM deck_cards x WHERE x.deck_id=d0.id);
+  `);
+
   // 旧 player_items 缺少 is_bound 或主键仍是 (user_id,item_id)，重建为新结构
   const itemCols = tableColumns('player_items');
   if (!itemCols.has('is_bound')) {
@@ -613,6 +696,23 @@ async function migrateMysql() {
     await pool.query('ALTER TABLE player_stage_progress ADD COLUMN best_time_ms BIGINT NOT NULL DEFAULT 0');
   }
 
+  if (!(await hasColumn('player_profiles', 'selected_deck_group'))) {
+    await pool.query("ALTER TABLE player_profiles ADD COLUMN selected_deck_group VARCHAR(16) NOT NULL DEFAULT 'default'");
+  }
+  await pool.query(`
+    INSERT INTO player_decks(user_id, deck_no, name)
+    SELECT u.id, 0, '默认' FROM users u
+    WHERE NOT EXISTS (SELECT 1 FROM player_decks d WHERE d.user_id=u.id AND d.deck_no=0)
+  `);
+  await pool.query(`
+    INSERT INTO deck_cards(deck_id, slot_index, card_id)
+    SELECT d0.id, dc.slot_index, dc.card_id
+    FROM player_decks d0
+    JOIN player_decks d1 ON d1.user_id=d0.user_id AND d1.deck_no=1
+    JOIN deck_cards dc ON dc.deck_id=d1.id
+    WHERE d0.deck_no=0 AND NOT EXISTS (SELECT 1 FROM deck_cards x WHERE x.deck_id=d0.id)
+  `);
+
   if (!(await hasColumn('player_items', 'is_bound'))) {
     await pool.query('ALTER TABLE player_items ADD COLUMN is_bound TINYINT(1) NOT NULL DEFAULT 1');
     // 旧表主键 (user_id,item_id) 升为新主键 (user_id,item_id,is_bound)
@@ -644,9 +744,11 @@ export async function createPlayerData(userId, nickname) {
       'INSERT INTO deck_cards(deck_id,slot_index,card_id) VALUES(?,?,?)',
       [deckId, slotIndex, cardId],
     );
-    for (let deckNo = 1; deckNo <= 3; deckNo += 1) {
-      const result = await insertDeck(deckNo, `战团${deckNo}`);
-      if (deckNo === 1) {
+    // 2026-09-11：4 个组都入库（0=默认，1~3=战团1~3）。
+    const DECK_NAMES = { 0: '默认', 1: '战团1', 2: '战团2', 3: '战团3' };
+    for (let deckNo = 0; deckNo <= 3; deckNo += 1) {
+      const result = await insertDeck(deckNo, DECK_NAMES[deckNo]);
+      if (deckNo === 0 || deckNo === 1) {
         for (let index = 0; index < STARTER_DECK.length; index += 1) {
           await insertDeckCard(result.lastInsertRowid, index, STARTER_DECK[index]);
         }
@@ -667,7 +769,8 @@ export async function createPlayerData(userId, nickname) {
 export async function getPlayerSnapshot(userId) {
   const profile = await get(`
     SELECT user_id AS userId, nickname, level, exp, hp, gold,
-           diamond, honor, arena, selected_deck_no AS selectedDeckNo
+           diamond, honor, arena, selected_deck_no AS selectedDeckNo,
+           selected_deck_group AS selectedDeckGroup
     FROM player_profiles WHERE user_id=?
   `, [userId]);
   if (!profile) return null;
@@ -738,7 +841,8 @@ export async function getPlayerSnapshot(userId) {
 export async function getSocketUser(userId) {
   return get(`
     SELECT u.id, u.username, p.nickname, p.level,
-           p.selected_deck_no AS selectedDeckNo
+           p.selected_deck_no AS selectedDeckNo,
+           p.selected_deck_group AS selectedDeckGroup
     FROM users u JOIN player_profiles p ON p.user_id=u.id
     WHERE u.id=?
   `, [userId]);

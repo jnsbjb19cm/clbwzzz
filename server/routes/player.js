@@ -110,16 +110,33 @@ playerRouter.post('/moderation/nickname-fallback', async (req, res) => {
   return res.json({ ok: true, nickname: fallback, snapshot: await getPlayerSnapshot(req.user.id) });
 });
 
+// 组名 <-> 编号：0=默认，1~3=战团1~3（数据库里两个字段同时维护，兼容旧数据）
+const DECK_GROUP_NAMES = { default: 0, team1: 1, team2: 2, team3: 3 };
+const DECK_GROUP_BY_NO = { 0: 'default', 1: 'team1', 2: 'team2', 3: 'team3' };
+
+function resolveDeckGroup(body = {}) {
+  const rawGroup = typeof body.group === 'string' ? body.group.trim().toLowerCase() : '';
+  if (rawGroup in DECK_GROUP_NAMES) return { group: rawGroup, deckNo: DECK_GROUP_NAMES[rawGroup] };
+  const deckNo = clampInt(body.deckNo, 0, 3);
+  return { group: DECK_GROUP_BY_NO[deckNo], deckNo };
+}
+
 playerRouter.put('/selected-deck', async (req, res) => {
-  const deckNo = clampInt(req.body.deckNo, 1, 3);
+  // 2026-09-11：允许"默认"组（deckNo=0 / group=default）。
+  // selected_deck_no 的约束仍是 1~3，所以默认组沿用旧值 1；权威值看 selected_deck_group。
+  const { group, deckNo } = resolveDeckGroup(req.body);
+  const legacyNo = deckNo >= 1 && deckNo <= 3 ? deckNo : 1;
   await db.run(`
-    UPDATE player_profiles SET selected_deck_no=?, updated_at=CURRENT_TIMESTAMP WHERE user_id=?
-  `, [deckNo, req.user.id]);
-  return res.json({ ok: true, deckNo });
+    UPDATE player_profiles
+    SET selected_deck_no=?, selected_deck_group=?, updated_at=CURRENT_TIMESTAMP
+    WHERE user_id=?
+  `, [legacyNo, group, req.user.id]);
+  return res.json({ ok: true, deckNo, group });
 });
 
 playerRouter.put('/decks/:deckNo', async (req, res) => {
-  const deckNo = clampInt(req.params.deckNo, 1, 3);
+  // 0=默认组，1~3=战团1~3
+  const deckNo = clampInt(req.params.deckNo, 0, 3);
   const rawCards = Array.isArray(req.body.cards) ? req.body.cards : [];
   const cards = rawCards.map(Number).filter((id) => Number.isInteger(id) && id > 0);
   if (cards.length > 10) {

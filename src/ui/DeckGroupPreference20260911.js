@@ -14,6 +14,7 @@
  *  - 一旦选过 → 进房时以本地记忆为准，并把该选择同步给房间成员（room:set-deck），
  *    这样房间、开打用的卡组和界面上的页签三者一致。
  */
+import { authStore } from '../core/AuthStore.js';
 import { SocketClient } from '../network/SocketClient.js';
 import { DeckSelectView } from './DeckSelectView.js';
 import {
@@ -23,18 +24,52 @@ import {
 
 const STORAGE_KEY = 'clbwz_deck_group_v1';
 
-/** 读取玩家记住的卡组；从没选过返回 null（调用方应回退到服务端/默认值）。 */
-export function readRememberedDeckGroup20260911() {
-  try {
-    const raw = globalThis.localStorage?.getItem(STORAGE_KEY);
-    if (raw == null || raw === '') return null;
-    return normalizeDeckGroup20260906(raw);
-  } catch {
-    return null;
-  }
+export const DECK_GROUP_BY_NO_20260911 = { 0: 'default', 1: 'team1', 2: 'team2', 3: 'team3' };
+const DECK_NO_BY_GROUP_20260911 = { default: 0, team1: 1, team2: 2, team3: 3 };
+
+export function deckNoForGroup20260911(group) {
+  return DECK_NO_BY_GROUP_20260911[normalizeDeckGroup20260906(group)] ?? 0;
 }
 
-/** 记住玩家的卡组选择。 */
+/** 账号里记住的战团（服务端为准，跨设备/换浏览器一致）。 */
+export function accountDeckGroup20260911() {
+  const raw = String(authStore?.snapshot?.profile?.selectedDeckGroup ?? '').trim();
+  return raw in DECK_NO_BY_GROUP_20260911 ? raw : null;
+}
+
+/** 读取玩家记住的卡组；从没选过返回 null（调用方应回退到服务端/默认值）。 */
+export function readRememberedDeckGroup20260911() {
+  // 本地（最近一次操作，立即写入）优先；本地没有（换设备/清缓存）再用账号里的值。
+  try {
+    const raw = globalThis.localStorage?.getItem(STORAGE_KEY);
+    if (raw != null && raw !== '') return normalizeDeckGroup20260906(raw);
+  } catch {
+    /* 隐私模式等场景忽略 */
+  }
+  return accountDeckGroup20260911();
+}
+
+let selectedDeckSyncTimer = null;
+let selectedDeckPending = null;
+
+function flushSelectedDeckGroup() {
+  const group = selectedDeckPending;
+  selectedDeckPending = null;
+  selectedDeckSyncTimer = null;
+  if (!group || !authStore?.isLoggedIn?.()) return;
+  // 后台提交：不阻塞界面；失败也无所谓，本地已经生效，下次切组会再提交。
+  void Promise.resolve(authStore.api.put('/player/selected-deck', { group }))
+    .then(() => {
+      const profile = authStore.snapshot?.profile;
+      if (profile) profile.selectedDeckGroup = group;
+    })
+    .catch(() => {});
+}
+
+/**
+ * 记住玩家的卡组选择（"保存要快"）：
+ * 本地立即生效，服务端提交做 400ms 去抖合并 —— 连续切页签只发一次请求。
+ */
 export function rememberDeckGroup20260911(group) {
   const normalized = normalizeDeckGroup20260906(group);
   try {
@@ -42,6 +77,11 @@ export function rememberDeckGroup20260911(group) {
   } catch {
     /* 隐私模式等场景忽略 */
   }
+  const profile = authStore?.snapshot?.profile;
+  if (profile) profile.selectedDeckGroup = normalized;
+  selectedDeckPending = normalized;
+  if (selectedDeckSyncTimer) clearTimeout(selectedDeckSyncTimer);
+  selectedDeckSyncTimer = setTimeout(flushSelectedDeckGroup, 400);
   return normalized;
 }
 

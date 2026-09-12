@@ -67,7 +67,7 @@ function updateSnapshotDeck(deckNo, cardIds) {
 }
 
 function queueDeckSave(deckNo, cardIds) {
-  if (!authStore?.isLoggedIn?.() || deckNo < 1 || deckNo > 3) return Promise.resolve();
+  if (!authStore?.isLoggedIn?.() || deckNo < 0 || deckNo > 3) return Promise.resolve();
   const key = deckCacheKey(deckNo);
   const requestedIds = [...cardIds];
   const signature = requestedIds.join(',');
@@ -102,7 +102,7 @@ function queueDeckSave(deckNo, cardIds) {
 function pendingDeckSave(group) {
   const normalized = normalizeDeckGroup20260906(group);
   const deckNo = deckGroupToNumber20260906(normalized);
-  if (deckNo < 1 || deckNo > 3) return Promise.resolve();
+  if (deckNo < 0 || deckNo > 3) return Promise.resolve();
   return DECK_PENDING.get(deckCacheKey(deckNo))?.queue ?? Promise.resolve();
 }
 
@@ -115,8 +115,9 @@ function installDeckServerPersistence() {
 
   DeckSelectView.loadSavedDeck = function loadServerBackedDeck(cardInventory, db, group) {
     const normalized = normalizeDeckGroup20260906(group ?? cardInventory?.__activeDeckGroup20260907 ?? 'default');
+    // 2026-09-11：默认组（deckNo=0）也入库，不再只靠 localStorage。
     const deckNo = deckGroupToNumber20260906(normalized);
-    if (deckNo >= 1 && deckNo <= 3 && authStore?.isLoggedIn?.()) {
+    if (deckNo >= 0 && deckNo <= 3 && authStore?.isLoggedIn?.()) {
       const pending = DECK_PENDING.get(deckCacheKey(deckNo))?.cardIds;
       const cardIds = pending ?? snapshotDeckIds(deckNo);
       if (Array.isArray(cardIds)) {
@@ -131,7 +132,7 @@ function installDeckServerPersistence() {
     const normalized = normalizeDeckGroup20260906(group ?? cardInventory?.__activeDeckGroup20260907 ?? 'default');
     priorSaveDeck(selected, cardInventory, normalized);
     const deckNo = deckGroupToNumber20260906(normalized);
-    if (deckNo < 1 || deckNo > 3) return Promise.resolve();
+    if (deckNo < 0 || deckNo > 3) return Promise.resolve();
     const cardIds = cardIdsFromSelection(selected, cardInventory);
     return queueDeckSave(deckNo, cardIds);
   };
