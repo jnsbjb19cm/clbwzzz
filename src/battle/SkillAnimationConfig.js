@@ -191,10 +191,22 @@ export function shouldInterpolateFrames(skillId) {
  * - 518 圣盾术 / 547 铁壳功: true instant effects.
  * Other skills retain the established animation-linked timing.
  */
+/**
+ * 命中瞬间在动画里的进度（0~1）。默认 0.42（历史值）。
+ *
+ * 2026-09-12：**番茄炸弹 500 实测不一样** —— skill_anim/500 共 61 帧，
+ * 第 0~27 帧是番茄下落，**第 28~31 帧才是落地起爆**（像素统计：填充量 257 → 1576），
+ * 也就是命中瞬间在 **~50%** 而不是 42%。之前按 42% 结算，伤害数字比爆炸画面早出约 0.14 秒
+ * （用户报告："番茄炸弹的伤害出的时机不对"）。
+ */
+export const SKILL_IMPACT_RATIO = Object.freeze({
+  500: 0.50,
+});
+
 export function getSkillResolutionDelay(skillId, fallback = 0.9) {
   const id = Number(skillId);
   if (id === 527) return 2;
   if (id === 518 || id === 547) return 0;
   if (id === 517 || id === 537) return getSkillVisualDuration(id, fallback);
-  return getSkillAnimationDuration(id, fallback) * 0.42;
+  return getSkillAnimationDuration(id, fallback) * (SKILL_IMPACT_RATIO[id] ?? 0.42);
 }

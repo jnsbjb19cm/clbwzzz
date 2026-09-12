@@ -28,8 +28,8 @@ export const TALENT_NODES = [
   { id: 'west_reserve', name: '魔力储备', kind: 'minor', branch: 'west', x: 34, y: 58, cost: 1, prerequisites: ['west_resolve'], mpBonus: 6, desc: '点亮后，我方魔力上限 +6。' },
   { id: 'poison_mist', name: '毒雾', branch: 'west', x: 28, y: 42, cost: 1, prerequisites: ['west_resolve'], skillId: 514, desc: '使3*3范围内的所有敌方单位中毒,每秒造成4点伤害,持续10秒（主动技能）。' },
   { id: 'battle_roar', name: '疯狂咆哮', branch: 'west', x: 28, y: 58, cost: 1, prerequisites: ['west_resolve'], skillId: 522, desc: '瞬间提高己方所有单位的攻击力10点,持续15秒（主动技能）' },
-  { id: 'fatal_curse', name: '致命诅咒', branch: 'west', x: 20, y: 36, cost: 1, prerequisites: ['poison_mist'], skillId: 539, desc: '对敌方所有卡牌造成中毒效果，并每秒扣除8点血量，持续10秒，在此技能造成的中毒持续期间，使敌方处于中毒状态下的卡牌单位受到的非中毒伤害伤害提高3点（主动技能）。' },
-  { id: 'guardian_shield', name: '圣盾术', branch: 'west', x: 20, y: 64, cost: 1, prerequisites: ['battle_roar'], skillId: 518, hpBonus: 75, desc: '瞬间令我方所有在场卡牌获得5S的圣咏效果，期间不会受到任何伤害，且免疫任何负面效果。（主动技能）。' },
+  { id: 'fatal_curse', name: '致命诅咒', branch: 'west', x: 20, y: 36, cost: 1, prerequisites: ['poison_mist'], skillId: 539, desc: '对敌方所有卡牌造成中毒效果，并每秒扣除4点血量，持续10秒，在此技能造成的中毒持续期间，使敌方处于中毒状态下的卡牌单位受到的非中毒伤害伤害提高3点（主动技能）。' },
+  { id: 'guardian_shield', name: '圣盾术', branch: 'west', x: 20, y: 64, cost: 1, prerequisites: ['battle_roar'], skillId: 518, hpBonus: 75, desc: '瞬间令我方所有在场卡牌获得10S的圣咏效果，期间不会受到任何伤害，且免疫任何负面效果。（主动技能）。' },
 
   // ============ 被动技能（点亮后永久生效）============
   { id: 'passive_will', name: '战意', kind: 'passive', branch: 'center', x: 58, y: 76, cost: 1, prerequisites: ['core'], cardAtkPct: 5, desc: '点亮后，我方所有卡牌攻击力永久 +5%。' },

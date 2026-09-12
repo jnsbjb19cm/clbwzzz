@@ -10,6 +10,7 @@ import {
   normalizeBattleCraftQuality,
 } from './CardStatFormula.js';
 import { sanitizeCustomCardName } from '../core/constants.js';
+import { isSuicideCard } from '../core/CardTraitRegistry.js';
 
 let uid = 0;
 const FORCED_TARGETABLE_CARD_IDS = new Set([34, 53, 62]);
@@ -98,6 +99,9 @@ export class BattleUnit {
     // 因此它不能成为普通单位、子弹或移动阻挡的判定目标。
     if (this.bossCommanderOnly === true) return true;
     if (FORCED_TARGETABLE_CARD_IDS.has(this.cardId)) return false;
+    // 2026-09-12：埋在地里的自爆陷阱(黑铁土豆雷61)不能被锁定 —— 否则近战会停在它前面 1 格
+    // （range=1），永远走不上去、也就触发不了它的爆炸（用户报告）。
+    if (isSuicideCard(this) && !this.isMovable()) return true;
     return this.atkStyle === 9;
   }
 
@@ -126,6 +130,10 @@ export class BattleUnit {
   }
 
   get range() {
+    // 2026-09-12：自爆单位(飞行水蜜桃40/黑铁土豆雷61/热血火龙果65)要**走到接触**才炸。
+    // 之前按近战算 range=1，它会停在目标前 1 格（自爆接触窗口只有 0.62 格），
+    // 于是"杵在那里也不自爆"（用户报告：热血火龙果）。
+    if (isSuicideCard(this)) return 0;
     // 远程：全图；近战：1 格(可攻击相邻格，避免差一格/同速追逐永远打不到)
     return this.isRanged() ? REMOTE_RANGE : 1;
   }

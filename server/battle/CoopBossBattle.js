@@ -9,6 +9,7 @@ const {
   RESOURCE_REGEN,
   RESOURCE_REGEN_INTERVAL,
   RESOURCE_START,
+  calcPlayerHeroHp,
   usesFoodCost,
 } = await import('../../src/battle/BattleConfig.js');
 const {
@@ -29,7 +30,6 @@ const {
 } = await import('../../src/battle/SkillAnimationConfig.js');
 const { BOSS_DIFFICULTY_MULT, getBossById } = await import('../../src/data/bossList.js');
 
-const PLAYER_BASE_HP = 3000;
 const BLUE_STATIC_COLS = new Set([0, 1, 2, 3, 4]);
 const BLUE_MOVABLE_COLS = new Set([0, 1, 2]);
 const HIDDEN_ENEMY_BASE_HP = 999_999_999;
@@ -112,6 +112,7 @@ export class CoopBossBattle {
     this.members = members.map((member) => ({
       userId: Number(member.userId),
       nickname: member.nickname || '玩家',
+      level: Math.max(1, Math.floor(Number(member.level) || 1)),
       team: 'blue',
     }));
     this.teamBlue = this.members;
@@ -135,15 +136,15 @@ export class CoopBossBattle {
         stage_name: `${this.bossInfo.name}：${this.difficulty}`,
         enemy_name: this.bossInfo.name,
         enemy_res: Number(this.bossInfo.cardId),
-        hp: PLAYER_BASE_HP,
+        hp: this.teamHeroHp(),
       };
       this.engine.wave.queue = [];
       this.engine.wave.done = true;
       this.engine.wave.totalWaves = 1;
       this.engine.totalWaves = 1;
       this.engine.waveNumber = 1;
-      this.engine.heroMaxHp = PLAYER_BASE_HP;
-      this.engine.heroHp = PLAYER_BASE_HP;
+      this.engine.heroMaxHp = this.teamHeroHp();
+      this.engine.heroHp = this.engine.heroMaxHp;
       this.engine.enemyHeroMaxHp = HIDDEN_ENEMY_BASE_HP;
       this.engine.enemyHeroHp = HIDDEN_ENEMY_BASE_HP;
       this.engine.units = [];
@@ -164,6 +165,16 @@ export class CoopBossBattle {
       this.engine.pvp = false;
       this.engine.coopBoss = false;
       this.engine.status = 'playing';
+    }
+
+    this.playerTalentBonuses = new Map();
+    this.engine.__authorityTalentBonusForUser20260912 = (userId) => ({
+      bonus: this.playerTalentBonuses.get(Number(userId)) ?? null,
+      team: 'blue',
+    });
+    if (this.mode === 'pve') {
+      this.engine.heroMaxHp = this.teamHeroHp();
+      this.engine.heroHp = this.engine.heroMaxHp;
     }
 
     this.resources = new Map();
@@ -195,6 +206,34 @@ export class CoopBossBattle {
       this.spawnBoss();
       this.installBossDamageRoute();
     }
+  }
+
+  teamHeroHp() {
+    return this.members.slice(0, 3).reduce((sum, member) =>
+      sum + calcPlayerHeroHp(member.level), 0);
+  }
+
+  setPlayerTalentBonus(userId, talentBonus = {}) {
+    const id = Number(userId);
+    if (!this.teamOf(id)) throw new Error('你不是本房间玩家');
+    const previous = this.playerTalentBonuses.get(id) ?? {};
+    const bonus = { ...talentBonus };
+    this.playerTalentBonuses.set(id, bonus);
+    const hpDelta = Math.max(0, Number(bonus.hp) || 0)
+      - Math.max(0, Number(previous.hp) || 0);
+    this.engine.heroMaxHp = Math.max(1, round2(this.engine.heroMaxHp + hpDelta));
+    this.engine.heroHp = Math.max(0, Math.min(this.engine.heroMaxHp,
+      round2(this.engine.heroHp + hpDelta)));
+    return bonus;
+  }
+
+  applyPlayerTalent(unit, userId) {
+    const bonus = this.playerTalentBonuses.get(Number(userId));
+    if (!bonus) return unit;
+    unit.__talentBonus20260912 = bonus;
+    unit.__talentTeam20260912 = 'blue';
+    this.engine.applyTalentCardBonus(unit);
+    return unit;
   }
 
   spawnBoss() {
@@ -416,6 +455,7 @@ export class CoopBossBattle {
     const unit = new BattleUnit({ card, lane, col, team: 'player', instance: normalizeInstance(payload) });
     unit.uid = ++this.uidSeq;
     unit.pvpOwnerUserId = Number(userId);
+    this.applyPlayerTalent(unit, userId);
     this.engine.initUnitSpawnFade?.(unit);
     this.engine.units.push(unit);
     this.engine.pushDeployEffect?.(lane, col, unit.craftQuality);

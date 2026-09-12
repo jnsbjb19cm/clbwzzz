@@ -36,6 +36,7 @@ const {
   RESOURCE_REGEN,
   RESOURCE_REGEN_INTERVAL,
   RESOURCE_START,
+  calcPlayerHeroHp,
   usesFoodCost,
 } = await import('../../src/battle/BattleConfig.js');
 const {
@@ -55,8 +56,6 @@ const { getSkillResolutionDelay } = await import('../../src/battle/SkillAnimatio
 const TEAM_TO_SIDE = { blue: 'player', red: 'enemy' };
 const BLUE_COLS = [0, 1, 2, 3, 4];
 const RED_COLS = [7, 8, 9, 10, 11];
-const BASE_HP = 3000;
-
 function round2(value) {
   return Math.round((Number(value) || 0) * 100) / 100;
 }
@@ -115,10 +114,15 @@ export class PvpBattle {
     });
     this.engine.onBurrowReturn = (unit) => this.refundBurrowReturn(unit);
     this.engine.pvp = true;
-    this.engine.heroMaxHp = BASE_HP;
-    this.engine.heroHp = BASE_HP;
-    this.engine.enemyHeroMaxHp = BASE_HP;
-    this.engine.enemyHeroHp = BASE_HP;
+    this.playerTalentBonuses = new Map();
+    this.engine.__authorityTalentBonusForUser20260912 = (userId) => ({
+      bonus: this.playerTalentBonuses.get(Number(userId)) ?? null,
+      team: this.teamOf(userId),
+    });
+    this.engine.heroMaxHp = this.teamHeroHp(teamBlue);
+    this.engine.heroHp = this.engine.heroMaxHp;
+    this.engine.enemyHeroMaxHp = this.teamHeroHp(teamRed);
+    this.engine.enemyHeroHp = this.engine.enemyHeroMaxHp;
     this.resources = new Map();
     this.skillStates = new Map();
     this.skillFields = [];
@@ -148,6 +152,37 @@ export class PvpBattle {
     if (this.teamBlue.some((member) => Number(member.userId) === Number(userId))) return 'blue';
     if (this.teamRed.some((member) => Number(member.userId) === Number(userId))) return 'red';
     return null;
+  }
+
+  teamHeroHp(members) {
+    return members.slice(0, 3).reduce((sum, member) =>
+      sum + calcPlayerHeroHp(member.level), 0);
+  }
+
+  setPlayerTalentBonus(userId, talentBonus = {}) {
+    const id = Number(userId);
+    const team = this.teamOf(id);
+    if (!team) throw new Error('你不是本房间玩家');
+    const previous = this.playerTalentBonuses.get(id) ?? {};
+    const bonus = { ...talentBonus };
+    this.playerTalentBonuses.set(id, bonus);
+    const hpDelta = Math.max(0, Number(bonus.hp) || 0)
+      - Math.max(0, Number(previous.hp) || 0);
+    const maxKey = team === 'red' ? 'enemyHeroMaxHp' : 'heroMaxHp';
+    const hpKey = team === 'red' ? 'enemyHeroHp' : 'heroHp';
+    this.engine[maxKey] = Math.max(1, round2(this.engine[maxKey] + hpDelta));
+    this.engine[hpKey] = Math.max(0, Math.min(this.engine[maxKey],
+      round2(this.engine[hpKey] + hpDelta)));
+    return bonus;
+  }
+
+  applyPlayerTalent(unit, userId, team) {
+    const bonus = this.playerTalentBonuses.get(Number(userId));
+    if (!bonus) return unit;
+    unit.__talentBonus20260912 = bonus;
+    unit.__talentTeam20260912 = team;
+    this.engine.applyTalentCardBonus(unit);
+    return unit;
   }
 
   resourcesOf(userId) {
@@ -268,6 +303,7 @@ export class PvpBattle {
     const unit = new BattleUnit({ card, lane, col, team: side, instance });
     unit.uid = ++this.uidSeq;
     unit.pvpOwnerUserId = Number(userId);
+    this.applyPlayerTalent(unit, userId, team);
     this.engine.initUnitSpawnFade(unit);
     this.engine.units.push(unit);
     this.engine.pushDeployEffect?.(lane, col, unit.craftQuality);
@@ -315,6 +351,8 @@ export class PvpBattle {
   withTeamPerspective(team, callback) {
     if (team === 'blue') return callback();
     const engine = this.engine;
+    const previousPerspective = engine.__talentPerspectiveTeam20260912;
+    engine.__talentPerspectiveTeam20260912 = 'red';
     for (const unit of engine.units) {
       unit.team = unit.team === 'player' ? 'enemy' : 'player';
     }
@@ -342,6 +380,7 @@ export class PvpBattle {
       for (const unit of engine.units) {
         unit.team = unit.team === 'player' ? 'enemy' : 'player';
       }
+      engine.__talentPerspectiveTeam20260912 = previousPerspective;
     }
   }
 

@@ -129,16 +129,31 @@ export function isDeferredTopLayerUnit(unit) {
   return false;
 }
 
+/**
+ * 2026-09-12（用户要求）：这几张卡要明显"离地"——飞行忍者12 / 幻.飞行忍者45 / 分身60 /
+ * 飞行水蜜桃40 / 外星哨兵38。数值是**在原有偏移之上再抬**的高度比例（越大越浮）。
+ */
+const HOVER_LIFT_BY_RES = Object.freeze({
+  12: 0.06,   // 飞行忍者      → 总偏移 -0.26
+  45: 0.06,   // 幻.飞行忍者   → 总偏移 -0.26
+  60: 0.18,   // 幻.飞行忍者(分身) → 总偏移 -0.26
+  40: 0.14,   // 飞行水蜜桃    → 总偏移 -0.30
+  38: 0.20,   // 外星哨兵      → 总偏移 -0.18
+});
+
 export function drawOffsetYForUnit(unit, boxH, { footAnchored = false, flying = false } = {}) {
   const res = resNum(unit);
   const resOff = RES_DRAW_OFFSET_Y[res] ?? 0;
+  let base;
   if (footAnchored || FOOT_ANCHOR_RES.has(res)) {
-    return boxH * resOff;
+    base = resOff;
+  } else if (flying) {
+    base = resOff - 0.08;
+  } else {
+    base = resOff + 0.02;
   }
-  if (flying) {
-    return boxH * (resOff - 0.08);
-  }
-  return boxH * (resOff + 0.02);
+  // 离地卡再抬一段（其余单位 hover=0，行为与改动前完全一致）
+  return boxH * (base - (HOVER_LIFT_BY_RES[res] ?? 0));
 }
 
 /** 卡牌立绘叠层(已禁用) */

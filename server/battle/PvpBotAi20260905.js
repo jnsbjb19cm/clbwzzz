@@ -1,4 +1,4 @@
-import { TALENT_NODES, getTalentPointBudget } from '../../src/core/TalentRegistry.js';
+import { TALENT_NODES, calculateTalentBonus, getTalentPointBudget } from '../../src/core/TalentRegistry.js';
 import { PvpBattle } from './PvpBattle.js';
 import { getCardTraits } from '../../src/core/CardTraitRegistry.js';
 import { DEFAULT_SKILL_LOADOUT, getSkillEffect, getSkillMpCost } from '../../src/core/SkillRegistry.js';
@@ -142,6 +142,7 @@ function configureBotSkills(battle, member, state) {
     : [504, ...builds[branch], 503, ...learned, 505];
   const loadout = [...new Set(preferred)].filter(id => allowed.has(id) && battle.db.getById(id) && getSkillEffect(id)).slice(0, 6);
   battle.setSkillLoadout(member.userId, [...loadout, ...Array(6 - loadout.length).fill(null)]);
+  battle.setPlayerTalentBonus?.(member.userId, calculateTalentBonus(unlocked));
   state.skillsConfigured = true;
 }
 

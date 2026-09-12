@@ -22,6 +22,7 @@ import {
   TRAINING_PLAYER_BASE_HP,
   TRAINING_RESOURCE,
   calcHeroHp,
+  calcPlayerHeroHp,
   canPlayerPlaceCol,
   canUnitHitBase,
   getAttackCooldown,
@@ -51,6 +52,21 @@ import { WaveManager } from './WaveManager.js';
 import { getCardTraits, getAttackPattern, isSuicideCard } from '../core/CardTraitRegistry.js';
 import { TALENT_NODE_MAP } from '../core/TalentRegistry.js';
 
+/**
+ * 怪物吸尘器(34)（2026-09-12 用户要求）：
+ *   - 放下后 3 秒才可以吸入（放置 CD）
+ *   - 吞下后进入 25 秒消化期：期间**保持膨胀姿态**、不能攻击、不能再吞
+ *   - 消化完毕播放"完毕"动画（素材里有 `digestEnd` 就播它）并回到待机
+ */
+const SWALLOW_READY_DELAY = 3;
+const SWALLOW_DIGEST_SECONDS = 25;
+/** attacking 动画里身体最鼓的那一帧（像素统计：default 平均 4684 → 第 35 帧 5812 ≈ +24% 峰值） */
+const SWALLOW_PUFF_FRAME = 35;
+/** 空中"碰到"的判定距离（格）：两个非自爆飞行单位最多互相靠到 ~1.0 格 */
+const AERIAL_CONTACT_COLS = 1.02;
+/** 自爆卡(40 飞行水蜜桃 / 61 黑铁土豆雷 / 65 热血火龙果)借用的爆炸序列 res（bullet anim 里有 baoza）*/
+const SUICIDE_BOOM_RES = Object.freeze({ 40: 4, 61: 4, 65: 17 });
+
 export class BattleEngine {
   constructor(
     db,
@@ -66,6 +82,7 @@ export class BattleEngine {
       lootEnabled = !pvp,
       rng = Math.random,
       talentBonus = null,
+      playerLevel = null,
     } = {},
   ) {
     this.db = db;
@@ -119,9 +136,13 @@ export class BattleEngine {
       this.sunlight = TRAINING_RESOURCE;
       this.food = TRAINING_RESOURCE;
     } else {
-      this.heroMaxHp = calcHeroHp(this.stage.hp) + talentHpBonus;
+      const stageHeroHp = calcHeroHp(this.stage.hp);
+      this.heroMaxHp = playerLevel == null
+        ? stageHeroHp + talentHpBonus
+        : calcPlayerHeroHp(playerLevel) + talentHpBonus;
       this.heroHp = this.heroMaxHp;
-      this.enemyHeroMaxHp = this.heroMaxHp;
+      // PVE/BOSS 敌方生命仍由关卡决定，不跟随玩家等级。
+      this.enemyHeroMaxHp = stageHeroHp;
       this.enemyHeroHp = this.enemyHeroMaxHp;
       this.sunlight = RESOURCE_START;
       this.food = RESOURCE_START;
@@ -320,6 +341,9 @@ export class BattleEngine {
   /** 地刺/陷阱不挡路；普通敌方单位挡路 */
   blocksMovement(blocker, mover) {
     if (!blocker.alive || blocker.team === mover.team || blocker.isLowTarget()) return false;
+    // 2026-09-12：自爆单位(40/61/65)要**走到接触**才炸 —— 不能被"前面有敌人挡路"卡在一格外。
+    // 用户报告：热血火龙果碰到敌方单位就杵在那里不自爆；飞行水蜜桃相遇也不炸。
+    if (isSuicideCard(mover)) return false;
     if (blocker.isTunnelProtected?.() || mover.isTunnelProtected?.()) return false;
     // 空地单位互相穿行；只有空中单位相撞后落地，才重新参与地面阻挡。
     if (Boolean(blocker.isFlying?.()) !== Boolean(mover.isFlying?.())) return false;
@@ -398,6 +422,7 @@ export class BattleEngine {
   }
 
   landCollidingAerialUnits(unit) {
+    if (!unit?.alive) return false;              // 死了就不谈落地（用户要求）
     if (!unit?.isFlying?.()) return false;
     const contact = this.units.find((other) =>
       other !== unit
@@ -405,7 +430,10 @@ export class BattleEngine {
       && other.team !== unit.team
       && other.lane === unit.lane
       && other.isFlying?.()
-      && Math.abs(Number(other.col) - Number(unit.col)) < 0.62);
+      // 2026-09-12（用户要求）：幻.飞行忍者(45)/飞行忍者(12) 碰到敌方**飞行**单位就要落地。
+      // 两个非自爆飞行单位会互相阻挡，最多走到约 1.0 格外，用 0.62 的"贴身"阈值永远判不到 ——
+      // 放宽到 1.02（≈ 相邻即算碰到），相遇立刻请求落地（45 落地还会触发十字分身）。
+      && Math.abs(Number(other.col) - Number(unit.col)) < AERIAL_CONTACT_COLS);
     if (!contact) return false;
     if (Number(unit.cardId) === 40) {
       unit._aerialContactDetonate = true;
@@ -838,13 +866,17 @@ export class BattleEngine {
       }
 
       // 接触型特殊功能：吞噬/吸走/魅惑/冰冻(功能性防御单位，不主动攻击)
+      if (Number(unit.cardId) === 34) this.updateSwallowDigest(unit);
       const contactHandler = { 34: 'trySwallow', 38: 'tryAbduct', 53: 'tryCharm', 88: 'tryIceShield' }[unit.cardId];
       if (contactHandler) {
         if (unit.cardId === 38 && this.finishAbductionIfReady(unit)) continue;
-        this[contactHandler](unit);
-        unit.renderX = unit.col;
-        unit.renderY = unit.lane;
-        continue;
+        const handled = this[contactHandler](unit);
+        // 2026-09-12：怪物吸尘器(34) 消化期间不攻击；没吞到东西也不在消化 → 继续走普通攻击
+        if (unit.cardId !== 34 || handled || this.isDigestingSwallow(unit)) {
+          unit.renderX = unit.col;
+          unit.renderY = unit.lane;
+          continue;
+        }
       }
 
       if (this.trySuicideBomber(unit)) continue;
@@ -999,7 +1031,10 @@ export class BattleEngine {
     audio.playAttack(unit.cardId, unit);
     // 自爆特效：在自爆单位位置产生爆炸冲击（作用于接触的本体目标）
     const boomCol = Math.round(unit.col);
-    this.spawnImpactFx(unit.lane, boomCol, dmg, unit.res);
+    // 2026-09-12（用户要求）：飞行水蜜桃40 / 黑铁土豆雷61 也要有 BOOM。
+    // 40/61/65 自己没有子弹包，就借一个带 baoza 爆炸序列的 res（渲染端用 fx.boomRes 取包，
+    // 手绘火环仍按 fx.res 判断），否则只剩一圈手绘火环、看不到爆炸序列。
+    this.spawnImpactFx(unit.lane, boomCol, dmg, unit.res, SUICIDE_BOOM_RES[Number(unit.cardId)] ?? null);
     for (const v of victims) {
       v.takeDamage(dmg, this.time);
       this.spawnDamageFloat(v, dmg);
@@ -1066,22 +1101,82 @@ export class BattleEngine {
   }
 
   /** 怪物吸尘器：吸入低品质(非橙/红)敌方单位，10秒消化至死 */
+  /** 怪物吸尘器(34)：吸入 = 秒杀（立刻退场），之后进入"消化"期，期间无法攻击 */
   trySwallow(unit) {
-    if (!unit.alive || (unit._swallowCdUntil && this.time < unit._swallowCdUntil)) return false;
+    if (!unit.alive) return false;
+    // 放置 3 秒内不能吸入（放下就秒吸太强）
+    if (unit._swallowReadyAt == null) unit._swallowReadyAt = this.time + SWALLOW_READY_DELAY;
+    if (this.time < Number(unit._swallowReadyAt)) return false;
+    // 消化中：不能再吞（这段时间它就是"在嚼东西"，也不能攻击）
+    if (this.isDigestingSwallow(unit)) return false;
     const victims = this.contactEnemies(unit).filter((u) => !u.isFlying?.() && (u.quality ?? 1) < 5);
     if (!victims.length) return false;
-    unit._swallowCdUntil = this.time + 2;
+    let digested = 0;
     for (const v of victims) {
       if (this.isDebuffImmune(v)) {
         this.pushLog(`【${unit.name}】吸入失败：${v.name} 免疫负面效果`);
         continue;
       }
-      v.frozenUntil = Math.max(v.frozenUntil ?? 0, this.time + 10);
-      v.dots = v.dots ?? [];
-      v.dots.push({ kind: 'swallow', dps: Math.max(1, v.maxHp / 10), until: this.time + 10, every: 1 });
-      this.pushLog(`【${unit.name}】吸入 ${v.name}，开始消化`);
+      // 2026-09-12（用户要求）：像大嘴花一样 —— 吸进去就是秒杀，不再让它在场上被慢慢扣血
+      v._swallowedByUid = unit.uid;
+      v._suicideKilled = true;          // 被吞掉 → 不触发死亡分身(如幻飞行忍者45)
+      v.alive = false;
+      this.onUnitDeath(v);
+      v.alive = false;
+      v._deathUntil = this.time;        // 直接消失（在肚子里）
+      digested += 1;
+      this.pushLog(`【${unit.name}】吸入并吞下 ${v.name}`);
     }
+    if (!digested) return false;
+    // 消化时间（秒）：期间无法攻击、无法再吞
+    unit._digestingUntil = this.time + SWALLOW_DIGEST_SECONDS;
+    this.startSwallowDigestAnimation(unit);
+    this.pushLog(`【${unit.name}】开始消化（${SWALLOW_DIGEST_SECONDS}秒不能攻击）`);
     return true;
+  }
+
+  /** 消化中：保持"膨胀"姿态（优先用素材里的 digest 动画，否则停在 attacking 的最鼓帧） */
+  startSwallowDigestAnimation(unit) {
+    try {
+      if (unitAnimPlayer.hasAnimState(unit.res, 'digest')) {
+        unit._animHoldFrame = null;
+        unit._animHoldFrameState = null;
+        unitAnimPlayer.triggerState(unit, this, 'digest', SWALLOW_DIGEST_SECONDS);
+        return;
+      }
+      unitAnimPlayer.triggerState(unit, this, 'attacking', SWALLOW_DIGEST_SECONDS);
+      // 消化期间停在"吃撑"那一帧（attacking 会先播一遍吞入动作，再定住最鼓帧）
+      unit._animHoldFrameState = 'attacking';
+      unit._animHoldFrame = SWALLOW_PUFF_FRAME;
+    } catch { /* 动画失败不影响战斗结算 */ }
+  }
+
+  /** 消化完毕：播"完毕"动画（素材有 digestEnd 才播），然后回到待机 */
+  finishSwallowDigestAnimation(unit) {
+    unit._animHoldFrame = null;
+    unit._animHoldFrameState = null;
+    unit._digestingUntil = 0;
+    try {
+      if (unitAnimPlayer.hasAnimState(unit.res, 'digestEnd')) {
+        unitAnimPlayer.triggerState(unit, this, 'digestEnd', unitAnimPlayer.resolveAnimationDuration(unit, 'digestEnd', 0.6));
+      }
+    } catch { /* 忽略 */ }
+  }
+
+  /** 吸尘器是否正在消化（消化期间不能攻击/再吞） */
+  isDigestingSwallow(unit) {
+    return Number(unit?.cardId) === 34
+      && Number(unit._digestingUntil) > 0
+      && this.time < Number(unit._digestingUntil);
+  }
+
+  /** 消化到点就收尾（播放消化完毕动画 → 回到待机） */
+  updateSwallowDigest(unit) {
+    if (Number(unit?.cardId) !== 34) return;
+    if (!Number(unit._digestingUntil)) return;
+    if (this.time < Number(unit._digestingUntil)) return;
+    this.finishSwallowDigestAnimation(unit);
+    this.pushLog(`【${unit.name}】消化完毕`);
   }
 
   /** 外星哨兵：吸走低品质敌方地面单位，吸收过程5秒 */
@@ -1099,7 +1194,8 @@ export class BattleEngine {
         this.pushLog(`【${unit.name}】吸走失败：${v.name} 免疫负面效果`);
         continue;
       }
-      v.frozenUntil = Math.max(v.frozenUntil ?? 0, this.time + 5);
+      // 2026-09-12（用户要求）：外星哨兵**没有冰冻** —— 吸走期间不再冻结目标，
+      // 目标照常行动，吸收满 5 秒后一起结算。
       this.pushLog(`【${unit.name}】吸走 ${v.name}，吸收中…`);
     }
     return true;
@@ -1986,12 +2082,13 @@ export class BattleEngine {
   }
 
   /** 子弹命中特效(命中点 baoza 爆炸；寿命放宽以容纳长动画，渲染端播完淡出) */
-  spawnImpactFx(lane, col, amount, res = null) {
+  spawnImpactFx(lane, col, amount, res = null, boomRes = null) {
     this.impactFx.push({
       lane,
       col,
       amount: Number(amount) || 0,
       res: res != null ? String(res) : null,
+      boomRes: boomRes != null ? String(boomRes) : null,
       t: 0,
       life: 2,
     });

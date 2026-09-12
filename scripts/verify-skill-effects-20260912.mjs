@@ -95,7 +95,8 @@ console.log('=== 539 死亡诅咒：+3 只作用于"中毒目标的非中毒伤�
   engine.skills.hitUnit(clean, 10);    // 没中毒的目标
   const cleanHit = beforeClean - clean.hp;
   console.log(`   中毒 DoT 扣血 ${poisonHit}；中毒目标普通伤害扣血 ${normalHit}；未中毒目标扣血 ${cleanHit}`);
-  check('中毒 DoT 本身不吃 +3（8 → 8）', () => assert.equal(poisonHit, 8, `实际 ${poisonHit}`));
+  // 2026-09-12（用户要求）：致命诅咒 539 从每秒 8 点削弱为每秒 4 点
+  check('中毒 DoT 本身不吃 +3（4 → 4）', () => assert.equal(poisonHit, 4, `实际 ${poisonHit}`));
   check('中毒目标的非中毒伤害 +3（10 → 13）', () => assert.equal(normalHit, 13, `实际 ${normalHit}`));
   check('未中毒目标没有 +3（10 → 10）', () => assert.equal(cleanHit, 10, `实际 ${cleanHit}`));
 }

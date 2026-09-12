@@ -43,6 +43,7 @@ function createBattleEngine(view, stageId, trainingMode) {
     // 于是 508~525 的被动（尤其 512 破釜沉舟 / 513 坚韧不屈 / 515 战神祝福 / 516 天使之赐）
     // 在单机战斗里完全不生效；重开战斗后连 MP 天赋也会一起丢掉。
     talentBonus: view.talentBonusForBattle?.() ?? null,
+    playerLevel: view.player?.level,
   });
 }
 

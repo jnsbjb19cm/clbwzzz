@@ -183,6 +183,7 @@ function enterCoopAdventureBattle(roomView) {
   const view = new BattleView(roomView.db, {
     cardInventory: roomView.cardInventory,
     heroSkills: roomView.heroSkills ?? globalThis.__clbwzHeroSkills ?? null,
+    player: roomView.player,
     stageId,
     pvp: {
       mode: 'pve',

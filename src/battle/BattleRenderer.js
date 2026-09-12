@@ -1366,7 +1366,11 @@ export class BattleRenderer {
   /** 技能释放动画：按 skillPosition 定位(2 全屏 / 4 格左右 / 1、5、6 单格)，全体技能覆盖全场。 */
   drawSkillFx(ctx, engine) {
     const list = engine.skillFx ?? engine.skillEffects ?? [];
-    for (let i = this._effectSliceStart(list); i < list.length; i += 1) {
+    // 2026-09-12（用户报告"番茄炸弹少一段特效（气波）"）：
+    // 技能特效**不套用"只画最新 N 个"的上限** —— 引擎侧本来就限制 skillFx ≤ 10，
+    // 而通用上限会把还在播的长动画（番茄炸弹 1.7s，气波在 87%~97% 帧段）中途丢掉，
+    // 于是只看到前段爆炸、看不到后段气波。
+    for (let i = 0; i < list.length; i += 1) {
       const fx = list[i];
       try {
       const cx = cellCenterX(fx.col);
@@ -1477,8 +1481,10 @@ export class BattleRenderer {
         ctx.restore();
       }
       // 弹道爆炸：优先用原版 Bullet baoza 序列帧(按动画实际时长推进，播完淡出不冻结/不截断)
-      if (fx.res != null) {
-        const pack = this.bulletAnims.get(String(fx.res));
+      // 2026-09-12：自爆卡(40/61/65)自己没有子弹包，引擎会给一个带 baoza 的 boomRes
+      const packRes = fx.boomRes ?? fx.res;
+      if (packRes != null) {
+        const pack = this.bulletAnims.get(String(packRes));
         if (pack?.meta?.animations?.baoza) {
           const anim = pack.meta.animations.baoza;
           const rate = anim.frameRate || 12;

@@ -5,6 +5,8 @@ import { CoopBossBattle } from '../battle/CoopBossBattle.js';
 import { PvpBattle } from '../battle/PvpBattle.js';
 import { unitAnimPlayer } from '../../src/battle/UnitAnimPlayer.js';
 import { db, withTransaction } from '../database.js';
+import { calculateTalentBonus, TALENT_NODE_MAP } from '../../src/core/TalentRegistry.js';
+import { HERO_MP_MAX } from '../../src/core/SkillRegistry.js';
 
 // 服务端战斗逻辑以30Hz推进；客户端自身用 RAF 插值单位/子弹。
 // 周期世界快照只承担状态校准，不再用30Hz全量 JSON 驱动画面：
@@ -21,6 +23,32 @@ const FINISHED_RETENTION_MS = 30_000;
 
 // roomId -> { battle, timer, lastAt, accumulator, broadcastAccumulator, seq, cleanupTimer }
 const authorityBattles = new Map();
+
+async function loadPlayerTalentProfile(userId) {
+  try {
+    const row = await db.get(
+      'SELECT state_json AS stateJson FROM player_state_documents WHERE user_id=? AND state_key=?',
+      [Number(userId), 'hero_skills'],
+    );
+    const state = row?.stateJson ? JSON.parse(String(row.stateJson)) : {};
+    const unlocked = new Set(
+      (Array.isArray(state?.unlockedTalents) ? state.unlockedTalents : ['core'])
+        .filter((id) => TALENT_NODE_MAP.has(id)),
+    );
+    unlocked.add('core');
+    const maxMp = HERO_MP_MAX + [...unlocked].reduce((sum, id) =>
+      sum + Math.max(0, Number(TALENT_NODE_MAP.get(id)?.mpBonus) || 0), 0);
+    return { bonus: calculateTalentBonus(unlocked), maxMp };
+  } catch {
+    return { bonus: calculateTalentBonus(new Set(['core'])), maxMp: HERO_MP_MAX };
+  }
+}
+
+async function configurePlayerTalents(battle, userId) {
+  const profile = await loadPlayerTalentProfile(userId);
+  battle.setPlayerTalentBonus?.(userId, profile.bonus);
+  return profile;
+}
 
 function emitCollectedLoot(io, room, entry) {
   entry.collectedLootIds ??= new Set();
@@ -439,6 +467,8 @@ function createBattle(teams, cardDb) {
       members: [...room.members.values()].map((member) => ({
         userId: member.userId,
         nickname: member.nickname,
+        level: member.level,
+        isBot: Boolean(member.isBot),
       })),
       db: cardDb,
       mode: room.mode,
@@ -559,11 +589,12 @@ export function registerPvpAuthorityHandlers(io, { cardDb }) {
       });
     });
 
-    socket.on('pvp:authority:join', (payload = {}, ack) => {
+    socket.on('pvp:authority:join', async (payload = {}, ack) => {
       try {
         const { entry } = currentRoomAndBattle(socket, io, cardDb);
+        const talentProfile = await configurePlayerTalents(entry.battle, socket.user.id);
         if (Array.isArray(payload.loadout)) {
-          entry.battle.setSkillLoadout(socket.user.id, payload.loadout, payload.maxMp);
+          entry.battle.setSkillLoadout(socket.user.id, payload.loadout, talentProfile.maxMp);
         }
         const snapshot = buildSnapshot(entry, socket.user.id, undefined, null, { includeProjectiles: true });
         // 只发送一份完整初始状态；ACK 不再重复塞同一份大 snapshot。
@@ -616,13 +647,14 @@ export function registerPvpAuthorityHandlers(io, { cardDb }) {
       }
     });
 
-    socket.on('pvp:authority:set-loadout', (payload = {}, ack) => {
+    socket.on('pvp:authority:set-loadout', async (payload = {}, ack) => {
       try {
         const { room, entry } = currentRoomAndBattle(socket, io, cardDb);
+        const talentProfile = await configurePlayerTalents(entry.battle, socket.user.id);
         const skill = entry.battle.setSkillLoadout(
           socket.user.id,
           payload.loadout,
-          payload.maxMp,
+          talentProfile.maxMp,
         );
         const snapshot = buildSnapshot(entry, socket.user.id, undefined, null, { includeProjectiles: false });
         ackOk(ack, { skill, snapshot });

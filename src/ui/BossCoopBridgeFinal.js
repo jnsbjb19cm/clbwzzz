@@ -78,6 +78,7 @@ function enterCoopBossBattle(roomView) {
   roomView.roomBattleView = new BattleView(roomView.db, {
     cardInventory: roomView.cardInventory,
     heroSkills: roomView.heroSkills ?? globalThis.__clbwzHeroSkills ?? null,
+    player: roomView.player,
     pvp: {
       mode: 'boss',
       roomId: roomView.room.id,

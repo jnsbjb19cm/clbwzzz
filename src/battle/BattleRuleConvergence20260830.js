@@ -63,7 +63,8 @@ export function installAlienSentinelGroundRule20260830() {
         this.pushLog?.(`【${unit.name}】吸走失败：${victim.name} 免疫负面效果`);
         continue;
       }
-      victim.frozenUntil = Math.max(finite(victim.frozenUntil), finite(this.time) + 5);
+      // 2026-09-12（用户要求）：外星哨兵**没有冰冻** —— 吸走期间目标照常行动，
+      // 吸收满 5 秒后一起结算。原来这里给目标挂了 5 秒 frozenUntil。
       this.pushLog?.(`【${unit.name}】吸走 ${victim.name}，吸收中…`);
     }
     return true;
@@ -220,13 +221,23 @@ function installSkillSemanticRules() {
 }
 
 function installTalentSemanticRules() {
+  const talentBonusForUnit = (engine, unit) =>
+    unit?.__talentBonus20260912 ?? engine?.talentBonus ?? {};
+  const heroHpForUnit = (engine, unit) => {
+    const side = unit?.__talentTeam20260912;
+    const redPerspective = engine?.__talentPerspectiveTeam20260912 === 'red';
+    if (side === 'red') return redPerspective ? engine?.heroHp : engine?.enemyHeroHp;
+    if (side === 'blue') return redPerspective ? engine?.enemyHeroHp : engine?.heroHp;
+    return unit?.team === 'enemy' ? engine?.enemyHeroHp : engine?.heroHp;
+  };
+
   BattleEngine.prototype.applyTalentCardBonus = function applyTalentCardBonusConverged(unit) {
     if (!unit || unit.__talentApplied20260830) return unit;
     unit.__talentApplied20260830 = true;
     unit.__battleEngine20260830 = this;
-    if (unit.team !== 'player') return unit;
+    if (unit.team !== 'player' && !unit.__talentBonus20260912) return unit;
 
-    const bonus = this.talentBonus ?? {};
+    const bonus = talentBonusForUnit(this, unit);
     let atkPct = Math.max(0, finite(bonus.globalAtkPct, bonus.atkPct));
     let hpPct = Math.max(0, finite(bonus.globalHpPct, bonus.hpPct));
     if (SCARECROW_FAMILY.has(Number(unit.cardId))) atkPct += Math.max(0, finite(bonus.scarecrowAtkPct));
@@ -243,20 +254,24 @@ function installTalentSemanticRules() {
 
   const previousGetAuraBonus = BattleEngine.prototype.getAuraBonus;
   BattleEngine.prototype.getAuraBonus = function getAuraBonusWithConditionalTalent(unit) {
-    let bonus = finite(previousGetAuraBonus.call(this, unit));
-    if (unit?.team === 'player' && finite(this.heroHp) < 100) {
-      const pct = Math.max(0, finite(this.talentBonus?.lowBaseAtkPct));
-      if (pct > 0) bonus += finite(unit.atk) * pct / 100;
+    let auraBonus = finite(previousGetAuraBonus.call(this, unit));
+    const talentBonus = talentBonusForUnit(this, unit);
+    if ((unit?.team === 'player' || unit?.__talentBonus20260912)
+      && finite(heroHpForUnit(this, unit)) < 100) {
+      const pct = Math.max(0, finite(talentBonus?.lowBaseAtkPct));
+      if (pct > 0) auraBonus += finite(unit.atk) * pct / 100;
     }
-    return roundBattleAmount(bonus);
+    return roundBattleAmount(auraBonus);
   };
 
   const previousTakeDamage = BattleUnit.prototype.takeDamage;
   BattleUnit.prototype.takeDamage = function takeDamageWithConditionalTalent(amount, now = 0) {
     let nextAmount = finite(amount);
     const engine = this.__battleEngine20260830;
-    if (this.team === 'player' && engine && finite(engine.heroHp) < 100) {
-      const pct = Math.max(0, Math.min(90, finite(engine.talentBonus?.lowBaseDamageReductionPct)));
+    const bonus = talentBonusForUnit(engine, this);
+    if (engine && (this.team === 'player' || this.__talentBonus20260912)
+      && finite(heroHpForUnit(engine, this)) < 100) {
+      const pct = Math.max(0, Math.min(90, finite(bonus?.lowBaseDamageReductionPct)));
       if (pct > 0) nextAmount *= 1 - pct / 100;
     }
     return previousTakeDamage.call(this, nextAmount, now);
@@ -265,7 +280,7 @@ function installTalentSemanticRules() {
   const previousDoAreaHeal = BattleEngine.prototype.doAreaHeal;
   BattleEngine.prototype.doAreaHeal = function doAreaHealWithDandelionTalent(lane, col, team, amount, radius = 1) {
     let nextAmount = finite(amount);
-    if (team === 'player' && finite(this.talentBonus?.dandelionHealPct) > 0) {
+    if (team === 'player' || team === 'enemy') {
       const healer = (this.units ?? []).find((unit) =>
         unit?.alive
           && unit.team === team
@@ -274,7 +289,8 @@ function installTalentSemanticRules() {
           && Number(unit.lane) === Number(lane)
           && Math.abs(finite(unit.col) - finite(col)) < 0.51,
       );
-      if (healer) nextAmount *= 1 + Math.max(0, finite(this.talentBonus.dandelionHealPct)) / 100;
+      const pct = finite(talentBonusForUnit(this, healer)?.dandelionHealPct);
+      if (healer && pct > 0) nextAmount *= 1 + Math.max(0, pct) / 100;
     }
     return previousDoAreaHeal.call(this, lane, col, team, nextAmount, radius);
   };
@@ -282,7 +298,12 @@ function installTalentSemanticRules() {
   const previousSpawnSummon = BattleEngine.prototype.spawnSummon;
   BattleEngine.prototype.spawnSummon = function spawnSummonWithTalent(...args) {
     const unit = previousSpawnSummon.apply(this, args);
-    if (unit?.team === 'player') this.applyTalentCardBonus(unit);
+    if (unit?.pvpOwnerUserId != null && this.__authorityTalentBonusForUser20260912) {
+      const owner = this.__authorityTalentBonusForUser20260912(unit.pvpOwnerUserId);
+      unit.__talentBonus20260912 = owner?.bonus ?? null;
+      unit.__talentTeam20260912 = owner?.team ?? null;
+    }
+    if (unit?.team === 'player' || unit?.__talentBonus20260912) this.applyTalentCardBonus(unit);
     return unit;
   };
 

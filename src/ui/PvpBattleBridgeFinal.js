@@ -133,6 +133,7 @@ export function installPvpBattleBridgeFinal() {
       // 联机要让被动生效必须由服务端读玩家的 hero_skills 后自己算（见 技能清单-20260912.md §5）。
       trainingMode: false,
       pvp: true,
+      playerLevel: this.player?.level,
     });
     this.engine.pvp = true;
     this.engine.waveNumber = 0;

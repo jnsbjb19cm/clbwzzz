@@ -292,6 +292,12 @@ export function calcHeroHp(stageHp) {
   return Math.max(400, Math.floor(Number(stageHp) * 50 * BATTLE_STAT_SCALE));
 }
 
+/** 玩家等级决定的战场英雄生命：1级 200，此后每级 +30。 */
+export function calcPlayerHeroHp(playerLevel) {
+  const level = Math.max(1, Math.floor(Number(playerLevel) || 1));
+  return 200 + (level - 1) * 30;
+}
+
 export function getMoveEvery(moveSpeed) {
   if (!moveSpeed || moveSpeed <= 0) return 99;
   if (moveSpeed <= 1) return 20;

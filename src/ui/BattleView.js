@@ -111,6 +111,7 @@ export class BattleView {
   constructor(db, {
     cardInventory,
     heroSkills,
+    player,
     onResourceChange,
     onHeroHpChange,
     onBattleResult,
@@ -129,6 +130,7 @@ export class BattleView {
     this.db = db;
     this.cardInventory = cardInventory;
     this.heroSkills = heroSkills;
+    this.player = player ?? null;
     this.onResourceChange = onResourceChange;
     this.onHeroHpChange = onHeroHpChange;
     this.onBattleResult = onBattleResult;
@@ -238,6 +240,7 @@ export class BattleView {
       boss,
       pvp: Boolean(this.pvp),
       talentBonus: this.talentBonusForBattle(),
+      playerLevel: this.player?.level,
     });
     await this.renderBattle(this.viewRoot);
     // 训练营教学：顶部显示当前试用卡的功能/用法提示条（viewRoot HTML 已 set，不被覆盖）
@@ -1414,6 +1417,7 @@ export class BattleView {
       boss: this.boss,
       pvp: Boolean(this.pvp),
       talentBonus: this.talentBonusForBattle(),
+      playerLevel: this.player?.level,
     });
     this.buildPlaceGridOverlay(this.viewRoot);
     void this.renderer.preloadForEngine(this.engine);

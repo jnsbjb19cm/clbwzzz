@@ -741,6 +741,7 @@ export class RoomView {
       this.roomBattleView = new BattleView(this.db, {
         cardInventory: this.cardInventory,
         heroSkills: this.heroSkills ?? globalThis.__clbwzHeroSkills ?? null,
+        player: this.player,
         pvp: { roomId: this.room.id, room: this.room, socket: this.socket },
         onNavigate: this.onNavigate,
       });

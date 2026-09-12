@@ -65,6 +65,7 @@ export function installBattleRoomFlowPatch() {
       boss,
       pvp: Boolean(this.pvp),
       talentBonus: this.talentBonusForBattle?.() ?? null,
+      playerLevel: this.player?.level,
     });
     await this.renderBattle(this.viewRoot);
   };

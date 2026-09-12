@@ -907,6 +907,11 @@ export class UnitAnimPlayer {
       ? (Math.floor(clock / frameDur) % effFrames)
       : Math.min(effFrames - 1, Math.max(0, Math.floor(clock / frameDur)));
     if (shouldHoldMushroomIdleFrame(unit, engine, state)) fi = 0;
+    // 2026-09-12：**停在指定帧**（怪物吸尘器 34 消化中要保持"吃撑鼓起来"的姿态）。
+    // 只对该状态生效，其它状态不受影响。
+    if (unit._animHoldFrameState === state && Number.isFinite(Number(unit._animHoldFrame))) {
+      fi = Math.min(effFrames - 1, Math.max(0, Math.round(Number(unit._animHoldFrame))));
+    }
 
     const fr = anim.frames[fi];
     const source = frameSource(pack, state, fi, key);
