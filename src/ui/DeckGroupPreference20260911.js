@@ -136,6 +136,19 @@ export function loadBattleDeckSlots20260911(cardInventory, db, group = null) {
   return [];
 }
 
+/**
+ * 玩家此刻选中的那套卡组：**组名 + 槽位一起给出**。
+ *
+ * 战斗入口必须成对使用这两个值 —— 槽位决定"打什么牌"，组名决定"打完写回哪一组"。
+ * 拆成两次调用就会出现"按 A 组取牌、按 B 组写回"的串组：2026-09-12 用户报告的
+ * 「界面选战团1、开打却用默认组，而且战团1 被写成了默认组」就是 PVP 战斗入口
+ * 自己按默认组取牌，而保存时按"当前选中组=战团1"落盘造成的。
+ */
+export function selectedBattleDeck20260912(cardInventory, db, group = null) {
+  const resolved = resolveDeckGroup20260911(cardInventory, group);
+  return { group: resolved, slots: loadBattleDeckSlots20260911(cardInventory, db, resolved) };
+}
+
 const START_GUARD_FLAG = Symbol.for('clbwz.deckGroupStartGuard20260911');
 const DECK_GROUP_LABEL = { default: '默认', team1: '战团1', team2: '战团2', team3: '战团3' };
 

@@ -11,6 +11,7 @@ import cardPartsAtlas from '../data/atlas/preload_cardParts.json' with { type: '
 import { DeckSelectView } from './DeckSelectView.js';
 import { RoomView } from './RoomView.js';
 import { BattleView } from './BattleView.js';
+import { selectedBattleDeck20260912 } from './DeckGroupPreference20260911.js';
 
 const PATCH_FLAG = Symbol.for('clbwzzz.pvpWildernessRoomFinal');
 const DECK_STORAGE_KEY = 'clbwz_room_decks_v4';
@@ -452,7 +453,8 @@ function openDeckEditor(view) {
     isOwner: false,
     onConfirm: (slots) => {
       view._pvpDeckSlots = normalizeDeck(slots);
-      DeckSelectView.saveDeck(view._pvpDeckSlots, view.cardInventory);
+      // 保存带上当前战团：不带组会按"当前选中组"猜（2026-09-12 串组根因）。
+      DeckSelectView.saveDeck(view._pvpDeckSlots, view.cardInventory, view._pvpDeckTab);
       writeDeckState(view, view._pvpDeckTab, view._pvpDeckSlots);
       view._pvpDeckEditorOpen = false;
       view._pvpDeckEditor = null;
@@ -475,9 +477,14 @@ function enterPvpBattle(view) {
   panel?.classList.remove('hidden');
   document.body.classList.add('battle-immersive', 'pvp-battle-active');
 
-  const deckState = readDeckState(view);
-  const activeTab = view._pvpDeckTab || deckState.activeTab;
-  const deckSlots = normalizeDeck(view._pvpDeckSlots?.length ? view._pvpDeckSlots : deckState.decks[activeTab]);
+  // 2026-09-12：战斗卡组按"玩家此刻选中的战团"取，并把组名一起带进战斗。
+  // 原来这里用本模块自己的 _pvpDeckTab/_pvpDeckSlots + clbwz_room_decks_v4 聚合，
+  // 但房间界面早已改回 DeckSelectView（本模块"只接管 PVP 战斗场地"），
+  // 那两个字段再没人写 → activeTab 永远落到 'default'：界面选战团1，进去却打默认组的牌。
+  const activeDeck = selectedBattleDeck20260912(view.cardInventory, view.db);
+  const deckGroup = activeDeck.group;
+  const authoredDeck = view._pvpDeckTab === deckGroup ? normalizeDeck(view._pvpDeckSlots) : [];
+  const deckSlots = normalizeDeck(authoredDeck.length ? authoredDeck : activeDeck.slots);
   // 消费房间 dice「随机地图」选择（一次性，防止残留影响下一场默认黄沙）
   const mapScene = typeof window !== 'undefined' ? window.__pvpMapScene : null;
   if (typeof window !== 'undefined') window.__pvpMapScene = null;
@@ -491,6 +498,8 @@ function enterPvpBattle(view) {
       team: view.myTeam,
       socket: view.socket,
       deckSlots,
+      // 组名必须跟着卡组一起走：保存时按它写回同一组，不再靠"当前选中组"猜。
+      deckGroup,
       mapId: view.room.mapId || '4',
       mapScene,
     },

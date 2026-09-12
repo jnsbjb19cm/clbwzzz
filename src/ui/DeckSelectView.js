@@ -585,7 +585,8 @@ export class DeckSelectView {
       if (this._roomState) {
         const valid = this._selected.filter((i) => this._bagSlots[i]);
         if (!valid.length) { this._showToast(root, '请至少选择1张卡牌'); return; }
-        DeckSelectView.saveDeck(this._selected, this._cardInventory);
+        // 显式带上当前页签（战团）：不带组会按"当前选中组"猜，猜错就把这套卡写进别的战团。
+        DeckSelectView.saveDeck(this._selected, this._cardInventory, this._deckTab);
         if (this._isOwner) {
           this._roomState.onStart?.();
         } else {
