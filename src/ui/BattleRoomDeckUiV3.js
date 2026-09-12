@@ -13,7 +13,11 @@ import {
 } from '../core/constants.js';
 import { audio } from '../core/AudioManager.js';
 import { DeckSelectView } from './DeckSelectView.js';
-import { resolveDeckGroup20260911 } from './DeckGroupPreference20260911.js';
+import {
+  readRememberedDeckGroup20260911,
+  rememberDeckGroup20260911,
+  resolveDeckGroup20260911,
+} from './DeckGroupPreference20260911.js';
 
 const PATCH_FLAG = Symbol.for('clbwzzz.battleRoomDeckUiV3');
 const STORAGE_KEY = 'clbwz_room_decks_v4';
@@ -222,7 +226,13 @@ function initializeState(view, incomingDeck) {
   const incomingGroup = resolveDeckGroup20260911(view?._cardInventory, null);
   if (!decks[incomingGroup]?.length) decks[incomingGroup] = incoming;
 
-  view._deckTab = stored.activeTab;
+  // 2026-09-11：以"记住的战团"为准。原来直接用聚合里的 activeTab（上一次会话最后打开的页签），
+  // 于是"上次停在战团1、本次想用已保存的战团2"会被顶回战团1。
+  const remembered = readRememberedDeckGroup20260911();
+  const activeTab = remembered ?? (TABS.includes(stored.activeTab) ? stored.activeTab : 'default');
+  view._deckTab = activeTab;
+  rememberDeckGroup20260911(activeTab);
+  if (view._cardInventory) view._cardInventory.__activeDeckGroup20260907 = activeTab;
   if (!decks[view._deckTab]?.length && view._deckTab === 'default') {
     decks.default = defaultDeckForView(view);
   }
@@ -250,6 +260,9 @@ function commitDrafts(view) {
   persistCommittedState(view);
   // 提交时带上当前组：不带组会按 __activeDeckGroup 猜，猜错就把卡组写进别的组。
   view.__originalSaveDeck?.(view._selected, view._cardInventory, view._deckTab);
+  // 保存哪个战团，就把它记住：下次进来直接用这个战团（用户要求"保存了就一定按它来"）。
+  rememberDeckGroup20260911(view._deckTab);
+  if (view._cardInventory) view._cardInventory.__activeDeckGroup20260907 = view._deckTab;
 }
 
 function cardMeta(view, bagIndex) {
@@ -492,6 +505,8 @@ function switchTab(view, root, tab) {
   if (!TABS.includes(tab) || tab === view._deckTab) return;
   syncDraft(view);
   view._deckTab = tab;
+  rememberDeckGroup20260911(tab);
+  if (view._cardInventory) view._cardInventory.__activeDeckGroup20260907 = tab;
   view._selected = cloneDeck(view._v3Decks?.[tab]);
   view._activeSwapSlot = null;
   view._v3Page = 0;
