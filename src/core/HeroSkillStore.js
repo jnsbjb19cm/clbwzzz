@@ -1,4 +1,4 @@
-import { DEFAULT_SKILL_LOADOUT, SKILL_SLOT_COUNT } from './SkillRegistry.js';
+import { DEFAULT_SKILL_LOADOUT, SKILL_SLOT_COUNT, getSkillEffect } from './SkillRegistry.js';
 import {
   TALENT_NODE_MAP,
   TALENT_NODES,
@@ -29,7 +29,8 @@ export class HeroSkillStore {
     this.unlockedTalents = new Set(state.unlockedTalents);
     this.consumedExtra = Number(state.consumedExtra) || 0;
     this.loadout = state.loadout.map((skillId) => (
-      skillId == null || this.isSkillUnlocked(skillId) ? skillId : null
+      // 已解锁 + 仍然有效果声明（被禁用/隐藏的技能会自动从技能栏卸下，避免出现放不出的空槽）
+      skillId == null || (this.isSkillUnlocked(skillId) && getSkillEffect(skillId)) ? skillId : null
     ));
     for (const defaultSkill of DEFAULT_SKILL_LOADOUT.filter(Boolean)) {
       if (this.loadout.includes(defaultSkill)) continue;

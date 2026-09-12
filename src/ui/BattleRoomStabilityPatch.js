@@ -359,7 +359,8 @@ function bindEventsStable(root) {
           return;
         }
         saveCurrentDeckTab(this);
-        DeckSelectView.saveDeck(selected, this._cardInventory);
+        // 显式带上当前页签（战团）
+        DeckSelectView.saveDeck(selected, this._cardInventory, this._deckTab ?? null);
         this._onConfirm?.([...selected], this._sid, { trainingMode: this._training });
       } else {
         const me = this._members.find((member) => member.id === 1);

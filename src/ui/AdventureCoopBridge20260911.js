@@ -14,7 +14,7 @@
 import { audio } from '../core/AudioManager.js';
 import { authStore } from '../core/AuthStore.js';
 import { DeckSelectView } from './DeckSelectView.js';
-import { selectedBattleDeck20260912 } from './DeckGroupPreference20260911.js';
+import { roomDeckGroup20260912, selectedBattleDeck20260912 } from './DeckGroupPreference20260911.js';
 import { BattleView } from './BattleView.js';
 import { QuestView } from './QuestView.js';
 import { RoomView } from './RoomView.js';
@@ -173,12 +173,16 @@ function enterCoopAdventureBattle(roomView) {
   const stageId = Number(roomView.room?.stageId) || 1;
   // 2026-09-11：按"玩家选中的卡组"取卡组，而不是无参调用（无参会落到默认组）。
   // 2026-09-12：组名跟卡组一起带进战斗 —— 保存时按它写回同一组，不靠"当前选中组"猜。
-  const activeDeck = selectedBattleDeck20260912(roomView.cardInventory, roomView.db);
+  // 2026-09-12：用"房间里选中的战团"，不要用环境标记/记住的战团（会被重定向到别的战团）
+  const activeDeck = selectedBattleDeck20260912(roomView.cardInventory, roomView.db, roomDeckGroup20260912(roomView));
+  // 2026-09-12：把"当前战团"标成房间这一套。之前这里只读不写，环境标记会留上一场的值，
+  // 于是打完/退出后"选中的战团"变成残留值（用户报告：野外冒险退出后战团变默认）。
+  if (roomView.cardInventory) roomView.cardInventory.__activeDeckGroup20260907 = activeDeck.group;
   const deckSlots = normalizeDeck(activeDeck.slots);
   roomView.roomBattleView?.destroy?.();
   const view = new BattleView(roomView.db, {
     cardInventory: roomView.cardInventory,
-    heroSkills: globalThis.__clbwzHeroSkills ?? null,
+    heroSkills: roomView.heroSkills ?? globalThis.__clbwzHeroSkills ?? null,
     stageId,
     pvp: {
       mode: 'pve',

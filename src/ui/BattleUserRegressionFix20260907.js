@@ -15,6 +15,7 @@ import {
   preferredRoomDeckGroup20260911,
   readRememberedDeckGroup20260911,
   rememberDeckGroup20260911,
+  roomDeckGroup20260912,
 } from './DeckGroupPreference20260911.js';
 
 let installed = false;
@@ -120,16 +121,35 @@ function installDeckGroupRuntime() {
     const members = this.room?.members ?? [];
     const meId = this.currentUserId?.();
     const me = members.find((member) => String(member?.userId) === String(meId));
-    const group = deckNumberToGroup20260906(me?.selectedDeckNo ?? 0);
+    // 2026-09-12：环境标记也必须按"房间成员选的 → 否则玩家记住的"来写。
+    // 之前是 `me?.selectedDeckNo ?? 0` —— 成员还没选时会被写成 default，
+    // 于是战团3 的玩家一进房间就被"重定向"成默认/别的战团（用户报告）。
+    const group = roomDeckGroup20260912(this);
     if (this.cardInventory) this.cardInventory.__activeDeckGroup20260907 = group;
     globalThis.__clbwzDeckRoomView20260907 = this;
+    let result;
     try {
-      return originalRenderRoomInside.apply(this, args);
+      result = originalRenderRoomInside.apply(this, args);
     } finally {
       if (globalThis.__clbwzDeckRoomView20260907 === this) {
         delete globalThis.__clbwzDeckRoomView20260907;
       }
     }
+    // 2026-09-12：把房间和"切换战团"的连接留给卡组视图。
+    // 之前渲染完就断了（roomState 里没有 onSetDeck），于是玩家点了战团/保存战团，
+    // 房间成员的 selectedDeckNo 还是旧的 → 下一次房间刷新把页签拉回旧战团。
+    const deckView = this.deckSelect;
+    if (deckView) {
+      deckView.__roomOwner20260912 = this;
+      const roomState = deckView._roomState;
+      if (roomState && typeof roomState.onSetDeck !== 'function' && this.socket?.setDeck) {
+        deckView._roomState = {
+          ...roomState,
+          onSetDeck: (deckNo) => this.socket.setDeck(deckNo),
+        };
+      }
+    }
+    return result;
   };
 
   const originalDeckRender = DeckSelectView.prototype.render;
@@ -143,7 +163,12 @@ function installDeckGroupRuntime() {
       const me = (roomState.members ?? []).find(
         (member) => String(member?.userId) === String(roomState.myUserId),
       );
-      roomState.selectedDeckNo = me?.selectedDeckNo ?? roomState.selectedDeckNo ?? 0;
+      // 成员有选择就用它，否则沿用传入值/记住的战团（不再无条件落到 0=默认）
+      if (me?.selectedDeckNo != null) {
+        roomState.selectedDeckNo = me.selectedDeckNo;
+      } else if (roomState.selectedDeckNo == null) {
+        roomState.selectedDeckNo = deckGroupToNumber20260906(roomDeckGroup20260912({ _roomState: roomState, cardInventory: options.cardInventory }));
+      }
       if (!roomState.onSetDeck && roomOwner?.socket?.setDeck) {
         roomState.onSetDeck = (deckNo) => roomOwner.socket.setDeck(deckNo)
           .then((room) => {
@@ -155,15 +180,23 @@ function installDeckGroupRuntime() {
             throw error;
           });
       }
-      // 2026-09-11：进房时以"玩家上次选的卡组"为准，并把它同步给房间成员
-      // （服务端的 setDeck 只改房间成员、不写账号，所以不主动同步就会退回账号默认值）。
-      const preference = preferredRoomDeckGroup20260911(roomState.selectedDeckNo);
-      if (preference.group) {
-        roomState.selectedDeckNo = preference.number;
-        if (preference.needsSync && roomOwner?.socket?.setDeck) {
-          Promise.resolve(roomOwner.socket.setDeck(preference.number))
-            .then((room) => { if (room) roomOwner.refreshRoom?.(room); })
-            .catch(() => { /* 同步失败不阻塞渲染，下次进房会再试 */ });
+      // 2026-09-12：**只有房间成员还没有任何选择时**，才用"玩家上次保存的战团"兜底。
+      // 之前这里是无条件覆盖 + setDeck，于是玩家在房间里选了/正在编辑战团1，
+      // 也会被上次记住的战团（比如战团2）顶掉 —— 界面跳组、保存写错组就是这么来的。
+      // 房间成员自己的选择才是"房间这场战斗要用哪套卡"，界面必须跟它保持一致。
+      // 把这次渲染用的 roomState 挂到 view 上：页签点击/保存时的 onSetDeck 同步要用它
+      // （RoomView 构造 DeckSelectView 时也会传，但先渲染后构造的路径只有这里有）。
+      this._roomState = roomState;
+      const memberHasDeck = me?.selectedDeckNo != null;
+      if (!memberHasDeck) {
+        const preference = preferredRoomDeckGroup20260911(roomState.selectedDeckNo);
+        if (preference.group) {
+          roomState.selectedDeckNo = preference.number;
+          if (preference.needsSync && roomOwner?.socket?.setDeck) {
+            Promise.resolve(roomOwner.socket.setDeck(preference.number))
+              .then((room) => { if (room) roomOwner.refreshRoom?.(room); })
+              .catch(() => { /* 同步失败不阻塞渲染，下次进房会再试 */ });
+          }
         }
       }
     }
@@ -219,8 +252,20 @@ function installDeckGroupRuntime() {
         return;
       }
 
-      DeckSelectView.saveDeck(this._selected, this._cardInventory, previousGroup);
+      // 2026-09-12 兜底：如果这一组在存储里本来有牌、而当前 _selected 是空（说明界面还没把
+      // 这组载进来），就不许把"空草稿"写回去 —— 那会把玩家的卡组清空。
+      const outgoing = [...(this._selected ?? [])];
+      const storedForGroup = outgoing.length
+        ? null
+        : DeckSelectView.loadSavedDeck(this._cardInventory, this._db, previousGroup);
+      if (!outgoing.length && Array.isArray(storedForGroup) && storedForGroup.length) {
+        console.warn(`[deck] 跳过空草稿覆盖 ${previousGroup}（存储里有 ${storedForGroup.length} 张）`);
+      } else {
+        DeckSelectView.saveDeck(this._selected, this._cardInventory, previousGroup);
+      }
       this._deckTab = nextGroup;
+      // 2026-09-12：记住"玩家亲手点过的战团"，后续房间渲染不许再把他拖走
+      this.__deckTabPicked20260912 = nextGroup;
       // 记住玩家选的卡组：离开房间/刷新后仍要生效（服务端只记房间成员，会丢）。
       rememberDeckGroup20260911(nextGroup);
       if (this._cardInventory) this._cardInventory.__activeDeckGroup20260907 = nextGroup;

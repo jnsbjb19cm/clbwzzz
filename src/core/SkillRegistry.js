@@ -11,55 +11,51 @@ export const HERO_MP_REGEN_INTERVAL = 50;
 /** 初始只装备非天赋技能；其余技能必须先在天赋树解锁。 */
 export const DEFAULT_SKILL_LOADOUT = [503, 504, 505, null, null, null];
 
-/** 不应出现在技能树/技能池中的内部或废弃技能。 */
-const HIDDEN_SKILL_CARD_IDS = new Set([520]);
+/**
+ * 不应出现在技能树/技能池中的内部或废弃技能。
+ * 2026-09-12：按用户要求把 542/543/544/545/546/548/549/551/552/553/554/555/556
+ * 一并禁用并隐藏（这些技能的效果声明也已从 SKILL_EFFECTS 移除，
+ * 技能池按"有效果声明"过滤，所以它们不会再出现在战斗技能栏里）。
+ */
+const HIDDEN_SKILL_CARD_IDS = new Set([
+  520,
+  542, 543, 544, 545, 546, 548, 549,
+  551, 552, 553, 554, 555, 556,
+]);
 
 /** 主动技能的战斗效果。 */
 export const SKILL_EFFECTS = {
-  500: { kind: 'aoe_damage', radius: 1, damage: 60, needsTarget: true, label: '3×3范围伤害' },
+  500: { kind: 'aoe_damage', radius: 1, damage: 25, needsTarget: true, label: '3×3范围25伤害' },
   501: { kind: 'enemy_hero_damage', damage: 60, label: '敌方基地60伤害' },
   502: { kind: 'heal_all_allies', amount: 30, label: '治疗己方全场' },
   503: { kind: 'freeze_all_enemies', freezeSec: 5, slowSec: 5, label: '冻结全场敌人' },
   504: { kind: 'heal_hero', amount: 200, heroHpFloorSec: 8, heroHpFloor: 10, label: '圣光术：回200并8秒基地锁血至10' },
-  505: { kind: 'buff_max_hp', amount: 10, duration: 15, label: '生命上限提升' },
-  506: { kind: 'cell_damage', damage: 120, needsTarget: true, label: '单格雷击' },
+  505: { kind: 'buff_max_hp', amount: 10, duration: 15, healPct: 50, label: '生命结界：回50%生命并提升生命上限' },
+  506: { kind: 'cell_damage', damage: 70, needsTarget: true, label: '单格雷击' },
   507: { kind: 'fire_wall', dps: 10, duration: 10, needsTarget: true, label: '纵向火墙' },
   514: { kind: 'poison_aoe', radius: 1, dps: 4, duration: 10, needsTarget: true, label: '3×3毒雾' },
-  517: { kind: 'damage_all_enemies', damage: 80, label: '全屏陨石伤害' },
-  518: { kind: 'invuln_all_allies', duration: 10, debuffImmune: true, label: '圣盾术：全场无敌并免疫负面效果' },
+  517: { kind: 'damage_all_enemies', damage: 35, label: '全屏陨石伤害' },
+  518: { kind: 'invuln_all_allies', duration: 5, debuffImmune: true, label: '圣盾术：5秒无敌并免疫负面效果' },
   522: { kind: 'buff_atk_allies', amount: 10, duration: 15, label: '全场攻击强化' },
-  523: { kind: 'row_damage', damage: 100, needsTarget: true, label: '冰刺突袭' },
-  526: { kind: 'cell_damage', damage: 75, freezeSec: 1.5, bonusFrozenPct: 30, needsTarget: true, label: '雷鸣之箭(75+冰冻,冰冻目标+30%)' },
+  523: { kind: 'row_damage', damage: 50, needsTarget: true, label: '冰刺突袭' },
+  526: { kind: 'cell_damage', damage: 75, freezeSec: 1.5, bonusFrozenPct: 30, needsTarget: true, label: '灼熱之箭(75+冰冻1.5秒,冰冻目标+30%)' },
   527: { kind: 'cell_damage', damage: 120, needsTarget: true, label: '雷鳴之箭' },
   528: { kind: 'cell_damage', damage: 72, bonusBurningPct: 25, needsTarget: true, label: '冰霜之箭(72,灼烧目标+25%)' },
   529: { kind: 'aoe_damage', radius: 1, damage: 65, bonusSlowedPct: 25, needsTarget: true, label: '岩破术(65,减速目标+25%)' },
-  530: { kind: 'aoe_rect', radiusLane: 2, radiusCol: 1, damage: 60, needsTarget: true, label: '4×5范围60伤害' },
-  531: { kind: 'aoe_damage', radius: 1, damage: 60, needsTarget: true, label: '3×3范围60伤害' },
-  532: { kind: 'aoe_damage', radius: 1, damage: 60, needsTarget: true, label: '3×3范围60伤害' },
-  533: { kind: 'row_damage', damage: 100, needsTarget: true, label: '横向100伤害' },
-  534: { kind: 'row_damage', damage: 100, needsTarget: true, label: '横向100伤害' },
-  535: { kind: 'row_damage', damage: 100, needsTarget: true, label: '横向100伤害' },
-  536: { kind: 'row_damage', damage: 100, needsTarget: true, label: '横向100伤害' },
-  542: { kind: 'enemy_hero_stun', stunSec: 10, label: '敌方英雄眩晕' },
-  545: { kind: 'buff_max_hp', amount: 30, duration: 15, label: '五花肉(占位：全队生命上限+30)' },
-  537: { kind: 'firebird', damage: 70, burnDps: 10, burnSec: 5, label: '全体70伤害并灼烧5秒' },
+  530: { kind: 'aoe_rect', lanes: 4, cols: 5, laneOffset: 1, colOffset: 2, damage: 15, needsTarget: true, label: '4行5列范围15伤害' },
+  531: { kind: 'aoe_damage', radius: 1, damage: 25, needsTarget: true, label: '3×3范围25伤害' },
+  532: { kind: 'aoe_damage', radius: 1, damage: 25, needsTarget: true, label: '3×3范围25伤害' },
+  533: { kind: 'row_damage', damage: 50, needsTarget: true, label: '横向50伤害' },
+  534: { kind: 'row_damage', damage: 50, needsTarget: true, label: '横向50伤害' },
+  535: { kind: 'row_damage', damage: 70, needsTarget: true, label: '横向70伤害' },
+  536: { kind: 'row_damage', damage: 70, needsTarget: true, label: '横向70伤害' },
+  537: { kind: 'firebird', damage: 50, burnDps: 4, burnSec: 5, label: '全屏50伤害并灼烧(4/秒,5秒)' },
   538: { kind: 'sacred_revival', amount: 100, hotAmount: 0, hotEvery: 2, duration: 10, label: '全军复苏回100' },
-  539: { kind: 'fatal_curse', dps: 8, duration: 10, vulnerability: 3, label: '全屏持续伤害8并增伤3点' },
-  540: { kind: 'buff_as_ms', duration: 10, label: '全场攻速移速提升' },
+  539: { kind: 'fatal_curse', dps: 8, duration: 10, vulnerability: 3, label: '全屏持续伤害8(中毒目标受非中毒伤害+3)' },
+  540: { kind: 'buff_as_ms', pct: 10, duration: 10, label: '全场攻速移速+10%' },
   541: { kind: 'buff_atk_allies', amount: 30, duration: 15, label: '全场攻击+30' },
-  543: { kind: 'spawn_portal', count: 3, label: '召唤传送门' },
-  544: { kind: 'portal_wave', duration: 10, label: '传送门出怪' },
-  546: { kind: 'buff_atk_allies', amount: 10, duration: 10, label: 'X射线眼' },
   547: { kind: 'base_invulnerable', duration: 10, label: '铁壳功：己方基地无敌10秒' },
-  548: { kind: 'poison_aoe', radius: 0, dps: 3, duration: 6, needsTarget: true, label: '喷墨' },
-  549: { kind: 'aoe_damage', radius: 1, damage: 40, needsTarget: true, label: '死亡触手' },
   550: { kind: 'phase_out_enemies', countMin: 3, countMax: 5, duration: 10, label: '幻之境：3~5张敌卡消失10秒' },
-  551: { kind: 'buff_as_ms', duration: 8, label: '壮士断腕' },
-  552: { kind: 'aoe_damage', radius: 1, damage: 30, needsTarget: true, label: '沙洞' },
-  553: { kind: 'sacred_revival', amount: 50, hotAmount: 4, hotEvery: 2, duration: 8, label: '断腕再生' },
-  554: { kind: 'buff_atk_allies', amount: 5, duration: 12, label: '嗅觉探知' },
-  555: { kind: 'row_damage', damage: 60, needsTarget: true, label: '围剿' },
-  556: { kind: 'cell_damage', damage: 90, needsTarget: true, label: '利齿突袭' },
   557: { kind: 'aoe_damage', radius: 1, damage: 60, needsTarget: true, label: '3×3范围60伤害' },
   558: { kind: 'thunderstorm', damage: 10, label: '雷霆风暴(全屏10伤+记录打最高)' },
   560: { kind: 'row_damage', damage: 100, needsTarget: true, label: '雷弹100' },

@@ -10,6 +10,7 @@ import {
   cellCenterY,
   cellY,
   colFracToX,
+  formatBattleAmount,
   formatBattleDelta,
   fracColToCenterX,
   laneFracToY,
@@ -1224,16 +1225,25 @@ export class BattleRenderer {
       if (atlasImg) {
         const isHeal = f.amount > 0;
         const prefix = isHeal ? 'g' : 'r';
-        const digits = String(Math.round(Math.abs(f.amount))).split('');
+        // 2026-09-12：不再四舍五入成整数 —— 剩余血量是小数（例如 3.2）时飘字要显示 -3.2。
+        // 小数点用图集里的 number_*_d 字形（8×8 的小点）画。
+        const glyphs = formatBattleAmount(Math.abs(f.amount))
+          .split('')
+          .map((ch) => (ch === '.' ? 'd' : ch));
         const signRect = BATTLE_NUM_RECTS.get(isHeal ? 'number_g_add' : 'number_r_sub');
-        if (digits.length) {
+        if (glyphs.length) {
           const digitW = 13 * 0.85;
           const digitH = 18 * 0.85;
+          const dotRect = BATTLE_NUM_RECTS.get(`number_${prefix}_d`);
+          const dotW = (dotRect ? (dotRect.width ?? 8) : 8) * 0.85;
+          const dotH = (dotRect ? (dotRect.height ?? 8) : 8) * 0.85;
+          const dotCount = glyphs.filter((ch) => ch === 'd').length;
           // 加减号按原生宽高比缩小绘制(不拉伸到数字高度)
           const signScale = 0.85 * 0.7;
           const signW = (signRect ? (signRect.width ?? 11) : 11) * signScale;
           const signH = (signRect ? (signRect.height ?? 8) : 8) * signScale;
-          let dx = cx - ((digits.length * digitW + signW) / 2);
+          const textW = glyphs.length * digitW - dotCount * (digitW - dotW);
+          let dx = cx - ((textW + signW) / 2);
           let drawn = 0;
           if (signRect) {
             ctx.save();
@@ -1245,17 +1255,23 @@ export class BattleRenderer {
             ctx.restore();
             dx += signW;
           }
-          for (const ch of digits) {
+          for (const ch of glyphs) {
             const rect = BATTLE_NUM_RECTS.get(`number_${prefix}_${ch}`);
             if (!rect) continue;
+            const isDot = ch === 'd';
+            const w = isDot ? dotW : digitW;
+            const h = isDot ? dotH : digitH;
+            // 小数点必须落在基线上（图集里 number_*_d 的 frameY=-10/frameHeight=18 就是"贴底"）。
+            // 居中画的话，它正好卡在数字中间，看起来像减号 —— 用户看到的就是 "-2-5"。
+            const y = isDot ? (cy + digitH / 2 - h) : (cy - h / 2);
             ctx.save();
             ctx.globalAlpha = alpha;
             ctx.drawImage(
               atlasImg, rect.x, rect.y, rect.width, rect.height,
-              dx, cy - digitH / 2, digitW, digitH,
+              dx, y, w, h,
             );
             ctx.restore();
-            dx += digitW;
+            dx += w;
             drawn += 1;
           }
           if (drawn) continue;

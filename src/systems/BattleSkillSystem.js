@@ -266,27 +266,42 @@ export class BattleSkillSystem {
         }
         break;
       case 'aoe_rect': {
-        // 4×5 范围（lane 半径 2 × col 半径 1）
+        // 矩形范围。两种写法：
+        //   ① 旧：radiusLane / radiusCol（以目标格为中心的奇数边：±2 → 5 路，±1 → 3 列）
+        //   ② 新：lanes / cols 直接给边长（可表达 4×5 这种偶数边，530 绽放吧..波涛）
+        //      laneOffset/colOffset = 目标格距左上角的偏移，默认居中取 floor((n-1)/2)。
+        const laneSpan = Math.max(0, Math.floor(finite(effect.lanes, 0)));
+        const colSpan = Math.max(0, Math.floor(finite(effect.cols, 0)));
+        const useSpan = laneSpan > 0 || colSpan > 0;
+        const laneFrom = target.lane - Math.floor(finite(effect.laneOffset, (laneSpan - 1) / 2));
+        const laneTo = laneFrom + Math.max(1, laneSpan) - 1;
+        const colFrom = target.col - Math.floor(finite(effect.colOffset, (colSpan - 1) / 2));
+        const colTo = colFrom + Math.max(1, colSpan) - 1;
         for (const u of [...eng.units]) {
           if (!isHostileSkillTarget(u, eng, skillId)) continue;
           const unitCol = eng.getUnitGridCol(u);
-          if (
-            Math.abs(u.lane - target.lane) <= (effect.radiusLane ?? 1) &&
-            Math.abs(unitCol - target.col) <= (effect.radiusCol ?? 1)
-          ) {
-            this.hitUnit(u, effect.damage);
-          }
+          const inRange = useSpan
+            ? (u.lane >= laneFrom && u.lane <= laneTo
+              && unitCol >= colFrom - 0.5 && unitCol <= colTo + 0.5)
+            : (Math.abs(u.lane - target.lane) <= (effect.radiusLane ?? 1)
+              && Math.abs(unitCol - target.col) <= (effect.radiusCol ?? 1));
+          if (inRange) this.hitUnit(u, effect.damage);
         }
         break;
       }
-      case 'buff_as_ms':
-        // 全场攻速/移速提升（attackSpeed/移动速度加成，持续 duration）
+      case 'buff_as_ms': {
+        // 全场攻速/移速提升：倍率由技能效果给出（pct = +N%，540 全军突击 = +10%）
+        const pct = Math.max(0, finite(effect.pct, 0));
+        const speedMult = finite(effect.asMsSpeedUp, pct > 0 ? 1 + pct / 100 : 1.6);
+        const atkMult = finite(effect.asMsAtkMult, pct > 0 ? 1 / (1 + pct / 100) : 0.65);
         for (const u of eng.units) {
           if (!u.alive || u.team !== 'player') continue;
           u.tempAsMsUntil = Math.max(u.tempAsMsUntil ?? 0, t + (effect.duration ?? 10));
-          u.asMsSpeedUp = 1.6;
+          u.asMsSpeedUp = speedMult;
+          u.asMsAtkMult = atkMult;
         }
         break;
+      }
       case 'spawn_portal':
         // 简化：在敌方场地随机生成 3 个"传送门"占位单位（存活数秒后消失）
         {
@@ -382,15 +397,23 @@ export class BattleSkillSystem {
           u.atkBuffUntil = Math.max(u.atkBuffUntil ?? 0, t + effect.duration);
         }
         break;
-      case 'buff_max_hp':
+      case 'buff_max_hp': {
+        // 生命结界(505)：先瞬间回复上限的 healPct%（卡面描述里的"瞬间恢复50%生命值"），
+        // 再提升生命上限 amount 点并补上新增的那部分血量，持续 duration。
+        const healPct = Math.max(0, finite(effect.healPct, 0));
         for (const u of eng.units) {
           if (!u.alive || u.team !== 'player') continue;
+          if (healPct > 0) {
+            const healed = u.heal(roundBattleAmount(u.maxHp * healPct / 100));
+            if (healed > 0) eng.spawnFloat(u.lane, u.col, healed);
+          }
           u.tempMaxHpBonus = roundBattleAmount((u.tempMaxHpBonus ?? 0) + effect.amount);
           u.maxHp = roundBattleAmount(u.maxHp + effect.amount);
           u.hp = roundBattleAmount(Math.min(u.maxHp, u.hp + effect.amount));
           u.maxHpBuffUntil = Math.max(u.maxHpBuffUntil ?? 0, t + effect.duration);
         }
         break;
+      }
       case 'fire_wall':
         eng.activeFields.push({
           kind: 'fire_wall',
@@ -476,12 +499,24 @@ export class BattleSkillSystem {
     }
   }
 
-  hitUnit(unit, damage) {
-    const vulnerability = (unit.damageTakenBonusUntil ?? 0) > this.engine.time
-      ? Number(unit.damageTakenBonus || 0)
-      : 0;
+  /** 单位是否正在中毒（死亡诅咒/毒雾/喷墨等 DoT 都算"中毒状态"）。 */
+  isUnitPoisoned(unit, now) {
+    return Boolean(unit?.dots?.some((dot) => (
+      (dot?.kind === 'poison' || dot?.kind === 'curse') && Number(dot.until) > Number(now)
+    )));
+  }
+
+  /**
+   * 对单个单位造成伤害。
+   * options.ignoreVulnerability：本次伤害是"中毒/诅咒伤害本身"，不吃死亡诅咒(539)的增伤
+   * —— 卡面/天赋树写的是"中毒目标受到的非中毒伤害 +3"。
+   */
+  hitUnit(unit, damage, { ignoreVulnerability = false } = {}) {
+    const now = this.engine.time;
+    const cursed = (unit.damageTakenBonusUntil ?? 0) > now && this.isUnitPoisoned(unit, now);
+    const vulnerability = cursed && !ignoreVulnerability ? Number(unit.damageTakenBonus || 0) : 0;
     const dmg = roundBattleAmount(damage + vulnerability);
-    const applied = unit.takeDamage(dmg, this.engine.time);
+    const applied = unit.takeDamage(dmg, now);
     if (applied > 0) {
       // 伤害数字只显示实际扣掉的血量（致死后不显示溢出伤害）。
       if (typeof this.engine.spawnDamageFloat === 'function') this.engine.spawnDamageFloat(unit, applied);
@@ -524,17 +559,22 @@ export class BattleSkillSystem {
     const now = this.engine.time;
     for (const u of this.engine.units) {
       if (!u.alive || !u.dots?.length) continue;
-      let total = 0;
+      // 中毒/诅咒伤害与灼烧等其他持续伤害分开结算：
+      // 死亡诅咒(539)的 +3 只加在"非中毒伤害"上，所以中毒/诅咒本身的 DoT 不吃增伤。
+      let poisonTotal = 0;
+      let otherTotal = 0;
       u.dots = u.dots.filter((d) => {
         const every = Math.max(0.1, Number(d.every) || 1);
         d.nextAt ??= Math.min(d.until, now + every);
         while (now + 1e-6 >= d.nextAt && d.nextAt <= d.until + 1e-6) {
-          total += d.dps;
+          if (d.kind === 'poison' || d.kind === 'curse') poisonTotal += d.dps;
+          else otherTotal += d.dps;
           d.nextAt += every;
         }
         return now < d.until - 1e-6 || d.nextAt <= d.until + 1e-6;
       });
-      if (total > 0) this.hitUnit(u, total);
+      if (poisonTotal > 0) this.hitUnit(u, poisonTotal, { ignoreVulnerability: true });
+      if (otherTotal > 0) this.hitUnit(u, otherTotal);
     }
   }
 

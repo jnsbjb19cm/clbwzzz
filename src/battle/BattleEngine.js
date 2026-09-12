@@ -82,6 +82,10 @@ export class BattleEngine {
     this.skillTargetError = '';
     this.stage = db.stages.find((s) => s.stage_id === stageId) ?? db.stages[0];
     // 天赋被动加成（BattleView 从 HeroSkillStore 计算传入，兜底读 globalThis）
+    // 2026-09-12 修复：这里以前重建了只含 hp/mp/atkPct/hpPct 的新对象，把
+    // scarecrowAtkPct / dandelionHpPct / dandelionHealPct / lowBaseAtkPct /
+    // lowBaseDamageReductionPct 全丢掉 → 512 破釜沉舟、513 坚韧不屈、515 战神祝福、
+    // 516 天使之赐 在战斗中完全不生效。现在保留传入对象的全部字段，只规范化 hp/mp。
     let talentHpBonus = 0;
     let talentMpBonus = 0;
     if (talentBonus) {
@@ -100,7 +104,13 @@ export class BattleEngine {
     }
     const talentAtkPct = talentBonus ? Math.max(0, Number(talentBonus.atkPct) || 0) : 0;
     const talentHpPct = talentBonus ? Math.max(0, Number(talentBonus.hpPct) || 0) : 0;
-    this.talentBonus = { hp: talentHpBonus, mp: talentMpBonus, atkPct: talentAtkPct, hpPct: talentHpPct };
+    this.talentBonus = {
+      ...(talentBonus ?? {}),
+      hp: talentHpBonus,
+      mp: talentMpBonus,
+      atkPct: talentAtkPct,
+      hpPct: talentHpPct,
+    };
     if (trainingMode) {
       this.heroMaxHp = TRAINING_PLAYER_BASE_HP + talentHpBonus;
       this.heroHp = TRAINING_PLAYER_BASE_HP + talentHpBonus;
@@ -449,7 +459,7 @@ export class BattleEngine {
     if (!unit.isMovable?.()) return 1;
     let mult = 1;
     // 技能"壮士断腕/全军突击"(buff_as_ms)：移速 +60%
-    if (unit.tempAsMsUntil && this.time < unit.tempAsMsUntil) mult *= (unit.asMsSpeedUp ?? 1.6);
+    if (unit.tempAsMsUntil && this.time < unit.tempAsMsUntil) mult *= (unit.asMsSpeedUp ?? 1.2);
     for (const u of this.units) {
       if (!u.alive || u.team !== unit.team || u === unit) continue;
       if (u.cardId === 24 && u.lane === unit.lane) mult = Math.max(mult, 1.5);
@@ -461,8 +471,8 @@ export class BattleEngine {
   /** 攻速光环：部落巫婆(3x3)/ 太古巫婆(全屏)，不可叠加 → 攻速+50%(冷却×2/3) */
   getAtkSpeedMult(unit) {
     let mult = 1;
-    // 技能"全军突击/壮士断腕"(buff_as_ms)：攻速提升（冷却缩短）
-    if (unit.tempAsMsUntil && this.time < unit.tempAsMsUntil) mult = Math.min(mult, 0.65);
+    // 技能"全军突击"(buff_as_ms)：攻速提升（冷却缩短），倍率由技能效果给出
+    if (unit.tempAsMsUntil && this.time < unit.tempAsMsUntil) mult = Math.min(mult, unit.asMsAtkMult ?? 0.65);
     for (const u of this.units) {
       if (!u.alive || u.team !== unit.team || u === unit) continue;
       if (u.cardId === 51) {
@@ -1002,8 +1012,11 @@ export class BattleEngine {
 
     if (atHero) {
       const side = unit.team === 'player' ? 'enemy' : 'player';
-      this.damageBase(side, dmg);
-      this.spawnFloat(unit.lane, unit.getBaseFracCol(), -dmg);
+      // 2026-09-12：伤害数字只显示实际扣掉的基地血量（damageBase 返回实际值，
+      // 只剩 20 血挨 500 就显示 -20，而不是溢出的 -500）。没装该补丁时退回名义伤害。
+      const baseDealt = Number(this.damageBase(side, dmg));
+      const shown = Number.isFinite(baseDealt) && baseDealt > 0 ? baseDealt : dmg;
+      this.spawnFloat(unit.lane, unit.getBaseFracCol(), -roundBattleAmount(shown));
       this.pushLog(`${unit.name} 炸击敌方基地`);
     }
 
@@ -1223,8 +1236,10 @@ export class BattleEngine {
         });
       } else {
         unitAnimPlayer.triggerAttack(unit, this);
-        this.damageBase(unit.team === 'player' ? 'enemy' : 'player', dmg);
-        this.spawnFloat(unit.lane, target.col, -dmg);
+        // 同上：只显示实际扣掉的基地血量，避免基地只剩一点血时飘出溢出伤害。
+        const baseDealt = Number(this.damageBase(unit.team === 'player' ? 'enemy' : 'player', dmg));
+        const shown = Number.isFinite(baseDealt) && baseDealt > 0 ? baseDealt : dmg;
+        this.spawnFloat(unit.lane, target.col, -roundBattleAmount(shown));
       }
       return true;
     }
@@ -1405,14 +1420,17 @@ export class BattleEngine {
         resolveCol,
         damage,
         trajectory,
-        attackPattern: getAttackPattern(unit.cardId) || null,
+        // 反弹的子弹可以用 opts.attackPattern 指定形状（null = 单目标直线），否则用发射者卡牌自己的形状
+        attackPattern: 'attackPattern' in opts ? (opts.attackPattern ?? null) : (getAttackPattern(unit.cardId) || null),
         // 黑暗精灵雷电直接命中同行最远目标，无视路径阻挡
         pierce: unit.cardId === 46 || opts.pierce === true,
         targetUid: isBaseShot ? null : (opts.targetUid ?? target.uid),
         targetLayerMask: getUnitAttackLayerMask(unit),
         targetBase,
         sourceUid: unit.uid,
-        sourceRes: unit.res,
+        sourceRes: opts.sourceRes ?? unit.res,
+        // 这颗子弹是"被弹回来的"：命中时不再触发二次反射（2026-09-12）
+        reflected: opts.reflected === true,
         icon: trajectory === 'parabola' ? '🥥' : '●',
         delay: releaseDelay,
       }),
@@ -1814,6 +1832,16 @@ export class BattleEngine {
       this.totalKills = (this.totalKills || 0) + 1;
     }
     if (unit.team === 'player') unit._diedThisBattle = true;
+    // 2026-09-12：死亡必须能看到"结算数字"。多数伤害路径会先调 spawnDamageFloat
+    // （本帧飘过就不再补），但反射/吞噬/吞噬结算等路径是直接 takeDamage + onUnitDeath，
+    // 之前这种死法完全没有数字。这里用实际扣血量补一个。
+    if (unit.__damageFloatAt !== this.time) {
+      const shown = roundBattleAmount(Number(unit.lastDamageDealt) || 0);
+      if (shown > 0) {
+        this.spawnFloat(unit.lane, unit.col, -shown);
+        unit.__damageFloatAt = this.time;
+      }
+    }
     audio.playDeath(unit.cardId);
 
     // 重生史莱姆：死亡后满血原地复活，只能复活1次
@@ -1991,7 +2019,16 @@ export class BattleEngine {
    * 覆盖：吸血/命中回血/总生命回血/偷资源/中毒/眩晕/定身/冰冻/减速/灼烧/
    * 克制倍率/加资源/秒杀/白光斩/受害者反射/火图腾灼烧近战。
    */
-  applyCardHit(attacker, vic, baseDamage, { ranged = false, ignoreCombatLayers = false } = {}) {
+  applyCardHit(attacker, vic, baseDamage, {
+    ranged = false,
+    ignoreCombatLayers = false,
+    // 2026-09-12：用于"把子弹真的弹回去"。反弹出来的子弹命中时 reflected=true，
+    // 此时不再触发二次反射（避免两边互相弹个没完）；sourcePattern/sourceRes 让反弹的
+    // 子弹沿用被打回去的那颗子弹的形状与外观。
+    reflected = false,
+    sourcePattern = undefined,
+    sourceRes = null,
+  } = {}) {
     if (!attacker || !vic || !vic.alive) return 0;
     if (!ignoreCombatLayers && !this.canUnitHitTargetLayer(attacker, vic)) return 0;
     const traits = getCardTraits(attacker.cardId) || {};
@@ -2063,10 +2100,24 @@ export class BattleEngine {
     // 受害者反射：荆棘战士/巨盾核桃卫兵(近战)、战盔巨头怪(远程子弹)
     const vicTraits = getCardTraits(vic.cardId) || {};
     const reflectChance = ranged ? vicTraits.projectileReflectChance : vicTraits.meleeReflectChance;
-    if (attacker.alive && reflectChance && Math.random() < reflectChance) {
+    if (!reflected && attacker.alive && reflectChance && Math.random() < reflectChance) {
       const reflectDmg = roundBattleAmount(Math.max(1, dealt * (vicTraits.reflectRatio ?? 0.5)));
-      attacker.takeDamage(reflectDmg, t);
-      if (!attacker.alive) this.onUnitDeath(attacker);
+      if (ranged && vic.alive) {
+        // 2026-09-12：远程子弹被反弹时，真的生成一颗**反向直线子弹**飞回去，
+        // 伤害由这颗子弹命中时结算（沿用被打回去的那颗子弹的弹道形状/外观，
+        // 但角度按发射者阵营反向 → 视觉上就是原路弹回）。
+        this.fireProjectile(vic, attacker, reflectDmg, {
+          trajectory: 'straight',
+          targetUid: attacker.uid,
+          attackPattern: sourcePattern ?? null,
+          sourceRes: sourceRes ?? vic.res,
+          reflected: true,
+        });
+        this.pushLog(`【${vic.name}】把 ${attacker.name} 的子弹弹了回去`);
+      } else {
+        attacker.takeDamage(reflectDmg, t);
+        if (!attacker.alive) this.onUnitDeath(attacker);
+      }
     }
     // 火图腾：被近战攻击时使攻击者灼烧
     if (!ranged && vicTraits.burnMelee && attacker.alive && !this.isDebuffImmune(attacker)) {
@@ -2134,6 +2185,10 @@ export class BattleEngine {
       this.applyCardHit(attacker, vic, proj.damage, {
         ranged: true,
         ignoreCombatLayers: true,
+        // 这颗子弹是不是"被弹回来的"：是的话不再二次反射（2026-09-12）
+        reflected: proj.reflected === true,
+        sourcePattern: proj.attackPattern ?? null,
+        sourceRes: proj.sourceRes ?? null,
       });
     }
   }
@@ -2253,7 +2308,11 @@ export class BattleEngine {
       ? recorded
       : Math.max(0, Number(fallbackAmount) || 0);
     const dealt = roundBattleAmount(shown);
-    if (dealt > 0) this.spawnFloat(target.lane, target.col, -dealt);
+    if (dealt > 0) {
+      this.spawnFloat(target.lane, target.col, -dealt);
+      // 记下"这个单位本帧已经飘过数字"，onUnitDeath 用它判断要不要补死亡结算数字
+      target.__damageFloatAt = this.time;
+    }
   }
 
   updateFloats(dt) {

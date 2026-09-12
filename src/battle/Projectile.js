@@ -64,6 +64,8 @@ export class Projectile {
     sourceUid, sourceRes = null, icon = '●', resolveCol = null, delay = 0,
     attackPattern = null, attackerCol = 0, attackerLane = 0, visualOnly = false,
     pierce = false, targetLayerMask = null, source = null,
+    // 2026-09-12：被反弹回来的子弹（命中时不再触发二次反射）
+    reflected = false,
   }) {
     this.id = ++pid;
     this.owner = owner;
@@ -82,6 +84,7 @@ export class Projectile {
     this.sourceUid = sourceUid;
     this.sourceRes = sourceRes;
     this.icon = icon;
+    this.reflected = reflected === true;
     this.delay = Math.max(0, Number(delay) || 0);
     this.launched = this.delay <= 0;
     this.progress = 0;

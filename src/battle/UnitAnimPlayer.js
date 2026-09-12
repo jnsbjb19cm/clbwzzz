@@ -721,10 +721,31 @@ export class UnitAnimPlayer {
     this.ensureLoaded([key]);
     const pack = this.ready.get(key) ?? resolvedPacks.get(key);
     const hasDeath = pack?.meta?.animations?.death?.frames?.length;
+    // 2026-09-12：素材包已加载、但**没有死亡动画**的单位 → 直接消除。
+    // 以前这种情况会把 _deathUntil 设成时间 + DEATH_ANIM_DURATION(2 秒)，
+    // 于是单位只能"站着"当 2 秒尸体（pickDrawState 拿不到 death 状态，退回待机帧）。
+    // 素材包还没加载完（例如服务端没有素材）时返回 null，保持原有占位时长，避免影响联机端的死亡表现。
+    if (this.deathAnimState(key) === false) {
+      unit._deathAnimStartedAt = engine.time;
+      unit._deathUntil = engine.time;
+      unit._noDeathAnim = true;
+      return;
+    }
     const dur = resolveDeathDuration(pack);
     unit._deathAnimStartedAt = engine.time;
     unit._deathUntil = engine.time + dur;
     if (hasDeath) this.clocks.set(`${unit.uid}:death`, 0);
+  }
+
+  /**
+   * 该素材是否烘焙了死亡动画。
+   * @returns {boolean|null} true=有 death 帧；false=素材已加载但没有 death 帧；
+   *   null=素材还没加载完（无法判断，调用方应保持原行为）
+   */
+  deathAnimState(res) {
+    const key = String(res);
+    if (!this.ready.has(key) && !resolvedPacks.has(key)) return null;
+    return Boolean(this.hasAnimState(key, 'death'));
   }
 
   ensureLoaded(resSet) {

@@ -97,7 +97,9 @@ export function installBattleUserRules20260903() {
     this.onUnitDeath(unit);
     unit._suicideRemoved = true;
     unit.alive = false;
-    if (!(Number(unit._deathUntil) > Number(this.time))) {
+    // 没有死亡动画的单位（markDeath 标记 _noDeathAnim）不补这 0.45 秒：直接消除，
+    // 否则它会"站着"停留一下再消失（2026-09-12）。
+    if (!(Number(unit._deathUntil) > Number(this.time)) && !unit._noDeathAnim) {
       unit._deathUntil = Number(this.time) + 0.45;
     }
     return true;

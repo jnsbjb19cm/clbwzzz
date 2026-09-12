@@ -29,13 +29,18 @@ function roomShellChanged(previous, next) {
 }
 
 function roomDeckGroup(room, userId, fallbackGroup = 'default') {
-  // 2026-09-11：玩家上次选过的卡组优先。否则离开房间后成员按账号默认值重新创建，
-  // 战团2/3 的选择会被抹掉，界面又跳回"默认/战团1"。
+  // 2026-09-12：**房间成员当前选中的战团优先**。
+  // 原来这里是无条件 `remembered`（玩家上次保存的战团）优先，于是房间里已经选中/正在编辑
+  // 战团1 时，界面会被静默拉回记住的默认卡组（用户报告："编辑战团1错误地跳到默认卡组，
+  // 然后给我战团1覆盖了"）：页面显示的是默认卡组的牌，而"开始/确定"存盘按房间的组名
+  // （战团1）写回，于是战团1 被默认卡组覆盖。
+  const me = memberFor(room, userId);
+  if (me && me.selectedDeckNo != null) return deckNumberToGroup20260906(me.selectedDeckNo);
+  // 成员还没有选择（例如服务端刚按账号默认值重建成员）→ 用玩家上次保存的战团兜底，
+  // 这样"离开房间再回来，战团2/3 的选择不会被抹掉"（2026-09-11 的要求）仍然成立。
   const remembered = readRememberedDeckGroup20260911();
   if (remembered) return remembered;
-  const me = memberFor(room, userId);
-  if (!me || me.selectedDeckNo == null) return normalizeDeckGroup20260906(fallbackGroup);
-  return deckNumberToGroup20260906(me.selectedDeckNo);
+  return normalizeDeckGroup20260906(fallbackGroup);
 }
 
 function copyDeck(value) {
@@ -60,11 +65,32 @@ function saveDeckGroup(view, group, selection) {
     .then(() => DeckSelectView.awaitDeckSave20260908?.(normalized));
 }
 
+/**
+ * 把"当前战团"同步给房间成员（房间的 selectedDeckNo 才是这场战斗要用的组）。
+ * 不同步的话，房间那边还是旧组，下一次房间刷新/重渲染会把页签拉回旧战团
+ * —— 用户报告的"编辑战团1，刷新后跳回别的战团、战团1被覆盖"就是这个原因。
+ */
+function syncRoomDeckGroup(view, group) {
+  const roomState = view?._roomState;
+  if (!roomState) return;
+  const deckNo = deckGroupToNumber20260906(group);
+  const me = memberFor({ members: roomState.members ?? [] }, roomState.myUserId);
+  if (Number(me?.selectedDeckNo ?? roomState.selectedDeckNo) === deckNo) return;
+  const owner = view.__roomOwner20260912;
+  const onSetDeck = typeof roomState.onSetDeck === 'function'
+    ? roomState.onSetDeck
+    : (owner?.socket?.setDeck ? (no) => owner.socket.setDeck(no) : null);
+  if (!onSetDeck) return;
+  const request = onSetDeck(deckNo);
+  if (request?.catch) request.catch(() => {});
+}
+
 function saveCurrentDeck(view) {
   if (!view?._cardInventory) return Promise.resolve();
   const group = normalizeDeckGroup20260906(
     view._deckTab ?? view._cardInventory.__activeDeckGroup20260907 ?? 'default',
   );
+  syncRoomDeckGroup(view, group);
   return saveDeckGroup(view, group, view._selected);
 }
 
@@ -336,6 +362,21 @@ function installDeckRenderGuard() {
   function renderWithDeckGroupGuard(root, options = {}) {
     const result = previousRender.call(this, root, options);
     if (!options.roomState) return result;
+    // 2026-09-12：玩家亲手点过战团（且点的那组就是他这次要编辑的），后续房间渲染
+    // 不许再用房间/记住的组覆盖他 —— 否则"切到战团2，又被拉回默认并显示默认卡组的牌"。
+    const picked = this.__deckTabPicked20260912;
+    if (picked && this._deckTab === picked) {
+      const roomGroup = roomDeckGroup(
+        { members: options.roomState.members ?? [] },
+        options.roomState.myUserId,
+        picked,
+      );
+      if (roomGroup !== picked) {
+        void syncRoomDeckGroup(this, picked);   // 房间跟玩家的选择对齐，而不是反过来
+      }
+      syncDeckTabs(root, picked);
+      return result;
+    }
 
     const group = roomDeckGroup(
       { members: options.roomState.members ?? [] },
@@ -343,7 +384,6 @@ function installDeckRenderGuard() {
       options.roomState.selectedDeckNo == null ? (this._deckTab ?? 'default') : deckNumberToGroup20260906(options.roomState.selectedDeckNo),
     );
     if (this._cardInventory) this._cardInventory.__activeDeckGroup20260907 = group;
-
     loadGroupIntoView(this, root, group, { force: true });
 
     this.__originalSaveDeck = (selected, cardInventory) => {

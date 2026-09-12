@@ -2,7 +2,7 @@ import { BattleEngine } from '../battle/BattleEngine.js';
 import { TRAINING_STAGE_VALUE } from '../battle/BattleConfig.js';
 import { BattleView } from './BattleView.js';
 import { DeckSelectView } from './DeckSelectView.js';
-import { loadBattleDeckSlots20260911 } from './DeckGroupPreference20260911.js';
+import { battleDeckGroup20260912, loadBattleDeckSlots20260911 } from './DeckGroupPreference20260911.js';
 import { installRoomLifetimeClientPatch } from './RoomLifetimeClientPatch.js';
 
 let installed = false;
@@ -48,9 +48,12 @@ export function installBattleRoomFlowPatch() {
     this.stageId = stageId;
     this.trainingMode = trainingMode;
 
+    // 这副牌属于哪一组，跟牌一起带进来
+    this.deckGroup = battleDeckGroup20260912(this, options?.deckGroup ?? null);
+    if (this.cardInventory) this.cardInventory.__activeDeckGroup20260907 = this.deckGroup;
     // 训练营（尤其是剧情教程的 6 张临时卡）绝不能覆盖玩家保存的正式战团。
     if (!trainingMode) {
-      DeckSelectView.saveDeck(deckSlots, this.cardInventory);
+      DeckSelectView.saveDeck(deckSlots, this.cardInventory, this.deckGroup);
     }
 
     this.phase = 'fighting';

@@ -11,7 +11,7 @@ import cardPartsAtlas from '../data/atlas/preload_cardParts.json' with { type: '
 import { DeckSelectView } from './DeckSelectView.js';
 import { RoomView } from './RoomView.js';
 import { BattleView } from './BattleView.js';
-import { selectedBattleDeck20260912 } from './DeckGroupPreference20260911.js';
+import { roomDeckGroup20260912, selectedBattleDeck20260912 } from './DeckGroupPreference20260911.js';
 
 const PATCH_FLAG = Symbol.for('clbwzzz.pvpWildernessRoomFinal');
 const DECK_STORAGE_KEY = 'clbwz_room_decks_v4';
@@ -481,8 +481,11 @@ function enterPvpBattle(view) {
   // 原来这里用本模块自己的 _pvpDeckTab/_pvpDeckSlots + clbwz_room_decks_v4 聚合，
   // 但房间界面早已改回 DeckSelectView（本模块"只接管 PVP 战斗场地"），
   // 那两个字段再没人写 → activeTab 永远落到 'default'：界面选战团1，进去却打默认组的牌。
-  const activeDeck = selectedBattleDeck20260912(view.cardInventory, view.db);
+  // 2026-09-12：同上 —— 以房间里选中的战团为准
+  const activeDeck = selectedBattleDeck20260912(view.cardInventory, view.db, roomDeckGroup20260912(view));
   const deckGroup = activeDeck.group;
+  // 2026-09-12：把"当前战团"标成房间这一套（不然环境标记会留上一场的值，退出后战团变残留值）
+  if (view.cardInventory) view.cardInventory.__activeDeckGroup20260907 = deckGroup;
   const authoredDeck = view._pvpDeckTab === deckGroup ? normalizeDeck(view._pvpDeckSlots) : [];
   const deckSlots = normalizeDeck(authoredDeck.length ? authoredDeck : activeDeck.slots);
   // 消费房间 dice「随机地图」选择（一次性，防止残留影响下一场默认黄沙）
@@ -491,7 +494,7 @@ function enterPvpBattle(view) {
   view.roomBattleView?.destroy?.();
   view.roomBattleView = new BattleView(view.db, {
     cardInventory: view.cardInventory,
-    heroSkills: null,
+    heroSkills: view.heroSkills ?? globalThis.__clbwzHeroSkills ?? null,
     pvp: {
       roomId: view.room.id,
       room: view.room,

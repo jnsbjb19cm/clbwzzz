@@ -123,6 +123,26 @@ function applySnapshotDeltas(view, snapshot) {
       if (delta) pushAuthorityFloat(view, data.lane, localCol(view, data.col), delta);
     }
 
+    // 2026-09-12：单位从快照里"消失"就是它死了 —— 上面的循环只遍历新快照里的单位，
+    // 所以死亡那一击（致命伤害）一直没有结算数字。这里补上：金额 = 它最后一次快照里的
+    // 剩余血量，也就是致命一击实际扣掉的血量。
+    // 幻之境(550)会让卡牌离场 10 秒，那种"消失"不算死亡 —— 用引擎里的离场记录排除。
+    for (const [uid, data] of previous) {
+      if (next.has(uid) || data.neutral) continue;
+      const phasedOut = (view.engine?.__phaseOutRecords20260830 ?? [])
+        .some((record) => Number(record?.uid) === uid);
+      if (phasedOut) continue;
+      // 同一个单位的死亡结算数字 1 秒内只补一次。记录挂在 engine 上：
+      // 房间里若同时存在两个 battle view（各自监听快照），也只飘一个。
+      const engine = view.engine;
+      const flushed = engine.__pvpDeathFloatAt20260912 ?? (engine.__pvpDeathFloatAt20260912 = new Map());
+      const now = performance.now();
+      if (now - (flushed.get(uid) ?? -1e9) < 1000) continue;
+      flushed.set(uid, now);
+      const lost = Math.round(finite(data.hp) * 10) / 10;
+      if (lost > 0) pushAuthorityFloat(view, data.lane, localCol(view, data.col), -lost);
+    }
+
     const ownTeam = String(view.pvp?.team || 'blue');
     const enemyTeam = ownTeam === 'red' ? 'blue' : 'red';
     const oldBases = view.__pvpRound2BaseHp ?? {};

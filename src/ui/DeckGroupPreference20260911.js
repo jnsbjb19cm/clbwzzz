@@ -20,6 +20,7 @@ import { DeckSelectView } from './DeckSelectView.js';
 import {
   storageKeyForDeckGroup20260906,
   deckGroupToNumber20260906,
+  deckNumberToGroup20260906,
   normalizeDeckGroup20260906,
 } from './DeckGroupSelection20260906.js';
 
@@ -144,6 +145,46 @@ export function loadBattleDeckSlots20260911(cardInventory, db, group = null) {
  * 「界面选战团1、开打却用默认组，而且战团1 被写成了默认组」就是 PVP 战斗入口
  * 自己按默认组取牌，而保存时按"当前选中组=战团1"落盘造成的。
  */
+/**
+ * 2026-09-12：**房间里"这场战斗要用哪套卡组"**。
+ *
+ * 规则（用户要求"界面看到哪套、打的就是哪套"）：
+ *   1. 房间成员当前选中的战团 → 用它（房间里玩家自己选的，最高优先）；
+ *   2. 成员还没有选择（服务端刚按账号重建成员）→ 用玩家记住的战团；
+ *   3. 再没有 → default。
+ *
+ * 注意**不要**用 `cardInventory.__activeDeckGroup20260907` 当依据：那是个会被各路
+ * 流程到处写的环境标记，很容易是上一场的残留，从而把玩家重定向到别的战团
+ * （用户报告："在默认/战团1/战团3，重定向就重定向战团2"）。
+ */
+export function roomDeckGroup20260912(view) {
+  const room = view?.room ?? view?._roomState ?? null;
+  const members = room?.members ?? [];
+  const meId = view?.currentUserId?.() ?? view?._myId ?? room?.myUserId ?? null;
+  const me = members.find((member) => String(member?.userId) === String(meId));
+  if (me?.selectedDeckNo != null) return deckNumberToGroup20260906(me.selectedDeckNo);
+  const remembered = readRememberedDeckGroup20260911();
+  return remembered != null ? normalizeDeckGroup20260906(remembered) : 'default';
+}
+
+/**
+ * 2026-09-12：**战斗里这套牌属于哪一组** —— 写盘/退出时必须用它，不许再用"当前选中组"猜。
+ *
+ * 优先级：显式指定（战斗入口带进来的）→ 房间战斗交接（`__roomBattleDeckSelection20260908`）
+ *        → 玩家当前选中的组（单机冒险就是它）。
+ *
+ * 用户报告：「选战团2 进游戏，退出后默认组里居然是上次的卡牌；切到战团2 又发现战团2 变成了默认卡组的牌」
+ * 就是因为"手里这副牌"和"写回哪一组"来自两个不同的来源。
+ */
+export function battleDeckGroup20260912(view, explicit = null) {
+  if (explicit != null) return normalizeDeckGroup20260906(explicit);
+  const fromView = view?.pvp?.deckGroup ?? view?.deckGroup ?? view?.battleDeckGroup ?? null;
+  if (fromView != null) return normalizeDeckGroup20260906(fromView);
+  const handoff = view?.cardInventory?.__roomBattleDeckSelection20260908;
+  if (handoff?.group != null) return normalizeDeckGroup20260906(handoff.group);
+  return resolveDeckGroup20260911(view?.cardInventory ?? null, null);
+}
+
 export function selectedBattleDeck20260912(cardInventory, db, group = null) {
   const resolved = resolveDeckGroup20260911(cardInventory, group);
   return { group: resolved, slots: loadBattleDeckSlots20260911(cardInventory, db, resolved) };

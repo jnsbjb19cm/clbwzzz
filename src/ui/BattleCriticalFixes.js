@@ -4,6 +4,7 @@ import { calculateCardStats } from '../battle/CardStatFormula.js';
 import { formatCraftCardName, resolveCraftQuality } from '../core/constants.js';
 import { BattleView } from './BattleView.js';
 import { DeckSelectView } from './DeckSelectView.js';
+import { battleDeckGroup20260912 } from './DeckGroupPreference20260911.js';
 
 const PATCH_FLAG = Symbol.for('clbwzzz.battleCriticalFixes');
 
@@ -34,7 +35,14 @@ function createBattleEngine(view, stageId, trainingMode) {
     skillLoadout: view.heroSkills?.getLoadout() ?? [],
     heroMpMax: view.heroSkills?.getMpMax() ?? 100,
     trainingMode,
+    trainingFreeRes: view.trainingFreeRes,
     boss: view.boss ?? null,
+    pvp: Boolean(view.pvp),
+    // 2026-09-12：这里以前漏了 talentBonus，而它又覆盖了 BattleView.enterBattle/restartBattle，
+    // 导致战斗引擎拿不到任何被动天赋（引擎只从 globalThis.heroSkillStore 兜底，通常为空），
+    // 于是 508~525 的被动（尤其 512 破釜沉舟 / 513 坚韧不屈 / 515 战神祝福 / 516 天使之赐）
+    // 在单机战斗里完全不生效；重开战斗后连 MP 天赋也会一起丢掉。
+    talentBonus: view.talentBonusForBattle?.() ?? null,
   });
 }
 
@@ -123,13 +131,16 @@ export function installBattleCriticalFixes() {
   BattleView.prototype.enterBattle = async function enterBattleFixed(
     deckSlots,
     stageId,
-    { trainingMode = false, boss = null } = {},
+    { trainingMode = false, boss = null, deckGroup = null } = {},
   ) {
     this.deckSlots = deckSlots;
     this.stageId = stageId;
     this.trainingMode = trainingMode;
     this.boss = boss ?? this.boss ?? null;
-    DeckSelectView.saveDeck(deckSlots, this.cardInventory);
+    // 这副牌属于哪一组要跟牌一起带进来（界面确认时给的就是它）
+    this.deckGroup = battleDeckGroup20260912(this, deckGroup);
+    if (this.cardInventory) this.cardInventory.__activeDeckGroup20260907 = this.deckGroup;
+    DeckSelectView.saveDeck(deckSlots, this.cardInventory, this.deckGroup);
     this.phase = 'fighting';
     this.engine = createBattleEngine(this, stageId, trainingMode);
     await this.renderBattle(this.viewRoot);

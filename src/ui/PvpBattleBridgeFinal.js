@@ -127,6 +127,10 @@ export function installPvpBattleBridgeFinal() {
     this.engine = new BattleEngine(this.db, this.stageId, this.deckSlots, this.cardInventory, {
       skillLoadout: this.heroSkills?.getLoadout?.() ?? [],
       heroMpMax: this.heroSkills?.getMpMax?.() ?? 100,
+      // 注意（2026-09-12 复核）：联机战斗的单位属性/基地血量/MP 都由服务端权威快照覆盖
+      // （PvpAuthoritySyncFinal 写回 maxHp/atk/heroMaxHp，PvpAuthorityResourceFinal 写回 heroMpMax），
+      // 所以这里传 talentBonus 只会在快照到来前闪一下，不能真正生效；
+      // 联机要让被动生效必须由服务端读玩家的 hero_skills 后自己算（见 技能清单-20260912.md §5）。
       trainingMode: false,
       pvp: true,
     });

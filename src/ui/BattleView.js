@@ -65,7 +65,7 @@ import {
   SKILL_HOTKEYS,
 } from '../core/SkillRegistry.js';
 import { DeckSelectView } from './DeckSelectView.js';
-import { loadBattleDeckSlots20260911 } from './DeckGroupPreference20260911.js';
+import { battleDeckGroup20260912, loadBattleDeckSlots20260911 } from './DeckGroupPreference20260911.js';
 import { deckNumberToGroup20260906 } from './DeckGroupSelection20260906.js';
 import { SocketClient } from '../network/SocketClient.js';
 import { authStore } from '../core/AuthStore.js';
@@ -216,13 +216,18 @@ export class BattleView {
     this.renderBattle(root);
   }
 
-  async enterBattle(deckSlots, stageId, { trainingMode = false, boss = this.boss } = {}) {
+  async enterBattle(deckSlots, stageId, { trainingMode = false, boss = this.boss, deckGroup = null } = {}) {
     this.deckSlots = deckSlots;
     this.stageId = stageId;
     this.trainingMode = trainingMode;
+    // 2026-09-12：这副牌属于哪一组，必须跟牌一起带进来（界面确认时给的就是它）。
+    // 不带组会按"当前选中组"猜 —— 猜错就把这套牌写进别的战团（用户报告：选战团2 打完，
+    // 默认组里出现了这套牌，而战团2 反过来变成默认卡组的牌）。
+    this.deckGroup = battleDeckGroup20260912(this, deckGroup);
+    if (this.cardInventory) this.cardInventory.__activeDeckGroup20260907 = this.deckGroup;
     // 训练/冒险模式不覆盖用户卡组（避免打完冒险只剩 6 张卡）
     if (!trainingMode) {
-      DeckSelectView.saveDeck(deckSlots, this.cardInventory);
+      DeckSelectView.saveDeck(deckSlots, this.cardInventory, this.deckGroup);
     }
     this.phase = 'fighting';
     this.engine = new BattleEngine(this.db, stageId, deckSlots, this.cardInventory, {

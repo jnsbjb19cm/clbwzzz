@@ -42,6 +42,7 @@ export class RoomView {
     itemDb,
     inventory,
     player,
+    heroSkills,
     createBoss,
     stageId,
     mapId,
@@ -57,6 +58,9 @@ export class RoomView {
     this.onNavigate = onNavigate;
     // 2026-09-11：野外冒险(PVE)联机战斗结束后，回到 App 走现有冒险结算（各自结算）。
     this.onBattleResult = onBattleResult;
+    // 2026-09-12：英雄技能/天赋必须在房间内战斗里也带上，否则被动天赋（破釜沉舟/坚韧不屈/
+    // 战神祝福/天使之赐）和 MP 天赋在联机房间战斗中全部不生效。
+    this.heroSkills = heroSkills ?? null;
     this.createBoss = createBoss || null;
     this.itemDb = itemDb;
     this.inventory = inventory;
@@ -478,6 +482,7 @@ export class RoomView {
 
     this.roomBattleView = new BattleView(this.db, {
       cardInventory: this.cardInventory,
+      // 观战不参与战斗：不能把观众自己的天赋加成套到被观战方的单位上。
       heroSkills: null,
       pvp: {
         roomId: Number(room.id),
@@ -735,7 +740,7 @@ export class RoomView {
     if (this.room?.mode === 'pvp') {
       this.roomBattleView = new BattleView(this.db, {
         cardInventory: this.cardInventory,
-        heroSkills: null,
+        heroSkills: this.heroSkills ?? globalThis.__clbwzHeroSkills ?? null,
         pvp: { roomId: this.room.id, room: this.room, socket: this.socket },
         onNavigate: this.onNavigate,
       });

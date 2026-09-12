@@ -161,13 +161,21 @@ function updateUnitFromSnapshot(view, unit, data, immediate) {
   unit.alive = alive;
   if (!alive) {
     unit._deathAnimStartedAt = finite(data.deathStartedAt, engine.time);
-    unit._deathUntil = Math.max(
-      engine.time + 0.02,
-      finite(data.deathUntil, engine.time + 0.02),
-    );
+    // 2026-09-12：服务端没有素材（不知道怎么播死亡动画），统一给 2 秒占位；
+    // 客户端知道自己这张卡**没有死亡动画**时就别陪着站 2 秒，直接消除。
+    if (unitAnimPlayer.deathAnimState(unit.res) === false) {
+      unit._deathUntil = engine.time + 0.02;
+      unit._noDeathAnim = true;
+    } else {
+      unit._deathUntil = Math.max(
+        engine.time + 0.02,
+        finite(data.deathUntil, engine.time + 0.02),
+      );
+    }
   } else {
     unit._deathAnimStartedAt = undefined;
     unit._deathUntil = undefined;
+    unit._noDeathAnim = undefined;
   }
   unit.pvpRemote = true;
   unit.pvpNeutral = data.neutral === true || data.team === 'neutral';
@@ -308,6 +316,10 @@ function applySnapshot(view, snapshot, { force = false } = {}) {
   for (const data of snapshot.units ?? []) {
     const card = view.db?.getById?.(data.cardId);
     if (!card) continue;
+    // 2026-09-12：客户端素材没有死亡动画的单位，死亡后就该直接消除。
+    // 服务端不知道素材情况，还会在自己的 2 秒死亡占位窗口里继续下发这个单位，
+    // 这里直接跳过——否则每个快照都会把尸体重新建出来，变成"反复闪现"。
+    if (data.alive === false && unitAnimPlayer.deathAnimState(card.spriteRes) === false) continue;
     let unit = existingUnits.get(Number(data.uid));
     if (!unit || Number(unit.cardId) !== Number(data.cardId)) {
       unit = new BattleUnit({

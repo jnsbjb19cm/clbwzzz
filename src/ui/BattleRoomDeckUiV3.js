@@ -18,6 +18,7 @@ import {
   rememberDeckGroup20260911,
   resolveDeckGroup20260911,
 } from './DeckGroupPreference20260911.js';
+import { deckGroupToNumber20260906 } from './DeckGroupSelection20260906.js';
 
 const PATCH_FLAG = Symbol.for('clbwzzz.battleRoomDeckUiV3');
 const STORAGE_KEY = 'clbwz_room_decks_v4';
@@ -174,10 +175,37 @@ function readGroupKeyedDefault(view) {
   }
 }
 
+/**
+ * 2026-09-12：**按组存档（battle_deck_v2 / battle_deck_v2_teamN）比聚合草稿更可信**。
+ *
+ * 聚合（clbwz_room_decks_v4）是界面自己的一套草稿副本，任何一条流程没同步到它，
+ * 界面就会以为某组是空的 —— 然后玩家一点页签，`captureHandler` 就把"空草稿"
+ * 回写进这一组，卡组当场被清空（用户报告：选战团2 打完，战团2 的卡没了 /
+ * 默认组里出现上次的卡牌）。这里对 4 个组都按"按组存档优先"来取。
+ */
+function readGroupKeyedDeck(view, group) {
+  try {
+    const key = group === 'default' ? 'battle_deck_v2' : `battle_deck_v2_${group}`;
+    const raw = localStorage.getItem(key);
+    if (raw == null) return null;                 // 这组从没存过 → 交给聚合
+    const parsed = JSON.parse(raw);
+    if (!Array.isArray(parsed)) return null;
+    const reconciled = DeckSelectView.reconcileFingerprints?.(parsed, view?._cardInventory);
+    return Array.isArray(reconciled) ? reconciled : [];
+  } catch {
+    return null;
+  }
+}
+
 function loadStoredState(view) {
   const parsed = readRawStoredState();
   const decks = {};
-  for (const tab of TABS) decks[tab] = reconcile(view, parsed?.decks?.[tab]);
+  for (const tab of TABS) {
+    const aggregate = reconcile(view, parsed?.decks?.[tab]);
+    const keyed = readGroupKeyedDeck(view, tab);
+    // 按组存档里明明有牌 → 用它（聚合里的空/缺失不能当成"玩家清空了"）
+    decks[tab] = keyed && keyed.length ? keyed : aggregate;
+  }
   const groupKeyedDefault = readGroupKeyedDefault(view);
   if (groupKeyedDefault) decks.default = groupKeyedDefault;
   return {
@@ -231,7 +259,9 @@ function initializeState(view, incomingDeck) {
   const remembered = readRememberedDeckGroup20260911();
   const activeTab = remembered ?? (TABS.includes(stored.activeTab) ? stored.activeTab : 'default');
   view._deckTab = activeTab;
-  rememberDeckGroup20260911(activeTab);
+  // 2026-09-12：这里不再回写"记住的战团"。初始化时的页签只是读出来的兜底值，
+  // 回写会把"猜"出来的组当成玩家选择记下来（并同步到账号），把真正的选择越带越偏。
+  // 只有玩家明确操作（点页签/保存）才 remember。
   if (view._cardInventory) view._cardInventory.__activeDeckGroup20260907 = activeTab;
   if (!decks[view._deckTab]?.length && view._deckTab === 'default') {
     decks.default = defaultDeckForView(view);
@@ -263,6 +293,17 @@ function commitDrafts(view) {
   // 保存哪个战团，就把它记住：下次进来直接用这个战团（用户要求"保存了就一定按它来"）。
   rememberDeckGroup20260911(view._deckTab);
   if (view._cardInventory) view._cardInventory.__activeDeckGroup20260907 = view._deckTab;
+  // 2026-09-12：把"当前战团"同步给房间成员（房间的 selectedDeckNo 才是这场战斗要用的组）。
+  // 不同步的话，房间那边还是旧组，下一次房间刷新/重渲染会把页签拉回旧战团
+  // —— 用户报告的"编辑战团1，刷新后跳回别的战团、战团1被覆盖"就是这个。
+  const deckNo = deckGroupToNumber20260906(view._deckTab);
+  const roomState = view._roomState;
+  const owner = view.__roomOwner20260912;
+  const onSetDeck = typeof roomState?.onSetDeck === 'function'
+    ? roomState.onSetDeck
+    : (owner?.socket?.setDeck ? (no) => owner.socket.setDeck(no) : null);
+  const request = onSetDeck?.(deckNo);
+  if (request?.catch) request.catch(() => {});
 }
 
 function cardMeta(view, bagIndex) {
@@ -503,6 +544,7 @@ function closeDrawer(view, root, { restore = false } = {}) {
 
 function switchTab(view, root, tab) {
   if (!TABS.includes(tab) || tab === view._deckTab) return;
+  view.__deckTabPicked20260912 = tab;   // 玩家亲手点的，后续渲染不许覆盖
   syncDraft(view);
   view._deckTab = tab;
   rememberDeckGroup20260911(tab);

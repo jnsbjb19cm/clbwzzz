@@ -600,16 +600,18 @@ export class DeckSelectView {
         if (!valid.length) { this._showToast(root, '请至少选择1张卡牌'); return; }
         // PVE/Boss模式可直接开始
         if (this._mode !== 'pvp') {
-          DeckSelectView.saveDeck(this._selected, this._cardInventory);
-          this._onConfirm?.([...valid], this._sid, { trainingMode: this._training });
+          // 显式带上当前页签（战团）：不带组会按"当前选中组"猜，猜错就把这套卡写进别的战团。
+          DeckSelectView.saveDeck(this._selected, this._cardInventory, this._deckTab);
+          // 带上当前页签（战团）：战斗入口要按它把牌写回同一组，不能靠"当前选中组"猜。
+          this._onConfirm?.([...valid], this._sid, { trainingMode: this._training, deckGroup: this._deckTab });
           return;
         }
         // PVP模式：需要所有人准备
         const others = this._members.filter(m => !m.owner);
         const allReady = others.length === 0 || others.every(m => m.ready);
         if (!allReady) { this._showToast(root, '等待所有玩家准备'); return; }
-        DeckSelectView.saveDeck(this._selected, this._cardInventory);
-        this._onConfirm?.([...valid], this._sid, { trainingMode: this._training });
+        DeckSelectView.saveDeck(this._selected, this._cardInventory, this._deckTab);
+        this._onConfirm?.([...valid], this._sid, { trainingMode: this._training, deckGroup: this._deckTab });
       } else {
         // 普通玩家点击：切换准备状态(roomState 模式用真实 userId 匹配自己，可能在任一边)
         const me = this._roomState

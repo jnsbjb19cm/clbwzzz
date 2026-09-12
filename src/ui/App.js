@@ -487,6 +487,9 @@ export class App {
         itemDb: this.itemDb,
         inventory: this.inventory,
         player: this.player,
+        // 2026-09-12：房间内战斗（PVP / BOSS / 野外联机）也要带上英雄技能与天赋，
+        // 否则被动天赋与 MP 天赋在联机房间战斗中不生效。
+        heroSkills: this.heroSkills,
         createBoss: opts?.createBoss,
         stageId: opts?.stageId,
         mapId: opts?.mapId,

@@ -146,7 +146,9 @@ export class BattleUnit {
     const dmg = roundBattleAmount(raw);
     if (dmg <= 0) return 0;
     const hpBefore = this.hp;
-    this.hp = roundBattleAmount(this.hp - dmg);
+    // 2026-09-12：血量最低扣到 0（致死不再留下负血量，血条与联机同步都干净）。
+    // 返回值仍是本次伤害值、lastDamageDealt 仍是"实际扣掉的血量"，所以吸血/反射/白光斩/联机权威结算不受影响。
+    this.hp = Math.max(0, roundBattleAmount(this.hp - dmg));
     if (this.hp <= 0) this.alive = false;
     this.lastDamageDealt = roundBattleAmount(Math.min(dmg, Math.max(0, hpBefore)));
     return dmg;

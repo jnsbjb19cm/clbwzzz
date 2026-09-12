@@ -1,64 +1,11 @@
 import { BattleView } from './BattleView.js';
-import { TALENT_NODE_MAP } from '../core/TalentRegistry.js';
+import { calculateTalentBonus } from '../core/TalentRegistry.js';
 
 const PATCH_FLAG = Symbol.for('clbwzzz.battleTalentAuthority20260830');
 
 function finite(value, fallback = 0) {
   const number = Number(value);
   return Number.isFinite(number) ? number : fallback;
-}
-
-function calculateTalentBonus(view) {
-  const out = {
-    hp: 0,
-    // heroSkills.getMpMax() 已经把 MP 天赋计入 heroMpMax；这里必须为 0，避免 BattleEngine 再加一次。
-    mp: 0,
-    globalAtkPct: 0,
-    globalHpPct: 0,
-    lowBaseAtkPct: 0,
-    lowBaseDamageReductionPct: 0,
-    scarecrowAtkPct: 0,
-    dandelionHpPct: 0,
-    dandelionHealPct: 0,
-  };
-
-  try {
-    const ids = view.heroSkills?.unlockedTalents ?? new Set();
-    for (const id of ids) {
-      const node = TALENT_NODE_MAP.get(id);
-      if (!node) continue;
-      out.hp += finite(node.hpBonus);
-
-      if (id === 'passive_gamble') {
-        out.lowBaseAtkPct += finite(node.cardAtkPct);
-        continue;
-      }
-      if (id === 'passive_tough') {
-        out.lowBaseDamageReductionPct += finite(node.damageReductionPct);
-        continue;
-      }
-      if (id === 'passive_war') {
-        out.scarecrowAtkPct += finite(node.cardAtkPct);
-        continue;
-      }
-      if (id === 'passive_gift') {
-        out.dandelionHpPct += finite(node.cardHpPct);
-        // 描述明确为“蒲公英系治疗效果 +50%”。
-        out.dandelionHealPct += 50;
-        continue;
-      }
-
-      out.globalAtkPct += finite(node.cardAtkPct);
-      out.globalHpPct += finite(node.cardHpPct);
-    }
-  } catch {
-    // 天赋异常不能阻止进入战斗。
-  }
-
-  // 兼容仍读取旧字段的模块，但这里只暴露真正的“全局”部分。
-  out.atkPct = out.globalAtkPct;
-  out.hpPct = out.globalHpPct;
-  return out;
 }
 
 function installResourceProperties(engine) {
@@ -167,7 +114,8 @@ export function installBattleTalentAuthority20260830() {
   globalThis[PATCH_FLAG] = true;
 
   BattleView.prototype.talentBonusForBattle = function talentBonusForBattleConverged() {
-    return calculateTalentBonus(this);
+    // 天赋→加成 的计算放在 core/TalentRegistry（无 DOM 依赖），这里只负责接到战斗上。
+    return calculateTalentBonus(this.heroSkills?.unlockedTalents);
   };
 
   // 注册顺序很重要：initPvpSocket 在 renderBattle 基层中最先创建 socket。
