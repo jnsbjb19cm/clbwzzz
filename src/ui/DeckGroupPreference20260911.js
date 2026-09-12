@@ -18,6 +18,7 @@ import { authStore } from '../core/AuthStore.js';
 import { SocketClient } from '../network/SocketClient.js';
 import { DeckSelectView } from './DeckSelectView.js';
 import {
+  storageKeyForDeckGroup20260906,
   deckGroupToNumber20260906,
   normalizeDeckGroup20260906,
 } from './DeckGroupSelection20260906.js';
@@ -172,5 +173,105 @@ export function installDeckGroupStartGuard20260911() {
       /* 守卫自身出错不应影响正常开始 */
     }
     return previousStartGame.apply(this, args);
+  };
+}
+/**
+ * 账号里的某一组卡组 → 背包槽位下标（用于把账号数据写回本地缓存）。
+ * 账号里"明确保存为空"返回 []；账号里没有这一组返回 null。
+ */
+function accountDeckIndices20260911(deckNo, cardInventory) {
+  const decks = authStore?.snapshot?.decks;
+  if (!Array.isArray(decks) || !cardInventory?.getSlots) return null;
+  const deck = decks.find((entry) => Number(entry?.deckNo ?? entry?.deck_no) === Number(deckNo));
+  if (!deck || !Array.isArray(deck.cards)) return null;
+  const slots = cardInventory.getSlots() ?? [];
+  const used = new Set();
+  const selected = [];
+  for (const raw of deck.cards) {
+    const cardId = Number(raw?.cardId ?? raw);
+    if (!Number.isInteger(cardId) || cardId <= 0) continue;
+    const index = slots.findIndex((slot, slotIndex) => (
+      !used.has(slotIndex) && Number(slot?.cardId) === cardId
+    ));
+    if (index >= 0) { used.add(index); selected.push(index); }
+  }
+  return selected;
+}
+
+/** 读取本地"按组"存档（battle_deck_v2[_teamN]）里的槽位下标。 */
+function localGroupIndices20260911(group, cardInventory) {
+  try {
+    const raw = globalThis.localStorage?.getItem(storageKeyForDeckGroup20260906(group));
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    if (!Array.isArray(parsed)) return null;
+    if (!parsed.length) return [];
+    const reconciled = DeckSelectView.reconcileFingerprints?.(parsed, cardInventory) ?? [];
+    return reconciled.length ? reconciled : [];
+  } catch {
+    return null;
+  }
+}
+
+function sameIndices20260911(a, b) {
+  if (!Array.isArray(a) || !Array.isArray(b)) return false;
+  if (a.length !== b.length) return false;
+  return a.every((value, index) => Number(value) === Number(b[index]));
+}
+
+/**
+ * 用账号里的卡组纠正本地缓存。
+ *
+ * 背景：以前有段时间"组"会串写，本地 battle_deck_v2_teamN / 房间界面用的旧聚合里
+ * 可能留着别的战团的牌；只把"读账号"接上还不够——界面和本地键仍然是旧数据。
+ * 这里在登录拿到快照后，把 4 个组按账号内容重写一遍（内容相同就跳过，不产生多余请求）。
+ */
+export function mirrorAccountDecksToLocal20260911(cardInventory, db) {
+  if (!cardInventory || !Array.isArray(authStore?.snapshot?.decks)) return 0;
+  let fixed = 0;
+  for (const group of ['default', 'team1', 'team2', 'team3']) {
+    const deckNo = deckNoForGroup20260911(group);
+    const account = accountDeckIndices20260911(deckNo, cardInventory);
+    if (!Array.isArray(account)) continue;
+    const local = localGroupIndices20260911(group, cardInventory);
+    if (sameIndices20260911(local, account)) continue;
+    try {
+      DeckSelectView.saveDeck(account, cardInventory, group);
+      fixed += 1;
+    } catch {
+      /* 忽略：本地缓存纠正失败不影响账号数据 */
+    }
+  }
+  return fixed;
+}
+const ACCOUNT_MIRROR_FLAG = Symbol.for('clbwz.accountDeckMirror20260911');
+
+/** 房间/选卡组界面每次渲染前，先用账号里的卡组纠正本地缓存（含旧聚合）。 */
+export function installAccountDeckMirror20260911() {
+  if (globalThis[ACCOUNT_MIRROR_FLAG]) return;
+  globalThis[ACCOUNT_MIRROR_FLAG] = true;
+  const previousRender = DeckSelectView.prototype.render;
+  DeckSelectView.prototype.render = function renderWithAccountDeckMirror(root, options = {}) {
+    try {
+      const fixed = mirrorAccountDecksToLocal20260911(options.cardInventory, options.db);
+      if (fixed > 0) {
+        // 纠正完之后把"上一次页签"恢复成玩家记住的组，别让镜像过程改掉它。
+        const remembered = readRememberedDeckGroup20260911();
+        if (remembered) {
+          for (const key of ['clbwz_room_decks_v4', 'clbwz_room_decks_v3']) {
+            try {
+              const parsed = JSON.parse(globalThis.localStorage?.getItem(key) || 'null');
+              if (parsed && typeof parsed === 'object') {
+                parsed.activeTab = remembered;
+                globalThis.localStorage?.setItem(key, JSON.stringify(parsed));
+              }
+            } catch { /* 忽略 */ }
+          }
+        }
+      }
+    } catch {
+      /* 镜像失败不影响正常渲染 */
+    }
+    return previousRender.call(this, root, options);
   };
 }

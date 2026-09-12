@@ -28,7 +28,10 @@ import { installBattleUnitPresentation20260906 } from './ui/BattleUnitPresentati
 import { installBattleQualityHaloFix20260908 } from './ui/BattleQualityHaloFix20260908.js';
 import { installBattleLootMaterialIconFix20260908 } from './ui/BattleLootMaterialIconFix20260908.js';
 import { installBattleUserRegressionFix20260907 } from './ui/BattleUserRegressionFix20260907.js';
-import { installDeckGroupStartGuard20260911 } from './ui/DeckGroupPreference20260911.js';
+import {
+  installAccountDeckMirror20260911,
+  installDeckGroupStartGuard20260911,
+} from './ui/DeckGroupPreference20260911.js';
 import { installDeckInventoryAuthorityFix20260907 } from './ui/DeckInventoryAuthorityFix20260907.js';
 import { installRoomDeckRefreshRegressionFix20260907 } from './ui/RoomDeckRefreshRegressionFix20260907.js';
 import { installRoomBattleDeckRuntimeFix20260908 } from './ui/RoomBattleDeckRuntimeFix20260908.js';
@@ -116,4 +119,6 @@ void import('./main.js').then(() => {
   installRoomChatMerge20260910();
   // 2026-09-11：空战团不允许开打（挂在最后，保证拦得住所有开始入口）。
   installDeckGroupStartGuard20260911();
+  // 2026-09-11：界面渲染前先用账号里的卡组纠正本地缓存（修掉历史串组的本地数据）。
+  installAccountDeckMirror20260911();
 });
