@@ -298,6 +298,21 @@ export class BattleEngine {
       if (!found.some((e) => e.unit.uid === u.uid)) found.push({ unit: u, dist });
     };
 
+    // 2026-09-13（用户要求）：以自身为中心的 3×3 单位（喷喷怪62 / 超级喷喷怪101 / 土岩兽116）
+    // 是"喷周围一圈"的近战 —— 周围 3×3 里的敌人（**含跨行**）都算可打目标，
+    // 否则只有斜角站着敌人时它根本不出手（用户报告的"3×3 范围要改"）。
+    if (unit.isSelfCenteredMelee?.() && Number(lane) === Number(unit.lane)) {
+      const radius = Math.max(1, Number(getAttackPattern(unit.cardId)?.radius ?? 1));
+      for (const u of this.units) {
+        if (!this.isValidEnemyTarget(unit, u)) continue;
+        const dl = Math.abs(Math.round(Number(u.lane)) - Math.round(Number(unit.lane)));
+        const dc = Math.abs(Math.round(Number(u.col)) - gridCol);
+        if (dl <= radius && dc <= radius) add(u, Math.max(dl, dc));
+      }
+      if (found.length) return found;
+      // 3×3 里没人 → 继续走原来的同路逻辑（推进/拦截行为不变）
+    }
+
     for (const u of this.getUnitsAt(lane, gridCol)) {
       if (this.isValidEnemyTarget(unit, u)) add(u, 0);
     }
@@ -1520,7 +1535,8 @@ export class BattleEngine {
         attackPattern: 'attackPattern' in opts ? (opts.attackPattern ?? null) : (getAttackPattern(unit.cardId) || null),
         // 黑暗精灵雷电直接命中同行最远目标，无视路径阻挡
         pierce: unit.cardId === 46 || opts.pierce === true,
-        targetUid: isBaseShot ? null : (opts.targetUid ?? target.uid),
+        // 2026-09-13：允许显式传 targetUid: null（反弹子弹不锁定原射手，只按本行路径命中）
+        targetUid: isBaseShot ? null : ('targetUid' in opts ? (opts.targetUid ?? null) : target.uid),
         targetLayerMask: getUnitAttackLayerMask(unit),
         targetBase,
         sourceUid: unit.uid,
@@ -2125,6 +2141,9 @@ export class BattleEngine {
     reflected = false,
     sourcePattern = undefined,
     sourceRes = null,
+    // 2026-09-13：这颗伤害是**什么弹道**打过来的（'straight' / 'parabola' / null=近战）。
+    // 用户要求：反弹效果只对"直线子弹"生效。
+    sourceTrajectory = null,
   } = {}) {
     if (!attacker || !vic || !vic.alive) return 0;
     if (!ignoreCombatLayers && !this.canUnitHitTargetLayer(attacker, vic)) return 0;
@@ -2199,18 +2218,23 @@ export class BattleEngine {
     const reflectChance = ranged ? vicTraits.projectileReflectChance : vicTraits.meleeReflectChance;
     if (!reflected && attacker.alive && reflectChance && Math.random() < reflectChance) {
       const reflectDmg = roundBattleAmount(Math.max(1, dealt * (vicTraits.reflectRatio ?? 0.5)));
-      if (ranged && vic.alive) {
-        // 2026-09-12：远程子弹被反弹时，真的生成一颗**反向直线子弹**飞回去，
-        // 伤害由这颗子弹命中时结算（沿用被打回去的那颗子弹的弹道形状/外观，
-        // 但角度按发射者阵营反向 → 视觉上就是原路弹回）。
+      // 2026-09-13（用户要求）：
+      //   ① **只反弹直线子弹** —— 抛物线/曲线等弹道不打回去（退回即时反伤）；
+      //   ② **反弹为本行** —— 弹回去的子弹只走反射者自己这一行，
+      //      不跟着原射手跑（原来 hitLane 取的是目标行，射手在别的行就会飞过去）；
+      //      因此也不锁定原射手，而是打回本行路径上的第一个敌人（通常是原射手本人）。
+      //   ③ 反弹弹固定单目标直线（不再继承源弹的溅射形状，避免溅射跨行）。
+      const straightBullet = ranged && sourceTrajectory === 'straight';
+      if (straightBullet && vic.alive) {
         this.fireProjectile(vic, attacker, reflectDmg, {
           trajectory: 'straight',
-          targetUid: attacker.uid,
-          attackPattern: sourcePattern ?? null,
+          hitLane: vic.lane,
+          targetUid: null,
+          attackPattern: null,
           sourceRes: sourceRes ?? vic.res,
           reflected: true,
         });
-        this.pushLog(`【${vic.name}】把 ${attacker.name} 的子弹弹了回去`);
+        this.pushLog(`【${vic.name}】把 ${attacker.name} 的子弹沿本行弹了回去`);
       } else {
         attacker.takeDamage(reflectDmg, t);
         if (!attacker.alive) this.onUnitDeath(attacker);
@@ -2286,6 +2310,8 @@ export class BattleEngine {
         reflected: proj.reflected === true,
         sourcePattern: proj.attackPattern ?? null,
         sourceRes: proj.sourceRes ?? null,
+        // 只有直线子弹才允许被反弹（见 applyCardHit 里的说明）
+        sourceTrajectory: proj.trajectory ?? null,
       });
     }
   }

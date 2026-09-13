@@ -10,7 +10,7 @@ import {
   normalizeBattleCraftQuality,
 } from './CardStatFormula.js';
 import { sanitizeCustomCardName } from '../core/constants.js';
-import { isSuicideCard } from '../core/CardTraitRegistry.js';
+import { getAttackPattern, isSuicideCard } from '../core/CardTraitRegistry.js';
 
 let uid = 0;
 const FORCED_TARGETABLE_CARD_IDS = new Set([34, 53, 62]);
@@ -118,10 +118,23 @@ export class BattleUnit {
   }
 
   isRanged() {
+    // 以自身为中心的 3×3 单位一律按近战处理（见 isSelfCenteredMelee）
+    if (this.isSelfCenteredMelee()) return false;
     return [2, 3, 17, 18, 19].includes(this.atkStyle) || this.viewType === 1 || this.cardId === 46;
   }
 
+  /**
+   * 2026-09-13（用户要求）：攻击形状以**自身**为中心的 3×3（`square_self`）——
+   * 喷喷怪(62)/超级喷喷怪(101)/藤蔓怪(116) 这类"站在原地喷周围 3×3"的单位。
+   * 它们的伤害范围锚在自己身上，所以必须贴脸才能打到，**只能算近战**。
+   * （62 原始 atk_style=17 会被当成远程：全图射程 + 发子弹，3×3 反而打不到跨行邻居。）
+   */
+  isSelfCenteredMelee() {
+    return getAttackPattern(this.cardId)?.kind === 'square_self';
+  }
+
   isMelee() {
+    if (this.isSelfCenteredMelee()) return true;
     return this.atkStyle === 7 || this.viewType === 2;
   }
 
