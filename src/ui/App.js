@@ -48,7 +48,8 @@ const BOTTOM_NAV = [
   { id: 'mail', label: '\u90AE\u4EF6', icon: NAV_ICONS.mail },
   { id: 'gallery', label: '\u56FE\u9274', icon: NAV_ICONS.gallery },
   { id: 'social', label: '\u597D\u53CB' },
-  { id: 'battle', label: '\u5927\u5385' },
+  // 2026-09-12：底部「大厅」改为进**多人大厅（游戏大厅 = 房间列表）**；原来 id='battle' 会直接 new BattleView 进单机战斗页。
+  { id: 'room', label: '\u5927\u5385' },
   { id: 'worldmap', label: '\u66F4\u591A', icon: NAV_ICONS.worldmap },
   { id: 'settings', label: '\u8BBE\u7F6E', icon: NAV_ICONS.settings },
   { id: 'main', label: '\u8FD4\u56DE', icon: NAV_ICONS.main },

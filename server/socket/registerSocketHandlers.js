@@ -55,6 +55,9 @@ function startPvpBattle(roomId, io) {
 }
 
 export function registerSocketHandlers(io) {
+  // 2026-09-12：把"这条 socketId 是否还活着"交给 RoomManager 判定，
+  // 用于"刷新/重连后接回原房间，而不是报'你已经在其他房间中'"（见 resumeMembershipForUser）。
+  roomManager._hasLiveSocket = (socketId) => Boolean(io.sockets.sockets.get(String(socketId))?.connected);
   io.use(async (socket, next) => {
     try {
       const raw = socket.handshake.auth?.token || socket.handshake.headers.authorization || '';

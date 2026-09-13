@@ -114,8 +114,8 @@ export class RoomView {
       // 野外冒险创建 BOSS 房间：BOSS名[难度] 房间简介由服务端生成
       this.socket
         .createRoom({ mode: 'boss', bossId: this.createBoss.bossId, difficulty: this.createBoss.difficulty })
-        .then((room) => this.enterRoom(room))
-        .catch((e) => this.notice(e.message));
+        .then((room) => { this._autoCreateTries = 0; return this.enterRoom(room); })
+        .catch((e) => this.retryAutoCreate(e));
       return;
     }
     if (this.shouldAutoCreate && this.stageId != null) {
@@ -127,12 +127,36 @@ export class RoomView {
           mapId: this.mapId,
           name: this.stageName,
         })
-        .then((room) => this.enterRoom(room))
-        .catch((e) => {
-          this._autoCreateStarted = false;
-          this.notice(e.message);
-        });
+        .then((room) => { this._autoCreateTries = 0; return this.enterRoom(room); })
+        .catch((e) => this.retryAutoCreate(e));
     }
+  }
+
+  /**
+   * 自动建房失败的处理（2026-09-12）。
+   *
+   * 玩家刷新页面 / 断线重连后立刻再进"野外冒险"时，服务端可能还挂着上一条
+   * （其实已经断开的）连接，于是回一句"你已经在其他房间中" —— 原来这里直接
+   * 放弃并退回大厅，界面就成了"没有邀请按钮、也看不到房间"的朴素大厅（用户报告的
+   * "野外冒险多人战斗被覆盖消失了"）。
+   * 现在：这种"连接还没回收"的失败会**重试几次**（服务端回收后就能正常接回原房间），
+   * 其它错误照旧提示。
+   */
+  retryAutoCreate(error) {
+    const message = String(error?.message ?? error ?? '');
+    const tries = (this._autoCreateTries ?? 0) + 1;
+    this._autoCreateTries = tries;
+    const transient = /已经在其他房间|连接|超时|timeout|not connected|socket/i.test(message);
+    if (transient && tries <= 4 && this.root) {
+      setTimeout(() => {
+        if (!this.root) return;
+        this._autoCreateStarted = false;
+        this.autoCreateRoom();
+      }, 450 * tries);
+      return;
+    }
+    this._autoCreateStarted = false;
+    this.notice(message);
   }
 
   renderShell() {

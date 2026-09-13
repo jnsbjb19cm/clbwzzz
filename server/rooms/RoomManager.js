@@ -71,12 +71,95 @@ export class RoomManager {
     return roomId ? this.rooms.get(roomId) ?? null : null;
   }
 
+  /** socket 层注入：这条连接是否还活着（没注入时保守认为活着，避免误踢） */
+  hasLiveSocket(socketId) {
+    if (!socketId) return false;
+    return typeof this._hasLiveSocket === 'function' ? Boolean(this._hasLiveSocket(String(socketId))) : true;
+  }
+
+  /** 这条连接是否还占着该成员（同一个 socketId 视为同一条连接） */
+  membershipHeldByLiveConnection(room, userId, socketId = null) {
+    const member = room?.members?.get(Number(userId));
+    if (!member) return false;
+    const held = member.socketId ? String(member.socketId) : null;
+    const incoming = socketId ? String(socketId) : null;
+    if (incoming && held && held === incoming) return true;      // 就是这条连接
+    if (member.connected !== true) return false;                  // 已掉线 → 不算占用
+    return held ? this.hasLiveSocket(held) : true;                // 另一条连接是否还活着
+  }
+
+  /** 把这条新连接接到原座位上（不删房间、不换房间号，清掉掉线计时） */
+  attachMembership(room, member, socketId = null) {
+    if (socketId) member.socketId = String(socketId);
+    member.connected = true;
+    member.disconnectedAt = 0;
+    if (member.disconnectTimer) {
+      clearTimeout(member.disconnectTimer);
+      member.disconnectTimer = null;
+    }
+    this.userRoom.set(Number(member.userId), room.id);
+    return member;
+  }
+
+  /**
+   * 重连时接回原房间（幂等）。
+   *
+   * 场景：玩家在房间里刷新页面 / 断线重连后再点"野外冒险"。
+   * 旧连接已经死了，但成员关系还挂在服务端 —— 原来的实现直接抛
+   * "你已经在其他房间中"，客户端于是退化成没有邀请按钮的朴素大厅，大厅里也看不到自己的房间。
+   *
+   * 现在：旧连接已死 → **直接把座位交还给这条新连接**（房间号不变，房间里其他人不用重新等）；
+   * 模式不符 / 房间已经开打 → 清掉僵死关系，按新请求继续；
+   * 只有"另一条连接确实还活着"（同账号开两个标签页）才保持原来的拒绝。
+   */
+  resumeMembershipForUser(user, mode = null) {
+    const userId = Number(user?.id ?? user?.userId);
+    if (!Number.isFinite(userId)) return null;
+    const existing = this.getRoomByUser(userId);
+    if (!existing) {
+      if (this.userRoom.has(userId)) this.userRoom.delete(userId);   // 房间已回收，成员关系残留 → 清掉
+      return null;
+    }
+    const member = existing.members.get(userId);
+    if (!member) {
+      this.userRoom.delete(userId);
+      return null;
+    }
+    if (this.membershipHeldByLiveConnection(existing, userId, user?.socketId)) {
+      throw new Error('你已经在其他房间中');
+    }
+    const sameMode = !mode || existing.mode === mode;
+    if (sameMode && existing.status === 'waiting') {
+      this.attachMembership(existing, member, user?.socketId);
+      return cloneRoom(existing);
+    }
+    this.removeMember(existing, userId);
+    return null;
+  }
+
+  /** 清掉"房间已死/连接已死"的成员关系；返回 true 表示可以继续（当前没有有效占用） */
+  releaseStaleMembership(user) {
+    const userId = Number(user?.id ?? user?.userId);
+    if (!Number.isFinite(userId)) return true;
+    const existing = this.getRoomByUser(userId);
+    if (!existing) {
+      if (this.userRoom.has(userId)) this.userRoom.delete(userId);
+      return true;
+    }
+    if (this.membershipHeldByLiveConnection(existing, userId, user?.socketId)) return false;
+    this.removeMember(existing, userId);
+    return true;
+  }
+
   getRoom(roomId) {
     return this.rooms.get(Number(roomId)) ?? null;
   }
 
   createRoom({ user, mode, stageId, mapId, size = '3v3', name, bossId, difficulty }) {
-    if (this.getRoomByUser(user.id)) throw new Error('你已经在其他房间中');
+    // 2026-09-12：**重连幂等** —— 玩家刷新/换 socket 后再进（野外冒险等）不能报
+    // "你已经在其他房间中"，否则客户端会退化成没有邀请按钮的朴素大厅、大厅也看不到自己的房间。
+    const resumed = this.resumeMembershipForUser(user, mode);
+    if (resumed) return resumed;
     if (!['pve', 'boss', 'pvp'].includes(mode)) throw new Error('房间模式无效');
 
     const maxTeamSize = SIZE_TO_TEAM[size] ?? 3;
@@ -117,7 +200,8 @@ export class RoomManager {
   }
 
   joinRoom({ roomId, user, preferredTeam }) {
-    if (this.getRoomByUser(user.id)) throw new Error('你已经在其他房间中');
+    // 2026-09-12：同上 —— 掉线留下的僵死成员关系要能清掉，否则想加入别人的房间也会被拦。
+    if (!this.releaseStaleMembership(user)) throw new Error('你已经在其他房间中');
     const room = this.getRoom(roomId);
     if (!room) throw new Error('房间不存在');
     if (room.status !== 'waiting') throw new Error('房间已经开始战斗');
