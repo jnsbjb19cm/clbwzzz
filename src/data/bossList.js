@@ -5,6 +5,7 @@
  * lane/col 使用全局 0-based 战场坐标：玩家侧 0..4，中间 5..6，敌方侧 7..11。
  * 因此“敌方第四行第二列”（以敌方基地向战场方向数）= lane=3,col=10。
  */
+import { TEMPLE_BOSSES } from './TempleBosses.js';
 export const BOSS_LIST = [
   {
     id: 'boss_dot',
@@ -92,7 +93,7 @@ export const BOSS_LIST = [
   },
   {
     id: 'boss_forest',
-    name: '树妖洛丽塔',
+    name: '树妖萝莉塔',
     difficulty: '中等',
     order: 4,
     sprite: '118',
@@ -154,7 +155,7 @@ export const BOSS_DIFFICULTY_MULT = { 简单: 1, 普通: 1.5, 困难: 2 };
 
 /** 按 id 查 BOSS */
 export function getBossById(id) {
-  return BOSS_LIST.find((b) => b.id === id) ?? null;
+  return [...BOSS_LIST, ...TEMPLE_BOSSES].find((b) => b.id === id) ?? null;
 }
 
 /**

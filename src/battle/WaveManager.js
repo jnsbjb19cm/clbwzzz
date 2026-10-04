@@ -1,5 +1,6 @@
-import { WAVE_FIRST_DELAY, WAVE_INTERVAL } from './BattleConfig.js';
+import { WAVE_FIRST_DELAY, WAVE_INTERVAL, getAttackCooldown } from './BattleConfig.js';
 import { buildEnemyStageRoster } from './EnemyStageRoster.js';
+import { adventureWaveTemplate } from '../data/AdventureCampaign.js';
 
 export class WaveManager {
   constructor(stage, db, { trainingMode = false, randomMode = false } = {}) {
@@ -16,6 +17,18 @@ export class WaveManager {
     }
 
     this.stageId = stage.stage_id ?? 1;
+    this.adventureTemplate = adventureWaveTemplate(stage);
+    this.adventureCycle = 0;
+    if (this.adventureTemplate) {
+      this.queue = [];
+      this.done = false;
+      this.totalWaves = Infinity;
+      this.waveCount = 0;
+      this.nextBuildTime = WAVE_FIRST_DELAY;
+      this.appendAdventureCycle();
+      this.nextWaveHint = WAVE_FIRST_DELAY;
+      return;
+    }
     this.roster = buildEnemyStageRoster(stage, db, { randomMode });
     this.attackers = this.roster.filter((entry) => !entry.defense);
     this.defenses = this.roster.filter((entry) => entry.defense);
@@ -65,7 +78,7 @@ export class WaveManager {
       time += WAVE_INTERVAL;
     }
 
-    waves.push({
+    if (!this.stage.adventure) waves.push({
       time: time + 4,
       isWaveStart: true,
       waveIndex: 9,
@@ -105,7 +118,7 @@ export class WaveManager {
     }
     time += 5;
 
-    if (this.waveCount % 5 === 0) {
+    if (this.waveCount % 5 === 0 && !this.stage.adventure) {
       newWaves.push({
         time,
         isWaveStart: true,
@@ -142,9 +155,35 @@ export class WaveManager {
     this.queue.sort((a, b) => a.time - b.time);
   }
 
+  appendAdventureCycle() {
+    for (const [index, entries] of this.adventureTemplate.entries()) {
+      const dps = (id) => { const c = this.db.getById(id); return (c?.atk || 0) / getAttackCooldown(c?.atkSpeed || 0); };
+      const referenceDps = entries.reduce((sum, [id,,, reference]) => sum + dps(reference ?? id), 0);
+      const actualDps = entries.reduce((sum, [id]) => sum + dps(id), 0);
+      const attackScale = actualDps > 0 ? referenceDps / actualDps : 1;
+      entries.forEach(([cardId, row, column, referenceCardId], entryIndex) => {
+        const card = this.db.getById(cardId);
+        if (!card) throw new Error(`Missing adventure card ${cardId}`);
+        this.queue.push({ time: this.nextBuildTime + index * WAVE_INTERVAL, card,
+          count: 1, lane: row - 1, col: column + 6, isBoss: false,
+          referenceCardId, adventureAttackScale: referenceCardId ? attackScale : 1,
+          isWaveStart: entryIndex === 0, waveIndex: this.adventureCycle * 5 + index + 1 });
+      });
+    }
+    this.adventureCycle++;
+    this.waveCount = this.adventureCycle * 5;
+    this.nextBuildTime += 5 * WAVE_INTERVAL;
+  }
+
   tick(dt, onSpawn) {
     if (this.done) return;
     this.elapsed += dt;
+    if (this.adventureTemplate) {
+      while (this.nextBuildTime <= this.elapsed || this.queue.length === 0) this.appendAdventureCycle();
+      while (this.queue.length && this.queue[0].time <= this.elapsed) onSpawn({ ...this.queue.shift() });
+      this.nextWaveHint = Math.max(0, (this.queue[0]?.time ?? this.nextBuildTime) - this.elapsed);
+      return;
+    }
     if (!this.trainingMode && this.queue.length < 3 && this.waveCount < 25) this.appendWaves();
     const upcoming = this.queue.find((wave) => wave.time > this.elapsed);
     this.nextWaveHint = upcoming ? upcoming.time - this.elapsed : 0;

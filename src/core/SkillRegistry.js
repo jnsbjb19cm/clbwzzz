@@ -1,3 +1,4 @@
+import { RESET_SKILLS } from '../systems/ResetSkillEffects.js';
 /** 英雄技能槽数量，对应 Q/W/E/R/T/Y。 */
 export const SKILL_SLOT_COUNT = 6;
 export const SKILL_HOTKEYS = ['Q', 'W', 'E', 'R', 'T', 'Y'];
@@ -19,8 +20,7 @@ export const DEFAULT_SKILL_LOADOUT = [503, 504, 505, null, null, null];
  */
 const HIDDEN_SKILL_CARD_IDS = new Set([
   520,
-  542, 543, 544, 545, 546, 548, 549,
-  551, 552, 553, 554, 555, 556,
+  545, 554,
 ]);
 
 /** 主动技能的战斗效果。 */
@@ -60,6 +60,7 @@ export const SKILL_EFFECTS = {
   558: { kind: 'thunderstorm', damage: 10, label: '雷霆风暴(全屏10伤+记录打最高)' },
   560: { kind: 'row_damage', damage: 100, needsTarget: true, label: '雷弹100' },
   559: { kind: 'sacred_revival', amount: 30, hotAmount: 0, hotEvery: 2, duration: 0, label: '神圣复苏(回30)' },
+  ...RESET_SKILLS,
 };
 
 export function isActiveSkillCard(card) {
@@ -80,6 +81,10 @@ export function getSkillMpCost(card) {
 
 export function getSkillCooldownSec(card) {
   if (!card) return 20;
+  const id = Number(card.id ?? card.card_id);
+  if (id === 547) return 20;
+  if (id === 550) return 18;
+  if (RESET_SKILLS[id]?.cooldown) return RESET_SKILLS[id].cooldown;
   return Math.max(8, Math.round((card.cooldown || 40) * 0.5));
 }
 

@@ -4,13 +4,14 @@ import { grantPlayerExp } from '../core/PlayerProgression.js';
 import { InventoryStore } from '../core/ItemDatabase.js';
 import { CardInventoryStore } from '../core/CardInventoryStore.js';
 import { BattleView } from './BattleView.js';
+import { questPeriodKey } from '../data/QuestPeriods.js';
 import { MAX_PLAYER_LEVEL, QUEST_GROUPS, ACHIEVEMENT_QUESTS, CATEGORIES, LEVEL_REWARDS } from '../data/QuestCatalog.js';
 
 const STORAGE_KEY = 'clbwz_quest_v6';
 const OLD_STORAGE_KEYS = ['clbwz_quest_v5', 'clbwz_quest_v4', 'clbwz_quest_v3'];
 
-function todayKey(){return new Date().toISOString().slice(0,10);}
-function weekKey(){const d=new Date();d.setHours(0,0,0,0);d.setDate(d.getDate()-d.getDay()+1);return d.toISOString().slice(0,10);}
+function todayKey(){return questPeriodKey('daily');}
+function weekKey(){return questPeriodKey('weekly');}
 function defaultState(){
   return {
     dailyDate:todayKey(),weeklyDate:weekKey(),dailyProgress:{},dailyClaimed:[],weeklyProgress:{},weeklyClaimed:[],
@@ -263,6 +264,17 @@ export class QuestView{
     const s=this.stateFor(entry),pct=Math.min(100,s.progress/Math.max(s.goal,1)*100),action=s.claimed?'<span class="quest-detail-claimed">已领取</span>':s.ready?'<button type="button" class="quest-claim-btn quest-detail-claim" data-entry="'+entry.id+'">领取奖励</button>':'<span class="quest-detail-locked">继续完成</span>';
     detail.innerHTML=['<div class="quest-parchment-inner"><p class="quest-detail-kicker">',this.category==='level'?'成长计划':this.category==='achievement'?'里程碑':'任务委托','</p><h2>',escaped(entry.name),'</h2><div class="quest-parchment-rule"></div><section class="quest-detail-block"><h3>任务目标</h3><p>',escaped(entry.desc),'</p><div class="quest-detail-progress"><i style="width:',pct,'%"></i></div><span>',s.progress,' / ',s.goal,'</span></section><section class="quest-detail-block"><h3>背景故事</h3><p>',escaped(entry.story||entry.desc),'</p></section><section class="quest-detail-block quest-detail-rewards"><h3>任务奖励</h3><div>',rewardChips(entry,this.cardDb,this.itemDb),'</div></section><footer class="quest-detail-footer">',action,'</footer></div>'].join('');
     detail.querySelector('.quest-detail-claim')?.addEventListener('click',()=>this.claim(root,entry));
+  }
+  recordClaim(category,entry,period=questPeriodKey(category)){
+    this.state=loadState();
+    if(period!==questPeriodKey(category))return false;
+    const key=category+'Claimed',id=category==='level'?entry.lv:entry.id;
+    this.state[key]??=[];
+    if(!this.state[key].some(value=>String(value)===String(id))){
+      this.state[key].push(id);
+      this.state._extra.totalQuests=(this.state._extra.totalQuests||0)+1;
+    }
+    saveState(this.state);return true;
   }
   claim(root,entry){
     const s=this.stateFor(entry);if(!s.ready||s.claimed)return;

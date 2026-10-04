@@ -264,14 +264,29 @@ class SkillAnimPlayer {
     const sourceH = bounds.bottom - bounds.top + 1;
     const cacheWidth = Math.max(1, Math.ceil(width));
     const cacheHeight = Math.max(1, Math.ceil(height));
-    const cacheKey = `${id}:${cacheWidth}x${cacheHeight}`;
+    // Interpolation and overlapping DOT casts request different frames in the same RAF.
+    // Key by frame as well: one mutable canvas otherwise rerasterizes A/B/A/B forever.
+    const cacheKey = `${id}:${frameIndex}:${cacheWidth}x${cacheHeight}`;
     let cached = this.coverFrames.get(cacheKey);
     if (typeof OffscreenCanvas !== 'undefined') {
       if (!cached) {
-        const canvas = new OffscreenCanvas(cacheWidth, cacheHeight);
-        cached = { canvas, context: canvas.getContext('2d'), frameIndex: -1 };
+        if (this.coverFrames.size >= 8) {
+          const oldest = this.coverFrames.keys().next().value;
+          cached = this.coverFrames.get(oldest);
+          this.coverFrames.delete(oldest);
+          if (cached.canvas.width !== cacheWidth) cached.canvas.width = cacheWidth;
+          if (cached.canvas.height !== cacheHeight) cached.canvas.height = cacheHeight;
+          // A recycled buffer may belong to another skill with the same frame number.
+          cached.frameIndex = -1;
+        } else {
+          const canvas = new OffscreenCanvas(cacheWidth, cacheHeight);
+          cached = { canvas, context: canvas.getContext('2d'), frameIndex: -1 };
+        }
         this.coverFrames.set(cacheKey, cached);
-        while (this.coverFrames.size > 8) this.coverFrames.delete(this.coverFrames.keys().next().value);
+      } else {
+        // LRU: retain active frame pairs; evict older animation frames first.
+        this.coverFrames.delete(cacheKey);
+        this.coverFrames.set(cacheKey, cached);
       }
       if (cached.context && cached.frameIndex !== frameIndex) {
         const coverScale = Math.max(cacheWidth / Math.max(1, sourceW), cacheHeight / Math.max(1, sourceH));

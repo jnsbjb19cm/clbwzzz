@@ -467,6 +467,8 @@ function authorityOutroRemaining(view) {
 }
 
 function scheduleAuthorityResultOverlay(view) {
+  // End combat audio immediately; visual outro/report arrival must not delay or restart it.
+  view.syncResultAudio?.();
   clearTimeout(view.__pvpAuthorityResultTimer);
   const show = () => {
     syncAuthorityUi(view);

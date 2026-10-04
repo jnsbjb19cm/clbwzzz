@@ -7,6 +7,7 @@ import stageInfoJson from '../data/stageInfo.json';
 import cardPartsAtlas from '../data/atlas/preload_cardParts.json';
 import card1Atlas from '../data/atlas/preload_card1.json';
 import { Card } from './Card.js';
+import { createAdventureStages } from '../data/AdventureCampaign.js';
 
 /**
  * 卡牌数据库 - 加载并索引所有游戏配置
@@ -19,7 +20,7 @@ export class CardDatabase {
     this.combineTable = combineCardJson;
     this.meltingTable = meltingCardJson;
     this.pieceTable = pieceRewardJson;
-    this.stages = stageInfoJson;
+    this.stages = [...stageInfoJson, ...createAdventureStages(stageInfoJson)];
     this.atlases = {
       card1: card1Atlas,
       cardParts: cardPartsAtlas,

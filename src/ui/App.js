@@ -8,6 +8,7 @@ import { CardGallery } from './CardGallery.js';
 import { getCraftMaterialImage } from './SmithyMaterialArtwork.js';
 import { BattleView } from './BattleView.js';
 import { MainCityView } from './MainCityView.js';
+import { bindClassicChat, classicChatMarkup } from './ClassicCityChrome.js';
 import { BagView } from './BagView.js';
 import { SmithyView } from './SmithyView.js';
 import { TrainingView } from './TrainingView.js';
@@ -346,8 +347,31 @@ export class App {
     audio.playBgm('city', { fade: fromBattle || firstBoot });
   }
 
+  renderAdventureScene(root) {
+    root.innerHTML = `<section class="adventure-scene"><div class="adventure-scene-map"></div>${classicChatMarkup({ messages: [] })}</section>`;
+    const wm = new WorldMapView(this.player, this.db, this.cardInventory, this.inventory, {
+      onPlayerUpdate: () => this.updatePlayerDisplay(),
+      onNavigate: (route, opts) => this.navigate(route, opts),
+      onReturnToPort: () => this.navigate('worldmap', { returnToPort: true }),
+    });
+    wm.selectedMap = this.adventureDestination;
+    wm.render(root.querySelector('.adventure-scene-map'));
+    this._adventureChatCleanup = bindClassicChat(root.querySelector('.adventure-scene'));
+  }
+
+  navigateFromPanel(route, opts) {
+    return this.navigate(route === 'main' && this.adventureDestination ? 'worldmap' : route, opts);
+  }
+
   navigate(route, opts = {}) {
     const prevRoute = this.route;
+    this.views.gallery?.destroy();
+    this.views.gallery = null;
+    this._adventureChatCleanup?.();
+    this._adventureChatCleanup = null;
+    if (route === 'main' || opts.returnToPort) this.adventureDestination = null;
+    if (route === 'worldmap' && ['continent', 'forest', 'temple'].includes(opts.destination)) this.adventureDestination = opts.destination;
+    const independentAdventure = route === 'worldmap' && Boolean(this.adventureDestination);
 
     if (this.views.battle) {
       this.views.battle.destroy();
@@ -368,13 +392,16 @@ export class App {
     const viewRoot = this.root.querySelector('#view-root');
     viewRoot.innerHTML = '';
     let renderRoot = viewRoot;
-    if (CITY_OVERLAY_ROUTES.has(route)) {
-      const city = new MainCityView((nextRoute) => this.navigate(nextRoute));
-      city.render(viewRoot);
+    if (CITY_OVERLAY_ROUTES.has(route) && !independentAdventure) {
+      if (this.adventureDestination) this.renderAdventureScene(viewRoot);
+      else {
+        const city = new MainCityView((nextRoute) => this.navigate(nextRoute));
+        city.render(viewRoot);
+      }
       const overlay = document.createElement('section');
       overlay.className = 'city-modal-overlay';
       overlay.innerHTML = `<div class="city-modal-window"><button type="button" class="city-modal-close" aria-label="\u5173\u95ed">X</button><div class="city-modal-content"></div></div>`;
-      overlay.querySelector('.city-modal-close').addEventListener('click', () => this.navigate('main'));
+      overlay.querySelector('.city-modal-close').addEventListener('click', () => this.navigate(this.adventureDestination ? 'worldmap' : 'main'));
       viewRoot.append(overlay);
       renderRoot = overlay.querySelector('.city-modal-content');
     }
@@ -386,6 +413,7 @@ export class App {
     } else if (route === 'gallery') {
       // 传入背包，图鉴才能标出「已拥有 / 未获得」（设置里可切换未获得卡是否显示剪影）。
       const gallery = new CardGallery(this.db, { inventory: this.cardInventory });
+      this.views.gallery = gallery;
       gallery.render(renderRoot);
       this.updateResourceDisplay('--', '--');
     } else if (route === 'bag') {
@@ -397,7 +425,7 @@ export class App {
         this.player,
         {
           onPlayerUpdate: () => this.updatePlayerDisplay(),
-          onNavigate: (r, o) => this.navigate(r, o),
+          onNavigate: (r, o) => this.navigateFromPanel(r, o),
         },
       );
       bag.render(renderRoot);
@@ -428,11 +456,14 @@ export class App {
       smithy.render(renderRoot);
       this.updateResourceDisplay('--', '--');
     } else if (route === 'worldmap') {
-      const wm = new WorldMapView(
-        this.player, this.db, this.cardInventory, this.inventory,
-        { onPlayerUpdate: () => this.updatePlayerDisplay(), onNavigate: (r, o) => this.navigate(r, o) },
-      );
-      wm.render(renderRoot);
+      if (independentAdventure) this.renderAdventureScene(renderRoot);
+      else {
+        const wm = new WorldMapView(
+          this.player, this.db, this.cardInventory, this.inventory,
+          { onPlayerUpdate: () => this.updatePlayerDisplay(), onNavigate: (r, o) => this.navigate(r, o), onDepart: destination => this.navigate('worldmap', { destination }) },
+        );
+        wm.render(renderRoot);
+      }
       this.updateResourceDisplay('--', '--');
     } else if (route === 'quest') {
       const quest = new QuestView(this.db, this.cardInventory, this.player, {
@@ -447,7 +478,7 @@ export class App {
         this.itemDb, this.inventory, this.db, this.cardInventory, this.player,
         {
           onPlayerUpdate: () => this.updatePlayerDisplay(),
-          onNavigate: (nextRoute) => this.navigate(nextRoute),
+          onNavigate: (nextRoute) => this.navigateFromPanel(nextRoute),
         },
       );
       shop.render(renderRoot);

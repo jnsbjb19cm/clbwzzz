@@ -41,15 +41,16 @@ function escapeHtml(value) {
     .replaceAll("'", '&#039;');
 }
 
-function appendChatLine(root, text, tone = 'normal') {
+export function appendChatLine(root, text, tone = 'normal') {
   const log = root?.querySelector?.('[data-classic-chat-log]');
   if (!log) return;
+  const follow = log.scrollHeight - log.scrollTop - log.clientHeight < 24;
   const line = document.createElement('p');
   line.className = `is-${tone}`;
   line.textContent = maskBlockedWords(String(text ?? ''));
   log.append(line);
   while (log.children.length > 80) log.firstElementChild?.remove();
-  log.scrollTop = log.scrollHeight;
+  if (follow) log.scrollTop = log.scrollHeight;
 }
 
 function getLobbySocket() {
@@ -65,7 +66,7 @@ function getLobbySocket() {
         chatRoots.delete(root);
         continue;
       }
-      const tone = payload.channel === 'guild' ? 'guild' : payload.channel === 'private' ? 'private' : 'normal';
+      const tone = ['guild','private','world'].includes(payload.channel) ? payload.channel : 'normal';
       appendChatLine(root, `[${chatChannelLabel(payload.channel)}] ${nickname}：${message}`, tone);
     }
   });

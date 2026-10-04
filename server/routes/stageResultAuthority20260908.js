@@ -1,4 +1,5 @@
 import { Router } from 'express';
+import { createAdventureStages } from '../../src/data/AdventureCampaign.js';
 import { createRequire } from 'node:module';
 import { db, withTransaction } from '../database.js';
 import { requireAuth } from '../middleware/auth.js';
@@ -7,7 +8,7 @@ import { readPlayerItems20260908 } from '../domain/playerInventoryAuthority20260
 
 const require = createRequire(import.meta.url);
 const stageInfo = require('../../src/data/stageInfo.json');
-const STAGE_BY_ID = new Map(stageInfo.map((stage) => [String(stage.id ?? stage.stage_id), stage]));
+const STAGE_BY_ID = new Map([...stageInfo, ...createAdventureStages(stageInfo)].map((stage) => [String(stage.id ?? stage.stage_id), stage]));
 
 export const stageResultAuthorityRouter20260908 = Router();
 stageResultAuthorityRouter20260908.use(requireAuth);
@@ -94,6 +95,7 @@ stageResultAuthorityRouter20260908.post('/stage-result', async (req, res) => {
   const userId = Number(req.user.id);
   const won = Boolean(req.body?.won);
   const stageId = String(req.body?.stageId ?? '').trim();
+  if (Number(stageId) >= 10000 || stageId.startsWith('boss_')) return res.status(400).json({ ok: false, error: '新冒险与 BOSS 进度仅由联机战斗结算' });
   const stage = STAGE_BY_ID.get(stageId) ?? null;
   const drops = won ? normalizeBattleDrops20260908(req.body?.drops) : [];
 

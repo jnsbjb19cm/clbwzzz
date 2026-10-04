@@ -50,7 +50,7 @@ function drawDamagePop(ctx, pop, cx, topY, cellW, time) {
   const age = time - pop.at;
   if (!(age >= 0) || age >= POP_MS) return false;
   const progress = age / POP_MS;
-  const y = topY + 2 - progress * 18;
+  const y = topY + 18 - progress * 12;
   const alpha = progress < 0.75 ? 1 : 1 - (progress - 0.75) / 0.25;
   const size = Math.max(11, Math.round((cellW ?? 40) * 0.34));
   // 2026-09-12：不四舍五入 —— 剩余血量是小数（例如 3.2）时显示 -3.2

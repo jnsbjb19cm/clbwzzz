@@ -1,5 +1,7 @@
 import { authStore } from '../core/AuthStore.js';
 import { QuestView } from './QuestView.js';
+import { questPeriodKey } from '../data/QuestPeriods.js';
+import { audio } from '../core/AudioManager.js';
 
 const PATCH_FLAG = Symbol.for('clbwz.questRewardDatabaseAuthority20260908');
 
@@ -51,16 +53,27 @@ export function installQuestRewardDatabaseAuthority20260908() {
   if (globalThis[PATCH_FLAG]) return;
   globalThis[PATCH_FLAG] = true;
 
-  const originalClaim = QuestView.prototype.claim;
   QuestView.prototype.claim = async function claimDatabaseAuthority20260908(root, entry) {
     const state = this.stateFor(entry);
     if (!state.ready || state.claimed) return;
     const category = String(this.category || 'main');
+    const period = questPeriodKey(category);
     const questId = String(entry?.id ?? entry?.lv ?? '');
     if (!questId) {
       this.toast(root, '任务ID无效');
       return;
     }
+    const claimKey = `${category}:${questId}:${period}`;
+    this._pendingQuestClaims ??= new Set();
+    if (this._pendingQuestClaims.has(claimKey)) return;
+    this._pendingQuestClaims.add(claimKey);
+    const refreshClaim = (message) => {
+      this.recordClaim(category, entry, period);
+      if (root?.isConnected && root.querySelector('.quest-page')) {
+        this.renderContent(root);
+        this.toast(root, message);
+      }
+    };
 
     const button = root?.querySelector?.(`.quest-detail-claim[data-entry="${CSS.escape(questId)}"]`);
     if (button) button.disabled = true;
@@ -68,6 +81,7 @@ export function installQuestRewardDatabaseAuthority20260908() {
       const data = await authStore.api.post('/player/quests/claim-reward', {
         category,
         questId,
+        period,
         reward: rewardPayload(entry),
       });
       applyProfile(this, data.profile);
@@ -76,18 +90,19 @@ export function installQuestRewardDatabaseAuthority20260908() {
         this.cardInventory.applyServerSnapshot(data.cardInventory);
       }
 
-      // 原 claim 仍负责本地任务状态/声音/UI，但奖励发放必须禁用，避免本地二次加值。
-      const originalGrantReward = this.grantReward;
-      this.grantReward = () => {};
-      try {
-        originalClaim.call(this, root, entry);
-      } finally {
-        this.grantReward = originalGrantReward;
-      }
+      // Persist the requested category, not the category selected after awaiting the server.
+      refreshClaim(`领取成功：${entry.name}`);
+      audio.playSfx('click');
       this.onPlayerUpdate?.();
     } catch (error) {
+      if (error?.status === 409 && (error?.data?.alreadyClaimed === true || /该任务奖励已(?:经)?领取/.test(error?.message || ''))) {
+        refreshClaim('该奖励已领取，任务状态已同步；不会重复发放奖励。');
+        return;
+      }
       this.toast(root, error?.message || '领取任务奖励失败');
       if (button?.isConnected) button.disabled = false;
+    } finally {
+      this._pendingQuestClaims.delete(claimKey);
     }
   };
 }

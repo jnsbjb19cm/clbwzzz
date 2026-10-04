@@ -116,7 +116,7 @@ function decoratePveBattle(view, snapshot = null) {
   const enemyName = root.querySelector('#orb-enemy-name');
   if (enemyName && snapshot?.stage?.name) enemyName.textContent = snapshot.stage.name;
   document.body.classList.add('pvp-battle-active', 'coop-pve-active');
-  audio.playBgm?.('battle', { fade: true });
+  if (view.engine?.status === 'playing' && snapshot?.status !== 'finished') audio.playBgm?.('battle', { fade: true });
 }
 
 function buildOverlayControls(roomView, view) {
@@ -208,7 +208,9 @@ function enterCoopAdventureBattle(roomView) {
     // 结算报告是异步回来的：等 settled 报告再提示，避免把结算前的 0 当奖励弹出来。
     onBattleResult: (result) => {
       // 本地地图进度（星星/已通关）与服务端 player_stage_progress 对齐；不在此发奖。
-      try { markWorldStageCleared(view.engine?.stage?.stage_id ?? roomView.room?.stageId ?? stageId); } catch { /* ignore */ }
+      if (result?.won === true) {
+        try { markWorldStageCleared(view.pvp?.stageId ?? stageId); } catch { /* optional local storage */ }
+      }
       void reportCoopSettlement(view, result);
     },
   });

@@ -1,4 +1,5 @@
 import { sanitizeCustomCardName } from '../../src/core/constants.js';
+import { resetSkillError } from '../../src/systems/ResetSkillEffects.js';
 
 /**
  * 服务端权威 PVP 对战(3v3 / 2v2 / 1v1 可配)。
@@ -266,6 +267,8 @@ export class PvpBattle {
   }
 
   deploy(userId, payload = {}) {
+    const resetError = resetSkillError(this.engine, 0, this.teamOf(userId) === 'red' ? 'enemy' : 'player');
+    if (resetError) throw new Error(resetError);
     if (this.status !== 'playing') throw new Error('战斗已结束');
     const team = this.teamOf(userId);
     if (!team) throw new Error('你不是本房间玩家');
@@ -316,6 +319,8 @@ export class PvpBattle {
   }
 
   castSkill(userId, payload = {}) {
+    const resetError = resetSkillError(this.engine, payload.skillId, this.teamOf(userId) === 'red' ? 'enemy' : 'player');
+    if (resetError) throw new Error(resetError);
     if (this.status !== 'playing') throw new Error('战斗已结束');
     const team = this.teamOf(userId);
     if (!team) throw new Error('你不是本房间玩家');

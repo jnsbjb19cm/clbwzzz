@@ -766,7 +766,15 @@ export class BattleView {
     this.updateResultOverlay(root);
   }
 
+  syncResultAudio() {
+    if (!['win', 'lose'].includes(this.engine?.status) || this._resultAudioPlayed) return;
+    audio.stopAll();
+    audio.playBattleResult(this.engine.status === 'win');
+    this._resultAudioPlayed = true;
+  }
+
   updateResultOverlay(root) {
+    this.syncResultAudio();
     const overlay = root.querySelector('#result-overlay');
     if (!overlay) return;
     if (this.engine.status === 'playing') {
@@ -785,11 +793,6 @@ export class BattleView {
       overlay.classList.remove('result-enter');
       void overlay.offsetWidth;
       overlay.classList.add('result-enter');
-    }
-    if (!this._resultAudioPlayed) {
-      audio.stopAll();
-      audio.playBattleResult(win);
-      this._resultAudioPlayed = true;
     }
     if (!this._resultReported) {
       this._resultReported = true;
@@ -1486,9 +1489,7 @@ export class BattleView {
           // PVE 战斗结束：先停止战斗循环与战斗音效，再播胜利/失败音(顺序不能反，
           // 否则 stopAll 会把刚播的结果音一起掐断——之前 debug 时静音的根因)
           this.stopLoop();
-          audio.stopAll();
-          audio.playBattleResult(this.engine.status === 'win');
-          this._resultAudioPlayed = true;
+          this.syncResultAudio();
         }
         this.lastStatus = this.engine.status;
       }

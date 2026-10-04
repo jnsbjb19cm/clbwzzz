@@ -49,6 +49,9 @@ import {
 import { Projectile, resolveProjectileHit } from './Projectile.js';
 import { unitAnimPlayer } from './UnitAnimPlayer.js';
 import { WaveManager } from './WaveManager.js';
+import { attackColdBrew, COLD_BREW_CARD_ID } from './ColdBrewMachine.js';
+import { calculateCardStats } from './CardStatFormula.js';
+import { adventurePlacementCells, adventureQuality } from '../data/AdventureCampaign.js';
 import { getCardTraits, getAttackPattern, isSuicideCard } from '../core/CardTraitRegistry.js';
 import { TALENT_NODE_MAP } from '../core/TalentRegistry.js';
 
@@ -558,6 +561,10 @@ export class BattleEngine {
   }
 
   canDeploy(lane, col, handIndex = this.selectedHandIndex, { silent = false } = {}) {
+    if ((this.resetHeroLockedUntil?.player || 0) > this.time) {
+      if (!silent) this.lastDeployError = '海妖之声生效中：不能出牌';
+      return false;
+    }
     if (!silent) this.lastDeployError = '';
     if (this.status !== 'playing') {
       if (!silent) this.lastDeployError = '战斗已结束';
@@ -661,6 +668,28 @@ export class BattleEngine {
     const count = wave.count ?? 1;
     for (let i = 0; i < count; i++) {
       const lane = wave.lane != null && count === 1 ? wave.lane : Math.floor(Math.random() * 5);
+      if (this.stage.adventure) {
+        const ordinal = this.adventureSpawnOrdinal || 0;
+        this.adventureSpawnOrdinal = ordinal + 1;
+        const cell = adventurePlacementCells(lane + 1, (wave.col ?? 9) - 6).find(({ lane: row, col }) =>
+          // Movers retain the existing rear-three-column rule; occupied cells are traversed, never overwritten.
+          (!(card.moveSpeed > 0) || col >= ENEMY_MOVABLE_MIN_COL) && this.getUnitsAt(row, col).length === 0);
+        if (!cell) continue;
+        const unit = new BattleUnit({ card, ...cell, team: 'enemy',
+          instance: { craftQuality: adventureQuality(this.stage, ordinal), star: 0, strengthLv: 0 } });
+        // Campaign challenge nodes still spawn ordinary cards, not BOSS entities.
+        unit.isBoss = false;
+        const reference = wave.referenceCardId ? this.db.getById(wave.referenceCardId) : null;
+        if (reference) {
+          const referenceStats = calculateCardStats(reference, unit.craftQuality, 0);
+          unit.hp = unit.maxHp = unit.baseMaxHp = Math.max(1, roundBattleAmount(referenceStats.hp));
+          unit.atk = roundBattleAmount(unit.atk * (wave.adventureAttackScale ?? 1));
+        }
+        this.initUnitSpawnFade(unit);
+        this.units.push(unit);
+        this.pushDeployEffect(cell.lane, cell.col, 1);
+        continue;
+      }
       this.placeEnemyUnit(card, lane, wave.isBoss, wave.col);
     }
   }
@@ -736,8 +765,9 @@ export class BattleEngine {
       this.heroMp = this.heroMpMax;
     } else {
       this.resourceTimer += dt;
-      while (this.resourceTimer >= RESOURCE_REGEN_INTERVAL) {
-        this.resourceTimer -= RESOURCE_REGEN_INTERVAL;
+      const resourceInterval = this.stage.adventure ? 1 : RESOURCE_REGEN_INTERVAL;
+      while (this.resourceTimer >= resourceInterval) {
+        this.resourceTimer -= resourceInterval;
         if (this.sunlight < MAX_RESOURCE) this.sunlight = Math.min(MAX_RESOURCE, this.sunlight + RESOURCE_REGEN);
         if (this.food < MAX_RESOURCE) this.food = Math.min(MAX_RESOURCE, this.food + RESOURCE_REGEN);
       }
@@ -1309,6 +1339,8 @@ export class BattleEngine {
   }
 
   tryAttack(unit) {
+    if ((unit.resetBlindUntil || 0) > this.time && unit.isRanged?.()) return false;
+    if (unit.cardId === COLD_BREW_CARD_ID) return attackColdBrew(this, unit, TICK_INTERVAL);
     if (unit.atk <= 0) return false;
     if (isSuicideCard(unit)) return this.trySuicideBomber(unit);
     // 飞鞋怪：首次碰到目标前不普通攻击（第一次攻击 = 接触时的特殊攻击击晕）
@@ -1316,7 +1348,7 @@ export class BattleEngine {
     // 跳跃中不攻击：让跳跃动画完整播放，落地后再正常攻击
     if (unit._jumpUntil && this.time < unit._jumpUntil) return false;
     // 减速：攻速减半(冷却计时器递减减半)
-    const slowMult = unit.slowedUntil && this.time < unit.slowedUntil ? 0.5 : 1;
+    const slowMult = (unit.slowedUntil && this.time < unit.slowedUntil) || (unit.resetTorrentUntil || 0) > this.time ? 0.5 : 1;
     unit.atkTimer -= TICK_INTERVAL * slowMult;
     if (unit.atkTimer > 0) return false;
 
@@ -1755,6 +1787,9 @@ export class BattleEngine {
 
       let slowFactor = 1;
       if (unit.slowedUntil && this.time < unit.slowedUntil) slowFactor = 0.45;
+      if ((unit.resetTorrentUntil || 0) > this.time) slowFactor = Math.min(slowFactor, .5);
+      if ((unit.resetSandUntil || 0) > this.time) slowFactor = Math.min(slowFactor, .8);
+      if ((unit.resetSongUntil || 0) > this.time) slowFactor *= 1.1;
       const moveMult = this.getMoveSpeedMult(unit);
 
       const speed = getMoveColPerSec(unit.moveSpeed) * slowFactor * moveMult;

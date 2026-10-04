@@ -259,7 +259,7 @@
 .gallery-chrome-v2 .card-thumb-img {
   display: block;
   width: 100%;
-  height: 92px;
+  height: var(--gallery-thumb-height, 92px);
   object-fit: contain;
   object-position: center bottom;
 }
@@ -497,7 +497,7 @@
 @media (max-width: 1180px) {
   .gallery-page.gallery-chrome-v2 {
     grid-template-columns: 200px minmax(0, 1fr);
-    grid-template-rows: minmax(0, 1fr) minmax(0, 240px);
+    grid-template-rows: minmax(0, 1fr) minmax(0, min(240px, 20vh));
   }
 
   .gallery-chrome-v2 .gallery-detail {

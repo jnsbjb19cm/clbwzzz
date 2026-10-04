@@ -56,7 +56,7 @@ function decorateBossBattle(view, snapshot = null) {
   }
 
   document.body.classList.add('pvp-battle-active', 'boss-coop-active');
-  audio.playBgm('boss', { fade: true });
+  if (view.engine?.status === 'playing' && snapshot?.status !== 'finished') audio.playBgm('boss', { fade: true });
 }
 
 function enterCoopBossBattle(roomView) {
@@ -71,7 +71,7 @@ function enterCoopBossBattle(roomView) {
   // 2026-09-12：以房间里选中的战团为准（环境标记可能还是上一场的残留）
   const activeDeck = selectedBattleDeck20260912(roomView.cardInventory, roomView.db, roomDeckGroup20260912(roomView));
   // 2026-09-12：把"当前战团"标成房间这一套。之前这里只读不写，环境标记会留上一场的值，
-  // 于是打完/退出后"选中的战团"变成残留值（用户报告：野外冒险退出后战团变默认）。
+  // 于是打完/退出后"选中的战团"变成残留值。
   if (roomView.cardInventory) roomView.cardInventory.__activeDeckGroup20260907 = activeDeck.group;
   const deckSlots = normalizeDeck(activeDeck.slots);
   roomView.roomBattleView?.destroy?.();

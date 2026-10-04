@@ -81,8 +81,6 @@ const PART_SPRITES = [
 ];
 
 const UNIT_DRAW_SCALE = 1.68;
-const LOW_QUALITY_UNIT_COUNT = 20;
-const LOW_QUALITY_EFFECT_COUNT = 40;
 const EFFECT_DRAW_CAP_NORMAL = 64;
 const EFFECT_DRAW_CAP_LOW = 24;
 
@@ -1288,22 +1286,14 @@ export class BattleRenderer {
     let aliveUnits = 0;
     for (const unit of engine?.units ?? []) if (unit?.alive) aliveUnits += 1;
     const skillEffects = engine?.skillFx ?? engine?.skillEffects ?? [];
-    const hasFullscreenSkill = skillEffects.some((effect) => (
-      effect?.fullScreen === true
-      || FULL_SCREEN_SKILL_KINDS.has(effect?.kind)
-      || SKILL_FX_POS.get(Number(effect?.skillId)) === 2
-    ));
     const effectCount = (engine?.floats?.length ?? 0)
       + (engine?.impactFx?.length ?? 0)
       + (engine?.bumpFx?.length ?? 0)
       + (engine?.deployEffects?.length ?? 0)
       + skillEffects.length
       + (engine?.projectiles?.length ?? 0);
-    // 大军团/多特效时进入低画质：保留名称(由名字开关控制)，仅省略星级/卡牌脸等，并只绘制最上层的若干特效。
-    this._lowQuality = this.forceLowQuality
-      || aliveUnits >= LOW_QUALITY_UNIT_COUNT
-      || hasFullscreenSkill
-      || effectCount >= LOW_QUALITY_EFFECT_COUNT;
+    // 画质只能由玩家主动选择；单位数、全屏技能及帧耗时不得自动简化动画。
+    this._lowQuality = Boolean(this.forceLowQuality);
     this._effectDrawCap = this._lowQuality ? EFFECT_DRAW_CAP_LOW : EFFECT_DRAW_CAP_NORMAL;
     this._isBossBattle = Boolean(engine?.coopBoss || engine?.stage?.stage_type === 2);
     this._renderPerfAudit = {

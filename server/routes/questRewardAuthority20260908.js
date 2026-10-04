@@ -1,4 +1,5 @@
 import { findQuestReward } from '../../src/data/QuestCatalog.js';
+import { questClaimStorageId, questPeriodKey } from '../../src/data/QuestPeriods.js';
 import { Router } from 'express';
 import { db, withTransaction } from '../database.js';
 import { requireAuth } from '../middleware/auth.js';
@@ -113,6 +114,9 @@ questRewardAuthorityRouter20260908.post('/quests/claim-reward', async (req, res)
   try {
     await ensureClaimTable();
     const { category, questId } = normalizeIdentity(req.body);
+    const period = questPeriodKey(category);
+    const storageId = questClaimStorageId(category, questId);
+    if (req.body?.period && req.body.period !== period) throw new Error('任务周期已更新，请刷新任务列表后重试');
     const definition = findQuestReward(category, questId);
     if (!definition) throw new Error('任务不存在');
     const reward = normalizeReward(definition);
@@ -120,9 +124,17 @@ questRewardAuthorityRouter20260908.post('/quests/claim-reward', async (req, res)
     await withTransaction(async (conn) => {
       const existing = await conn.get(
         'SELECT 1 AS claimed FROM player_quest_reward_claims WHERE user_id=? AND category=? AND quest_id=?',
-        [userId, category, questId],
+        [userId, category, storageId],
       );
-      if (existing) throw new Error('该任务奖励已经领取');
+      // Older releases stored recurring rewards under the permanent task id.
+      const legacy = storageId !== questId ? await conn.get(
+        'SELECT claimed_at AS claimedAt FROM player_quest_reward_claims WHERE user_id=? AND category=? AND quest_id=?',
+        [userId, category, questId],
+      ) : null;
+      const legacyDate = typeof legacy?.claimedAt === 'string' && /^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/.test(legacy.claimedAt) ? legacy.claimedAt.replace(' ', 'T') + 'Z' : legacy?.claimedAt;
+      if (existing || (legacyDate && questPeriodKey(category, legacyDate) === period)) {
+        throw Object.assign(new Error('该任务奖励已经领取'), {alreadyClaimed:true});
+      }
 
       const profile = await conn.get('SELECT level, exp FROM player_profiles WHERE user_id=?', [userId]);
       if (!profile) throw new Error('玩家数据不存在');
@@ -141,12 +153,12 @@ questRewardAuthorityRouter20260908.post('/quests/claim-reward', async (req, res)
 
       await conn.run(
         'INSERT INTO player_quest_reward_claims(user_id,category,quest_id) VALUES(?,?,?)',
-        [userId, category, questId],
+        [userId, category, storageId],
       );
 
       const legacyQuestId = `${category}:${questId}`;
-      const legacy = await conn.get('SELECT quest_id FROM player_quests WHERE user_id=? AND quest_id=?', [userId, legacyQuestId]);
-      if (legacy) {
+      const legacyProgress = await conn.get('SELECT quest_id FROM player_quests WHERE user_id=? AND quest_id=?', [userId, legacyQuestId]);
+      if (legacyProgress) {
         await conn.run('UPDATE player_quests SET claimed=1, updated_at=CURRENT_TIMESTAMP WHERE user_id=? AND quest_id=?', [userId, legacyQuestId]);
       } else {
         await conn.run(
@@ -164,6 +176,6 @@ questRewardAuthorityRouter20260908.post('/quests/claim-reward', async (req, res)
     });
   } catch (error) {
     const message = error?.message || '领取任务奖励失败';
-    return res.status(message.includes('已经领取') ? 409 : 400).json({ message });
+    return res.status(error?.alreadyClaimed ? 409 : 400).json({ message, ...(error?.alreadyClaimed ? {alreadyClaimed:true} : {}) });
   }
 });

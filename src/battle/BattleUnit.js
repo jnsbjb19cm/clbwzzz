@@ -10,6 +10,7 @@ import {
   normalizeBattleCraftQuality,
 } from './CardStatFormula.js';
 import { sanitizeCustomCardName } from '../core/constants.js';
+import { COLD_BREW_CARD_ID, COLD_BREW_ATTACK_INTERVAL } from './ColdBrewMachine.js';
 import { getAttackPattern, isSuicideCard } from '../core/CardTraitRegistry.js';
 
 let uid = 0;
@@ -48,6 +49,7 @@ export class BattleUnit {
     this.effectSelf = card.effectSelf;
     this.effectScope = card.effectScope;
     this.atkTimer = getAttackCooldown(this.atkSpeed);
+    if (this.cardId === COLD_BREW_CARD_ID) this.atkTimer = COLD_BREW_ATTACK_INTERVAL;
     if (this.atkStyle === 9) this.atkTimer = 0;
     this.moveEvery = getMoveEvery(this.moveSpeed);
     this.moveTick = 0;

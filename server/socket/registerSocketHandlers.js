@@ -1,4 +1,5 @@
 import { getSocketUser, db } from '../database.js';
+import { assertAdventureAccess } from '../domain/AdventureAccess.js';
 import { verifyToken } from '../middleware/auth.js';
 import { roomManager } from '../rooms/RoomManager.js';
 import { registerSocket, unregisterSocket, socketsForUser } from '../online.js';
@@ -86,8 +87,9 @@ export function registerSocketHandlers(io) {
 
     socket.on('rooms:list', (_payload, ack) => ackOk(ack, { rooms: roomManager.listRooms() }));
 
-    socket.on('room:create', (payload = {}, ack) => {
+    socket.on('room:create', async (payload = {}, ack) => {
       try {
+        await assertAdventureAccess(db, userId, payload);
         const previousWatch = watchRooms.get(userId);
         if (previousWatch) {
           socket.leave(`room:${previousWatch.roomId}`);
@@ -291,8 +293,12 @@ export function registerSocketHandlers(io) {
       } catch (error) { ackError(ack, error); }
     });
 
-    socket.on('room:start', (_payload, ack) => {
+    socket.on('room:start', async (_payload, ack) => {
       try {
+        const pendingRoom = roomManager.getRoomByUser(userId);
+        if (pendingRoom) for (const member of pendingRoom.members.values()) {
+          if (!member.isBot) await assertAdventureAccess(db, member.userId, pendingRoom);
+        }
         const room = roomManager.markStarted(userId);
         io.to(`room:${room.id}`).emit('room:starting', {
           room,

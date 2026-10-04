@@ -1,4 +1,7 @@
 import { audio } from '../core/AudioManager.js';
+import { authStore } from '../core/AuthStore.js';
+import { createAdventureStages } from '../data/AdventureCampaign.js';
+import { renderAdventureMap, renderAdventureDestinations, renderAdventureBosses } from './AdventureMapReset.js';
 import worldMapData from '../data/worldMap.json';
 import stageInfoData from '../data/stageInfo.json';
 import worldMapAtlas from '../data/atlas/preload_worldMap.json';
@@ -40,11 +43,14 @@ function initialState() {
 }
 
 function loadState() {
+  let state = initialState();
   try {
     const data = localStorage.getItem(STORAGE_KEY);
-    if (data) return { ...initialState(), ...JSON.parse(data) };
+    if (data) state = { ...state, ...JSON.parse(data) };
   } catch { /* Storage is optional. */ }
-  return initialState();
+  const remote = (authStore.snapshot?.stages || []).filter(stage => stage.cleared).map(stage => Number(stage.stageId));
+  state.stageClaimed = [...new Set([...(Array.isArray(state.stageClaimed) ? state.stageClaimed : []).map(Number), ...remote])].filter(Number.isFinite);
+  return state;
 }
 
 function saveState(state) {
@@ -53,7 +59,7 @@ function saveState(state) {
 
 export function markWorldStageCleared(stageId) {
   const id = Number(stageId);
-  const stage = stageInfoData.find((entry) => Number(entry.id ?? entry.stage_id) === id);
+  const stage = [...stageInfoData, ...createAdventureStages(stageInfoData)].find((entry) => Number(entry.id ?? entry.stage_id) === id);
   if (!stage) return { firstClear: false, rewards: [] };
   const state = loadState();
   if (state.stageClaimed.includes(id)) return { firstClear: false, rewards: [] };
@@ -114,18 +120,29 @@ export class WorldMapView {
     this.inventory = inventory;
     this.onPlayerUpdate = hooks.onPlayerUpdate;
     this.onNavigate = hooks.onNavigate;
+    this.onDepart = hooks.onDepart;
+    this.onReturnToPort = hooks.onReturnToPort;
     this.state = loadState();
     this.selectedChapter = null;
-    this.selectedMap = null; // null=地图选择, 'continent'=冒险大陆, 'forest'=悲伤密林
+    this.selectedMap = null; // 保留原野外冒险目的地界面，选择后再进入大陆地图。
   }
 
   render(root) {
+    this.refreshProgress();
     root.innerHTML = '<div class="page worldmap-page" style="position:absolute;inset:0;"><div class="worldmap-content" id="worldmap-content" style="position:absolute;inset:0;"></div><p class="bag-toast hidden" id="worldmap-toast"></p></div>';
     if (this.selectedMap === null) this.renderMapSelect(root);
     else this.renderMap(root);
   }
 
   renderMapSelect(root) {
+    return renderAdventureDestinations(this, root);
+  }
+
+  refreshProgress() {
+    this.state = loadState();
+  }
+
+  renderLegacyMapSelect(root) {
     const content = root.querySelector('#worldmap-content');
     const modalWin = root.closest('.city-modal-window');
     if (modalWin) modalWin.style.background = 'transparent';
@@ -142,10 +159,10 @@ export class WorldMapView {
             <div class="worldmap-destination-info"><span>开放时段：全天</span><span>船票：免费</span></div>
             <button type="button" class="map-go-btn" data-map="forest">立即前往 &gt;&gt;</button>
           </article>
-          <article class="worldmap-destination-row locked" data-destination="temple">
-            <span class="map-select-btn">海底神殿</span>
-            <div class="worldmap-destination-info"><span>开放时段：20:00-21:00</span><span>船票：免费</span></div>
-            <span class="worldmap-map-locked">暂未开放</span>
+          <article class="worldmap-destination-row available" data-destination="temple">
+            <button type="button" class="map-select-btn" data-map="temple">海底神殿</button>
+            <div class="worldmap-destination-info"><span>开放时段：全天</span><span>船票：免费</span></div>
+            <button type="button" class="map-go-btn" data-map="temple">立即前往 &gt;&gt;</button>
           </article>
           <article class="worldmap-destination-row locked" data-destination="locked-1">
             <span class="map-select-btn">暂未开放</span>
@@ -160,15 +177,20 @@ export class WorldMapView {
         </div>
       </div>
     `;
-    content.querySelectorAll('[data-map="continent"]').forEach(b => {
-      if (b.classList.contains('map-go-btn')) b.addEventListener('click', () => { this.selectedMap = 'continent'; this.renderMap(root); });
-    });
-    content.querySelectorAll('[data-map="forest"]').forEach(b => {
-      if (b.classList.contains('map-go-btn')) b.addEventListener('click', () => { this.selectedMap = 'forest'; this._renderForest(root); });
+    content.querySelectorAll('button[data-map]').forEach(button => {
+      button.addEventListener('click', () => {
+        this.selectedMap = button.dataset.map;
+        if (this.onDepart) return this.onDepart(this.selectedMap);
+        this.renderMap(root);
+      });
     });
   }
 
   _renderForest(root) {
+    return renderAdventureBosses(this, root, this.selectedMap === 'temple' ? 'temple' : 'forest');
+  }
+
+  _renderLegacyForest(root) {
     const content = root.querySelector('#worldmap-content');
     const BOSSES = BOSS_LIST;
 
@@ -260,6 +282,11 @@ export class WorldMapView {
   }
 
   renderMap(root) {
+    if (this.selectedMap === 'forest' || this.selectedMap === 'temple') return this._renderForest(root);
+    return renderAdventureMap(this, root);
+  }
+
+  renderLegacyMap(root) {
     const content = root.querySelector('#worldmap-content');
     const modalWin = root.closest('.city-modal-window');
     if (modalWin) modalWin.style.background = 'transparent';

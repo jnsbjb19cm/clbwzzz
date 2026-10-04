@@ -119,7 +119,7 @@ function recordRoomMessage(view, message = {}) {
 
 function createRoomChatRow(entry) {
   const row = document.createElement('div');
-  row.className = `exact-room-chat-message channel-${entry.channel}${entry.system ? ' system' : ''}`;
+  row.className = `exact-room-chat-message channel-${entry.channel}${entry.system ? ' system' : ''}${entry.spectator ? ' spectator' : ''}`;
   const name = document.createElement('b');
   const prefix = entry.system
     ? '[系统] '
@@ -137,6 +137,7 @@ function scrollRoomChatToBottom(log = null) {
   const target = log ?? chatLog({ root: document });
   if (!target) return false;
   const apply = () => {
+    if (target.dataset.followLatest === '0') return;
     try {
       target.scrollTop = target.scrollHeight;
     } catch {
@@ -161,10 +162,14 @@ function renderRoomChat(view) {
     && log.childElementCount === entries.length && entries.length > 0) {
     return true;
   }
+  const previousScroll = log.scrollTop;
+  const followLatest = !log.childElementCount || log.scrollHeight - log.clientHeight - previousScroll < 24;
+  log.dataset.followLatest = followLatest ? '1' : '0';
   log.replaceChildren();
   for (const entry of entries) log.append(createRoomChatRow(entry));
   log.dataset.chatSignature20260911 = signature;
-  scrollRoomChatToBottom(log);
+  if (followLatest) scrollRoomChatToBottom(log);
+  else log.scrollTop = previousScroll;
   return true;
 }
 
@@ -382,7 +387,13 @@ function watchRoomChatScroll(root) {
     if (!log || log === watched) return;
     watched = log;
     observer?.disconnect();
-    observer = new MutationObserver(() => scrollRoomChatToBottom(log));
+    log.dataset.followLatest = '1';
+    log.addEventListener('scroll', () => {
+      log.dataset.followLatest = log.scrollHeight - log.clientHeight - log.scrollTop < 24 ? '1' : '0';
+    }, {passive:true});
+    observer = new MutationObserver(() => {
+      if (log.dataset.followLatest !== '0') scrollRoomChatToBottom(log);
+    });
     observer.observe(log, { childList: true });
     // 面板可能一开始是隐藏的：显示出来时补一次置底
     observer.observe(log.closest('.exact-room-chat') ?? room, { attributes: true, attributeFilter: ['class', 'style', 'hidden'] });

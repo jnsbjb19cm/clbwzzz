@@ -32,7 +32,8 @@ export class Card {
     this.hp = this.id === 56 ? 180 : raw.card_hp;
     this.cost = raw.cost_a;
     /* 当前规则只保留1~5级；旧数据中的6级统一降为5级。 */
-    this.quality = Math.max(1, Math.min(5, Number(raw.card_quality) || 1));
+    this.quality = this.id === 126 ? 6 : Math.max(1, Math.min(5, Number(raw.card_quality) || 1));
+    if (this.id === 557) { this.name = '致命诅咒'; this.desc = '敌方全场中毒，每秒8点，持续10秒'; this.trait = this.desc; }
     this.category = raw.card_category;
     this.type = raw.card_type;
     this.cooldown = raw.card_cd;

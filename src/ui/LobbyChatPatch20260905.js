@@ -97,6 +97,8 @@ function renderMessages(view) {
     return;
   }
 
+  const previousScroll = list.scrollTop;
+  const follow = list.scrollHeight - previousScroll - list.clientHeight < 24;
   list.replaceChildren();
   if (!state.entries.length) {
     const empty = document.createElement('div');
@@ -106,7 +108,7 @@ function renderMessages(view) {
   } else {
     for (const entry of state.entries) {
       const row = document.createElement('div');
-      row.className = `lobby-chat-item is-${entry.channel}${entry.system ? ' is-system' : ''}`;
+      row.className = `lobby-chat-item is-${entry.channel}${entry.system ? ' is-system' : ''}${entry.spectator ? ' is-spectator' : ''}`;
       const prefix = entry.system
         ? '[系统] '
         : entry.channel === 'current'
@@ -118,7 +120,7 @@ function renderMessages(view) {
     }
   }
   list.dataset.chatSignature20260911 = signature;
-  list.scrollTop = list.scrollHeight;
+  list.scrollTop = follow ? list.scrollHeight : previousScroll;
 }
 
 function clearLobbyChat(view) {

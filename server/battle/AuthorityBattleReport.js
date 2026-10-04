@@ -1,6 +1,7 @@
 import craftMaterials from '../../src/data/craftMaterials.json' with { type: 'json' };
 import { grantPlayerExp } from '../../src/core/PlayerProgression.js';
 import { settlePveStageForPlayer } from './PveStageSettlement20260911.js';
+import { recordAdventureBossClear } from '../domain/AdventureAccess.js';
 
 function rollUpgradeMaterial(maxTier = 1, rng = Math.random) {
   const tier = 1 + Math.floor(rng() * Math.max(1, Math.min(4, Math.floor(maxTier))));
@@ -141,6 +142,9 @@ export async function settleBattleReport(conn, battle) {
 
   for (const row of rows) {
     const won = row.team === battle.winner;
+    if (won && report.mode === 'boss' && report.rewardsEnabled && row.userId > 0 && !row.isBot) {
+      await recordAdventureBossClear(conn, row.userId, battle.bossInfo?.id);
+    }
     row.score = row.kills * 10 + (won ? 100 : 0);
     if (!report.rewardsEnabled || row.userId <= 0 || row.isBot) continue;
     const profile = await conn.get('SELECT level, exp FROM player_profiles WHERE user_id=?', [row.userId]);

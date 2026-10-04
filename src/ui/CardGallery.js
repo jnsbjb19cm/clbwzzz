@@ -5,17 +5,14 @@ import { gameSettings } from '../core/GameSettingsStore20260910.js';
 
 const PAGE_SIZE = 24;
 /**
- * 图鉴展示全部可见卡（92 张；经验卡不进图鉴）。
- *
- * 注意：CardDatabase 里的 Card.quality 会被 clamp 到 1~5（Card.js: `Math.min(5, ...)`），
- * 所以 card.json 里那几张 card_quality=6 的卡在图鉴里就是「5 级卡」，图鉴不存在 6 级分组。
+ * 图鉴展示全部可见卡；经验卡不进图鉴，新增红色冷萃机保留独立的 6 级分组。
  * 要额外隐藏哪些卡，填 GALLERY_HIDDEN_CARD_IDS（用户圈选后由这里过滤）。
  */
-const GALLERY_MAX_QUALITY = 5;
+const GALLERY_MAX_QUALITY = 6;
 /** 手动屏蔽的卡（用户圈选），默认空。 */
 const GALLERY_HIDDEN_CARD_IDS = new Set([]);
 /** 图鉴里品质从低到高分组显示：1 级卡在最前。 */
-const GALLERY_QUALITY_ORDER = [1, 2, 3, 4, 5];
+const GALLERY_QUALITY_ORDER = [1, 2, 3, 4, 5, 6];
 
 const escapeHtml = (value) => String(value ?? '')
   .replace(/&/g, '&amp;')
@@ -46,6 +43,7 @@ export class CardGallery {
   }
 
   destroy() {
+    this.resizeObserver?.disconnect();
     this.unsubscribe?.();
     this.unsubscribe = null;
   }
@@ -122,6 +120,11 @@ export class CardGallery {
     this.bindEvents(root);
     this.renderChips(root);
     this.renderCardGrid(root);
+    this.resizeObserver?.disconnect();
+    this.resizeObserver = new ResizeObserver(() => {
+      if (this.root?.isConnected) this.renderCardGrid(this.root);
+    });
+    this.resizeObserver.observe(root.querySelector('#gallery-scroll'));
   }
 
   renderChips(root) {
@@ -173,11 +176,35 @@ export class CardGallery {
 
   getPageCards() {
     const all = this.getFilteredCards();
-    const totalPages = Math.max(1, Math.ceil(all.length / PAGE_SIZE));
+    const capacity = this.measurePageCapacity(all[0]);
+    const pages = [];
+    // A new quality starts on its own page, so section headings never push a row off-screen.
+    for (const quality of GALLERY_QUALITY_ORDER) {
+      const group = all.filter(card => Number(card.quality) === quality);
+      for (let i = 0; i < group.length; i += capacity) pages.push(group.slice(i, i + capacity));
+    }
+    const totalPages = Math.max(1, pages.length);
     if (this.page >= totalPages) this.page = totalPages - 1;
     if (this.page < 0) this.page = 0;
-    const start = this.page * PAGE_SIZE;
-    return { cards: all.slice(start, start + PAGE_SIZE), totalPages, total: all.length };
+    return { cards: pages[this.page] || [], totalPages, total: all.length };
+  }
+
+  measurePageCapacity(sample) {
+    const scroll = this.root?.querySelector('#gallery-scroll');
+    if (!sample || !scroll?.clientHeight) return PAGE_SIZE;
+    scroll.style.setProperty('--gallery-thumb-height', '92px');
+    scroll.innerHTML = `<section class="gallery-quality-group"><h3 class="gallery-quality-title">品质</h3><div class="card-grid">${this.cardMarkup(sample, {owned:null,silhouette:false})}</div></section>`;
+    const grid = scroll.querySelector('.card-grid');
+    const style = getComputedStyle(grid), padding = getComputedStyle(scroll);
+    const columns = Math.max(1, style.gridTemplateColumns.split(' ').length);
+    const gap = parseFloat(style.rowGap) || 0;
+    const title = scroll.querySelector('h3');
+    const heading = title.offsetHeight + (parseFloat(getComputedStyle(title).marginBottom) || 0);
+    const available = scroll.clientHeight - (parseFloat(padding.paddingTop) || 0) - (parseFloat(padding.paddingBottom) || 0) - heading;
+    const rowOverhead = grid.firstElementChild.offsetHeight - 92;
+    scroll.style.setProperty('--gallery-thumb-height', `${Math.max(28, Math.min(92, available - rowOverhead))}px`);
+    const rowHeight = grid.firstElementChild.offsetHeight;
+    return columns * Math.max(1, Math.floor((available + gap) / (rowHeight + gap)));
   }
 
   renderCardGrid(root) {
@@ -199,7 +226,7 @@ export class CardGallery {
     if (!cards.length) {
       scroll.innerHTML = '<p class="gallery-empty">没有匹配的卡牌</p>';
     } else {
-      // 按品质分组（同页内），6→1 反过来就是 5→1。
+      // 按品质从低到高分组。
       const groups = new Map();
       for (const card of cards) {
         const quality = Number(card.quality);
@@ -220,6 +247,7 @@ export class CardGallery {
     root.querySelector('#page-info').textContent = `第 ${this.page + 1} / ${totalPages} 页（共 ${total} 张）`;
     root.querySelector('#page-prev').disabled = this.page <= 0;
     root.querySelector('#page-next').disabled = this.page >= totalPages - 1;
+    scroll.scrollTop = 0;
   }
 
   cardMarkup(card, { owned, silhouette }) {
@@ -254,7 +282,7 @@ export class CardGallery {
       ['生命', formatBattleAmount(card.hp)],
       ['费用', card.cost],
       ['冷却', `${card.cooldown}s`],
-      ['攻速', card.atkSpeed || '-'],
+      ['攻速', card.attackInterval ? `${card.attackInterval}s/次` : card.atkSpeed || '-'],
       ['移速', card.moveSpeed || '-'],
       ['攻击方式', card.atkStyleLabel ?? '-'],
     ];

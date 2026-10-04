@@ -13,7 +13,7 @@ import { PROVIDED_GRASS_BACKGROUND_URL } from '../battle/BattleBackground.js';
 
 const PATCH_FLAG = Symbol.for('clbwzzz.pvpRound3ReferenceFinal');
 const FLOAT_DURATION = 0.82;
-const FLOAT_RISE_PX = 14;
+const FLOAT_RISE_PX = 10;
 const REFERENCE_RECT = Object.freeze({ left: 0.092, top: 0.233, width: 0.78, height: 0.613 });
 
 const SCENES = Object.freeze({
@@ -303,7 +303,7 @@ function drawAuthorityFloats(renderer, ctx, engine) {
     const eased = 1 - (1 - progress) * (1 - progress);
     const alpha = progress < 0.68 ? 1 : Math.max(0, (1 - progress) / 0.32);
     const x = fracColToCenterX(finite(item.col));
-    const y = cellCenterY(finite(item.lane, 2)) - eased * FLOAT_RISE_PX;
+    const y = cellCenterY(finite(item.lane, 2)) + 14 - eased * FLOAT_RISE_PX;
     const text = formatBattleDelta(finite(item.amount));
     ctx.globalAlpha = alpha;
     ctx.strokeStyle = 'rgba(24, 20, 17, 0.86)';

@@ -1,5 +1,6 @@
 import { createRequire } from 'node:module';
 import { Card } from '../../src/core/Card.js';
+import { createAdventureStages } from '../../src/data/AdventureCampaign.js';
 
 const require = createRequire(import.meta.url);
 const cardJson = require('../../src/data/card.json');
@@ -15,7 +16,7 @@ export function getPvpCardDb() {
       cards,
       getById: (id) => cards.find((card) => card.id === Number(id)) ?? null,
       stages: Array.isArray(stageInfoJson) && stageInfoJson.length
-        ? stageInfoJson
+        ? [...stageInfoJson, ...createAdventureStages(stageInfoJson)]
         : [{ stage_id: 1, stage_name: 'PVP', hp: 3000, enemy_res: 5 }],
     };
   }

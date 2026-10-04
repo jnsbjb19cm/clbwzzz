@@ -4,7 +4,7 @@ const PATCH_FLAG = Symbol.for('clbwzzz.mainCityBottomNavFinal');
 
 function syncMainCityNav(app, route) {
   const nav = app?.root?.querySelector?.('.bottom-nav');
-  const isMain = route === 'main' || route === 'smithy';
+  const isMain = route === 'main' || route === 'smithy' || Boolean(app?.adventureDestination && !['room', 'battle'].includes(route));
 
   document.body.classList.toggle('main-city-nav-active', isMain);
   document.body.dataset.appRoute = route ?? '';

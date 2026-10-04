@@ -1,4 +1,5 @@
 import { COLS, LANES, roundBattleAmount } from '../battle/BattleConfig.js';
+import { applyResetSkill, resetSkillError, tickResetSkills } from './ResetSkillEffects.js';
 import {
   getSkillResolutionDelay,
   getSkillVisualDuration,
@@ -50,6 +51,8 @@ export class BattleSkillSystem {
   }
 
   canCast(skillId) {
+    const resetError = resetSkillError(this.engine, skillId);
+    if (resetError) return { ok: false, error: resetError };
     if (this.engine.status !== 'playing') {
       return { ok: false, error: 'battle ended' };
     }
@@ -174,6 +177,7 @@ export class BattleSkillSystem {
   }
 
   applyEffect(skillId, effect, target, card) {
+    if (applyResetSkill(this, skillId, effect)) return;
     const eng = this.engine;
     const t = eng.time;
 
@@ -535,6 +539,7 @@ export class BattleSkillSystem {
   }
 
   tick(dt) {
+    tickResetSkills(this);
     if (this.pendingCasts.length) {
       const due = [];
       const waiting = [];

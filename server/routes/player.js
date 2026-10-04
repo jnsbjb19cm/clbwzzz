@@ -166,6 +166,7 @@ playerRouter.put('/decks/:deckNo', async (req, res) => {
 
 playerRouter.post('/stage-result', async (req, res) => {
   const stageId = String(req.body.stageId || '').trim();
+  if (Number(stageId) >= 10000 || stageId.startsWith('boss_')) return res.status(400).json({ ok: false, error: '新冒险与 BOSS 进度仅由联机战斗结算' });
   const won = Boolean(req.body.won);
   const drops = Array.isArray(req.body.drops) ? req.body.drops : [];
   if (!won) return res.json({ ok: true, recorded: false });

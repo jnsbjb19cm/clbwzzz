@@ -1,5 +1,6 @@
 // 先建立无头浏览器环境，再动态载入客户端共用战斗引擎。
-import './PvpBattle.js';
+import { PvpBattle } from './PvpBattle.js';
+import { resetSkillError } from '../../src/systems/ResetSkillEffects.js';
 import { sanitizeCustomCardName } from '../../src/core/constants.js';
 
 const { BattleEngine } = await import('../../src/battle/BattleEngine.js');
@@ -423,6 +424,8 @@ export class CoopBossBattle {
   }
 
   deploy(userId, payload = {}) {
+    const error = resetSkillError(this.engine, 0, 'player');
+    if (error) throw new Error(error);
     if (this.status !== 'playing') throw new Error('战斗已结束');
     if (!this.teamOf(userId)) throw new Error('你不是本房间玩家');
     const lane = Math.floor(Number(payload.lane));
@@ -463,6 +466,8 @@ export class CoopBossBattle {
   }
 
   castSkill(userId, payload = {}) {
+    const error = resetSkillError(this.engine, payload.skillId, 'player');
+    if (error) throw new Error(error);
     if (this.status !== 'playing') throw new Error('战斗已结束');
     if (!this.teamOf(userId)) throw new Error('你不是本房间玩家');
     const skillId = Number(payload.skillId);
@@ -542,8 +547,9 @@ export class CoopBossBattle {
 
   tickResources(dt) {
     this.resourceTimer += dt;
-    while (this.resourceTimer >= RESOURCE_REGEN_INTERVAL) {
-      this.resourceTimer -= RESOURCE_REGEN_INTERVAL;
+    const interval = this.engine.stage?.adventure ? 1 : RESOURCE_REGEN_INTERVAL;
+    while (this.resourceTimer >= interval) {
+      this.resourceTimer -= interval;
       for (const resource of this.resources.values()) {
         resource.sun = Math.min(MAX_RESOURCE, resource.sun + RESOURCE_REGEN);
         resource.food = Math.min(MAX_RESOURCE, resource.food + RESOURCE_REGEN);
@@ -593,6 +599,17 @@ export class CoopBossBattle {
       duration,
     });
     this.bossSpecialCount += 1;
+    if (this.bossInfo.region === 'temple') {
+      const focus = [...players].sort((a,b)=>b.hp-a.hp)[0];
+      const skillTarget = effect.needsTarget ? { lane: focus?.lane ?? 2, col: Math.round(focus?.col ?? 2) } : null;
+      PvpBattle.prototype.withTeamPerspective.call(this, 'red', () => {
+        const previousSide = this.engine.__pvpActiveSkillSide;
+        this.engine.__pvpActiveSkillSide = 'enemy';
+        try { this.engine.skills.applyEffect(skillId, effect, skillTarget, this.db.getById(skillId)); }
+        finally { this.engine.__pvpActiveSkillSide = previousSide; }
+      });
+      return;
+    }
 
     if (skillId === 503) {
       for (const unit of players) {

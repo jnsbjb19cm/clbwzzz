@@ -73,19 +73,19 @@ export function showBattleChatBubble(view, message = {}) {
   if (!text) return false;
   const nickname = String(message.nickname ?? '').trim() || '玩家';
   const wrap = battleWrapOf(view);
-  const stand = findPlayerStand(view, message);
+  const stand = message.spectator ? null : findPlayerStand(view, message);
   // 没有对应的玩家图标就不弹，避免出现无归属的气泡。
-  if (!wrap || !stand) return false;
+  if (!wrap || (!stand && !message.spectator)) return false;
 
   const layer = bubbleLayerOf(wrap);
   const wrapRect = wrap.getBoundingClientRect();
-  const rect = stand.getBoundingClientRect();
+  const rect = stand?.getBoundingClientRect();
 
   const bubble = document.createElement('div');
-  bubble.className = 'pvp-chat-bubble';
-  bubble.innerHTML = `<b>${escapeHtml(nickname)}：</b><span>${escapeHtml(text)}</span>`;
-  bubble.style.left = `${rect.left - wrapRect.left + rect.width / 2}px`;
-  bubble.style.top = `${rect.top - wrapRect.top - 6}px`;
+  bubble.className = `pvp-chat-bubble${message.spectator ? ' spectator' : ''}`;
+  bubble.innerHTML = `<b>${message.spectator?'[观战] ':''}${escapeHtml(nickname)}：</b><span>${escapeHtml(text)}</span>`;
+  bubble.style.left = `${rect ? rect.left - wrapRect.left + rect.width / 2 : wrapRect.width / 2}px`;
+  bubble.style.top = `${rect ? rect.top - wrapRect.top - 6 : Math.max(100, wrapRect.height * .25)}px`;
   layer.append(bubble);
   while (layer.children.length > BUBBLE_MAX_VISIBLE) layer.firstElementChild?.remove();
   requestAnimationFrame(() => bubble.classList.add('visible'));
@@ -267,7 +267,7 @@ function selectChannel(shell, state, channel) {
   if (channel === 'private' && !state.privateTarget) void choosePrivateTarget(shell, state);
 }
 
-function mountBattleChatOverlay(view) {
+export function mountBattleChatOverlay(view) {
   if (view.__battleChatMounted && view.__battleChatShell?.isConnected) return;
   const socket = getChatSocket(view);
   if (!socket) return;
@@ -343,6 +343,7 @@ function mountBattleChatOverlay(view) {
   });
 
   const onCurrentChat = (message = {}, { bubble = true } = {}) => {
+    if (message.id && state.seenIds.has(String(message.id))) return;
     appendMessage(shell, state, 'current', {
       id: message.id,
       nickname: message.nickname || '玩家',
@@ -416,11 +417,8 @@ function mountBattleChatOverlay(view) {
   }
   renderLog(shell, state);
 
-  try {
-    setMinimized(shell, localStorage.getItem(MINIMIZED_KEY) === '1');
-  } catch {
-    setMinimized(shell, false);
-  }
+  // Start each battle with messages visible; manual minimize still works within this battle.
+  setMinimized(shell, false);
 }
 
 function unmountBattleChatOverlay(view) {
