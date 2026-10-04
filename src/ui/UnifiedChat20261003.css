@@ -1,35 +1,44 @@
 /* Shared chat surface: bounded message viewport, pinned composer, consistent channel colors. */
+.classic-chat{color:#44331e!important;text-shadow:none!important}
+.classic-chat .classic-chat-channel-menu button,.classic-chat .classic-chat-send,.classic-chat .classic-chat-minimize{background:linear-gradient(#b99950,#715125)!important;border:1px solid #a5843d!important;color:#fff4cf!important;box-shadow:inset 0 1px #ffe9a2!important}
+.classic-chat .classic-chat-channel-menu button.active{background:linear-gradient(#78933f,#486126)!important;color:#fff8d8!important}
+.classic-chat-compose input{color:#44331e!important}.classic-chat-compose input::placeholder{color:#87704a!important}
+.classic-game-hall .lobby-chat-item,.classic-chat-log p{text-shadow:none!important}
+.battle-chat-panel{background:linear-gradient(#f5e8c5f5,#d9c38ef5)!important;border:1px solid #9b7835!important;color:#44331e!important;backdrop-filter:none}
+.battle-chat-header{background:#d4b978!important;border-color:#9b7835!important}
+.battle-chat-title,.battle-chat-min{color:#533b1a!important;text-shadow:none!important}
+.pvp-chat-bubble.spectator{color:#eadfff!important}
 .classic-chat:not(.is-minimized),.classic-game-hall .lobby-chat{
   box-sizing:border-box!important;overflow:hidden!important;min-height:0!important;
-  border:1px solid #829b68!important;border-radius:10px!important;
-  background:linear-gradient(180deg,#173c36f5,#0d2726f5)!important;
+  border:1px solid #9b7835!important;border-radius:8px!important;
+  background:linear-gradient(180deg,#f5e8c5f5,#d9c38ef5)!important;
   box-shadow:0 4px 18px #0005,inset 0 1px #ffffff12!important;
-  color:#e6eee7!important;font:13px/1.5 'Microsoft YaHei',sans-serif!important;
+  color:#44331e!important;font:13px/1.5 'Microsoft YaHei',sans-serif!important;
 }
 .classic-chat:not(.is-minimized){display:grid!important;grid-template-rows:minmax(0,1fr) 36px!important;padding:34px 0 0!important;width:min(40vw,540px);height:clamp(132px,23vh,190px)!important}
 .classic-chat-tools,.classic-chat-compose .classic-chat-mini{display:none!important}
 .classic-chat .classic-chat-channel-menu{position:absolute;top:5px;left:8px;right:48px;height:25px;display:flex;gap:5px}
 .classic-chat .classic-chat-channel-menu button{flex:1;border-radius:5px}
 .classic-chat .classic-chat-log,.classic-game-hall .lobby-chat-list,.battle-chat-log{min-height:0!important;min-width:0!important;overflow:auto!important;overscroll-behavior:contain;overflow-wrap:anywhere;scrollbar-width:thin;padding:7px 10px!important;background:transparent!important;line-height:1.5!important}
-.classic-chat .classic-chat-compose{grid-template-columns:minmax(0,1fr) 52px!important;min-height:0!important;padding:4px 6px!important;gap:6px!important;background:#0b211ef5!important;border-top:1px solid #ffffff20!important;overflow:hidden}
-.classic-chat-compose input{box-sizing:border-box!important;width:100%;height:28px!important;border-radius:5px!important;background:#091e1c!important;border-color:#607e6b!important;font-size:13px!important}
+.classic-chat .classic-chat-compose{grid-template-columns:minmax(0,1fr) 52px!important;min-height:0!important;padding:4px 6px!important;gap:6px!important;background:#d2ba86f5!important;border-top:1px solid #88652e40!important;overflow:hidden}
+.classic-chat-compose input{box-sizing:border-box!important;width:100%;height:28px!important;border-radius:5px!important;background:#fff6dc!important;border-color:#a58b53!important;font-size:13px!important}
 .classic-chat-send{border-radius:5px!important}
 .classic-game-hall .lobby-chat{grid-template-rows:34px minmax(0,1fr) auto 40px!important}
-.classic-game-hall .lobby-chat-head{grid-row:1;background:#ffffff08!important;border-color:#ffffff20!important}
+.classic-game-hall .lobby-chat-head{grid-row:1;background:#e7d3a1!important;border-color:#88652e40!important}
 .classic-game-hall .lobby-chat-list{grid-row:2}
-.classic-game-hall .lobby-chat-private-target{grid-row:3;min-height:0;background:#29433c!important;color:#edd8ff!important}
-.classic-game-hall .lobby-chat-input-row{grid-row:4;background:#0b211ef5!important;border-color:#ffffff20!important}
-.classic-game-hall .lobby-chat-head>b{color:#e6eee7!important;text-shadow:none!important}
-.classic-game-hall .lobby-chat-channel,.classic-game-hall .lobby-chat-clear{color:#dce8dd!important;background:#254b3c!important;border-color:#668368!important}
-.classic-game-hall .lobby-chat-channel.active{color:#fff4bf!important;background:#43683f!important;border-color:#c4b96d!important}
-.classic-game-hall #lobby-chat-input{color:#e6eee7!important;background:#091e1c!important;border-color:#607e6b!important}
-.classic-game-hall #lobby-chat-send{background:#426f4b!important;border-color:#829b68!important}
-.classic-chat-log p,.classic-game-hall .lobby-chat-item,.battle-chat-message{margin:0 0 4px!important;color:#e6eee7!important;overflow-wrap:anywhere}
-.classic-chat-log .is-system,.classic-game-hall .lobby-chat-item.is-system,.battle-chat-message.system{color:#f3d984!important}
-.classic-chat-log .is-world,.classic-game-hall .lobby-chat-item.is-world{color:#9ed9fb!important}
-.classic-chat-log .is-guild,.classic-game-hall .lobby-chat-item.is-guild{color:#9be0a5!important}
-.classic-chat-log .is-private,.classic-game-hall .lobby-chat-item.is-private{color:#e1b7fa!important}
-.battle-chat-message.spectator,.lobby-chat-item.is-spectator,.pvp-chat-bubble.spectator{color:#d6b0ff!important}
+.classic-game-hall .lobby-chat-private-target{grid-row:3;min-height:0;background:#ead8b1!important;color:#714789!important}
+.classic-game-hall .lobby-chat-input-row{grid-row:4;background:#d2ba86f5!important;border-color:#88652e40!important}
+.classic-game-hall .lobby-chat-head>b{color:#44331e!important;text-shadow:none!important}
+.classic-game-hall .lobby-chat-channel,.classic-game-hall .lobby-chat-clear{color:#fff1c5!important;background:#715125!important;border-color:#9b7835!important}
+.classic-game-hall .lobby-chat-channel.active{color:#fff4bf!important;background:#526d2d!important;border-color:#c4b96d!important}
+.classic-game-hall #lobby-chat-input{color:#44331e!important;background:#fff6dc!important;border-color:#a58b53!important}
+.classic-game-hall #lobby-chat-send{background:#526d2d!important;border-color:#9b7835!important}
+.classic-chat-log p,.classic-game-hall .lobby-chat-item,.battle-chat-message{margin:0 0 4px!important;color:#44331e!important;overflow-wrap:anywhere}
+.classic-chat-log .is-system,.classic-game-hall .lobby-chat-item.is-system,.battle-chat-message.system{color:#835518!important}
+.classic-chat-log .is-world,.classic-game-hall .lobby-chat-item.is-world{color:#275d87!important}
+.classic-chat-log .is-guild,.classic-game-hall .lobby-chat-item.is-guild{color:#356338!important}
+.classic-chat-log .is-private,.classic-game-hall .lobby-chat-item.is-private{color:#754588!important}
+.battle-chat-message.spectator,.lobby-chat-item.is-spectator,.pvp-chat-bubble.spectator{color:#773889!important}
 .pvp-chat-bubble.spectator{border-color:#b58bdd!important;background:#312244e8!important}
 @media(max-width:600px){.classic-chat:not(.is-minimized){width:min(94vw,380px);bottom:68px!important;height:132px!important}}
 /* Short adventure viewports retain both chat and map hit targets. */
@@ -38,26 +47,31 @@
  .adventure-scene>.classic-chat .classic-chat-channel-menu{display:none}
 }
 /* Preparation room: explicit rows keep a hidden private-recipient selector from shifting the composer. */
-.game-room.room-exact .exact-room-chat.exact-room-chat{display:grid!important;grid-template-rows:28px auto minmax(0,1fr) 36px!important;min-height:0!important;overflow:hidden!important;padding:5px!important;border:1px solid #829b68!important;border-radius:10px!important;background:linear-gradient(180deg,#173c36f5,#0d2726f5)!important;color:#e6eee7!important;box-shadow:0 4px 18px #0005!important}
-.game-room.room-exact .exact-room-chat.exact-room-chat .exact-room-chat-head{grid-row:1;background:transparent!important;color:#e6eee7!important}
-.game-room.room-exact .exact-room-chat.exact-room-chat .exact-room-chat-private{grid-row:2;background:#29433c!important;color:#edd8ff!important}
+.game-room.room-exact .exact-room-chat.exact-room-chat{display:grid!important;grid-template-rows:28px auto minmax(0,1fr) 36px!important;min-height:0!important;overflow:hidden!important;padding:5px!important;border:1px solid #9b7835!important;border-radius:8px!important;background:linear-gradient(180deg,#f5e8c5f5,#d9c38ef5)!important;color:#44331e!important;box-shadow:0 4px 18px #0005!important}
+.game-room.room-exact .exact-room-chat.exact-room-chat .exact-room-chat-head{grid-row:1;background:transparent!important;color:#44331e!important}
+.game-room.room-exact .exact-room-chat.exact-room-chat .exact-room-chat-private{grid-row:2;background:#ead8b1!important;color:#714789!important}
 .game-room.room-exact .exact-room-chat.exact-room-chat .exact-room-chat-log{grid-row:3;min-height:0!important;overflow:auto!important;padding:7px 8px!important;background:transparent!important;overscroll-behavior:contain;scrollbar-width:thin}
-.game-room.room-exact .exact-room-chat.exact-room-chat .exact-room-chat-form{grid-row:4;background:#0b211e!important;border-color:#ffffff20!important;min-height:0!important;height:36px!important;max-height:36px!important}
-.game-room.room-exact .exact-room-chat.exact-room-chat .exact-room-chat-form input,.game-room.room-exact .exact-room-chat.exact-room-chat select{background:#091e1c!important;color:#e6eee7!important;border-color:#607e6b!important}
-.game-room.room-exact .exact-room-chat.exact-room-chat button{background:#254b3c!important;color:#e6eee7!important;border-color:#668368!important;border-radius:5px!important}
-.game-room.room-exact .exact-room-chat.exact-room-chat button.active{background:#43683f!important;color:#fff4bf!important;border-color:#c4b96d!important}
-.game-room.room-exact .exact-room-chat.exact-room-chat .exact-room-chat-current{color:#e6eee7!important}
-.game-room.room-exact .exact-room-chat.exact-room-chat .exact-room-chat-message{--chat-message-color:#e6eee7;flex-shrink:0;overflow-wrap:anywhere;line-height:1.5!important;margin-bottom:4px!important}
-.game-room.room-exact .exact-room-chat.exact-room-chat .exact-room-chat-message.channel-world{--chat-message-color:#9ed9fb}
-.game-room.room-exact .exact-room-chat.exact-room-chat .exact-room-chat-message.channel-guild,.game-room.room-exact .exact-room-chat.exact-room-chat .exact-room-chat-message.channel-team{--chat-message-color:#9be0a5}
-.game-room.room-exact .exact-room-chat.exact-room-chat .exact-room-chat-message.channel-private{--chat-message-color:#e1b7fa}
-.game-room.room-exact .exact-room-chat.exact-room-chat .exact-room-chat-message.system{--chat-message-color:#f3d984}
-.game-room.room-exact .exact-room-chat.exact-room-chat .exact-room-chat-message.spectator{--chat-message-color:#d6b0ff}
+.game-room.room-exact .exact-room-chat.exact-room-chat .exact-room-chat-form{grid-row:4;background:#d2ba86!important;border-color:#88652e40!important;min-height:0!important;height:36px!important;max-height:36px!important}
+.game-room.room-exact .exact-room-chat.exact-room-chat .exact-room-chat-form input,.game-room.room-exact .exact-room-chat.exact-room-chat select{background:#fff6dc!important;color:#44331e!important;border-color:#a58b53!important}
+.game-room.room-exact .exact-room-chat.exact-room-chat button{background:#715125!important;color:#fff4cf!important;border-color:#9b7835!important;border-radius:5px!important}
+.game-room.room-exact .exact-room-chat.exact-room-chat button.active{background:#526d2d!important;color:#fff4bf!important;border-color:#c4b96d!important}
+.game-room.room-exact .exact-room-chat.exact-room-chat .exact-room-chat-current{color:#44331e!important}
+.game-room.room-exact .exact-room-chat.exact-room-chat .exact-room-chat-message{--chat-message-color:#44331e;flex-shrink:0;overflow-wrap:anywhere;line-height:1.5!important;margin-bottom:4px!important}
+.game-room.room-exact .exact-room-chat.exact-room-chat .exact-room-chat-message.channel-world{--chat-message-color:#275d87}
+.game-room.room-exact .exact-room-chat.exact-room-chat .exact-room-chat-message.channel-guild,.game-room.room-exact .exact-room-chat.exact-room-chat .exact-room-chat-message.channel-team{--chat-message-color:#356338}
+.game-room.room-exact .exact-room-chat.exact-room-chat .exact-room-chat-message.channel-private{--chat-message-color:#754588}
+.game-room.room-exact .exact-room-chat.exact-room-chat .exact-room-chat-message.system{--chat-message-color:#835518}
+.game-room.room-exact .exact-room-chat.exact-room-chat .exact-room-chat-message.spectator{--chat-message-color:#773889}
 .game-room.room-exact .exact-room-chat.exact-room-chat .exact-room-chat-message.exact-room-chat-message,.game-room.room-exact .exact-room-chat.exact-room-chat .exact-room-chat-message.exact-room-chat-message b,.game-room.room-exact .exact-room-chat.exact-room-chat .exact-room-chat-message.exact-room-chat-message span{color:var(--chat-message-color)!important}
-.game-room.room-exact .exact-room-chat.exact-room-chat .exact-room-chat-title{color:#e6eee7!important;font-size:14px!important}
-.game-room.room-exact .exact-room-chat.exact-room-chat .exact-room-chat-tabs button,.game-room.room-exact .exact-room-chat.exact-room-chat .exact-room-chat-clear,.game-room.room-exact .exact-room-chat.exact-room-chat .exact-room-chat-form button{background:#254b3c!important;color:#e6eee7!important;border-color:#668368!important;font-size:13px!important}
-.game-room.room-exact .exact-room-chat.exact-room-chat .exact-room-chat-tabs button.active[data-merge-channel]{background:#43683f!important;color:#fff4bf!important;border-color:#c4b96d!important}
+.game-room.room-exact .exact-room-chat.exact-room-chat .exact-room-chat-title{color:#44331e!important;font-size:14px!important}
+.game-room.room-exact .exact-room-chat.exact-room-chat .exact-room-chat-tabs button,.game-room.room-exact .exact-room-chat.exact-room-chat .exact-room-chat-clear,.game-room.room-exact .exact-room-chat.exact-room-chat .exact-room-chat-form button{background:linear-gradient(#a58443,#715125)!important;color:#fff4cf!important;border-color:#9b7835!important;font-size:13px!important}
+.game-room.room-exact .exact-room-chat.exact-room-chat .exact-room-chat-tabs button.active[data-merge-channel]{background:#526d2d!important;color:#fff4bf!important;border-color:#c4b96d!important}
 .game-room.room-exact .exact-room-chat.exact-room-chat .exact-room-chat-message{font-size:15px!important;font-weight:400!important}
 .game-room.room-exact .exact-room-chat.exact-room-chat .exact-room-chat-current{background:transparent!important;border:0!important}
-.game-room.room-exact .exact-room-chat.exact-room-chat .exact-room-chat-form input::placeholder{color:#acc2ad!important}
-.game-room.room-exact .exact-room-chat.exact-room-chat .exact-room-chat-private select{background:#091e1c!important;color:#e6eee7!important;border-color:#607e6b!important}
+.game-room.room-exact .exact-room-chat.exact-room-chat .exact-room-chat-form input::placeholder{color:#87704a!important}
+.game-room.room-exact .exact-room-chat.exact-room-chat .exact-room-chat-private select{background:#fff6dc!important;color:#44331e!important;border-color:#a58b53!important}
+.battle-chat-message b{color:inherit!important}
+.battle-chat-form{border-color:#9b7835!important;background:#d2ba86!important}
+.battle-chat-form input{background:#fff6dc!important;color:#44331e!important;border-color:#a58b53!important}
+.battle-chat-form input::placeholder{color:#87704a!important}
+.pvp-chat-bubble.spectator{color:#eadfff!important}

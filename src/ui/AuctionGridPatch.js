@@ -2,6 +2,7 @@ import { AuctionView } from './AuctionView.js';
 import { ItemDatabase } from '../core/ItemDatabase.js';
 import { itemIconMarkup as iconMarkup } from './ItemIcon.js';
 import './EconomyGridUi.css';
+import { AUCTION_RULES } from './EconomyHelp.js';
 
 const PATCH_FLAG = Symbol.for('clbwzzz.auctionGrid20260905');
 const BAG_SLOT_COUNT = 60;
@@ -41,6 +42,10 @@ export function installAuctionGridPatch() {
     root.innerHTML = `
       <section class="economy-grid-shell auction-grid-shell backpack-economy-ui">
         <h2 class="economy-grid-title">拍卖行</h2>
+        <details class="economy-help-panel" style="margin:0 12px 12px;padding:10px 14px;border:2px solid #93702f;border-radius:9px;background:#f2e3bb;color:#4b361b;line-height:1.7;max-height:35vh;overflow:auto">
+          <summary style="cursor:pointer;font-weight:bold">交易规则与操作说明 · 点击展开</summary>
+          <ol>${AUCTION_RULES.map(([title,text])=>`<li><strong>${esc(title)}：</strong>${esc(text)}</li>`).join('')}</ol>
+        </details>
         <div class="economy-grid-workbench">
           <div class="economy-grid-panel">
             <h3>我的背包 <span class="muted" id="auction-bag-count">0/${BAG_SLOT_COUNT} · 仅显示可交易的非绑定物品</span></h3>

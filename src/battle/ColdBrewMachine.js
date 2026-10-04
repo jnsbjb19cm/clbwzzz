@@ -1,6 +1,6 @@
 import { unitAnimPlayer } from './UnitAnimPlayer.js';
 export const COLD_BREW_CARD_ID = 126;
-export const COLD_BREW_ATTACK_INTERVAL = 3.9;
+export const COLD_BREW_ATTACK_INTERVAL = 10;
 export function attackColdBrew(engine, unit, dt) {
   unit.atkTimer -= dt * (((unit.slowedUntil || 0) > engine.time || (unit.resetTorrentUntil || 0) > engine.time) ? .5 : 1);
   if(unit.atkTimer>0)return false;
