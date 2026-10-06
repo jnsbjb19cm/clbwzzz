@@ -805,18 +805,34 @@ export class BattleView {
         durationMs: Math.max(0, Math.round((this.engine.time || 0) * 1000)),
         drops: this.__pvpAuthorityActive ? [] : (this.engine.lootDrops ?? []).map((drop) => ({ ...drop })),
       });
-      // 任务事件上报：战斗完成 / 通关 / 击杀数 / 时长 / 零伤亡 / 用卡种类
-      if (win) this.onQuestEvent?.('adventure_complete', { count: 1 });
-      this.onQuestEvent?.('battle_complete', { count: 1 });
-      const kills = this.engine.killsThisBattle ?? 0;
-      if (kills > 0) this.onQuestEvent?.('kill_enemy', { count: kills });
-      const dur = Math.round(this.engine.time || 0);
-      this.onQuestEvent?.('battle_duration', { duration: dur });
-      if (kills > 0) this.onQuestEvent?.('battle_kill', { count: kills });
-      const lostAny = (this.engine.units ?? []).some(
-        (u) => u.team === 'player' && u._diedThisBattle,
-      );
-      if (!lostAny) this.onQuestEvent?.('battle_nodeath', { count: 1 });
+      // 任务事件：训练营不计任务；野外冒险只认带 adventure 元数据的正式关卡。
+      if (!this.trainingMode) {
+        const bossId = this.pvp?.bossId ?? this.boss?.id ?? null;
+        const adventure = this.engine.stage?.adventure ?? null;
+        const questMeta = adventure ? {
+          count: 1,
+          stageId: Number(this.engine.stage?.stage_id ?? this.engine.stage?.id ?? 0) || null,
+          adventureIndex: Number(adventure.index ?? 0) || null,
+          route: Number(adventure.route ?? 0),
+          act: Number(adventure.act ?? 0) || null,
+          node: Number(adventure.node ?? 0) || null,
+          difficulty: Number(adventure.difficulty ?? 0),
+          challenge: Boolean(adventure.challenge),
+          final: Boolean(adventure.final),
+        } : null;
+        if (win) this.onQuestEvent?.('battle_win', { count: 1 });
+        if (win && adventure && !bossId && !this.pvp) this.onQuestEvent?.('adventure_complete', questMeta);
+        this.onQuestEvent?.('battle_complete', { count: 1 });
+        const kills = this.engine.killsThisBattle ?? 0;
+        if (kills > 0) this.onQuestEvent?.('kill_enemy', { count: kills });
+        const dur = Math.round(this.engine.time || 0);
+        this.onQuestEvent?.('battle_duration', { duration: dur });
+        if (kills > 0) this.onQuestEvent?.('battle_kill', { count: kills });
+        const lostAny = (this.engine.units ?? []).some(
+          (u) => u.team === 'player' && u._diedThisBattle,
+        );
+        if (!lostAny) this.onQuestEvent?.('battle_nodeath', { count: 1 });
+      }
     }
     root.querySelector('#result-desc').textContent = win
       ? `成功通关 ${this.engine.stage.stage_name}`
