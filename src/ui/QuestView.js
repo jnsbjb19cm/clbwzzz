@@ -83,20 +83,12 @@ function progressDelta(quest,event,data){
     return dataCount(data);
   }
 
-  // 指定加工目标可由铁匠铺事件或加工结果进入背包时完成。
+  // 材料加工只认铁匠铺明确上报的成功事件，避免“加工产物入库”与加工本身重复计数。
   if(quest.event==='material_combine'){
-    if(event==='material_combine'){
-      if(quest.materialKind&&data?.materialKind&&quest.materialKind!==data.materialKind)return 0;
-      if(quest.materialLevel&&data?.materialLevel&&Number(data.materialLevel)!==Number(quest.materialLevel))return 0;
-      return dataCount(data)||1;
-    }
-    if(event==='item_gain'){
-      if(quest.materialKind&&quest.materialLevel){
-        return Number(data?.itemId)===materialItemId(quest.materialKind,quest.materialLevel)?dataCount(data):0;
-      }
-      return isProcessedMaterial(data?.itemId)?dataCount(data):0;
-    }
-    return 0;
+    if(event!=='material_combine')return 0;
+    if(quest.materialKind&&data?.materialKind&&quest.materialKind!==data.materialKind)return 0;
+    if(quest.materialLevel&&data?.materialLevel&&Number(data.materialLevel)!==Number(quest.materialLevel))return 0;
+    return dataCount(data)||1;
   }
 
   // BOSS挑战与冒险模式严格分开，按BOSS id精确匹配。
