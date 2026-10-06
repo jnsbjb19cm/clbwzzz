@@ -1,0 +1,183 @@
+.reset-destinations,.reset-campaign,.reset-boss-list{position:absolute;inset:0;color:#fff;font-family:inherit;box-sizing:border-box}
+.reset-destinations{background:#193329 url('/adventure-reset/destinations.jpg') center/contain no-repeat;display:flex;justify-content:flex-end;align-items:center}
+.reset-destination-panel{margin:2%;padding:20px;width:43%;max-width:440px;background:rgba(34,25,16,.95);border:2px solid #b69143;border-radius:14px;box-shadow:0 8px 32px #0008}
+.reset-destination-panel h2{color:#ffe0a0;margin:0}.reset-destination-panel p{font-size:12px;color:#ddc5a0}.reset-destination-panel button{display:block;width:100%;padding:16px;margin:12px 0;text-align:left;background:#714222;border:1px solid #d7b773;border-radius:6px;color:#fff;cursor:pointer}.reset-destination-panel strong,.reset-destination-panel small{display:block}.reset-destination-panel small{margin-top:6px}.reset-destination-panel button:disabled{filter:grayscale(1);opacity:.65;cursor:not-allowed}
+.reset-campaign{background:#123650;overflow:auto}.reset-campaign header{position:relative;z-index:2;display:flex;gap:12px;align-items:center;padding:8px;background:#132c32;flex-wrap:wrap}.reset-campaign button,.reset-campaign select,.reset-boss-list button{font:inherit;color:#fff;background:#31523d;border:1px solid #c6ac62;border-radius:5px;padding:6px 10px;cursor:pointer}.reset-campaign header small{color:#cfdfdf;font-size:12px}
+.reset-campaign{display:flex;flex-direction:column;overflow:hidden}
+.reset-campaign header{flex:none}
+.reset-map-frame{flex:1;min-height:0;width:100%;display:grid;place-items:center;container-type:size;overflow:hidden}
+.reset-map-canvas{position:relative;width:min(100cqw,166.735cqh);aspect-ratio:1619/971;background:url('/adventure-reset/map.png') center/100% 100% no-repeat}
+.reset-node{position:absolute;transform:translate(-50%,-50%);width:4.4%;min-width:26px;aspect-ratio:1;padding:0!important;border:0!important;background:transparent!important;z-index:1}.reset-node img{width:100%;height:100%;object-fit:contain;display:block}.reset-node span{position:absolute;left:50%;top:75%;transform:translateX(-50%);white-space:nowrap;background:#152632df;color:white;text-shadow:0 1px #000;padding:1px 3px;border-radius:3px;font-size:clamp(9px,1.2vw,13px)}.reset-boss-node{width:6%}.reset-node:disabled{cursor:not-allowed;opacity:.82}.reset-cleared img{filter:drop-shadow(0 0 5px #69ff70)}.reset-node:not(:disabled):hover{filter:brightness(1.3)}.reset-node:focus-visible{outline:3px solid #fff}
+.reset-route-label{position:absolute;background:#1a3531dd;padding:3px 8px;border-radius:12px;font-size:12px}.reset-plant-label{left:19%;top:57%}.reset-monster-label{left:77%;top:4%}
+/* 章末 -4 / 最终关：参考旧版UI做成完全不透明的金属徽章。
+   状态只通过明暗和颜色区分，不再通过透明度让地图背景透进头像。 */
+.reset-node.reset-challenge-node{width:7%;min-width:0;z-index:2;overflow:visible;border-radius:50%}
+.reset-node .reset-challenge-emblem{
+  position:absolute;inset:0;display:block;transform:none;padding:0;background:none!important;
+  border-radius:50%;pointer-events:none;filter:none!important;opacity:1!important;isolation:isolate
+}
+/* 实心圆盘：这是修复“幽灵/透明头像”的关键层。 */
+.reset-node .reset-challenge-disc{
+  position:absolute;left:4%;top:4%;width:92%;height:92%;box-sizing:border-box;
+  border-radius:50%;transform:none;padding:0;
+  background:radial-gradient(circle at 42% 32%,#9b9b97 0 9%,#73736f 27%,#4d4e4d 58%,#262b2c 100%)!important;
+  border:clamp(2px,.32vw,5px) solid #5d625f;
+  box-shadow:inset 0 0 0 clamp(2px,.18vw,3px) #bfc0b8,inset 0 -10px 18px #111,0 3px 7px #0009;
+  z-index:0;opacity:1!important
+}
+.reset-node.reset-challenge-node img{position:absolute;opacity:1!important}
+.reset-node.reset-challenge-node .reset-challenge-frame{
+  inset:3% -2% -2%;width:104%;height:99%;z-index:1;object-fit:contain;
+  filter:grayscale(1) contrast(1.18) brightness(.78) drop-shadow(0 2px 2px #000)!important
+}
+.reset-node.reset-challenge-node .reset-challenge-portrait{
+  left:-7%;top:-17%;width:114%;height:114%;z-index:3;object-fit:contain;
+  filter:grayscale(1) contrast(1.12) brightness(.82) drop-shadow(0 2px 1px #111)!important;
+  opacity:1!important
+}
+/* 已解锁但未通关：像参考图2一样是清晰、实心的亮灰徽章。 */
+.reset-node.reset-challenge-node:not(:disabled):not(.reset-cleared) .reset-challenge-disc{
+  background:radial-gradient(circle at 42% 30%,#c5c5bd 0 8%,#92938e 28%,#5d605e 61%,#303536 100%)!important;
+  border-color:#787d79;
+  box-shadow:inset 0 0 0 clamp(2px,.18vw,3px) #d3d4ca,inset 0 -10px 18px #171919,0 3px 8px #000a
+}
+.reset-node.reset-challenge-node:not(:disabled):not(.reset-cleared) .reset-challenge-portrait{
+  filter:grayscale(1) contrast(1.18) brightness(.98) drop-shadow(0 2px 2px #151515)!important
+}
+.reset-node.reset-challenge-node:not(:disabled):not(.reset-cleared) .reset-challenge-frame{
+  filter:grayscale(1) contrast(1.22) brightness(.98) drop-shadow(0 2px 2px #000)!important
+}
+/* 真正未解锁：仍然完全不透明，只整体变暗。 */
+.reset-node.reset-challenge-node:disabled{opacity:1!important;cursor:not-allowed}
+.reset-node.reset-challenge-node:disabled .reset-challenge-disc{
+  background:radial-gradient(circle at 42% 30%,#686a68 0 9%,#4d504f 35%,#303334 68%,#1d2021 100%)!important;
+  border-color:#444947;
+  box-shadow:inset 0 0 0 2px #777b77,inset 0 -10px 18px #111,0 3px 7px #000a
+}
+.reset-node.reset-challenge-node:disabled .reset-challenge-portrait{
+  filter:grayscale(1) contrast(1.12) brightness(.48) drop-shadow(0 2px 2px #050505)!important
+}
+.reset-node.reset-challenge-node:disabled .reset-challenge-frame{
+  filter:grayscale(1) contrast(1.12) brightness(.55) drop-shadow(0 2px 2px #000)!important
+}
+/* 已通关：保留实心圆盘和金属框，人物恢复彩色，并显示“已通关”。 */
+.reset-challenge-node.reset-cleared .reset-challenge-disc{
+  background:radial-gradient(circle at 42% 30%,#68685e 0 8%,#4f514b 34%,#292d2d 68%,#151919 100%)!important;
+  border-color:#92793f;
+  box-shadow:inset 0 0 0 clamp(2px,.18vw,3px) #c5aa63,inset 0 -10px 18px #111,0 0 9px #cba94a99,0 3px 7px #000a
+}
+.reset-challenge-node.reset-cleared .reset-challenge-portrait{
+  filter:contrast(1.08) saturate(1.08) brightness(.98) drop-shadow(0 2px 2px #111)!important
+}
+.reset-challenge-node.reset-cleared .reset-challenge-frame{
+  filter:sepia(.18) saturate(1.2) brightness(.92) drop-shadow(0 2px 2px #000)!important
+}
+.reset-challenge-node>.reset-node-label{top:94%;z-index:6}
+.reset-challenge-node>.reset-clear-badge{
+  top:-13%;z-index:7;padding:2px 7px;border:1px solid #d8e7a0;border-radius:10px;
+  background:#214d24;color:#eaffc7;font-weight:700;font-size:clamp(9px,1vw,12px);box-shadow:0 2px 6px #0008
+}
+/* 最终关沿用同一套“实体徽章”语言，但圆盘更厚、更接近参考图中央BOSS。 */
+.reset-node.reset-final-node{width:16%;min-width:0}
+.reset-final-node .reset-challenge-disc{
+  left:7%;top:7%;width:86%;height:86%;
+  background:radial-gradient(circle at 45% 34%,#777873 0 8%,#4d504e 35%,#292d2f 66%,#121719 100%)!important;
+  border-width:clamp(3px,.45vw,7px);
+  box-shadow:inset 0 0 0 clamp(2px,.25vw,5px) #a9aaa3,inset 0 -18px 28px #0d1112,0 5px 14px #000c
+}
+.reset-trio-emblem::before{
+  content:'';position:absolute;inset:3% -3% -3%;border:clamp(3px,.4vw,6px) double #777c79;border-radius:50%;
+  background:repeating-conic-gradient(#777c79 0deg 3deg,#313638 3deg 9deg);
+  mask:radial-gradient(ellipse,transparent 62%,#000 64%);z-index:2;opacity:1
+}
+.reset-node.reset-final-node .reset-challenge-frame{inset:4% -1% -1%;width:102%;height:96%;z-index:1}
+.reset-node.reset-final-node .reset-challenge-portrait{
+  width:82%;height:112%;top:0;filter:grayscale(1) contrast(1.18) brightness(.78) drop-shadow(0 3px 2px #111)!important
+}
+.reset-node.reset-final-node:not(:disabled):not(.reset-cleared) .reset-challenge-portrait{
+  filter:grayscale(1) contrast(1.2) brightness(.9) drop-shadow(0 3px 2px #111)!important
+}
+.reset-node.reset-final-node.reset-cleared .reset-challenge-portrait{
+  filter:contrast(1.08) saturate(1.05) brightness(.92) drop-shadow(0 3px 2px #111)!important
+}
+.reset-node.reset-final-node .reset-portrait-0{left:-12%;z-index:3}
+.reset-node.reset-final-node .reset-portrait-1{left:9%;top:-8%;z-index:4}
+.reset-node.reset-final-node .reset-portrait-2{left:36%;z-index:3}
+/* Reference map: silver relief badges, not black medallions. Unfinished
+   stages remain grayscale regardless of whether they are selectable. */
+.reset-node.reset-challenge-node:not(.reset-cleared) .reset-challenge-disc{
+  background:radial-gradient(circle at 40% 28%,#c7c8c2,#888e8b 58%,#535c5d)!important;
+  border-color:#727c7d;box-shadow:inset 0 0 0 2px #c5cbca,0 2px 3px #0007
+}
+.reset-node.reset-challenge-node:not(.reset-cleared) .reset-challenge-frame{
+  filter:grayscale(1) brightness(1.15) drop-shadow(0 1px 1px #303738)!important
+}
+.reset-node.reset-challenge-node:not(.reset-cleared) .reset-challenge-portrait{
+  filter:grayscale(1) brightness(1.12) contrast(.92) drop-shadow(0 2px 1px #394041)!important
+}
+.reset-trio-emblem::before{
+  border:3px double #89938f;background:none;mask:none;
+  box-shadow:0 0 0 2px #434e4e,inset 0 0 0 2px #bbc1ba
+}
+.reset-node.reset-final-node .reset-challenge-disc{box-shadow:inset 0 0 0 3px #bbc1ba,0 3px 5px #0007}
+.reset-challenge-node>.reset-node-label{font-size:clamp(9px,.8vw,12px)}
+/* Chapter badges only: the atlas includes an opaque dark centre. Mask that
+   centre, retaining the original metal rim over the silver disc underneath. */
+.reset-node.reset-challenge-node:not(.reset-final-node){width:6%}
+.reset-node.reset-challenge-node:not(.reset-final-node) .reset-challenge-frame{
+  mask-image:radial-gradient(circle,transparent 58%,#000 61%);
+  filter:grayscale(1) brightness(1.25)!important
+}
+.reset-node.reset-challenge-node:not(.reset-final-node) .reset-challenge-disc{
+  background:radial-gradient(circle at 40% 28%,#c7cbc8,#909996 65%,#687572)!important;
+  border-color:#899491;box-shadow:inset 0 0 0 2px #d5dcd7,0 2px 3px #0006
+}
+.reset-node.reset-challenge-node:not(.reset-final-node) .reset-challenge-portrait{
+  left:-5%;top:-3%;width:110%;height:100%
+}
+.reset-node.reset-challenge-node:not(.reset-final-node)>.reset-node-label{top:78%}
+.reset-stage-modal{position:absolute;inset:0;z-index:4;background:#0009;display:grid;place-items:center}.reset-stage-modal[hidden]{display:none}.reset-stage-modal>div{width:min(80%,420px);padding:24px;background:#182d28;border:2px solid #c6ac62;border-radius:12px}.reset-stage-modal button{margin:8px}.reset-boss-list{overflow:auto;padding:18px;background:linear-gradient(#13372e,#081b2b)}.reset-boss-list article{display:flex;gap:18px;padding:16px;max-width:700px;margin:12px auto;background:#ffffff0d;border:1px solid #8a9a73;border-radius:8px}.reset-boss-list img{width:90px;height:100px;object-fit:contain}.reset-boss-list h3{margin:0 0 8px}.reset-boss-list p,.reset-boss-list small{font-size:12px;line-height:1.5;color:#bcccb9}.reset-boss-list button{margin:4px}.reset-boss-list button:disabled{opacity:.35;cursor:not-allowed}
+@media(max-width:600px){.reset-destination-panel{width:58%;padding:12px}.reset-campaign header small{display:none}.reset-boss-list article{gap:8px}.reset-boss-list img{width:60px}}
+
+.reset-boss-list{display:flex;flex-direction:column;padding:8px;overflow:hidden}
+.reset-boss-list header{display:flex;align-items:center;gap:12px;flex:none;flex-wrap:wrap}
+.reset-boss-list header h2{font-size:20px;margin:4px 0}
+.reset-boss-layout{display:flex;flex:1;min-height:0;gap:8px}
+.reset-forest-frame{flex:1;min-width:0;min-height:0;display:grid;place-items:center;container-type:size}
+.reset-forest-map{position:relative;width:min(100cqw,166.735cqh);aspect-ratio:1619/971;background:url('/adventure-reset/forest-background.png') center/100% 100% no-repeat}
+.reset-boss-choices{display:flex;flex-wrap:wrap;justify-content:center;align-content:flex-start;gap:8px;overflow:auto;flex:1}
+.reset-boss-list .reset-boss-choice{display:flex;flex-direction:column;align-items:center;gap:3px;width:140px;padding:5px;margin:0;background:#19392ee6}
+.reset-boss-portrait{position:relative;display:block;height:clamp(52px,12vh,120px);aspect-ratio:1270/1239}
+.reset-boss-list .reset-boss-portrait img{width:100%;height:100%;object-fit:contain}
+.reset-boss-choice>span:last-child{font-size:13px}
+.reset-boss-list .reset-boss-choice:disabled{opacity:1;cursor:not-allowed}
+.reset-boss-locked .reset-boss-portrait{filter:grayscale(1);opacity:.55}
+.reset-boss-choice:focus-visible{outline:2px solid #fff;outline-offset:2px}
+.reset-forest-map .reset-boss-choice{position:absolute;left:var(--boss-x);top:var(--boss-y);width:var(--boss-width);padding:0;border:0;background:none;gap:0}
+.reset-forest-map .reset-boss-portrait{width:100%;height:auto;aspect-ratio:var(--boss-ratio)}
+.reset-forest-map .reset-boss-name{position:absolute;top:100%;left:50%;transform:translateX(-50%);white-space:nowrap;background:#123429d9;border-radius:4px;padding:2px 5px;opacity:0;pointer-events:none}
+.reset-boss-status{font-size:12px;font-weight:700;white-space:nowrap}
+.reset-boss-status-cleared{color:#ecffd3;background:#245b2de8;border:1px solid #8fcf75;border-radius:10px;padding:2px 7px}
+.reset-boss-status-locked{color:#aab0ae}
+.reset-forest-map .reset-boss-status{position:absolute;left:50%;top:-10px;transform:translate(-50%,-100%);z-index:4;pointer-events:none}
+.reset-forest-map .reset-boss-cleared .reset-boss-portrait{filter:drop-shadow(0 0 8px #8dff8c88)}
+.reset-forest-map .reset-boss-choice:hover .reset-boss-name,.reset-forest-map .reset-boss-choice:focus-visible .reset-boss-name{opacity:1}
+.reset-boss-choice:not(:disabled):is(:hover,:focus-visible) .reset-boss-portrait{filter:drop-shadow(0 0 12px #fff7b9) drop-shadow(0 0 24px #e7ff7b99)}
+.reset-forest-map [data-boss="boss_dot"] .reset-boss-name{top:-24px}
+.reset-boss-story{position:fixed;inset:auto;margin:0;box-sizing:border-box;width:min(320px,calc(100vw - 16px));max-height:calc(100vh - 16px);overflow:auto;padding:14px 16px;border:1px solid #c6ac62;border-radius:10px;background:#102c29f5;color:#e6eee7;box-shadow:0 6px 24px #0008;pointer-events:none;font:13px/1.7 'Microsoft YaHei',sans-serif}
+.reset-boss-story strong{color:#ffe7a2;font-size:16px}.reset-boss-story p{margin:8px 0 0;color:inherit;font-size:13px;line-height:1.7}.reset-boss-story small{display:block;margin-top:8px;color:#b8d7c4}
+.adventure-scene{position:absolute;inset:0;background:#123329;--adventure-dock-height:clamp(84px,20vh,154px)}
+.adventure-scene-map{position:absolute;inset:0}
+.adventure-scene .reset-campaign,.adventure-scene .reset-forest{padding:0}
+.adventure-scene .reset-campaign>header,.adventure-scene .reset-forest>header{position:absolute;left:8px;top:8px;z-index:3;padding:4px 8px;border-radius:8px;background:#123329dc}
+.adventure-scene>.classic-chat{height:calc(var(--adventure-dock-height) - 8px);bottom:4px}
+.reset-boss-difficulty{position:fixed;inset:auto;margin:0;padding:5px;border:1px solid #d7b773;border-radius:6px;background:#18372af5;color:#fff;box-shadow:0 3px 12px #0009;z-index:20}
+.reset-boss-difficulty:popover-open{display:flex;flex-direction:column;gap:4px;min-width:76px}
+.reset-boss-difficulty button:disabled{opacity:.45;cursor:not-allowed}
+.reset-boss-list .reset-boss-difficulty button{margin:0;padding:5px 9px;font-size:13px}
+.reset-lolita-butterfly{position:absolute;left:4%;top:10%;width:26%;aspect-ratio:9/10;background:url('/adventure-reset/butterfly.png') 0 0/1000% 300%;animation:reset-butterfly 2s steps(1,end) infinite;pointer-events:none}
+@keyframes reset-butterfly{
+0%{background-position:0% 0%}3.333%{background-position:11.111% 0%}6.667%{background-position:22.222% 0%}10%{background-position:33.333% 0%}13.333%{background-position:44.444% 0%}16.667%{background-position:55.556% 0%}20%{background-position:66.667% 0%}23.333%{background-position:77.778% 0%}26.667%{background-position:88.889% 0%}30%{background-position:100% 0%}
+33.333%{background-position:0% 50%}36.667%{background-position:11.111% 50%}40%{background-position:22.222% 50%}43.333%{background-position:33.333% 50%}46.667%{background-position:44.444% 50%}50%{background-position:55.556% 50%}53.333%{background-position:66.667% 50%}56.667%{background-position:77.778% 50%}60%{background-position:88.889% 50%}63.333%{background-position:100% 50%}
+66.667%{background-position:0% 100%}70%{background-position:11.111% 100%}73.333%{background-position:22.222% 100%}76.667%{background-position:33.333% 100%}80%{background-position:44.444% 100%}83.333%{background-position:55.556% 100%}86.667%{background-position:66.667% 100%}90%{background-position:77.778% 100%}93.333%{background-position:88.889% 100%}96.667%{background-position:100% 100%}
+}
