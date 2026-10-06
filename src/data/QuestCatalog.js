@@ -31,11 +31,14 @@ function stageReward(tier,node){
   });
 }
 
-function mainChain(rows){
+function routeMainChain(prefix,route,chapterLabel,rows){
   return rows.map((row,index)=>{
     const [name,desc,story,goal,event,extra={}]=row;
-    return q(`mq${String(index+1).padStart(2,'0')}`,name,desc,story,goal,event,{
-      ...(index>0?{requires:`mq${String(index).padStart(2,'0')}`}:{}),
+    const id=`${prefix}${String(index+1).padStart(2,'0')}`;
+    return q(id,name,desc,story,goal,event,{
+      chapter:chapterLabel,
+      route,
+      ...(index>0?{requires:`${prefix}${String(index).padStart(2,'0')}`}:{}),
       ...extra,
     });
   });
@@ -53,81 +56,63 @@ function sideArc(prefix,arc,rows){
 }
 
 // ==================== 主线 ====================
-// 两条冒险路线的同编号关卡都可推进主线；-4 是阶段关。
-// 每一关都有独立任务和奖励，BOSS放在对应章节收尾。
-const MAIN_QUESTS=mainChain([
-  ['先走一段','通关冒险大陆任一线路 1-1。','植物线、怪物线都行。先选一边进去。',1,'adventure_complete',{
-    chapter:'第一章 · 1区',adventureIndex:1,...stageReward(1,1)
-  }],
-  ['继续往前','通关冒险大陆任一线路 1-2。','前一关打完，接着走。',1,'adventure_complete',{
-    chapter:'第一章 · 1区',adventureIndex:2,...stageReward(1,2)
-  }],
-  ['第三关','通关冒险大陆任一线路 1-3。','这一段开始会比前两关挤一点。',1,'adventure_complete',{
-    chapter:'第一章 · 1区',adventureIndex:3,...stageReward(1,3)
-  }],
-  ['1区尽头','通关冒险大陆任一线路 1-4。','打完这一关，1区就算过了。下一站是2-1，不是BOSS。',1,'adventure_complete',{
-    chapter:'第一章 · 1区',adventureIndex:4,challengeOnly:true,...stageReward(1,4)
-  }],
+// 植物线：蒙斯特族推进。怪物线：埃尔夫族反击。
+// 两条线各自推进、各自领奖；最终关要求两条线都完成 4-4。
 
-  ['进2区','通关冒险大陆任一线路 2-1。','路线还在往前延，先拿下2-1。',1,'adventure_complete',{
-    chapter:'第二章 · 2区',adventureIndex:5,...stageReward(2,1)
-  }],
-  ['2-2','通关冒险大陆任一线路 2-2。','接着推进。',1,'adventure_complete',{
-    chapter:'第二章 · 2区',adventureIndex:6,...stageReward(2,2)
-  }],
-  ['2-3','通关冒险大陆任一线路 2-3。','别急着换路线，先把这一段打完。',1,'adventure_complete',{
-    chapter:'第二章 · 2区',adventureIndex:7,...stageReward(2,3)
-  }],
-  ['2区尽头','通关冒险大陆任一线路 2-4。','打完2-4，继续去3-1。',1,'adventure_complete',{
-    chapter:'第二章 · 2区',adventureIndex:8,challengeOnly:true,...stageReward(2,4)
-  }],
+const PLANT_MAIN=routeMainChain('mp',0,'植物线 · 蒙斯特族推进',[
+  ['踩进林口','通关植物线 1-1「初识防线」。','蒙斯特族前队已经摸到林口。埃尔夫族把远程单位压在后面，先把第一层防线撞开。',1,'adventure_complete',{adventureIndex:1,...stageReward(1,1)}],
+  ['投手露头','通关植物线 1-2「投手加入」。','南瓜投手补进后排了。前面有人顶着，后面就会一直砸。',1,'adventure_complete',{adventureIndex:2,...stageReward(1,2)}],
+  ['拆补给点','通关植物线 1-3「补给阵地」。','小麦开始给后排续力。蒙斯特族想继续往里压，先把这处补给阵地拆掉。',1,'adventure_complete',{adventureIndex:3,...stageReward(1,3)}],
+  ['第一道口子','通关植物线 1-4「西瓜突围」。','西瓜从几路一起顶上来。把缺口撑住，蒙斯特族才能把战线推过第一片林地。',1,'adventure_complete',{adventureIndex:4,challengeOnly:true,...stageReward(1,4)}],
 
-  ['进3区','通关冒险大陆任一线路 3-1。','这里开始，阵容不够顺手会明显难打。',1,'adventure_complete',{
-    chapter:'第三章 · 3区',adventureIndex:9,...stageReward(3,1)
-  }],
-  ['3-2','通关冒险大陆任一线路 3-2。','继续。',1,'adventure_complete',{
-    chapter:'第三章 · 3区',adventureIndex:10,...stageReward(3,2)
-  }],
-  ['3-3','通关冒险大陆任一线路 3-3。','已经快到这一段的关底了。',1,'adventure_complete',{
-    chapter:'第三章 · 3区',adventureIndex:11,...stageReward(3,3)
-  }],
-  ['3区尽头','通关冒险大陆任一线路 3-4。','过掉3-4，前面就是最后一大段。',1,'adventure_complete',{
-    chapter:'第三章 · 3区',adventureIndex:12,challengeOnly:true,...stageReward(3,4)
-  }],
+  ['冰线前哨','通关植物线 2-1「寒冰前哨」。','埃尔夫族把寒冰单位摆到前沿，路开始不好走了。',1,'adventure_complete',{adventureIndex:5,...stageReward(2,1)}],
+  ['两边轮着压','通关植物线 2-2「错峰夹击」。','上路刚松，下路就顶。别把蒙斯特族的兵力一次全压出去。',1,'adventure_complete',{adventureIndex:6,...stageReward(2,2)}],
+  ['医生在后面','通关植物线 2-3「补给护卫」。','轻装阵线后面跟着医生。拖得越久，前面的伤越像没打过。',1,'adventure_complete',{adventureIndex:7,...stageReward(2,3)}],
+  ['敲开盾阵','通关植物线 2-4「坚盾连阵」。','巨盾挡路，冰系单位躲后面。蒙斯特族得先撕开一边。',1,'adventure_complete',{adventureIndex:8,challengeOnly:true,...stageReward(2,4)}],
 
-  ['进4区','通关冒险大陆任一线路 4-1。','最后一段开始。',1,'adventure_complete',{
-    chapter:'第四章 · 4区',adventureIndex:13,...stageReward(4,1)
-  }],
-  ['4-2','通关冒险大陆任一线路 4-2。','再往前一关。',1,'adventure_complete',{
-    chapter:'第四章 · 4区',adventureIndex:14,...stageReward(4,2)
-  }],
-  ['4-3','通关冒险大陆任一线路 4-3。','只剩最后一道阶段关。',1,'adventure_complete',{
-    chapter:'第四章 · 4区',adventureIndex:15,...stageReward(4,3)
-  }],
-  ['4区尽头','通关冒险大陆任一线路 4-4。','4-4打完后，把另一条路线也推到终点，最终关才会出现。',1,'adventure_complete',{
-    chapter:'第四章 · 4区',adventureIndex:16,challengeOnly:true,...stageReward(4,4)
-  }],
-  ['最终关','完成冒险大陆最终关。','两条路线都走到头以后，最后这场才算真正收尾。',1,'adventure_complete',{
-    chapter:'终章',finalOnly:true,
-    ...R('main_final',5,'adventure',{items:[{id:CARD_EGG_IDS[4],count:1},{id:QUEST_ITEM_IDS.qualityStone,count:1}]})
-  }],
+  ['火线交叉','通关植物线 3-1「交叉火网」。','仙人掌把几条路都照住了。推进队挤在一起，只会一起挨打。',1,'adventure_complete',{adventureIndex:9,...stageReward(3,1)}],
+  ['地下也有人','通关植物线 3-2「地底来客」。','钻地单位开始绕后。蒙斯特族的后排也得留人照看。',1,'adventure_complete',{adventureIndex:10,...stageReward(3,2)}],
+  ['天上地下一起','通关植物线 3-3「空地交替」。','空中、地面轮着来，单靠一套推进节奏撑不住。',1,'adventure_complete',{adventureIndex:11,...stageReward(3,3)}],
+  ['拔掉炮阵','通关植物线 3-4「炮阵试炼」。','玉米炮手缩在盾后面。别跟正面耗，把一侧打穿。',1,'adventure_complete',{adventureIndex:12,challengeOnly:true,...stageReward(3,4)}],
+
+  ['树荫压下来','通关植物线 4-1「树荫防线」。','树精守卫把最后一段路卡得很死。火力得集中。',1,'adventure_complete',{adventureIndex:13,...stageReward(4,1)}],
+  ['穿过蘑菇回廊','通关植物线 4-2「蘑菇回廊」。','地下牵制、蘑菇支援都在拖时间。蒙斯特族不能在这里停太久。',1,'adventure_complete',{adventureIndex:14,...stageReward(4,2)}],
+  ['剑客拦路','通关植物线 4-3「剑客合击」。','剑客和勇士轮着顶上来。离终点只差两步。',1,'adventure_complete',{adventureIndex:15,...stageReward(4,3)}],
+  ['推到尽头','通关植物线 4-4「古树攻坚」。','战争古树守着植物线最后一道关口。打穿这里，蒙斯特族这一路就推到头了。',1,'adventure_complete',{adventureIndex:16,challengeOnly:true,...stageReward(4,4)}],
 ]);
+
+const MONSTER_MAIN=routeMainChain('me',1,'怪物线 · 埃尔夫族反击',[
+  ['把林口抢回来','通关怪物线 1-1。','蒙斯特族已经压进外围。埃尔夫族的反击从这里开始，先把林口夺回来。',1,'adventure_complete',{adventureIndex:1,...stageReward(1,1)}],
+  ['往前顶一格','通关怪物线 1-2。','对面还在往前补兵。别给它们重新站稳的时间。',1,'adventure_complete',{adventureIndex:2,...stageReward(1,2)}],
+  ['截掉补兵','通关怪物线 1-3。','蒙斯特族的后续兵力已经接上。把这一段截断，前面的压力会小很多。',1,'adventure_complete',{adventureIndex:3,...stageReward(1,3)}],
+  ['守住第一次反扑','通关怪物线 1-4。','对面开始多路压回来了。埃尔夫族得把刚抢回来的地方守住。',1,'adventure_complete',{adventureIndex:4,challengeOnly:true,...stageReward(1,4)}],
+
+  ['反击进2区','通关怪物线 2-1。','第一段稳住以后，埃尔夫族开始往更深处追。',1,'adventure_complete',{adventureIndex:5,...stageReward(2,1)}],
+  ['别被带着跑','通关怪物线 2-2。','蒙斯特族轮着换路压人。看清主攻方向，再补兵。',1,'adventure_complete',{adventureIndex:6,...stageReward(2,2)}],
+  ['先打支援','通关怪物线 2-3。','对面开始护着支援单位走。先把后面的东西处理掉。',1,'adventure_complete',{adventureIndex:7,...stageReward(2,3)}],
+  ['反推第二道线','通关怪物线 2-4。','这一段的阵形硬得多。埃尔夫族得正面把它推回去。',1,'adventure_complete',{adventureIndex:8,challengeOnly:true,...stageReward(2,4)}],
+
+  ['压回交叉口','通关怪物线 3-1。','蒙斯特族把火力铺开了。反击队不能全挤在一条线上。',1,'adventure_complete',{adventureIndex:9,...stageReward(3,1)}],
+  ['看住后排','通关怪物线 3-2。','有单位开始从地下绕。前线往前推，后面也不能空。',1,'adventure_complete',{adventureIndex:10,...stageReward(3,2)}],
+  ['空地都要管','通关怪物线 3-3。','蒙斯特族换着从空中和地面试探，反击阵容得更完整。',1,'adventure_complete',{adventureIndex:11,...stageReward(3,3)}],
+  ['拔掉第三道阵地','通关怪物线 3-4。','这不是追击战了，是一块完整阵地。打掉它，再往4区走。',1,'adventure_complete',{adventureIndex:12,challengeOnly:true,...stageReward(3,4)}],
+
+  ['追进4区','通关怪物线 4-1。','蒙斯特族已经退到最后一段区域。埃尔夫族继续追。',1,'adventure_complete',{adventureIndex:13,...stageReward(4,1)}],
+  ['别让它们借地形拖住','通关怪物线 4-2。','最后这段路不好走，对面就等着把反击队拖散。',1,'adventure_complete',{adventureIndex:14,...stageReward(4,2)}],
+  ['最后的拦截队','通关怪物线 4-3。','离4-4只剩一关。把这支拦截队清掉。',1,'adventure_complete',{adventureIndex:15,...stageReward(4,3)}],
+  ['把战线推回去','通关怪物线 4-4。','这是蒙斯特族在怪物线上的最后一道阶段阵地。拿下它，埃尔夫族的反击就走到终点。',1,'adventure_complete',{adventureIndex:16,challengeOnly:true,...stageReward(4,4)}],
+]);
+
+const FINAL_MAIN=q('mf01','双线会合','完成冒险大陆最终关。','蒙斯特族的推进线和埃尔夫族的反击线都走到尽头，最后一场才会开放。',1,'adventure_complete',{
+  chapter:'终章 · 双线会合',
+  requires:['mp16','me16'],
+  finalOnly:true,
+  ...R('main_final',5,'adventure',{items:[{id:CARD_EGG_IDS[4],count:1},{id:QUEST_ITEM_IDS.qualityStone,count:1}]})
+});
+
+const MAIN_QUESTS=[...PLANT_MAIN,...MONSTER_MAIN,FINAL_MAIN];
 
 // ==================== 支线 ====================
-const SIDE_PLANT=sideArc('spl','植物线 · 另一份记录',[
-  ['植物线 1-4','通关植物线 1-4。','西瓜多路压上来的那一关，植物线也得自己打过去。',1,'adventure_complete',{route:0,adventureIndex:4,...R('side',1,'adventure')}],
-  ['植物线 2-4','通关植物线 2-4。','巨盾加冰系后排。',1,'adventure_complete',{route:0,adventureIndex:8,...R('side',2,'adventure')}],
-  ['植物线 3-4','通关植物线 3-4。','炮阵那关，记得别和盾死磕。',1,'adventure_complete',{route:0,adventureIndex:12,...R('side',3,'adventure')}],
-  ['植物线 4-4','通关植物线 4-4。','古树攻坚。走到这儿，这条线就只剩会合战了。',1,'adventure_complete',{route:0,adventureIndex:16,...R('side',4,'adventure')}],
-]);
-
-const SIDE_MONSTER=sideArc('smo','怪物线 · 另一份记录',[
-  ['怪物线 1-4','通关怪物线 1-4。','同一个编号，换成怪物阵容以后手感完全不一样。',1,'adventure_complete',{route:1,adventureIndex:4,...R('side',1,'adventure')}],
-  ['怪物线 2-4','通关怪物线 2-4。','这一段开始，食物怎么留比铺多少卡更重要。',1,'adventure_complete',{route:1,adventureIndex:8,...R('side',2,'adventure')}],
-  ['怪物线 3-4','通关怪物线 3-4。','把中段打穿。',1,'adventure_complete',{route:1,adventureIndex:12,...R('side',3,'adventure')}],
-  ['怪物线 4-4','通关怪物线 4-4。','怪物线最后一道阶段关。',1,'adventure_complete',{route:1,adventureIndex:16,...R('side',4,'adventure')}],
-]);
-
 const SIDE_FUN=sideArc('sfu','临时加码',[
   ['三路都上人','赢下1场战斗，并在三个战线都部署过卡牌。','别把整副牌全塞一条路。三路都下过单位，赢了就算。',1,'battle_lane_spread',{minLanes:3,...R('side_growth',2,'adventure')}],
   ['别老点同一张','赢下1场战斗，并至少使用5种不同卡牌。','同一张好用也别一直按。换五种牌上场。',1,'battle_variety',{minDistinctCards:5,...R('side_growth',2,'adventure')}],
@@ -177,10 +162,7 @@ const SIDE_PVP=sideArc('spv','竞技场',[
   ['五胜','累计获得5场PVP胜利。','五场胜利以后再说这套牌稳不稳。',5,'pvp_win',{cumulativeKey:'totalPvpWins',...R('side_social',3,null)}],
 ]);
 
-const SIDE_QUESTS=[
-  ...SIDE_PLANT,
-  ...SIDE_MONSTER,
-  ...SIDE_FUN,
+const SIDE_QUESTS=[  ...SIDE_FUN,
   ...SIDE_WORKSHOP,
   ...SIDE_SUPPLY,
   ...SIDE_COMBAT,
@@ -258,19 +240,19 @@ const CHALLENGE_QUESTS=[
   }),
 
   q('cq5','狂暴的刀牙','击败海底神殿BOSS“狂暴的刀牙”。','第一只。',1,'boss_defeated',{
-    requiresMain:'mq17',bossId:'boss_shark',bossDefeatId:'boss_shark',...R('challenge_boss',4,'boss')
+    requiresMain:'mf01',bossId:'boss_shark',bossDefeatId:'boss_shark',...R('challenge_boss',4,'boss')
   }),
   q('cq6','龙虾战士','击败海底神殿BOSS“龙虾战士”。','小心连续突进。',1,'boss_defeated',{
-    requiresMain:'mq17',bossId:'boss_lobster',bossDefeatId:'boss_lobster',...R('challenge_boss',4,'boss')
+    requiresMain:'mf01',bossId:'boss_lobster',bossDefeatId:'boss_lobster',...R('challenge_boss',4,'boss')
   }),
   q('cq7','失控的蓝贝贝','击败海底神殿BOSS“失控的蓝贝贝”。','门开了以后别只盯着BOSS。',1,'boss_defeated',{
-    requiresMain:'mq17',bossId:'boss_bluebaby',bossDefeatId:'boss_bluebaby',...R('challenge_boss',4,'boss')
+    requiresMain:'mf01',bossId:'boss_bluebaby',bossDefeatId:'boss_bluebaby',...R('challenge_boss',4,'boss')
   }),
   q('cq8','龟老师','击败海底神殿BOSS“龟老师”。','技能多，慢一点看。',1,'boss_defeated',{
-    requiresMain:'mq17',bossId:'boss_turtle',bossDefeatId:'boss_turtle',...R('challenge_boss',5,'boss')
+    requiresMain:'mf01',bossId:'boss_turtle',bossDefeatId:'boss_turtle',...R('challenge_boss',5,'boss')
   }),
   q('cq9','琴音','击败海底神殿BOSS“人鱼公主琴音”。','最后一个。',1,'boss_defeated',{
-    requiresMain:'mq17',bossId:'boss_princess',bossDefeatId:'boss_princess',
+    requiresMain:'mf01',bossId:'boss_princess',bossDefeatId:'boss_princess',
     ...R('challenge_boss',5,'boss',{items:[{id:CARD_EGG_IDS[5],count:1}]})
   }),
 
@@ -296,7 +278,7 @@ const QUEST_GROUPS={
 };
 
 const CATEGORIES=[
-  {id:'main',label:'主线任务',subtitle:'冒险大陆 1-1 → 4-4 → 最终关'},
+  {id:'main',label:'主线任务',subtitle:'植物线：蒙斯特推进｜怪物线：埃尔夫反击'},
   {id:'side',label:'支线任务',subtitle:'换打法、跑另一条线、做养成'},
   {id:'daily',label:'日常任务',subtitle:'当天随手做'},
   {id:'weekly',label:'周常任务',subtitle:'一周慢慢完成'},
