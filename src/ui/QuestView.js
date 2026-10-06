@@ -8,8 +8,8 @@ import { questPeriodKey } from '../data/QuestPeriods.js';
 import { markBossCleared } from '../core/BossProgress.js';
 import { MAX_PLAYER_LEVEL, QUEST_GROUPS, ACHIEVEMENT_QUESTS, CATEGORIES, LEVEL_REWARDS } from '../data/QuestCatalog.js';
 
-const STORAGE_KEY = 'clbwz_quest_v8';
-const OLD_STORAGE_KEYS = ['clbwz_quest_v7', 'clbwz_quest_v6', 'clbwz_quest_v5', 'clbwz_quest_v4', 'clbwz_quest_v3'];
+const STORAGE_KEY = 'clbwz_quest_v9';
+const OLD_STORAGE_KEYS = ['clbwz_quest_v8', 'clbwz_quest_v7', 'clbwz_quest_v6', 'clbwz_quest_v5', 'clbwz_quest_v4', 'clbwz_quest_v3'];
 
 function todayKey(){return questPeriodKey('daily');}
 function weekKey(){return questPeriodKey('weekly');}
@@ -35,10 +35,29 @@ function normalizeState(state){
   r._extra.adventureClears={...(r._extra.adventureClears??{})};
   return r;
 }
+function migrateLegacyState(rawState){
+  const old=normalizeState(rawState);
+  const fresh=defaultState();
+  // 任务系统重做后不继承旧任务ID进度，只保留真实长期统计和已领等级奖励。
+  fresh._extra={...fresh._extra,...(old._extra??{})};
+  fresh._extra.itemGainsById={...(old._extra?.itemGainsById??{})};
+  fresh._extra.bossChallengesById={...(old._extra?.bossChallengesById??{})};
+  fresh._extra.bossDefeatsById={...(old._extra?.bossDefeatsById??{})};
+  fresh._extra.adventureClears={...(old._extra?.adventureClears??{})};
+  fresh.levelClaimed=[...(old.levelClaimed??[])];
+  return normalizeState(fresh);
+}
 function loadState(){
   try{
-    const keys=[STORAGE_KEY,...OLD_STORAGE_KEYS];
-    for(const key of keys){const raw=localStorage.getItem(key);if(raw)return normalizeState(JSON.parse(raw));}
+    const current=localStorage.getItem(STORAGE_KEY);
+    if(current)return normalizeState(JSON.parse(current));
+    for(const key of OLD_STORAGE_KEYS){
+      const raw=localStorage.getItem(key);
+      if(!raw)continue;
+      const migrated=migrateLegacyState(JSON.parse(raw));
+      localStorage.setItem(STORAGE_KEY,JSON.stringify(migrated));
+      return migrated;
+    }
   }catch{}
   return defaultState();
 }
@@ -225,7 +244,7 @@ export class QuestView{
       else if(quest.event==='item_id_total')ach[quest.id]=Math.min(quest.goal,extra.itemGainsById?.[String(quest.itemId)]||0);
       else if(quest.event==='battle_total')ach[quest.id]=Math.min(quest.goal,extra.totalBattles||0);
       else if(quest.event==='adventure_total')ach[quest.id]=Math.min(quest.goal,extra.totalAdventures||0);
-      else if(quest.event==='strengthen_total')ach[quest.id]=Math.min(quest.goal,extra.totalUpgrades||0);
+      else if(quest.event==='strengthen_total')ach[quest.id]=Math.min(quest.goal,extra.totalStrengthens||0);
       else if(quest.event==='item_total')ach[quest.id]=Math.min(quest.goal,extra.totalItems||0);
       else if(quest.event==='item_gain_total')ach[quest.id]=Math.min(quest.goal,extra.totalItemGains||0);
       else if(quest.event==='achieve_total')ach[quest.id]=ACHIEVEMENT_QUESTS.filter((x)=>x.id!==quest.id&&state.achievementClaimed.includes(x.id)).length;
@@ -266,7 +285,7 @@ export class QuestView{
     window.addEventListener('clbwz:quest-complete',()=>{if(root.isConnected&&root.querySelector('.quest-page'))this.renderContent(root);else this._questEvents.abort();},{signal:this._questEvents.signal});
     root.innerHTML=[
       '<div class="page quest-page quest-page-formal"><div class="quest-window">',
-      '<header class="quest-window-title"><h1>任务委托</h1><p>完成主线、支线、日常与BOSS委托，获取金币、经验、荣誉、卡蛋与养成材料</p></header>',
+      '<header class="quest-window-title"><h1>任务日志</h1><p>推进主线，处理支线委托，并领取日常、周常、成就与挑战奖励</p></header>',
       '<div class="quest-workspace"><aside class="quest-category-rail" id="quest-category-rail"></aside>',
       '<section class="quest-list-panel"><div class="quest-list-panel-head"><h2 id="quest-list-title"></h2><span id="quest-list-meta"></span></div><div id="quest-list" class="quest-list"></div></section>',
       '<section id="quest-detail" class="quest-detail-parchment"></section></div></div><p id="quest-toast" class="bag-toast hidden"></p></div>',
@@ -325,7 +344,7 @@ export class QuestView{
       if(quest.event==='item_id_total')this.state.achievementProgress[quest.id]=Math.min(quest.goal,extra.itemGainsById?.[String(quest.itemId)]||0);
       if(quest.event==='battle_total')this.state.achievementProgress[quest.id]=Math.min(quest.goal,extra.totalBattles||0);
       if(quest.event==='adventure_total')this.state.achievementProgress[quest.id]=Math.min(quest.goal,extra.totalAdventures||0);
-      if(quest.event==='strengthen_total')this.state.achievementProgress[quest.id]=Math.min(quest.goal,extra.totalUpgrades||0);
+      if(quest.event==='strengthen_total')this.state.achievementProgress[quest.id]=Math.min(quest.goal,extra.totalStrengthens||0);
       if(quest.event==='item_total')this.state.achievementProgress[quest.id]=Math.min(quest.goal,extra.totalItems||0);
       if(quest.event==='item_gain_total')this.state.achievementProgress[quest.id]=Math.min(quest.goal,extra.totalItemGains||0);
       if(quest.event==='achieve_total')this.state.achievementProgress[quest.id]=ACHIEVEMENT_QUESTS.filter((x)=>x.id!==quest.id&&this.state.achievementClaimed.includes(x.id)).length;
@@ -347,7 +366,7 @@ export class QuestView{
   renderDetail(root,entry){
     const detail=root.querySelector('#quest-detail');if(!entry){detail.innerHTML='<div class="quest-parchment-empty">选择一个任务查看详情</div>';return;}
     const s=this.stateFor(entry),pct=Math.min(100,s.progress/Math.max(s.goal,1)*100),label=entry.chapter||entry.arc||(this.category==='level'?'成长计划':this.category==='achievement'?'里程碑':'任务委托'),action=s.claimed?'<span class="quest-detail-claimed">已领取</span>':s.ready?'<button type="button" class="quest-claim-btn quest-detail-claim" data-entry="'+entry.id+'">领取奖励</button>':'<span class="quest-detail-locked">继续完成</span>';
-    detail.innerHTML=['<div class="quest-parchment-inner"><p class="quest-detail-kicker">',escaped(label),'</p><h2>',escaped(entry.name),'</h2><div class="quest-parchment-rule"></div><section class="quest-detail-block"><h3>任务目标</h3><p>',escaped(entry.desc),'</p><div class="quest-detail-progress"><i style="width:',pct,'%"></i></div><span>',s.progress,' / ',s.goal,'</span></section><section class="quest-detail-block"><h3>背景故事</h3><p>',escaped(entry.story||entry.desc),'</p></section><section class="quest-detail-block quest-detail-rewards"><h3>任务奖励</h3><div>',rewardChips(entry,this.cardDb,this.itemDb),'</div></section><footer class="quest-detail-footer">',action,'</footer></div>'].join('');
+    detail.innerHTML=['<div class="quest-parchment-inner"><p class="quest-detail-kicker">',escaped(label),'</p><h2>',escaped(entry.name),'</h2><div class="quest-parchment-rule"></div><section class="quest-detail-block"><h3>任务目标</h3><p>',escaped(entry.desc),'</p><div class="quest-detail-progress"><i style="width:',pct,'%"></i></div><span>',s.progress,' / ',s.goal,'</span></section><section class="quest-detail-block"><h3>任务说明</h3><p>',escaped(entry.story||entry.desc),'</p></section><section class="quest-detail-block quest-detail-rewards"><h3>任务奖励</h3><div>',rewardChips(entry,this.cardDb,this.itemDb),'</div></section><footer class="quest-detail-footer">',action,'</footer></div>'].join('');
     detail.querySelector('.quest-detail-claim')?.addEventListener('click',()=>this.claim(root,entry));
   }
   recordClaim(category,entry,period=questPeriodKey(category)){
