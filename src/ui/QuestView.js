@@ -7,8 +7,8 @@ import { BattleView } from './BattleView.js';
 import { questPeriodKey } from '../data/QuestPeriods.js';
 import { MAX_PLAYER_LEVEL, QUEST_GROUPS, ACHIEVEMENT_QUESTS, CATEGORIES, LEVEL_REWARDS } from '../data/QuestCatalog.js';
 
-const STORAGE_KEY = 'clbwz_quest_v6';
-const OLD_STORAGE_KEYS = ['clbwz_quest_v5', 'clbwz_quest_v4', 'clbwz_quest_v3'];
+const STORAGE_KEY = 'clbwz_quest_v7';
+const OLD_STORAGE_KEYS = ['clbwz_quest_v6', 'clbwz_quest_v5', 'clbwz_quest_v4', 'clbwz_quest_v3'];
 
 function todayKey(){return questPeriodKey('daily');}
 function weekKey(){return questPeriodKey('weekly');}
@@ -17,7 +17,7 @@ function defaultState(){
     dailyDate:todayKey(),weeklyDate:weekKey(),dailyProgress:{},dailyClaimed:[],weeklyProgress:{},weeklyClaimed:[],
     mainProgress:{},mainClaimed:[],sideProgress:{},sideClaimed:[],achievementProgress:{},achievementClaimed:[],
     challengeProgress:{},challengeClaimed:[],levelClaimed:[],
-    _extra:{totalKills:0,totalBattles:0,totalAdventures:0,totalUpgrades:0,totalItems:0,totalQuests:0,totalGold:0,totalHonor:0,loginDays:0},
+    _extra:{totalKills:0,totalBattles:0,totalAdventures:0,totalUpgrades:0,totalStrengthens:0,totalCrafts:0,totalItems:0,totalQuests:0,totalGold:0,totalHonor:0,loginDays:0},
   };
 }
 function normalizeState(state){
@@ -114,13 +114,41 @@ function progressDelta(quest,event,data){
   }
   if(event==='gold_gain'||event==='honor_gain'||event==='player_healed'||event==='shop_spend')return Math.max(0,Number(data?.amount||0));
   if(['kill_enemy','card_collect','battle_kill','elite_kill','item_use','team_diversity','quest_complete','discover_secret','mine_collect'].includes(event))return dataCount(data);
-  if(event==='battle_duration')return Number(data?.duration||999)<=Number(quest.goal||0)?1:0;
+  if(event==='battle_duration')return Number(data?.duration||999)<=Number(quest.maxDuration??180)?1:0;
   return dataCount(data)||1;
 }
 
-function visibleQuests(category,claimedIds,allQuests){
+function requirementIds(requires){
+  if(!requires)return[];
+  return Array.isArray(requires)?requires:[requires];
+}
+function questComplete(state,category,questId){
+  const quest=(QUEST_GROUPS[category]||[]).find((entry)=>String(entry.id)===String(questId));
+  if(!quest)return true;
+  const claimed=state[category+'Claimed']||[];
+  const progress=state[category+'Progress']||{};
+  return claimed.some((id)=>String(id)===String(questId))||Number(progress[quest.id]||0)>=Number(quest.goal||0);
+}
+function requirementsMet(state,category,quest){
+  return requirementIds(quest.requires).every((id)=>questComplete(state,category,id));
+}
+function cumulativeProgress(quest,state){
+  if(!quest.cumulativeKey)return null;
+  return Math.max(0,Number(state?._extra?.[quest.cumulativeKey]||0));
+}
+function syncCumulativeProgress(state){
+  for(const [category,quests] of Object.entries(QUEST_GROUPS)){
+    if(category==='achievement')continue;
+    const progress=state[category+'Progress']??(state[category+'Progress']={});
+    for(const quest of quests){
+      if(!quest.cumulativeKey||!requirementsMet(state,category,quest))continue;
+      progress[quest.id]=Math.min(Number(quest.goal||0),cumulativeProgress(quest,state)??0);
+    }
+  }
+}
+function visibleQuests(category,state,allQuests){
   if(category==='daily'||category==='weekly'||category==='challenge')return allQuests;
-  return allQuests.filter((entry)=>!entry.requires||claimedIds.includes(entry.requires));
+  return allQuests.filter((entry)=>requirementsMet(state,category,entry));
 }
 
 export class QuestView{
@@ -145,6 +173,8 @@ export class QuestView{
     if(event==='battle_complete')extra.totalBattles=(extra.totalBattles||0)+dataCount(data);
     if(event==='adventure_complete')extra.totalAdventures=(extra.totalAdventures||0)+dataCount(data);
     if(event==='card_craft'||event==='card_strengthen'||event==='card_upgrade')extra.totalUpgrades=(extra.totalUpgrades||0)+dataCount(data);
+    if(event==='card_strengthen')extra.totalStrengthens=(extra.totalStrengthens||0)+dataCount(data);
+    if(event==='card_craft')extra.totalCrafts=(extra.totalCrafts||0)+dataCount(data);
     if(event==='item_use')extra.totalItems=(extra.totalItems||0)+dataCount(data);
     if(event==='quest_complete')extra.totalQuests=(extra.totalQuests||0)+dataCount(data);
     if(event==='gold_gain')extra.totalGold=(extra.totalGold||0)+Math.max(0,Number(data?.amount||0));
@@ -173,12 +203,14 @@ export class QuestView{
       state[pk]=state[pk]??{};state[ck]=state[ck]??[];
       for(const quest of quests){
         if(state[ck].includes(quest.id))continue;
-        if(quest.requires&&cat!=='daily'&&!state[ck].includes(quest.requires))continue;
+        if(!requirementsMet(state,cat,quest))continue;
         const before=state[pk][quest.id]||0;
         let after=before;
         if(quest.event==='boss_unlock'){
           const needed=Number(quest.unlockAdventures||((quest.bossId==='boss_dot')?12:0));
           if(needed>0&&Number(extra.totalAdventures||0)>=needed)after=quest.goal;
+        }else if(quest.cumulativeKey){
+          after=Math.min(quest.goal,cumulativeProgress(quest,state)??0);
         }else{
           const delta=progressDelta(quest,event,data);
           if(delta)after=Math.min(quest.goal,before+delta);
@@ -220,7 +252,7 @@ export class QuestView{
     if(this.category==='level')return LEVEL_REWARDS;
     const raw=QUEST_GROUPS[this.category]||[];
     if(['daily','weekly','achievement','challenge'].includes(this.category))return raw;
-    return visibleQuests(this.category,this.state[this.category+'Claimed']||[],raw);
+    return visibleQuests(this.category,this.state,raw);
   }
   stateFor(entry){
     if(this.category==='level'){
@@ -238,6 +270,7 @@ export class QuestView{
   }
   renderContent(root){
     this.state=loadState();
+    syncCumulativeProgress(this.state);
     const extra=this.state._extra||{};
     for(const quest of ACHIEVEMENT_QUESTS){
       if(this.state.achievementClaimed?.includes(quest.id))continue;
