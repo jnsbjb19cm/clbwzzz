@@ -8,8 +8,8 @@ import { questPeriodKey } from '../data/QuestPeriods.js';
 import { markBossCleared } from '../core/BossProgress.js';
 import { MAX_PLAYER_LEVEL, QUEST_GROUPS, ACHIEVEMENT_QUESTS, CATEGORIES, LEVEL_REWARDS } from '../data/QuestCatalog.js';
 
-const STORAGE_KEY = 'clbwz_quest_v9';
-const OLD_STORAGE_KEYS = ['clbwz_quest_v8', 'clbwz_quest_v7', 'clbwz_quest_v6', 'clbwz_quest_v5', 'clbwz_quest_v4', 'clbwz_quest_v3'];
+const STORAGE_KEY = 'clbwz_quest_v10';
+const OLD_STORAGE_KEYS = ['clbwz_quest_v9', 'clbwz_quest_v8', 'clbwz_quest_v7', 'clbwz_quest_v6', 'clbwz_quest_v5', 'clbwz_quest_v4', 'clbwz_quest_v3'];
 
 function todayKey(){return questPeriodKey('daily');}
 function weekKey(){return questPeriodKey('weekly');}
@@ -77,6 +77,14 @@ function rewardChips(reward,cardDb,itemDb){
 }
 
 function dataCount(data){return Math.max(0,Number(data?.count??data?.amount??1)||0);}
+function battleTargetMatches(quest,data){
+  if(quest.stageId!=null&&Number(data?.stageId)!==Number(quest.stageId))return false;
+  if(quest.route!=null&&Number(data?.route)!==Number(quest.route))return false;
+  if(quest.adventureIndex!=null&&Number(data?.adventureIndex)!==Number(quest.adventureIndex))return false;
+  if(quest.challengeOnly&&!data?.challenge)return false;
+  if(quest.finalOnly&&!data?.final)return false;
+  return true;
+}
 
 function progressDelta(quest,event,data){
   // 综合工坊任务：造卡、强化任一成功都计数。
@@ -108,11 +116,8 @@ function progressDelta(quest,event,data){
   if(quest.event!==event)return 0;
 
   if(event==='adventure_complete'){
-    if(quest.route!=null&&Number(data?.route)!==Number(quest.route))return 0;
-    if(quest.adventureIndex!=null&&Number(data?.adventureIndex)!==Number(quest.adventureIndex))return 0;
+    if(!battleTargetMatches(quest,data))return 0;
     if(quest.minAdventureIndex!=null&&Number(data?.adventureIndex||0)<Number(quest.minAdventureIndex))return 0;
-    if(quest.challengeOnly&&!data?.challenge)return 0;
-    if(quest.finalOnly&&!data?.final)return 0;
     return dataCount(data)||1;
   }
 
@@ -125,8 +130,14 @@ function progressDelta(quest,event,data){
     return dataCount(data)||1;
   }
   if(event==='gold_gain'||event==='honor_gain'||event==='player_healed'||event==='shop_spend')return Math.max(0,Number(data?.amount||0));
+  if(['battle_complete','battle_win','battle_nodeath','battle_duration','battle_kill','battle_variety','battle_lane_spread'].includes(event)&&!battleTargetMatches(quest,data))return 0;
   if(['kill_enemy','card_collect','battle_kill','elite_kill','item_use','team_diversity','quest_complete','discover_secret','mine_collect'].includes(event))return dataCount(data);
-  if(event==='battle_duration')return Number(data?.duration||999)<=Number(quest.maxDuration??180)?1:0;
+  if(event==='battle_duration'){
+    if(data?.won===false)return 0;
+    return Number(data?.duration||999)<=Number(quest.maxDuration??180)?1:0;
+  }
+  if(event==='battle_variety')return Number(data?.distinctCards||0)>=Number(quest.minDistinctCards??5)?1:0;
+  if(event==='battle_lane_spread')return Number(data?.lanesUsed||0)>=Number(quest.minLanes??3)?1:0;
   return dataCount(data)||1;
 }
 
