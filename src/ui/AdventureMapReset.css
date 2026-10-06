@@ -11,12 +11,14 @@
 .reset-route-label{position:absolute;background:#1a3531dd;padding:3px 8px;border-radius:12px;font-size:12px}.reset-plant-label{left:19%;top:57%}.reset-monster-label{left:77%;top:4%}
 /* 章末关头像：原立绘叠原图集金属框。灰色表示未通关，而非未解锁。 */
 .reset-node.reset-challenge-node{width:8.5%;min-width:34px;z-index:2;overflow:visible;border-radius:50%}
-.reset-node .reset-challenge-emblem{position:absolute;inset:0;display:block;transform:none;padding:0;background:none;border-radius:0;pointer-events:none;filter:grayscale(1) brightness(.83);isolation:isolate}
-.reset-challenge-node.reset-cleared .reset-challenge-emblem{filter:none}
+.reset-node .reset-challenge-emblem{position:absolute;inset:0;display:block;transform:none;padding:0;background:none;border-radius:0;pointer-events:none;filter:none;isolation:isolate}
+.reset-node.reset-challenge-node:disabled .reset-challenge-emblem{filter:grayscale(1) brightness(.62);opacity:.62}
+.reset-challenge-node.reset-cleared .reset-challenge-emblem{filter:none;opacity:1}
 .reset-node.reset-challenge-node img{position:absolute;filter:none}
 .reset-node.reset-challenge-node .reset-challenge-frame{inset:10% 0 0;width:100%;height:90%;z-index:0}
 .reset-node.reset-challenge-node .reset-challenge-portrait{left:-11%;top:-24%;width:122%;height:122%;z-index:1;object-fit:contain;filter:drop-shadow(0 2px 1px #17201dc0)}
 .reset-challenge-node>.reset-node-label{top:94%;z-index:5}
+.reset-challenge-node>.reset-clear-badge{top:-13%;z-index:6;padding:2px 7px;border:1px solid #d8e7a0;border-radius:10px;background:#214d24ed;color:#eaffc7;font-weight:700;font-size:clamp(9px,1vw,12px);box-shadow:0 2px 6px #0008}
 .reset-node.reset-challenge-node:disabled{opacity:1}
 .reset-node.reset-final-node{width:18%;min-width:72px}
 .reset-trio-emblem::before{content:'';position:absolute;inset:7% -3% -3%;border:3px double #b4a071;border-radius:50%;background:repeating-conic-gradient(#bda673 0deg 3deg,#3c3930 3deg 9deg);mask:radial-gradient(ellipse,transparent 62%,#000 64%);z-index:-1}
@@ -44,6 +46,11 @@
 .reset-forest-map .reset-boss-choice{position:absolute;left:var(--boss-x);top:var(--boss-y);width:var(--boss-width);padding:0;border:0;background:none;gap:0}
 .reset-forest-map .reset-boss-portrait{width:100%;height:auto;aspect-ratio:var(--boss-ratio)}
 .reset-forest-map .reset-boss-name{position:absolute;top:100%;left:50%;transform:translateX(-50%);white-space:nowrap;background:#123429d9;border-radius:4px;padding:2px 5px;opacity:0;pointer-events:none}
+.reset-boss-status{font-size:12px;font-weight:700;white-space:nowrap}
+.reset-boss-status-cleared{color:#ecffd3;background:#245b2de8;border:1px solid #8fcf75;border-radius:10px;padding:2px 7px}
+.reset-boss-status-locked{color:#aab0ae}
+.reset-forest-map .reset-boss-status{position:absolute;left:50%;top:-10px;transform:translate(-50%,-100%);z-index:4;pointer-events:none}
+.reset-forest-map .reset-boss-cleared .reset-boss-portrait{filter:drop-shadow(0 0 8px #8dff8c88)}
 .reset-forest-map .reset-boss-choice:hover .reset-boss-name,.reset-forest-map .reset-boss-choice:focus-visible .reset-boss-name{opacity:1}
 .reset-boss-choice:not(:disabled):is(:hover,:focus-visible) .reset-boss-portrait{filter:drop-shadow(0 0 12px #fff7b9) drop-shadow(0 0 24px #e7ff7b99)}
 .reset-forest-map [data-boss="boss_dot"] .reset-boss-name{top:-24px}
