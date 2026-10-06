@@ -9,23 +9,100 @@
 .reset-map-canvas{position:relative;width:min(100cqw,166.735cqh);aspect-ratio:1619/971;background:url('/adventure-reset/map.png') center/100% 100% no-repeat}
 .reset-node{position:absolute;transform:translate(-50%,-50%);width:4.4%;min-width:26px;aspect-ratio:1;padding:0!important;border:0!important;background:transparent!important;z-index:1}.reset-node img{width:100%;height:100%;object-fit:contain;display:block}.reset-node span{position:absolute;left:50%;top:75%;transform:translateX(-50%);white-space:nowrap;background:#152632df;color:white;text-shadow:0 1px #000;padding:1px 3px;border-radius:3px;font-size:clamp(9px,1.2vw,13px)}.reset-boss-node{width:6%}.reset-node:disabled{cursor:not-allowed;opacity:.82}.reset-cleared img{filter:drop-shadow(0 0 5px #69ff70)}.reset-node:not(:disabled):hover{filter:brightness(1.3)}.reset-node:focus-visible{outline:3px solid #fff}
 .reset-route-label{position:absolute;background:#1a3531dd;padding:3px 8px;border-radius:12px;font-size:12px}.reset-plant-label{left:19%;top:57%}.reset-monster-label{left:77%;top:4%}
-/* 章末关头像：原立绘叠原图集金属框。灰色表示未通关，而非未解锁。 */
+/* 章末 -4 / 最终关：参考旧版UI做成完全不透明的金属徽章。
+   状态只通过明暗和颜色区分，不再通过透明度让地图背景透进头像。 */
 .reset-node.reset-challenge-node{width:8.5%;min-width:34px;z-index:2;overflow:visible;border-radius:50%}
-.reset-node .reset-challenge-emblem{position:absolute;inset:0;display:block;transform:none;padding:0;background:none;border-radius:0;pointer-events:none;filter:none;isolation:isolate}
-.reset-node.reset-challenge-node:disabled .reset-challenge-emblem{filter:grayscale(1) brightness(.62);opacity:.62}
-.reset-challenge-node.reset-cleared .reset-challenge-emblem{filter:none;opacity:1}
-.reset-node.reset-challenge-node img{position:absolute;filter:none}
-.reset-node.reset-challenge-node .reset-challenge-frame{inset:10% 0 0;width:100%;height:90%;z-index:0}
-.reset-node.reset-challenge-node .reset-challenge-portrait{left:-11%;top:-24%;width:122%;height:122%;z-index:1;object-fit:contain;filter:drop-shadow(0 2px 1px #17201dc0)}
-.reset-challenge-node>.reset-node-label{top:94%;z-index:5}
-.reset-challenge-node>.reset-clear-badge{top:-13%;z-index:6;padding:2px 7px;border:1px solid #d8e7a0;border-radius:10px;background:#214d24ed;color:#eaffc7;font-weight:700;font-size:clamp(9px,1vw,12px);box-shadow:0 2px 6px #0008}
-.reset-node.reset-challenge-node:disabled{opacity:1}
+.reset-node .reset-challenge-emblem{
+  position:absolute;inset:0;display:block;transform:none;padding:0;background:none!important;
+  border-radius:50%;pointer-events:none;filter:none!important;opacity:1!important;isolation:isolate
+}
+/* 实心圆盘：这是修复“幽灵/透明头像”的关键层。 */
+.reset-node .reset-challenge-disc{
+  position:absolute;left:4%;top:4%;width:92%;height:92%;box-sizing:border-box;
+  border-radius:50%;transform:none;padding:0;
+  background:radial-gradient(circle at 42% 32%,#9b9b97 0 9%,#73736f 27%,#4d4e4d 58%,#262b2c 100%)!important;
+  border:clamp(2px,.32vw,5px) solid #5d625f;
+  box-shadow:inset 0 0 0 clamp(2px,.18vw,3px) #bfc0b8,inset 0 -10px 18px #111,0 3px 7px #0009;
+  z-index:0;opacity:1!important
+}
+.reset-node.reset-challenge-node img{position:absolute;opacity:1!important}
+.reset-node.reset-challenge-node .reset-challenge-frame{
+  inset:3% -2% -2%;width:104%;height:99%;z-index:3;object-fit:contain;
+  filter:grayscale(1) contrast(1.18) brightness(.78) drop-shadow(0 2px 2px #000)!important
+}
+.reset-node.reset-challenge-node .reset-challenge-portrait{
+  left:-7%;top:-17%;width:114%;height:114%;z-index:2;object-fit:contain;
+  filter:grayscale(1) contrast(1.12) brightness(.82) drop-shadow(0 2px 1px #111)!important;
+  opacity:1!important
+}
+/* 已解锁但未通关：像参考图2一样是清晰、实心的亮灰徽章。 */
+.reset-node.reset-challenge-node:not(:disabled):not(.reset-cleared) .reset-challenge-disc{
+  background:radial-gradient(circle at 42% 30%,#c5c5bd 0 8%,#92938e 28%,#5d605e 61%,#303536 100%)!important;
+  border-color:#787d79;
+  box-shadow:inset 0 0 0 clamp(2px,.18vw,3px) #d3d4ca,inset 0 -10px 18px #171919,0 3px 8px #000a
+}
+.reset-node.reset-challenge-node:not(:disabled):not(.reset-cleared) .reset-challenge-portrait{
+  filter:grayscale(1) contrast(1.18) brightness(.98) drop-shadow(0 2px 2px #151515)!important
+}
+.reset-node.reset-challenge-node:not(:disabled):not(.reset-cleared) .reset-challenge-frame{
+  filter:grayscale(1) contrast(1.22) brightness(.98) drop-shadow(0 2px 2px #000)!important
+}
+/* 真正未解锁：仍然完全不透明，只整体变暗。 */
+.reset-node.reset-challenge-node:disabled{opacity:1!important;cursor:not-allowed}
+.reset-node.reset-challenge-node:disabled .reset-challenge-disc{
+  background:radial-gradient(circle at 42% 30%,#686a68 0 9%,#4d504f 35%,#303334 68%,#1d2021 100%)!important;
+  border-color:#444947;
+  box-shadow:inset 0 0 0 2px #777b77,inset 0 -10px 18px #111,0 3px 7px #000a
+}
+.reset-node.reset-challenge-node:disabled .reset-challenge-portrait{
+  filter:grayscale(1) contrast(1.12) brightness(.48) drop-shadow(0 2px 2px #050505)!important
+}
+.reset-node.reset-challenge-node:disabled .reset-challenge-frame{
+  filter:grayscale(1) contrast(1.12) brightness(.55) drop-shadow(0 2px 2px #000)!important
+}
+/* 已通关：保留实心圆盘和金属框，人物恢复彩色，并显示“已通关”。 */
+.reset-challenge-node.reset-cleared .reset-challenge-disc{
+  background:radial-gradient(circle at 42% 30%,#68685e 0 8%,#4f514b 34%,#292d2d 68%,#151919 100%)!important;
+  border-color:#92793f;
+  box-shadow:inset 0 0 0 clamp(2px,.18vw,3px) #c5aa63,inset 0 -10px 18px #111,0 0 9px #cba94a99,0 3px 7px #000a
+}
+.reset-challenge-node.reset-cleared .reset-challenge-portrait{
+  filter:contrast(1.08) saturate(1.08) brightness(.98) drop-shadow(0 2px 2px #111)!important
+}
+.reset-challenge-node.reset-cleared .reset-challenge-frame{
+  filter:sepia(.18) saturate(1.2) brightness(.92) drop-shadow(0 2px 2px #000)!important
+}
+.reset-challenge-node>.reset-node-label{top:94%;z-index:6}
+.reset-challenge-node>.reset-clear-badge{
+  top:-13%;z-index:7;padding:2px 7px;border:1px solid #d8e7a0;border-radius:10px;
+  background:#214d24;color:#eaffc7;font-weight:700;font-size:clamp(9px,1vw,12px);box-shadow:0 2px 6px #0008
+}
+/* 最终关沿用同一套“实体徽章”语言，但圆盘更厚、更接近参考图中央BOSS。 */
 .reset-node.reset-final-node{width:18%;min-width:72px}
-.reset-trio-emblem::before{content:'';position:absolute;inset:7% -3% -3%;border:3px double #b4a071;border-radius:50%;background:repeating-conic-gradient(#bda673 0deg 3deg,#3c3930 3deg 9deg);mask:radial-gradient(ellipse,transparent 62%,#000 64%);z-index:-1}
-.reset-node.reset-final-node .reset-challenge-portrait{width:86%;height:125%;top:-2%}
-.reset-node.reset-final-node .reset-portrait-0{left:-18%;z-index:2}
-.reset-node.reset-final-node .reset-portrait-1{left:7%;top:-17%;z-index:1}
-.reset-node.reset-final-node .reset-portrait-2{left:38%;z-index:3}
+.reset-final-node .reset-challenge-disc{
+  left:7%;top:7%;width:86%;height:86%;
+  background:radial-gradient(circle at 45% 34%,#777873 0 8%,#4d504e 35%,#292d2f 66%,#121719 100%)!important;
+  border-width:clamp(3px,.45vw,7px);
+  box-shadow:inset 0 0 0 clamp(2px,.25vw,5px) #a9aaa3,inset 0 -18px 28px #0d1112,0 5px 14px #000c
+}
+.reset-trio-emblem::before{
+  content:'';position:absolute;inset:3% -3% -3%;border:clamp(3px,.4vw,6px) double #777c79;border-radius:50%;
+  background:repeating-conic-gradient(#777c79 0deg 3deg,#313638 3deg 9deg);
+  mask:radial-gradient(ellipse,transparent 62%,#000 64%);z-index:4;opacity:1
+}
+.reset-node.reset-final-node .reset-challenge-frame{inset:4% -1% -1%;width:102%;height:96%;z-index:5}
+.reset-node.reset-final-node .reset-challenge-portrait{
+  width:82%;height:112%;top:0;filter:grayscale(1) contrast(1.18) brightness(.78) drop-shadow(0 3px 2px #111)!important
+}
+.reset-node.reset-final-node:not(:disabled):not(.reset-cleared) .reset-challenge-portrait{
+  filter:grayscale(1) contrast(1.2) brightness(.9) drop-shadow(0 3px 2px #111)!important
+}
+.reset-node.reset-final-node.reset-cleared .reset-challenge-portrait{
+  filter:contrast(1.08) saturate(1.05) brightness(.92) drop-shadow(0 3px 2px #111)!important
+}
+.reset-node.reset-final-node .reset-portrait-0{left:-12%;z-index:2}
+.reset-node.reset-final-node .reset-portrait-1{left:9%;top:-8%;z-index:3}
+.reset-node.reset-final-node .reset-portrait-2{left:36%;z-index:2}
 .reset-stage-modal{position:absolute;inset:0;z-index:4;background:#0009;display:grid;place-items:center}.reset-stage-modal[hidden]{display:none}.reset-stage-modal>div{width:min(80%,420px);padding:24px;background:#182d28;border:2px solid #c6ac62;border-radius:12px}.reset-stage-modal button{margin:8px}.reset-boss-list{overflow:auto;padding:18px;background:linear-gradient(#13372e,#081b2b)}.reset-boss-list article{display:flex;gap:18px;padding:16px;max-width:700px;margin:12px auto;background:#ffffff0d;border:1px solid #8a9a73;border-radius:8px}.reset-boss-list img{width:90px;height:100px;object-fit:contain}.reset-boss-list h3{margin:0 0 8px}.reset-boss-list p,.reset-boss-list small{font-size:12px;line-height:1.5;color:#bcccb9}.reset-boss-list button{margin:4px}.reset-boss-list button:disabled{opacity:.35;cursor:not-allowed}
 @media(max-width:600px){.reset-destination-panel{width:58%;padding:12px}.reset-campaign header small{display:none}.reset-boss-list article{gap:8px}.reset-boss-list img{width:60px}}
 
