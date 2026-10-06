@@ -143,7 +143,9 @@ function questComplete(state,category,questId){
   return claimed.some((id)=>String(id)===String(questId))||Number(progress[quest.id]||0)>=Number(quest.goal||0);
 }
 function requirementsMet(state,category,quest){
-  return requirementIds(quest.requires).every((id)=>questComplete(state,category,id));
+  const localOk=requirementIds(quest.requires).every((id)=>questComplete(state,category,id));
+  const mainOk=requirementIds(quest.requiresMain).every((id)=>questComplete(state,'main',id));
+  return localOk&&mainOk;
 }
 function cumulativeProgress(quest,state){
   if(quest.cumulativeKey)return Math.max(0,Number(state?._extra?.[quest.cumulativeKey]||0));
@@ -164,7 +166,7 @@ function syncCumulativeProgress(state){
   }
 }
 function visibleQuests(category,state,allQuests){
-  if(category==='daily'||category==='weekly'||category==='challenge')return allQuests;
+  if(category==='daily'||category==='weekly'||category==='achievement')return allQuests;
   return allQuests.filter((entry)=>requirementsMet(state,category,entry));
 }
 
@@ -355,8 +357,8 @@ export class QuestView{
   }
   renderDetail(root,entry){
     const detail=root.querySelector('#quest-detail');if(!entry){detail.innerHTML='<div class="quest-parchment-empty">选择一个任务查看详情</div>';return;}
-    const s=this.stateFor(entry),pct=Math.min(100,s.progress/Math.max(s.goal,1)*100),action=s.claimed?'<span class="quest-detail-claimed">已领取</span>':s.ready?'<button type="button" class="quest-claim-btn quest-detail-claim" data-entry="'+entry.id+'">领取奖励</button>':'<span class="quest-detail-locked">继续完成</span>';
-    detail.innerHTML=['<div class="quest-parchment-inner"><p class="quest-detail-kicker">',this.category==='level'?'成长计划':this.category==='achievement'?'里程碑':'任务委托','</p><h2>',escaped(entry.name),'</h2><div class="quest-parchment-rule"></div><section class="quest-detail-block"><h3>任务目标</h3><p>',escaped(entry.desc),'</p><div class="quest-detail-progress"><i style="width:',pct,'%"></i></div><span>',s.progress,' / ',s.goal,'</span></section><section class="quest-detail-block"><h3>背景故事</h3><p>',escaped(entry.story||entry.desc),'</p></section><section class="quest-detail-block quest-detail-rewards"><h3>任务奖励</h3><div>',rewardChips(entry,this.cardDb,this.itemDb),'</div></section><footer class="quest-detail-footer">',action,'</footer></div>'].join('');
+    const s=this.stateFor(entry),pct=Math.min(100,s.progress/Math.max(s.goal,1)*100),label=entry.chapter||entry.arc||(this.category==='level'?'成长计划':this.category==='achievement'?'里程碑':'任务委托'),action=s.claimed?'<span class="quest-detail-claimed">已领取</span>':s.ready?'<button type="button" class="quest-claim-btn quest-detail-claim" data-entry="'+entry.id+'">领取奖励</button>':'<span class="quest-detail-locked">继续完成</span>';
+    detail.innerHTML=['<div class="quest-parchment-inner"><p class="quest-detail-kicker">',escaped(label),'</p><h2>',escaped(entry.name),'</h2><div class="quest-parchment-rule"></div><section class="quest-detail-block"><h3>任务目标</h3><p>',escaped(entry.desc),'</p><div class="quest-detail-progress"><i style="width:',pct,'%"></i></div><span>',s.progress,' / ',s.goal,'</span></section><section class="quest-detail-block"><h3>背景故事</h3><p>',escaped(entry.story||entry.desc),'</p></section><section class="quest-detail-block quest-detail-rewards"><h3>任务奖励</h3><div>',rewardChips(entry,this.cardDb,this.itemDb),'</div></section><footer class="quest-detail-footer">',action,'</footer></div>'].join('');
     detail.querySelector('.quest-detail-claim')?.addEventListener('click',()=>this.claim(root,entry));
   }
   recordClaim(category,entry,period=questPeriodKey(category)){
