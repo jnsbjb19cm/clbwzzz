@@ -8,8 +8,8 @@ import { questPeriodKey } from '../data/QuestPeriods.js';
 import { markBossCleared } from '../core/BossProgress.js';
 import { MAX_PLAYER_LEVEL, QUEST_GROUPS, ACHIEVEMENT_QUESTS, CATEGORIES, LEVEL_REWARDS } from '../data/QuestCatalog.js';
 
-const STORAGE_KEY = 'clbwz_quest_v10';
-const OLD_STORAGE_KEYS = ['clbwz_quest_v9', 'clbwz_quest_v8', 'clbwz_quest_v7', 'clbwz_quest_v6', 'clbwz_quest_v5', 'clbwz_quest_v4', 'clbwz_quest_v3'];
+const STORAGE_KEY = 'clbwz_quest_v11';
+const OLD_STORAGE_KEYS = ['clbwz_quest_v10', 'clbwz_quest_v9', 'clbwz_quest_v8', 'clbwz_quest_v7', 'clbwz_quest_v6', 'clbwz_quest_v5', 'clbwz_quest_v4', 'clbwz_quest_v3'];
 
 function todayKey(){return questPeriodKey('daily');}
 function weekKey(){return questPeriodKey('weekly');}
