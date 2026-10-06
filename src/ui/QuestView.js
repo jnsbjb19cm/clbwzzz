@@ -17,7 +17,7 @@ function defaultState(){
     dailyDate:todayKey(),weeklyDate:weekKey(),dailyProgress:{},dailyClaimed:[],weeklyProgress:{},weeklyClaimed:[],
     mainProgress:{},mainClaimed:[],sideProgress:{},sideClaimed:[],achievementProgress:{},achievementClaimed:[],
     challengeProgress:{},challengeClaimed:[],levelClaimed:[],
-    _extra:{totalKills:0,totalBattles:0,totalBattleWins:0,totalAdventures:0,totalUpgrades:0,totalStrengthens:0,totalCrafts:0,totalMaterialCombines:0,totalItems:0,totalItemGains:0,totalBossChallenges:0,totalBossDefeats:0,totalNoDeath:0,totalQuests:0,totalGold:0,totalHonor:0,loginDays:0,itemGainsById:{},bossChallengesById:{},bossDefeatsById:{},adventureClears:{}},
+    _extra:{totalKills:0,totalBattles:0,totalBattleWins:0,totalAdventures:0,totalUpgrades:0,totalStrengthens:0,totalCrafts:0,totalMaterialCombines:0,totalItems:0,totalItemGains:0,totalBossChallenges:0,totalBossDefeats:0,totalNoDeath:0,totalPvpBattles:0,totalPvpWins:0,totalCoopBattles:0,totalQuests:0,totalGold:0,totalHonor:0,loginDays:0,itemGainsById:{},bossChallengesById:{},bossDefeatsById:{},adventureClears:{}},
   };
 }
 function normalizeState(state){
@@ -192,6 +192,9 @@ export class QuestView{
     if(event==='battle_complete')extra.totalBattles=(extra.totalBattles||0)+dataCount(data);
     if(event==='battle_win')extra.totalBattleWins=(extra.totalBattleWins||0)+dataCount(data);
     if(event==='battle_nodeath')extra.totalNoDeath=(extra.totalNoDeath||0)+dataCount(data);
+    if(event==='battle_pvp')extra.totalPvpBattles=(extra.totalPvpBattles||0)+dataCount(data);
+    if(event==='pvp_win')extra.totalPvpWins=(extra.totalPvpWins||0)+dataCount(data);
+    if(event==='coop_battle_complete')extra.totalCoopBattles=(extra.totalCoopBattles||0)+dataCount(data);
     if(event==='adventure_complete'){
       extra.totalAdventures=(extra.totalAdventures||0)+dataCount(data);
       const route=Number(data?.route),index=Number(data?.adventureIndex),difficulty=Number(data?.difficulty);
@@ -236,6 +239,9 @@ export class QuestView{
       else if(quest.event==='material_total')ach[quest.id]=Math.min(quest.goal,extra.totalMaterialCombines||0);
       else if(quest.event==='boss_defeat_total')ach[quest.id]=Math.min(quest.goal,extra.totalBossDefeats||0);
       else if(quest.event==='no_death_total')ach[quest.id]=Math.min(quest.goal,extra.totalNoDeath||0);
+      else if(quest.event==='pvp_total')ach[quest.id]=Math.min(quest.goal,extra.totalPvpBattles||0);
+      else if(quest.event==='pvp_win_total')ach[quest.id]=Math.min(quest.goal,extra.totalPvpWins||0);
+      else if(quest.event==='coop_total')ach[quest.id]=Math.min(quest.goal,extra.totalCoopBattles||0);
       else if(quest.event==='item_id_total')ach[quest.id]=Math.min(quest.goal,extra.itemGainsById?.[String(quest.itemId)]||0);
       else if(quest.event==='battle_total')ach[quest.id]=Math.min(quest.goal,extra.totalBattles||0);
       else if(quest.event==='adventure_total')ach[quest.id]=Math.min(quest.goal,extra.totalAdventures||0);
@@ -333,6 +339,9 @@ export class QuestView{
       if(quest.event==='material_total')this.state.achievementProgress[quest.id]=Math.min(quest.goal,extra.totalMaterialCombines||0);
       if(quest.event==='boss_defeat_total')this.state.achievementProgress[quest.id]=Math.min(quest.goal,extra.totalBossDefeats||0);
       if(quest.event==='no_death_total')this.state.achievementProgress[quest.id]=Math.min(quest.goal,extra.totalNoDeath||0);
+      if(quest.event==='pvp_total')this.state.achievementProgress[quest.id]=Math.min(quest.goal,extra.totalPvpBattles||0);
+      if(quest.event==='pvp_win_total')this.state.achievementProgress[quest.id]=Math.min(quest.goal,extra.totalPvpWins||0);
+      if(quest.event==='coop_total')this.state.achievementProgress[quest.id]=Math.min(quest.goal,extra.totalCoopBattles||0);
       if(quest.event==='item_id_total')this.state.achievementProgress[quest.id]=Math.min(quest.goal,extra.itemGainsById?.[String(quest.itemId)]||0);
       if(quest.event==='battle_total')this.state.achievementProgress[quest.id]=Math.min(quest.goal,extra.totalBattles||0);
       if(quest.event==='adventure_total')this.state.achievementProgress[quest.id]=Math.min(quest.goal,extra.totalAdventures||0);
