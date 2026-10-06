@@ -10,7 +10,6 @@
  * 抽奖用真实权重随机；中奖后按类型发放（卡 → 卡牌背包；道具 → 道具背包；货币 → 玩家）。
  */
 import './LuckyWheel20261006.css';
-import { RoomView } from './RoomView.js';
 import { MainCityView } from './MainCityView.js';
 import { QuestView } from './QuestView.js';
 import { authStore } from '../core/AuthStore.js';
@@ -325,8 +324,9 @@ function mountNoticeLogEntry(root) {
 }
 
 function injectLuckyWheel(view, root) {
-  // 2026-10-06：入口放在**主界面**（不是房间大厅），坐标避开"游戏大厅"按钮（46.3% / 17.9%）。
-  const stage = root?.querySelector?.('.classic-city-stage') ?? root?.querySelector?.('.classic-game-hall');
+  // 2026-10-06：幸运大转盘只属于主城。禁止向房间大厅/准备房/战斗界面注入。
+  const city = root?.querySelector?.('.main-city.classic-city-screen');
+  const stage = city?.querySelector?.('.classic-city-stage');
   if (!stage) return;
   const hall = stage;
   if (hall.querySelector('[data-lucky-entry]')) { mountNoticeLogEntry(root); return; }
@@ -402,12 +402,6 @@ export function installLuckyWheel20261006() {
     return result;
   };
 
-  const previousRenderShell = RoomView.prototype.renderShell;
-  RoomView.prototype.renderShell = function renderShellWithLuckyWheel20261006(...args) {
-    const result = previousRenderShell.apply(this, args);
-    try { injectLuckyWheel(this, this.root); } catch { /* 转盘注入失败不影响大厅 */ }
-    return result;
-  };
 
   if (typeof window !== 'undefined') {
     window.__verifyLuckyWheel20261006 = () => ({
