@@ -7,6 +7,30 @@ const R=(rewardProfile,rewardTier=1,rewardTheme=null,extra={})=>({
   rewardProfile,rewardTier,...(rewardTheme?{rewardTheme}:{}),...extra,
 });
 
+function stageReward(tier,node){
+  const t=Math.max(1,Math.min(4,Number(tier)||1));
+  const n=Math.max(1,Math.min(4,Number(node)||1));
+  const matTier=t;
+  const baseGold=[0,450,700,1050,1450][t];
+  const stepGold=[0,70,100,130,170][t];
+  const baseExp=[0,140,220,330,450][t];
+  const stepExp=[0,20,30,40,50][t];
+  const itemByNode={
+    1:{id:QUEST_ITEM_IDS.powder[t],count:2+t},
+    2:{id:QUEST_ITEM_IDS.parchment[matTier],count:2},
+    3:{id:QUEST_ITEM_IDS.gem[matTier],count:3},
+    4:{id:CARD_EGG_IDS[t],count:1},
+  };
+  const checkpoint=n===4;
+  return R(checkpoint?'main_checkpoint':'main_step',t,'none',{
+    gold:checkpoint?baseGold+stepGold*3+240:baseGold+stepGold*(n-1),
+    exp:checkpoint?baseExp+stepExp*3+100:baseExp+stepExp*(n-1),
+    honor:checkpoint?10+t*8:0,
+    gem:checkpoint?t*2:0,
+    items:[itemByNode[n]],
+  });
+}
+
 function mainChain(rows){
   return rows.map((row,index)=>{
     const [name,desc,story,goal,event,extra={}]=row;
@@ -33,16 +57,16 @@ function sideArc(prefix,arc,rows){
 // 每一关都有独立任务和奖励，BOSS放在对应章节收尾。
 const MAIN_QUESTS=mainChain([
   ['林口有人','通关主线 1-1「初识防线」。','路障才挪开，前面就打起来了。远程单位躲得深，先别让前排把路堵死。',1,'adventure_complete',{
-    chapter:'第一章 · 林口',adventureIndex:1,...R('main_step',1,'adventure')
+    chapter:'第一章 · 林口',adventureIndex:1,...stageReward(1,1)
   }],
   ['后排的南瓜','通关主线 1-2「投手加入」。','南瓜投手缩在后面一直扔，前排一拖住你，它就舒服了。',1,'adventure_complete',{
-    chapter:'第一章 · 林口',adventureIndex:2,...R('main_step',1,'adventure')
+    chapter:'第一章 · 林口',adventureIndex:2,...stageReward(1,2)
   }],
   ['先断补给','通关主线 1-3「补给阵地」。','小麦和投手挤在一块儿。拖久了不好收场，能先拆支援就别磨前排。',1,'adventure_complete',{
-    chapter:'第一章 · 林口',adventureIndex:3,...R('main_step',1,'adventure')
+    chapter:'第一章 · 林口',adventureIndex:3,...stageReward(1,3)
   }],
   ['西瓜压过来了','通关主线 1-4「西瓜突围」。','这一关不跟你排队，多路一起上。哪边漏了，哪边就得马上补。',1,'adventure_complete',{
-    chapter:'第一章 · 林口',adventureIndex:4,challengeOnly:true,...R('main_checkpoint',1,'adventure')
+    chapter:'第一章 · 林口',adventureIndex:4,challengeOnly:true,...stageReward(1,4)
   }],
   ['旧药箱','挑战“痴情的多特”1次。','营地边翻出一个旧药箱，名字还在：多特。档案里的他以前是医生。',1,'boss_challenge',{
     chapter:'第一章 · 多特',bossId:'boss_dot',bossChallengeId:'boss_dot',...R('main_checkpoint',2,'boss')
@@ -53,16 +77,16 @@ const MAIN_QUESTS=mainChain([
   }],
 
   ['路上结冰了','通关主线 2-1「寒冰前哨」。','地面开始打滑，控制单位也多了。后排被冻住的时候，空位会一下子变得很贵。',1,'adventure_complete',{
-    chapter:'第二章 · 往里走',adventureIndex:5,...R('main_step',2,'adventure')
+    chapter:'第二章 · 往里走',adventureIndex:5,...stageReward(2,1)
   }],
   ['上下轮着来','通关主线 2-2「错峰夹击」。','上路刚停，下路就动。手里最好留点能马上补进去的牌。',1,'adventure_complete',{
-    chapter:'第二章 · 往里走',adventureIndex:6,...R('main_step',2,'adventure')
+    chapter:'第二章 · 往里走',adventureIndex:6,...stageReward(2,2)
   }],
   ['医生在后面','通关主线 2-3「补给护卫」。','这回麻烦的是后面的支援。前排再硬，也架不住一直有人往回抬血。',1,'adventure_complete',{
-    chapter:'第二章 · 往里走',adventureIndex:7,...R('main_step',2,'adventure')
+    chapter:'第二章 · 往里走',adventureIndex:7,...stageReward(2,3)
   }],
   ['把盾敲开','通关主线 2-4「坚盾连阵」。','巨盾顶在前面，冰系单位藏在后面。第五波会一起压上来。',1,'adventure_complete',{
-    chapter:'第二章 · 往里走',adventureIndex:8,challengeOnly:true,...R('main_checkpoint',2,'adventure')
+    chapter:'第二章 · 往里走',adventureIndex:8,challengeOnly:true,...stageReward(2,4)
   }],
   ['军令上的名字','挑战“愤怒的沃里尔”1次。','泥里那张军令还看得清编号。沃里尔以前带兵，这套阵形也是他的老习惯。',1,'boss_challenge',{
     chapter:'第二章 · 沃里尔',bossId:'boss_gravo',bossChallengeId:'boss_gravo',...R('main_checkpoint',3,'boss')
@@ -73,16 +97,16 @@ const MAIN_QUESTS=mainChain([
   }],
 
   ['火力交叉','通关主线 3-1「交叉火网」。','三头仙人掌一上场，挤在一排反而吃亏。站位散一点。',1,'adventure_complete',{
-    chapter:'第三章 · 深处',adventureIndex:9,...R('main_step',3,'adventure')
+    chapter:'第三章 · 深处',adventureIndex:9,...stageReward(3,1)
   }],
   ['脚底不安全','通关主线 3-2「地底来客」。','钻地单位会直接去找后排。别把能放人的格子塞满。',1,'adventure_complete',{
-    chapter:'第三章 · 深处',adventureIndex:10,...R('main_step',3,'adventure')
+    chapter:'第三章 · 深处',adventureIndex:10,...stageReward(3,2)
   }],
   ['天上也来了','通关主线 3-3「空地交替」。','地面还没清完，侧翼又有空中单位。单靠一种卡不好顶。',1,'adventure_complete',{
-    chapter:'第三章 · 深处',adventureIndex:11,...R('main_step',3,'adventure')
+    chapter:'第三章 · 深处',adventureIndex:11,...stageReward(3,3)
   }],
   ['炮口后面','通关主线 3-4「炮阵试炼」。','玉米炮手躲在巨盾后面。别跟盾耗到底，找一边先撕开。',1,'adventure_complete',{
-    chapter:'第三章 · 深处',adventureIndex:12,challengeOnly:true,...R('main_checkpoint',3,'adventure')
+    chapter:'第三章 · 深处',adventureIndex:12,challengeOnly:true,...stageReward(3,4)
   }],
   ['风里有冰碴','挑战“疯狂的安娜”1次。','安娜小时候跟母亲学魔法。母亲被杀以后，她剩下的那点东西全变成了恨。',1,'boss_challenge',{
     chapter:'第三章 · 安娜',bossId:'boss_ice',bossChallengeId:'boss_ice',...R('main_checkpoint',4,'boss')
@@ -93,16 +117,16 @@ const MAIN_QUESTS=mainChain([
   }],
 
   ['树荫下面','通关主线 4-1「树荫防线」。','树精守卫很能拖。火力分得太平均，哪一边都打不穿。',1,'adventure_complete',{
-    chapter:'第四章 · 树影',adventureIndex:13,...R('main_step',4,'adventure')
+    chapter:'第四章 · 树影',adventureIndex:13,...stageReward(4,1)
   }],
   ['蘑菇回廊','通关主线 4-2「蘑菇回廊」。','地下单位在前面搅，蘑菇仙人在后面撑。别一起追。',1,'adventure_complete',{
-    chapter:'第四章 · 树影',adventureIndex:14,...R('main_step',4,'adventure')
+    chapter:'第四章 · 树影',adventureIndex:14,...stageReward(4,2)
   }],
   ['剑客合击','通关主线 4-3「剑客合击」。','近战、控制、后排都在场。你那套最顺手的阵容，差不多该拿出来了。',1,'adventure_complete',{
-    chapter:'第四章 · 树影',adventureIndex:15,...R('main_step',4,'adventure')
+    chapter:'第四章 · 树影',adventureIndex:15,...stageReward(4,3)
   }],
   ['古树挡路','通关主线 4-4「古树攻坚」。','战争古树站在最后面，前面还有整套支援。这是两条普通战线最后一道硬关。',1,'adventure_complete',{
-    chapter:'第四章 · 树影',adventureIndex:16,challengeOnly:true,...R('main_checkpoint',4,'adventure')
+    chapter:'第四章 · 树影',adventureIndex:16,challengeOnly:true,...stageReward(4,4)
   }],
   ['萝莉塔','挑战“树妖萝莉塔”1次。','她很早就没了父母，后来连男友也死在战场。树妖的力量是在那之后找上她的。',1,'boss_challenge',{
     chapter:'第四章 · 萝莉塔',bossId:'boss_forest',bossChallengeId:'boss_forest',...R('main_checkpoint',5,'boss')
