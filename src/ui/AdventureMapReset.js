@@ -18,7 +18,7 @@ function challengeCards(stage, db) {
   return (a.final ? [56,55,58] : [CHALLENGE_PORTRAITS[a.route][a.act-1]]).map(id=>db.getById(id));
 }
 function challengeEmblem(cards, final) {
-  return `<span class="reset-challenge-emblem ${final?'reset-trio-emblem':''}" aria-hidden="true"><img class="reset-challenge-frame" src="${ART}challenge-frame.png" alt="">${cards.map((card,index)=>`<img class="reset-challenge-portrait reset-portrait-${index}" data-portrait-card="${card.id}" src="/sprites/cards/${card.spriteRes}.png" alt="">`).join('')}</span>`;
+  return `<span class="reset-challenge-emblem ${final?'reset-trio-emblem':''}" aria-hidden="true"><span class="reset-challenge-disc"></span><img class="reset-challenge-frame" src="${ART}challenge-frame.png" alt="">${cards.map((card,index)=>`<img class="reset-challenge-portrait reset-portrait-${index}" data-portrait-card="${card.id}" src="/sprites/cards/${card.spriteRes}.png" alt="">`).join('')}</span>`;
 }
 function setup(root, html) {
   const content = root.querySelector('#worldmap-content');
