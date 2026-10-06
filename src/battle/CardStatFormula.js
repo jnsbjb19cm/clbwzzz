@@ -1,14 +1,14 @@
-export const CRAFT_QUALITY_MULTIPLIER = Object.freeze({
-  1: 1.0,
-  2: 1.0,
-  3: 1.22,
-  4: 1.5,
-  5: 1.8,
-});
+import {
+  CRAFT_QUALITY_MULT,
+  normalizeCraftQuality,
+} from '../core/constants.js';
+
+// 战斗属性必须直接使用项目统一的制作品质倍率。
+// 不再在这里维护第二份倍率表，避免“劣质=普通”这类错位。
+export const CRAFT_QUALITY_MULTIPLIER = CRAFT_QUALITY_MULT;
 
 export function normalizeBattleCraftQuality(value) {
-  const quality = Number(value);
-  return Object.hasOwn(CRAFT_QUALITY_MULTIPLIER, quality) ? quality : 2;
+  return normalizeCraftQuality(value);
 }
 
 export function getBattleQualityMultiplier(value) {
