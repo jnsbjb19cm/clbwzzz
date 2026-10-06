@@ -1,91 +1,133 @@
 export const CARD_EGG_IDS = Object.freeze({ 1: 93, 2: 94, 3: 95, 4: 96, 5: 97 });
 
-const POWDER_IDS = Object.freeze({ 1: 10001, 2: 10002, 3: 10003, 4: 10004, 5: 10005 });
-const PARCHMENT_IDS = Object.freeze({ 1: 50001, 2: 50002, 3: 50003, 4: 50004 });
-const GEM_IDS = Object.freeze({ 1: 50011, 2: 50012, 3: 50013, 4: 50014 });
-const CHARM_IDS = Object.freeze({ 1: 50021, 2: 50022, 3: 50023, 4: 50024 });
-const DNA_IDS = Object.freeze({ 1: 50031, 2: 50032, 3: 50033, 4: 50034 });
+export const QUEST_ITEM_IDS = Object.freeze({
+  powder: { 1: 10001, 2: 10002, 3: 10003, 4: 10004, 5: 10005 },
+  parchment: { 1: 50001, 2: 50002, 3: 50003, 4: 50004 },
+  gem: { 1: 50011, 2: 50012, 3: 50013, 4: 50014 },
+  charm: { 1: 50021, 2: 50022, 3: 50023, 4: 50024 },
+  dna: { 1: 50031, 2: 50032, 3: 50033, 4: 50034 },
+  reverse: 50041,
+  rerollQuality: 80,
+  rerollStat: 81,
+  qualityStone: 82,
+  skillBookAttack: 84,
+});
 
-function clampTier(tier, max = 5) {
-  return Math.max(1, Math.min(max, Number(tier) || 1));
+function clampTier(value, max = 5) {
+  return Math.max(1, Math.min(max, Math.floor(Number(value) || 1)));
 }
 
-function questTier(category, index) {
-  if (category === 'main') return clampTier(1 + Math.floor(index / 7));
-  if (category === 'side') return clampTier(1 + Math.floor(index / 12));
-  if (category === 'daily') return clampTier(1 + Math.floor(index / 4));
-  if (category === 'weekly') return clampTier(2 + Math.floor(index / 4));
-  if (category === 'achievement') return clampTier(1 + Math.floor(index / 4));
-  if (category === 'challenge') return clampTier(3 + Math.floor(index / 5));
-  return 1;
-}
-
-function pushItem(items, id, count) {
+function pushItem(items, id, count = 1) {
   const itemId = Number(id);
   const qty = Math.max(1, Math.floor(Number(count) || 1));
+  if (!Number.isFinite(itemId) || itemId <= 0) return;
   const old = items.find((it) => Number(it.id) === itemId);
   if (old) old.count += qty;
   else items.push({ id: itemId, count: qty });
 }
 
-function basicMaterialPack(category, tier, index, event) {
+const PROFILE_BASE = Object.freeze({
+  main_step:       { gold: [420,620,850,1100,1400], exp: [140,210,300,400,520], honor: [0,8,14,20,28], gem: [0,0,0,2,3] },
+  main_checkpoint: { gold: [800,1150,1550,2050,2700], exp: [260,380,520,680,860], honor: [10,18,28,40,55], gem: [0,2,3,5,8] },
+  main_boss:       { gold: [1400,2100,3000,4100,5400], exp: [420,600,820,1050,1350], honor: [30,45,65,90,120], gem: [3,5,8,12,18] },
+  main_final:      { gold: [6500,6500,6500,6500,6500], exp: [1800,1800,1800,1800,1800], honor: [260,260,260,260,260], gem: [50,50,50,50,50] },
+  side:            { gold: [320,480,680,900,1200], exp: [90,130,180,240,320], honor: [0,0,8,12,18], gem: [0,0,0,0,2] },
+  side_growth:     { gold: [380,560,760,980,1300], exp: [100,150,210,280,360], honor: [0,6,10,16,24], gem: [0,0,0,2,3] },
+  side_social:     { gold: [400,600,800,1050,1350], exp: [90,130,180,230,300], honor: [12,20,30,42,58], gem: [0,0,2,3,5] },
+  daily:           { gold: [220,280,340,400,460], exp: [55,70,85,100,120], honor: [0,0,0,0,0], gem: [0,0,0,0,0] },
+  weekly:          { gold: [1300,1700,2200,2800,3500], exp: [280,360,470,600,760], honor: [20,30,45,65,90], gem: [0,0,3,5,8] },
+  achievement:     { gold: [1000,1800,3000,4800,7500], exp: [0,0,0,0,0], honor: [35,65,110,180,300], gem: [3,6,10,18,30] },
+  challenge:       { gold: [1200,2000,3200,4800,6800], exp: [300,450,650,900,1200], honor: [35,60,95,145,220], gem: [3,6,10,16,25] },
+  challenge_boss:  { gold: [1800,2700,3900,5400,7200], exp: [420,600,820,1080,1400], honor: [55,80,120,170,240], gem: [5,8,12,18,28] },
+});
+
+function profileBase(profile, tier) {
+  const row = PROFILE_BASE[profile] || PROFILE_BASE.side;
+  const i = clampTier(tier) - 1;
+  return {
+    gold: row.gold[i] || 0,
+    exp: row.exp[i] || 0,
+    honor: row.honor[i] || 0,
+    gem: row.gem[i] || 0,
+  };
+}
+
+function themedItems(theme, tier, profile) {
+  const t = clampTier(tier);
+  const mt = clampTier(t, 4);
   const items = [];
-  const matTier = clampTier(tier, 4);
-  const base = {
-    main: 10,
-    side: 8,
-    daily: 5,
-    weekly: 15,
-    achievement: 12,
-    challenge: 16,
-  }[category] ?? 8;
+  const ids = QUEST_ITEM_IDS;
 
-  // 强化粉是最常见成长资源；高阶任务给对应阶级而不是大量一级材料。
-  pushItem(items, POWDER_IDS[tier], base + tier * 2);
-
-  // 按任务玩法把第二奖励定向到对应养成资源，避免所有任务都发同一套东西。
-  if (event === 'card_strengthen' || event === 'card_upgrade') {
-    pushItem(items, PARCHMENT_IDS[matTier], Math.max(4, Math.ceil(base * 0.7)));
-    if (tier >= 3) pushItem(items, CHARM_IDS[matTier], Math.max(2, Math.floor(tier / 2)));
-  } else if (event === 'card_craft' || event === 'material_combine' || event === 'item_synthesis') {
-    pushItem(items, PARCHMENT_IDS[matTier], base);
-    pushItem(items, DNA_IDS[matTier], Math.max(3, Math.ceil(base * 0.45)));
-  } else if (event === 'adventure_complete' || event === 'battle_complete' || event === 'battle_win') {
-    pushItem(items, PARCHMENT_IDS[matTier], Math.max(5, Math.ceil(base * 0.75)));
-    if (index % 2 === 0) pushItem(items, GEM_IDS[matTier], Math.max(3, Math.ceil(base * 0.35)));
-  } else {
-    pushItem(items, PARCHMENT_IDS[matTier], Math.max(4, Math.ceil(base * 0.6)));
-    if (index % 3 === 0) pushItem(items, DNA_IDS[matTier], Math.max(3, Math.ceil(base * 0.35)));
+  // 普通任务只给“一小步”养成资源，不再按数组位置自动发大礼包。
+  if (theme === 'adventure') {
+    pushItem(items, ids.powder[t], 2 + t);
+  } else if (theme === 'strengthen') {
+    pushItem(items, ids.powder[t], 3 + t * 2);
+    if (t >= 3 && !profile.startsWith('daily')) pushItem(items, ids.charm[Math.min(4, t - 1)], 1);
+  } else if (theme === 'craft') {
+    pushItem(items, ids.parchment[mt], 2);
+    pushItem(items, ids.gem[mt], 3);
+    if (t >= 4) pushItem(items, ids.dna[mt], 1);
+  } else if (theme === 'material') {
+    const sourceTier = Math.max(1, mt - 1);
+    pushItem(items, ids.parchment[sourceTier], 5 + t);
+    pushItem(items, ids.gem[sourceTier], 5 + t);
+  } else if (theme === 'boss') {
+    pushItem(items, ids.dna[mt], 1 + Math.ceil(t / 2));
+    pushItem(items, ids.charm[mt], 1);
+  } else if (theme === 'collection') {
+    // 收集任务不给同类材料，改给强化粉，避免“交材料又返同材料”的空转。
+    pushItem(items, ids.powder[t], 2 + t);
+  } else if (theme === 'workshop') {
+    pushItem(items, ids.powder[t], 2 + t);
+    pushItem(items, ids.parchment[mt], 1 + Math.floor(t / 2));
   }
 
+  // 日常只保留轻量补给；周常和大节点才可能给额外物品。
+  if (profile === 'daily' && items.length > 1) return items.slice(0, 1);
   return items;
 }
 
-// 任务奖励按分类与成长阶段补充材料；任务本身显式配置的奖励优先保留。
-export function balanceQuestReward(entry, category, index) {
-  const tier = questTier(category, index);
-  const items = basicMaterialPack(category, tier, index, entry.event);
-  const milestone = category === 'main' && (index + 1) % 5 === 0;
-  const majorMilestone = category === 'main' && (index + 1) % 10 === 0;
+function mergeItems(...groups) {
+  const out = [];
+  for (const group of groups) for (const item of group || []) pushItem(out, item.id, item.count);
+  return out;
+}
 
-  // 普通任务主要给材料；卡蛋只出现在阶段节点、较高成就和挑战中。
-  if (milestone) pushItem(items, CARD_EGG_IDS[Math.min(5, majorMilestone ? tier + 1 : tier)], majorMilestone ? 2 : 1);
-  if (category === 'weekly' && index % 3 === 2) pushItem(items, CARD_EGG_IDS[Math.min(5, tier)], 1);
-  if (category === 'achievement' && tier >= 3 && index % 4 === 3) pushItem(items, CARD_EGG_IDS[Math.min(5, tier)], 1);
-  if (category === 'challenge' && index % 5 === 4) pushItem(items, CARD_EGG_IDS[Math.min(5, tier)], 2);
+function defaultProfile(category) {
+  return ({
+    main: 'main_step',
+    side: 'side',
+    daily: 'daily',
+    weekly: 'weekly',
+    achievement: 'achievement',
+    challenge: 'challenge',
+  })[category] || 'side';
+}
 
-  // BOSS相关任务偏向DNA与保护符，不直接赠送BOSS成品卡。
-  if (entry.bossId) {
-    pushItem(items, DNA_IDS[Math.min(4, tier)], 10 + tier * 2);
-    pushItem(items, CHARM_IDS[Math.min(4, tier)], Math.max(2, tier));
-  }
-
-  // 若任务本身显式指定了道具奖励，叠加而不是覆盖。
-  for (const it of entry.items || []) pushItem(items, it.id, it.count);
+export function balanceQuestReward(entry, category) {
+  const profile = entry.rewardProfile || defaultProfile(category);
+  const tier = clampTier(entry.rewardTier || 1);
+  const base = profileBase(profile, tier);
+  const theme = entry.rewardTheme || (
+    entry.bossId ? 'boss'
+      : entry.event === 'card_strengthen' ? 'strengthen'
+      : entry.event === 'card_craft' ? 'craft'
+      : entry.event === 'material_combine' ? 'material'
+      : ['adventure_complete','battle_complete','battle_win','battle_nodeath','battle_duration'].includes(entry.event) ? 'adventure'
+      : entry.event === 'item_gain' ? 'collection'
+      : entry.event === 'card_upgrade' ? 'workshop'
+      : null
+  );
+  const themed = themedItems(theme, tier, profile);
+  const items = mergeItems(themed, entry.items);
 
   return {
     ...entry,
-    exp: Number(entry.exp) || 0,
+    gold: entry.gold ?? base.gold,
+    exp: entry.exp ?? base.exp,
+    honor: entry.honor ?? base.honor,
+    gem: entry.gem ?? base.gem,
     cards: Array.isArray(entry.cards) ? entry.cards : [],
     items,
   };
@@ -101,46 +143,39 @@ function levelTier(lv) {
 
 export function levelReward(lv) {
   const tier = levelTier(lv);
-  const matTier = clampTier(tier, 4);
+  const mt = clampTier(tier, 4);
   const milestone = lv % 5 === 0;
   const major = lv % 10 === 0;
   const items = [];
 
-  // 每一级都有小补给。
-  pushItem(items, POWDER_IDS[tier], 4 + tier * 2 + (milestone ? 6 : 0));
-  pushItem(items, PARCHMENT_IDS[matTier], 3 + tier + (milestone ? 5 : 0));
+  // 每级只给轻量成长补给，避免等级奖励本身压过关卡掉落。
+  pushItem(items, QUEST_ITEM_IDS.powder[tier], 2 + tier + (milestone ? 2 : 0));
 
-  // 每5级明显礼包；每10级再提高卡蛋数量。
   if (milestone) {
-    if (lv === 5) pushItem(items, CARD_EGG_IDS[1], 1);
-    else if (lv === 10) pushItem(items, CARD_EGG_IDS[1], 2);
-    else if (lv === 15) pushItem(items, CARD_EGG_IDS[2], 1);
-    else if (lv === 20) pushItem(items, CARD_EGG_IDS[2], 2);
-    else if (lv === 25) pushItem(items, CARD_EGG_IDS[3], 1);
-    else if (lv === 30) pushItem(items, CARD_EGG_IDS[3], 1);
-    else if (lv === 35) pushItem(items, CARD_EGG_IDS[4], 1);
-    else if (lv === 40) pushItem(items, CARD_EGG_IDS[4], 2);
-    else if (lv === 45) pushItem(items, CARD_EGG_IDS[5], 2);
-    else if (lv === 50) pushItem(items, CARD_EGG_IDS[5], 3);
-
-    pushItem(items, GEM_IDS[matTier], 3 + tier * 2);
-    pushItem(items, DNA_IDS[matTier], lv >= 35 ? 10 + tier * 2 : 5 + tier);
+    const eggTier = lv <= 10 ? 1 : lv <= 20 ? 2 : lv <= 30 ? 3 : lv <= 40 ? 4 : 5;
+    pushItem(items, CARD_EGG_IDS[eggTier], lv === 50 ? 2 : 1);
+    pushItem(items, QUEST_ITEM_IDS.parchment[mt], 2);
+    pushItem(items, QUEST_ITEM_IDS.gem[mt], 3);
   }
 
-  if (major) pushItem(items, CHARM_IDS[matTier], Math.max(2, tier + 1));
+  // 十级节点给真正有辨识度的功能道具，而不是继续堆普通材料。
+  if (lv === 20) pushItem(items, QUEST_ITEM_IDS.rerollStat, 1);
+  if (lv === 30) pushItem(items, QUEST_ITEM_IDS.rerollQuality, 1);
+  if (lv === 40) pushItem(items, QUEST_ITEM_IDS.skillBookAttack, 1);
+  if (lv === 50) pushItem(items, QUEST_ITEM_IDS.qualityStone, 1);
 
   return {
     id: `lv${lv}`,
     lv,
     goal: lv,
-    name: `Lv.${lv} 等级奖励`,
-    desc: `角色达到 Lv.${lv} 后即可领取。`,
+    name: `等级 ${lv}`,
+    desc: `角色达到 Lv.${lv}`,
     story: milestone
-      ? `达到 Lv.${lv}，阶段成长补给已经解锁。继续强化战团，为更高难度的冒险与BOSS挑战做准备。`
-      : '等级提升后领取日常成长补给，为后续冒险、强化和制作积累材料。',
-    gold: 500 + lv * 180 + (milestone ? lv * 220 : 0),
-    gem: major ? 20 + lv : (milestone ? 10 + Math.floor(lv / 2) : 0),
-    honor: 30 + lv * 12 + (milestone ? 80 + lv * 3 : 0),
+      ? `达到 Lv.${lv}。这是一个阶段节点，领取对应的成长补给。`
+      : '等级提升后可领取一份基础补给。',
+    gold: 180 + lv * 55 + (milestone ? 500 + lv * 20 : 0),
+    gem: major ? 8 + Math.floor(lv / 5) : (milestone ? 3 + Math.floor(lv / 10) : 0),
+    honor: milestone ? 20 + lv * 2 : 0,
     exp: 0,
     cards: [],
     items,
