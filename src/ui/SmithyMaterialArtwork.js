@@ -6,10 +6,10 @@ export const SMITHY_MATERIAL_ART = Object.freeze({
     new URL('../../resources/img/parchment4.png', import.meta.url).href,
   ],
   dna: [
-    new URL('../../resources/img/DNA1.png', import.meta.url).href,
-    new URL('../../resources/img/DNA2.png', import.meta.url).href,
-    new URL('../../resources/img/DNA3.png', import.meta.url).href,
-    new URL('../../resources/img/DNA4.png', import.meta.url).href,
+    new URL('../../resources/img/DNA1.webp', import.meta.url).href,
+    new URL('../../resources/img/DNA2.webp', import.meta.url).href,
+    new URL('../../resources/img/DNA3.webp', import.meta.url).href,
+    new URL('../../resources/img/DNA4.webp', import.meta.url).href,
   ],
   charm: [
     new URL('../../resources/img/PTL1.png', import.meta.url).href,
