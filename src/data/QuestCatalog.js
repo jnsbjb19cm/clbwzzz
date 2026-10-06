@@ -212,9 +212,9 @@ const SIDE_QUESTS=[
 const DAILY_QUESTS=[
   q('dq1','今日出征','完成2个野外冒险关卡。','出去打两场，够了。',2,'adventure_complete',{...R('daily',1,'adventure')}),
   q('dq2','保持手感','完成3场战斗。','不论输赢，完成三场。',3,'battle_complete',{...R('daily',1,'adventure')}),
-  q('dq3','拿下两场','获得2场战斗胜利。','今天至少赢两场。',2,'battle_win',{...R('daily',1,'adventure')}),
+  q('dq3','拿下两场','获得2场战斗胜利。','今天至少赢两场。',2,'battle_win',{...R('daily',2,'adventure')}),
   q('dq4','清理战场','击败20名敌对单位。','正常推进时顺手完成。',20,'kill_enemy',{...R('daily',1,'adventure')}),
-  q('dq5','工坊维护','成功制作或强化1次。','工坊今天动一次就算完成。',1,'card_upgrade',{...R('daily',1,'workshop')}),
+  q('dq5','工坊维护','成功制作或强化1次。','工坊今天动一次就算完成。',1,'card_upgrade',{...R('daily',2,'workshop')}),
   q('dq6','补给入库','获得8件道具或材料。','不限制种类。',8,'item_gain',{...R('daily',1,'collection')}),
 ];
 
@@ -222,9 +222,9 @@ const DAILY_QUESTS=[
 const WEEKLY_QUESTS=[
   q('wq1','本周出勤','本周完成12场战斗。','稳定打，比一天刷完更舒服。',12,'battle_complete',{...R('weekly',2,'adventure')}),
   q('wq2','本周远征','本周完成8个野外冒险关卡。','两条路线都可以计数。',8,'adventure_complete',{...R('weekly',2,'adventure')}),
-  q('wq3','本周胜场','本周获得6场胜利。','不要求连胜。',6,'battle_win',{...R('weekly',2,'adventure')}),
+  q('wq3','本周胜场','本周获得6场胜利。','不要求连胜。',6,'battle_win',{...R('weekly',3,'adventure')}),
   q('wq4','前线清理','本周击败100名敌对单位。','正常打本即可推进。',100,'kill_enemy',{...R('weekly',2,'adventure')}),
-  q('wq5','工坊周记','本周成功制作或强化5次。','制作和强化都算。',5,'card_upgrade',{...R('weekly',2,'workshop')}),
+  q('wq5','工坊周记','本周成功制作或强化5次。','制作和强化都算。',5,'card_upgrade',{...R('weekly',3,'workshop')}),
   q('wq6','面对强敌','本周挑战任意BOSS 1次。','只要求挑战，不强制获胜。',1,'boss_challenge',{...R('weekly',3,'boss')}),
 ];
 
@@ -301,9 +301,9 @@ const CHALLENGE_QUESTS=[
   q('cq11','两分钟','完成3场120秒内结束的战斗。','三场都要在两分钟内收尾。',3,'battle_duration',{
     maxDuration:120,...R('challenge',4,'adventure')
   }),
-  q('cq12','双线终局','完成大陆最终关。','把两条路线全部推进到尽头。',1,'adventure_complete',{
-    requiresMain:'mq24',finalOnly:true,adventureKey:'final',
-    ...R('challenge',5,'adventure',{items:[{id:QUEST_ITEM_IDS.qualityStone,count:1}]})
+  q('cq12','首领猎手','累计击败8次BOSS。','不是首通一次就结束。熟悉不同首领后，再拿下八场胜利。',8,'boss_defeated',{
+    cumulativeKey:'totalBossDefeats',
+    ...R('challenge',5,'boss',{items:[{id:CARD_EGG_IDS[4],count:1},{id:QUEST_ITEM_IDS.reverse,count:2}]})
   }),
 ];
 
