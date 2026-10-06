@@ -9,7 +9,7 @@
     "dev:server": "node --watch server/index.js",
     "dev:all": "concurrently -k -n SERVER,CLIENT \"npm:dev:server\" \"npm:dev:client\"",
     "server": "npm run build:deploy && node server/index.js",
-    "server:prod": "node server/index.js",
+    "server:prod": "npm run build:deploy && node server/index.js",
     "build:deploy": "vite build",
     "start:prod": "npm run build:deploy && node server/index.js",
     "build": "vite build",
