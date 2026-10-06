@@ -56,86 +56,58 @@ function sideArc(prefix,arc,rows){
 // 两条冒险路线的同编号关卡都可推进主线；-4 是阶段关。
 // 每一关都有独立任务和奖励，BOSS放在对应章节收尾。
 const MAIN_QUESTS=mainChain([
-  ['林口有人','通关主线 1-1「初识防线」。','路障才挪开，前面就打起来了。远程单位躲得深，先别让前排把路堵死。',1,'adventure_complete',{
-    chapter:'第一章 · 林口',adventureIndex:1,...stageReward(1,1)
+  ['先走一段','通关冒险大陆任一线路 1-1。','植物线、怪物线都行。先选一边进去。',1,'adventure_complete',{
+    chapter:'第一章 · 1区',adventureIndex:1,...stageReward(1,1)
   }],
-  ['后排的南瓜','通关主线 1-2「投手加入」。','南瓜投手缩在后面一直扔，前排一拖住你，它就舒服了。',1,'adventure_complete',{
-    chapter:'第一章 · 林口',adventureIndex:2,...stageReward(1,2)
+  ['继续往前','通关冒险大陆任一线路 1-2。','前一关打完，接着走。',1,'adventure_complete',{
+    chapter:'第一章 · 1区',adventureIndex:2,...stageReward(1,2)
   }],
-  ['先断补给','通关主线 1-3「补给阵地」。','小麦和投手挤在一块儿。拖久了不好收场，能先拆支援就别磨前排。',1,'adventure_complete',{
-    chapter:'第一章 · 林口',adventureIndex:3,...stageReward(1,3)
+  ['第三关','通关冒险大陆任一线路 1-3。','这一段开始会比前两关挤一点。',1,'adventure_complete',{
+    chapter:'第一章 · 1区',adventureIndex:3,...stageReward(1,3)
   }],
-  ['西瓜压过来了','通关主线 1-4「西瓜突围」。','这一关不跟你排队，多路一起上。哪边漏了，哪边就得马上补。',1,'adventure_complete',{
-    chapter:'第一章 · 林口',adventureIndex:4,challengeOnly:true,...stageReward(1,4)
-  }],
-  ['旧药箱','挑战“痴情的多特”1次。','营地边翻出一个旧药箱，名字还在：多特。档案里的他以前是医生。',1,'boss_challenge',{
-    chapter:'第一章 · 多特',bossId:'boss_dot',bossChallengeId:'boss_dot',...R('main_checkpoint',2,'boss')
-  }],
-  ['多特倒下了','击败“痴情的多特”。','妻子死在战争里以后，多特再也没回过诊所。先把眼前这场仗结束。',1,'boss_defeated',{
-    chapter:'第一章 · 多特',bossId:'boss_dot',bossDefeatId:'boss_dot',
-    ...R('main_boss',2,'boss',{items:[{id:CARD_EGG_IDS[2],count:1}]})
+  ['1区尽头','通关冒险大陆任一线路 1-4。','打完这一关，1区就算过了。下一站是2-1，不是BOSS。',1,'adventure_complete',{
+    chapter:'第一章 · 1区',adventureIndex:4,challengeOnly:true,...stageReward(1,4)
   }],
 
-  ['路上结冰了','通关主线 2-1「寒冰前哨」。','地面开始打滑，控制单位也多了。后排被冻住的时候，空位会一下子变得很贵。',1,'adventure_complete',{
-    chapter:'第二章 · 往里走',adventureIndex:5,...stageReward(2,1)
+  ['进2区','通关冒险大陆任一线路 2-1。','路线还在往前延，先拿下2-1。',1,'adventure_complete',{
+    chapter:'第二章 · 2区',adventureIndex:5,...stageReward(2,1)
   }],
-  ['上下轮着来','通关主线 2-2「错峰夹击」。','上路刚停，下路就动。手里最好留点能马上补进去的牌。',1,'adventure_complete',{
-    chapter:'第二章 · 往里走',adventureIndex:6,...stageReward(2,2)
+  ['2-2','通关冒险大陆任一线路 2-2。','接着推进。',1,'adventure_complete',{
+    chapter:'第二章 · 2区',adventureIndex:6,...stageReward(2,2)
   }],
-  ['医生在后面','通关主线 2-3「补给护卫」。','这回麻烦的是后面的支援。前排再硬，也架不住一直有人往回抬血。',1,'adventure_complete',{
-    chapter:'第二章 · 往里走',adventureIndex:7,...stageReward(2,3)
+  ['2-3','通关冒险大陆任一线路 2-3。','别急着换路线，先把这一段打完。',1,'adventure_complete',{
+    chapter:'第二章 · 2区',adventureIndex:7,...stageReward(2,3)
   }],
-  ['把盾敲开','通关主线 2-4「坚盾连阵」。','巨盾顶在前面，冰系单位藏在后面。第五波会一起压上来。',1,'adventure_complete',{
-    chapter:'第二章 · 往里走',adventureIndex:8,challengeOnly:true,...stageReward(2,4)
-  }],
-  ['军令上的名字','挑战“愤怒的沃里尔”1次。','泥里那张军令还看得清编号。沃里尔以前带兵，这套阵形也是他的老习惯。',1,'boss_challenge',{
-    chapter:'第二章 · 沃里尔',bossId:'boss_gravo',bossChallengeId:'boss_gravo',...R('main_checkpoint',3,'boss')
-  }],
-  ['别让他再往前推','击败“愤怒的沃里尔”。','他的妻子和儿子都没能从战争里回来。沃里尔把剩下的东西全压进了这支队伍。',1,'boss_defeated',{
-    chapter:'第二章 · 沃里尔',bossId:'boss_gravo',bossDefeatId:'boss_gravo',
-    ...R('main_boss',3,'boss',{items:[{id:CARD_EGG_IDS[3],count:1}]})
+  ['2区尽头','通关冒险大陆任一线路 2-4。','打完2-4，继续去3-1。',1,'adventure_complete',{
+    chapter:'第二章 · 2区',adventureIndex:8,challengeOnly:true,...stageReward(2,4)
   }],
 
-  ['火力交叉','通关主线 3-1「交叉火网」。','三头仙人掌一上场，挤在一排反而吃亏。站位散一点。',1,'adventure_complete',{
-    chapter:'第三章 · 深处',adventureIndex:9,...stageReward(3,1)
+  ['进3区','通关冒险大陆任一线路 3-1。','这里开始，阵容不够顺手会明显难打。',1,'adventure_complete',{
+    chapter:'第三章 · 3区',adventureIndex:9,...stageReward(3,1)
   }],
-  ['脚底不安全','通关主线 3-2「地底来客」。','钻地单位会直接去找后排。别把能放人的格子塞满。',1,'adventure_complete',{
-    chapter:'第三章 · 深处',adventureIndex:10,...stageReward(3,2)
+  ['3-2','通关冒险大陆任一线路 3-2。','继续。',1,'adventure_complete',{
+    chapter:'第三章 · 3区',adventureIndex:10,...stageReward(3,2)
   }],
-  ['天上也来了','通关主线 3-3「空地交替」。','地面还没清完，侧翼又有空中单位。单靠一种卡不好顶。',1,'adventure_complete',{
-    chapter:'第三章 · 深处',adventureIndex:11,...stageReward(3,3)
+  ['3-3','通关冒险大陆任一线路 3-3。','已经快到这一段的关底了。',1,'adventure_complete',{
+    chapter:'第三章 · 3区',adventureIndex:11,...stageReward(3,3)
   }],
-  ['炮口后面','通关主线 3-4「炮阵试炼」。','玉米炮手躲在巨盾后面。别跟盾耗到底，找一边先撕开。',1,'adventure_complete',{
-    chapter:'第三章 · 深处',adventureIndex:12,challengeOnly:true,...stageReward(3,4)
-  }],
-  ['风里有冰碴','挑战“疯狂的安娜”1次。','安娜小时候跟母亲学魔法。母亲被杀以后，她剩下的那点东西全变成了恨。',1,'boss_challenge',{
-    chapter:'第三章 · 安娜',bossId:'boss_ice',bossChallengeId:'boss_ice',...R('main_checkpoint',4,'boss')
-  }],
-  ['寒风停了','击败“疯狂的安娜”。','冰封散开以后，路边那些被冻住的施法痕迹才重新露出来。',1,'boss_defeated',{
-    chapter:'第三章 · 安娜',bossId:'boss_ice',bossDefeatId:'boss_ice',
-    ...R('main_boss',4,'boss',{items:[{id:QUEST_ITEM_IDS.rerollStat,count:1}]})
+  ['3区尽头','通关冒险大陆任一线路 3-4。','过掉3-4，前面就是最后一大段。',1,'adventure_complete',{
+    chapter:'第三章 · 3区',adventureIndex:12,challengeOnly:true,...stageReward(3,4)
   }],
 
-  ['树荫下面','通关主线 4-1「树荫防线」。','树精守卫很能拖。火力分得太平均，哪一边都打不穿。',1,'adventure_complete',{
-    chapter:'第四章 · 树影',adventureIndex:13,...stageReward(4,1)
+  ['进4区','通关冒险大陆任一线路 4-1。','最后一段开始。',1,'adventure_complete',{
+    chapter:'第四章 · 4区',adventureIndex:13,...stageReward(4,1)
   }],
-  ['蘑菇回廊','通关主线 4-2「蘑菇回廊」。','地下单位在前面搅，蘑菇仙人在后面撑。别一起追。',1,'adventure_complete',{
-    chapter:'第四章 · 树影',adventureIndex:14,...stageReward(4,2)
+  ['4-2','通关冒险大陆任一线路 4-2。','再往前一关。',1,'adventure_complete',{
+    chapter:'第四章 · 4区',adventureIndex:14,...stageReward(4,2)
   }],
-  ['剑客合击','通关主线 4-3「剑客合击」。','近战、控制、后排都在场。你那套最顺手的阵容，差不多该拿出来了。',1,'adventure_complete',{
-    chapter:'第四章 · 树影',adventureIndex:15,...stageReward(4,3)
+  ['4-3','通关冒险大陆任一线路 4-3。','只剩最后一道阶段关。',1,'adventure_complete',{
+    chapter:'第四章 · 4区',adventureIndex:15,...stageReward(4,3)
   }],
-  ['古树挡路','通关主线 4-4「古树攻坚」。','战争古树站在最后面，前面还有整套支援。这是两条普通战线最后一道硬关。',1,'adventure_complete',{
-    chapter:'第四章 · 树影',adventureIndex:16,challengeOnly:true,...stageReward(4,4)
+  ['4区尽头','通关冒险大陆任一线路 4-4。','4-4打完后，把另一条路线也推到终点，最终关才会出现。',1,'adventure_complete',{
+    chapter:'第四章 · 4区',adventureIndex:16,challengeOnly:true,...stageReward(4,4)
   }],
-  ['萝莉塔','挑战“树妖萝莉塔”1次。','她很早就没了父母，后来连男友也死在战场。树妖的力量是在那之后找上她的。',1,'boss_challenge',{
-    chapter:'第四章 · 萝莉塔',bossId:'boss_forest',bossChallengeId:'boss_forest',...R('main_checkpoint',5,'boss')
-  }],
-  ['密林安静了','击败“树妖萝莉塔”。','打完以后，附近的树根还在动，只是没再往路上伸。',1,'boss_defeated',{
-    chapter:'第四章 · 萝莉塔',bossId:'boss_forest',bossDefeatId:'boss_forest',
-    ...R('main_boss',5,'boss',{items:[{id:QUEST_ITEM_IDS.rerollQuality,count:1}]})
-  }],
-  ['两条路都到头了','完成大陆最终关。','植物线、怪物线都走到这里，最后一场没有绕路。打过去。',1,'adventure_complete',{
+  ['最终关','完成冒险大陆最终关。','两条路线都走到头以后，最后这场才算真正收尾。',1,'adventure_complete',{
     chapter:'终章',finalOnly:true,
     ...R('main_final',5,'adventure',{items:[{id:CARD_EGG_IDS[4],count:1},{id:QUEST_ITEM_IDS.qualityStone,count:1}]})
   }],
@@ -205,29 +177,6 @@ const SIDE_PVP=sideArc('spv','竞技场',[
   ['五胜','累计获得5场PVP胜利。','五场胜利以后再说这套牌稳不稳。',5,'pvp_win',{cumulativeKey:'totalPvpWins',...R('side_social',3,null)}],
 ]);
 
-const SIDE_BOSS=[
-  ...sideArc('sbd','多特 · 复战',[
-    ['再打一场多特','累计挑战“痴情的多特”2次。','第一次忙着过关，第二次看看他的技能到底怎么转。',2,'boss_challenge',{
-      requiresMain:'mq06',bossId:'boss_dot',bossChallengeId:'boss_dot',...R('side',2,'boss')
-    }],
-  ]),
-  ...sideArc('sbg','沃里尔 · 复战',[
-    ['再打一场沃里尔','累计挑战“愤怒的沃里尔”2次。','他的阵线有节奏，第二次会看得更清楚。',2,'boss_challenge',{
-      requiresMain:'mq12',bossId:'boss_gravo',bossChallengeId:'boss_gravo',...R('side',3,'boss')
-    }],
-  ]),
-  ...sideArc('sbi','安娜 · 复战',[
-    ['再打一场安娜','累计挑战“疯狂的安娜”2次。','暴风雪起来以后，别急着往空位里塞牌。',2,'boss_challenge',{
-      requiresMain:'mq18',bossId:'boss_ice',bossChallengeId:'boss_ice',...R('side',4,'boss')
-    }],
-  ]),
-  ...sideArc('sbf','萝莉塔 · 复战',[
-    ['再打一场萝莉塔','累计挑战“树妖萝莉塔”2次。','看清召唤出来的东西，再决定火力往哪边挪。',2,'boss_challenge',{
-      requiresMain:'mq24',bossId:'boss_forest',bossChallengeId:'boss_forest',...R('side',4,'boss')
-    }],
-  ]),
-];
-
 const SIDE_QUESTS=[
   ...SIDE_PLANT,
   ...SIDE_MONSTER,
@@ -236,9 +185,7 @@ const SIDE_QUESTS=[
   ...SIDE_SUPPLY,
   ...SIDE_COMBAT,
   ...SIDE_COOP,
-  ...SIDE_PVP,
-  ...SIDE_BOSS,
-];
+  ...SIDE_PVP,];
 
 // ==================== 日常 ====================
 const DAILY_QUESTS=[
@@ -297,33 +244,33 @@ const ACHIEVEMENT_QUESTS=[
 
 // ==================== 挑战 ====================
 const CHALLENGE_QUESTS=[
-  q('cq1','多特','击败“痴情的多特”。','再赢一次也算。',1,'boss_defeated',{
-    requiresMain:'mq04',bossId:'boss_dot',bossDefeatId:'boss_dot',...R('challenge_boss',2,'boss')
+  q('cq1','痴情的多特','击败悲伤密林BOSS“痴情的多特”。','悲伤密林的第一只BOSS。打过多特，下一只才解锁。',1,'boss_defeated',{
+    bossId:'boss_dot',bossDefeatId:'boss_dot',...R('challenge_boss',2,'boss')
   }),
-  q('cq2','沃里尔','击败“愤怒的沃里尔”。','把这场首领战拿下。',1,'boss_defeated',{
-    requiresMain:'mq10',bossId:'boss_gravo',bossDefeatId:'boss_gravo',...R('challenge_boss',3,'boss')
+  q('cq2','愤怒的沃里尔','击败悲伤密林BOSS“愤怒的沃里尔”。','多特倒下后，沃里尔才会开放。',1,'boss_defeated',{
+    requires:'cq1',bossId:'boss_gravo',bossDefeatId:'boss_gravo',...R('challenge_boss',3,'boss')
   }),
-  q('cq3','安娜','击败“疯狂的安娜”。','别让冻结把节奏全打散。',1,'boss_defeated',{
-    requiresMain:'mq16',bossId:'boss_ice',bossDefeatId:'boss_ice',...R('challenge_boss',4,'boss')
+  q('cq3','疯狂的安娜','击败悲伤密林BOSS“疯狂的安娜”。','击败沃里尔后，才轮到安娜。',1,'boss_defeated',{
+    requires:'cq2',bossId:'boss_ice',bossDefeatId:'boss_ice',...R('challenge_boss',4,'boss')
   }),
-  q('cq4','萝莉塔','击败“树妖萝莉塔”。','召唤多的时候先别乱换目标。',1,'boss_defeated',{
-    requiresMain:'mq22',bossId:'boss_forest',bossDefeatId:'boss_forest',...R('challenge_boss',5,'boss')
+  q('cq4','树妖萝莉塔','击败悲伤密林BOSS“树妖萝莉塔”。','安娜之后，悲伤密林最后开放萝莉塔。',1,'boss_defeated',{
+    requires:'cq3',bossId:'boss_forest',bossDefeatId:'boss_forest',...R('challenge_boss',5,'boss')
   }),
 
   q('cq5','狂暴的刀牙','击败海底神殿BOSS“狂暴的刀牙”。','第一只。',1,'boss_defeated',{
-    requiresMain:'mq25',bossId:'boss_shark',bossDefeatId:'boss_shark',...R('challenge_boss',4,'boss')
+    requiresMain:'mq17',bossId:'boss_shark',bossDefeatId:'boss_shark',...R('challenge_boss',4,'boss')
   }),
   q('cq6','龙虾战士','击败海底神殿BOSS“龙虾战士”。','小心连续突进。',1,'boss_defeated',{
-    requiresMain:'mq25',bossId:'boss_lobster',bossDefeatId:'boss_lobster',...R('challenge_boss',4,'boss')
+    requiresMain:'mq17',bossId:'boss_lobster',bossDefeatId:'boss_lobster',...R('challenge_boss',4,'boss')
   }),
   q('cq7','失控的蓝贝贝','击败海底神殿BOSS“失控的蓝贝贝”。','门开了以后别只盯着BOSS。',1,'boss_defeated',{
-    requiresMain:'mq25',bossId:'boss_bluebaby',bossDefeatId:'boss_bluebaby',...R('challenge_boss',4,'boss')
+    requiresMain:'mq17',bossId:'boss_bluebaby',bossDefeatId:'boss_bluebaby',...R('challenge_boss',4,'boss')
   }),
   q('cq8','龟老师','击败海底神殿BOSS“龟老师”。','技能多，慢一点看。',1,'boss_defeated',{
-    requiresMain:'mq25',bossId:'boss_turtle',bossDefeatId:'boss_turtle',...R('challenge_boss',5,'boss')
+    requiresMain:'mq17',bossId:'boss_turtle',bossDefeatId:'boss_turtle',...R('challenge_boss',5,'boss')
   }),
   q('cq9','琴音','击败海底神殿BOSS“人鱼公主琴音”。','最后一个。',1,'boss_defeated',{
-    requiresMain:'mq25',bossId:'boss_princess',bossDefeatId:'boss_princess',
+    requiresMain:'mq17',bossId:'boss_princess',bossDefeatId:'boss_princess',
     ...R('challenge_boss',5,'boss',{items:[{id:CARD_EGG_IDS[5],count:1}]})
   }),
 
@@ -349,7 +296,7 @@ const QUEST_GROUPS={
 };
 
 const CATEGORIES=[
-  {id:'main',label:'主线任务',subtitle:'1-1 到最终关，每关都有奖励'},
+  {id:'main',label:'主线任务',subtitle:'冒险大陆 1-1 → 4-4 → 最终关'},
   {id:'side',label:'支线任务',subtitle:'换打法、跑另一条线、做养成'},
   {id:'daily',label:'日常任务',subtitle:'当天随手做'},
   {id:'weekly',label:'周常任务',subtitle:'一周慢慢完成'},
