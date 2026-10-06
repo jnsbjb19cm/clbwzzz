@@ -10,11 +10,13 @@ const q = (id, name, desc, story, goal, event, extra = {}) => ({
   id, name, desc, story, goal, event, ...extra,
 });
 
-function mainChain(rows) {
+function mainChain(rows, economy = {}) {
   return rows.map((row, index) => {
     const [name, desc, story, goal, event, extra = {}] = row;
+    const base = typeof economy === 'function' ? economy(index) : economy;
     return q('m' + (index + 1), name, desc, story, goal, event, {
       ...(index > 0 ? { requires: 'm' + index } : {}),
+      ...base,
       ...extra,
     });
   });
@@ -168,7 +170,7 @@ const MAIN_QUESTS = mainChain([
     '最后的障碍被清除后，主城与生命之源之间终于重新连成一条完整路线。森林仍有未解决的威胁，但至少这一阶段的主动权已经重新回到埃尔夫守卫手中。',
     34, 'adventure_complete', { cumulativeKey:'totalAdventures', gold:30000, gem:120, honor:450, exp:3800 },
   ],
-], 'main', mainEconomy);
+], mainEconomy);
 
 // ---- 支线：按主题并行，不再强制 s1 → s58 ----
 const SIDE_QUESTS = [
