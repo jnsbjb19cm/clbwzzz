@@ -192,6 +192,21 @@ const SIDE_COMBAT=sideArc('st','战斗技巧',[
   ['前线老兵','累计完成50场战斗。','五十场之后，许多判断已经不需要再犹豫。',50,'battle_complete',{cumulativeKey:'totalBattles'}],
 ],sideEconomy);
 
+
+// ---- 支线：联机玩法只做可选任务弧，不阻塞主线 ----
+const SIDE_COOP=sideArc('sw','并肩作战',[
+  ['第一次并肩','完成1场多人PVE。','同一座基地由多名玩家共同防守，先熟悉各自费用与部署不会互相覆盖的节奏。',1,'coop_battle_complete'],
+  ['开始有配合','累计完成3场多人PVE。','当队友开始知道谁负责前排、谁补后排，协作才真正出现。',3,'coop_battle_complete',{cumulativeKey:'totalCoopBattles'}],
+  ['固定搭档','累计完成10场多人PVE。','十场之后，临时队伍也会形成一套不用多说的配合习惯。',10,'coop_battle_complete',{cumulativeKey:'totalCoopBattles'}],
+],sideEconomy);
+
+const SIDE_PVP=sideArc('sr','竞技切磋',[
+  ['第一次交手','完成1场PVP。','真正的玩家不会照着固定波次出牌，先完整打一场。',1,'battle_pvp'],
+  ['三种对手','累计完成3场PVP。','多打几场，才能看见不同卡组真正的节奏差异。',3,'battle_pvp',{cumulativeKey:'totalPvpBattles'}],
+  ['第一场竞技胜利','累计获得1场PVP胜利。','读懂一次对手的资源与部署，然后把优势保持到最后。',1,'pvp_win',{cumulativeKey:'totalPvpWins'}],
+  ['不止赢一次','累计获得5场PVP胜利。','能反复取胜，说明阵容已经不只适合打固定关卡。',5,'pvp_win',{cumulativeKey:'totalPvpWins'}],
+],sideEconomy);
+
 // ---- 支线：BOSS人物弧。沿用现有背景，作为主线之外的补充理解。 ----
 const SIDE_BOSS=[
   ...sideArc('sb1','多特 · 失去之后',[
@@ -219,7 +234,7 @@ const SIDE_BOSS=[
 const SIDE_QUESTS=[
   ...SIDE_ADVENTURE_PLANT,...SIDE_ADVENTURE_MONSTER,
   ...SIDE_POWDER,...SIDE_PARCHMENT,...SIDE_GEM,...SIDE_DNA,...SIDE_CHARM,
-  ...SIDE_MATERIAL,...SIDE_STRENGTH,...SIDE_CRAFT,...SIDE_COMBAT,...SIDE_BOSS,
+  ...SIDE_MATERIAL,...SIDE_STRENGTH,...SIDE_CRAFT,...SIDE_COMBAT,...SIDE_COOP,...SIDE_PVP,...SIDE_BOSS,
 ];
 
 // ---- 日常：12项，覆盖不同核心循环，不做同类3/5/8套娃 ----
@@ -270,6 +285,9 @@ const ACHIEVEMENT_QUESTS=[
   q('a28','工坊大师','累计成功制作30张卡牌。','制作已经成为主要成长方式之一。',30,'craft_total',{gold:32000,gem:150,honor:420}),
   q('a29','材料循环','累计完成20次材料加工。','低阶到高阶的资源循环已经稳定。',20,'material_total',{gold:14000,gem:80,honor:210}),
   q('a30','BOSS猎手','累计击败5次BOSS。','已经不止一次正面跨过大型挑战。',5,'boss_defeat_total',{gold:24000,gem:130,honor:400}),
+  q('a31','多人同路','累计完成20场多人PVE。','和不同队友一起守过足够多次基地。',20,'coop_total',{gold:18000,gem:80,honor:260}),
+  q('a32','竞技常客','累计完成30场PVP。','面对真人阵容已经成为熟悉的体验。',30,'pvp_total',{gold:20000,gem:90,honor:300}),
+  q('a33','竞技赢家','累计获得10场PVP胜利。','真正玩家之间的十场胜利比固定关卡更难复制。',10,'pvp_win_total',{gold:24000,gem:110,honor:380}),
 ];
 
 // ---- 周常：12项，强调一周内的广度 ----
@@ -310,6 +328,8 @@ const CHALLENGE_QUESTS=[
   q('c18','完整材料循环','累计完成20次材料加工。','长期维持低阶到高阶的转换。',20,'material_combine',{cumulativeKey:'totalMaterialCombines',gold:17000,exp:2700}),
   q('c19','三级晶核储备','累计收集20个三级宝石。','真正建立一批高价值材料库存。',20,'item_gain',{itemId:50013,lifetimeItemId:50013,gold:19000,exp:2900}),
   q('c20','双线终局','完成大陆最终关。','两条路线全部推进到尽头，并通过最终会合战。',1,'adventure_complete',{requiresMain:'m33',finalOnly:true,adventureKey:'final',gold:30000,gem:120,honor:500,exp:4200}),
+  q('c21','十场协作','累计完成10场多人PVE。','把协作从偶尔体验变成稳定能力。',10,'coop_battle_complete',{cumulativeKey:'totalCoopBattles',gold:18000,honor:260,exp:2800}),
+  q('c22','竞技十胜','累计获得10场PVP胜利。','对手每一场都不同，十场胜利证明卡组拥有真正的适应性。',10,'pvp_win',{cumulativeKey:'totalPvpWins',gold:22000,honor:420,exp:3200}),
 ];
 
 const QUEST_GROUPS={
