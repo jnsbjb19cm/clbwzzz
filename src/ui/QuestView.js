@@ -72,7 +72,7 @@ function rewardChips(reward,cardDb,itemDb){
   if(reward.honor)out.push('<span class="quest-reward-chip">'+rewardIcon('honor')+'荣誉 '+reward.honor+'</span>');
   if(reward.exp)out.push('<span class="quest-reward-chip">'+rewardIcon('exp')+'经验 '+reward.exp+'</span>');
   for(const id of reward.cards||[]){const n=cardDb?.getById(id)?.name;out.push('<span class="quest-reward-chip">'+rewardIcon('card')+escaped(n&&!brokenText(n)?n:'卡牌 '+id)+'</span>');}
-  for(const it of reward.items||[]){const n=itemDb?.getById(it.id)?.name;out.push('<span class="quest-reward-chip">'+itemIconMarkup(it.id,26)+escaped(n&&!brokenText(n)?n:'道具 '+it.id)+' ×'+it.count+'</span>');}
+  for(const it of reward.items||[]){const n=itemDb?.getById(it.id)?.name;out.push('<span class="quest-reward-chip">'+itemIconMarkup(it.id,40)+escaped(n&&!brokenText(n)?n:'道具 '+it.id)+' ×'+it.count+'</span>');}
   return out.join('');
 }
 
@@ -157,9 +157,33 @@ function requirementsMet(state,category,quest){
   const mainOk=requirementIds(quest.requiresMain).every((id)=>questComplete(state,'main',id));
   return localOk&&mainOk;
 }
+/**
+ * 2026-10-06：背包里现有的数量。
+ * "收集X个材料"的目标材料是**服务端掉落**的（BOSS 通关奖励，见 AdventureAccess.js），
+ * 那种入库不会走客户端 addItem，事件累加统计不到 → 这里兜底读一次背包当前数量。
+ */
+function ownedItemCount(itemId){
+  try{
+    const app=globalThis.__clbwzAppInstance;
+    const inv=app?.inventory??app?.itemInventory??app?.views?.bag?.inventory??null;
+    if(!inv)return 0;
+    if(typeof inv.getCount==='function')return Math.max(0,Number(inv.getCount(itemId)||0));
+    const list=typeof inv.getItems==='function'?inv.getItems():(typeof inv.getAll==='function'?inv.getAll():inv.items);
+    if(Array.isArray(list)){
+      return list.filter((it)=>Number(it?.itemId??it?.id)===Number(itemId)).reduce((sum,it)=>sum+Math.max(0,Number(it?.count||0)),0);
+    }
+  }catch{/* 读背包失败不影响任务进度 */}
+  return 0;
+}
 function cumulativeProgress(quest,state){
+  // 2026-10-06：等级类任务（等级成就 + 主线"十级学徒"这类）统一读玩家等级。
+  // 原来 event==='level' 只在成就回调里算，主线的等级任务没有任何人派发事件 → 永远不涨。
+  if(quest.event==='level')return Math.max(0,Number(state?._lastPlayerLevel||1));
   if(quest.cumulativeKey)return Math.max(0,Number(state?._extra?.[quest.cumulativeKey]||0));
-  if(quest.lifetimeItemId!=null)return Math.max(0,Number(state?._extra?.itemGainsById?.[String(quest.lifetimeItemId)]||0));
+  if(quest.lifetimeItemId!=null){
+    const tracked=Math.max(0,Number(state?._extra?.itemGainsById?.[String(quest.lifetimeItemId)]||0));
+    return Math.max(tracked,ownedItemCount(quest.lifetimeItemId));
+  }
   if(quest.bossChallengeId)return Math.max(0,Number(state?._extra?.bossChallengesById?.[String(quest.bossChallengeId)]||0));
   if(quest.bossDefeatId)return Math.max(0,Number(state?._extra?.bossDefeatsById?.[String(quest.bossDefeatId)]||0));
   if(quest.adventureKey)return Math.max(0,Number(state?._extra?.adventureClears?.[String(quest.adventureKey)]||0));
@@ -377,7 +401,7 @@ export class QuestView{
   renderDetail(root,entry){
     const detail=root.querySelector('#quest-detail');if(!entry){detail.innerHTML='<div class="quest-parchment-empty">选择一个任务查看详情</div>';return;}
     const s=this.stateFor(entry),pct=Math.min(100,s.progress/Math.max(s.goal,1)*100),label=entry.chapter||entry.arc||(this.category==='level'?'成长计划':this.category==='achievement'?'里程碑':'任务委托'),action=s.claimed?'<span class="quest-detail-claimed">已领取</span>':s.ready?'<button type="button" class="quest-claim-btn quest-detail-claim" data-entry="'+entry.id+'">领取奖励</button>':'<span class="quest-detail-locked">继续完成</span>';
-    detail.innerHTML=['<div class="quest-parchment-inner"><p class="quest-detail-kicker">',escaped(label),'</p><h2>',escaped(entry.name),'</h2><div class="quest-parchment-rule"></div><section class="quest-detail-block"><h3>任务目标</h3><p>',escaped(entry.desc),'</p><div class="quest-detail-progress"><i style="width:',pct,'%"></i></div><span>',s.progress,' / ',s.goal,'</span></section><section class="quest-detail-block"><h3>任务说明</h3><p>',escaped(entry.story||entry.desc),'</p></section><section class="quest-detail-block quest-detail-rewards"><h3>任务奖励</h3><div>',rewardChips(entry,this.cardDb,this.itemDb),'</div></section><footer class="quest-detail-footer">',action,'</footer></div>'].join('');
+    detail.innerHTML=['<div class="quest-parchment-inner"><p class="quest-detail-kicker">',escaped(label),'</p><h2>',escaped(entry.name),'</h2><div class="quest-parchment-rule"></div><section class="quest-detail-block"><h3>任务目标</h3><p>',escaped(entry.desc),'</p><div class="quest-detail-progress"><i style="width:',pct,'%"></i></div><span>',s.progress,' / ',s.goal,'</span></section><section class="quest-detail-block"><h3>任务说明</h3><p>',escaped(entry.story||entry.desc),'</p></section>',(entry.consumeItems&&entry.consumeItems.length?('<section class="quest-detail-block"><h3>需要提交</h3><p>'+entry.consumeItems.map((c)=>escaped(this.itemDb?.getById?.(Number(c.id))?.name||('道具 '+c.id))+' ×'+Math.max(0,Math.floor(Number(c.count)||0))).join('、')+'（领奖时扣除）</p></section>'):''),'<section class="quest-detail-block quest-detail-rewards"><h3>任务奖励</h3><div>',rewardChips(entry,this.cardDb,this.itemDb),'</div></section><footer class="quest-detail-footer">',action,'</footer></div>'].join('');
     detail.querySelector('.quest-detail-claim')?.addEventListener('click',()=>this.claim(root,entry));
   }
   recordClaim(category,entry,period=questPeriodKey(category)){
@@ -406,6 +430,11 @@ export class QuestView{
     try{
       for(const id of reward.cards||[])this.cardInventory?.addCard(id,0,{craftQuality:1,strengthLv:0});
       for(const item of reward.items||[])this.inventory?.addItem(item.id,item.count);
+      // 2026-10-06：材料提交类任务，领奖后本地同步扣掉（服务端已扣，这里只对齐界面）
+      for(const entry of (reward.consumeItems||[])){
+        const id=Number(entry?.id);const need=Math.max(0,Math.floor(Number(entry?.count)||0));
+        if(Number.isInteger(id)&&id>0&&need>0)this.inventory?.consumeItem?.(id,need);
+      }
     }finally{QuestView._suppressItemGain=false;}
   }
   toast(root,message){const t=root.querySelector('#quest-toast');if(!t)return;t.textContent=message;t.classList.remove('hidden');clearTimeout(this.toastTimer);this.toastTimer=setTimeout(()=>t.classList.add('hidden'),2200);}

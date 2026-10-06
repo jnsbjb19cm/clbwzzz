@@ -148,6 +148,26 @@ questRewardAuthorityRouter20260908.post('/quests/claim-reward', async (req, res)
         WHERE user_id=?
       `, [reward.gold, reward.diamond, reward.honor, progress.level, progress.exp, userId]);
 
+      // 2026-10-06：材料提交类任务 —— 领奖时先扣掉目标材料（不足直接抛错，整个事务回滚）。
+      const consume = Array.isArray(definition.consumeItems) ? definition.consumeItems : [];
+      for (const entry of consume) {
+        const itemId = Number(entry?.id ?? entry?.itemId);
+        const need = Math.max(0, Math.floor(Number(entry?.count) || 0));
+        if (!Number.isInteger(itemId) || itemId <= 0 || !need) continue;
+        const ownedRow = await conn.get(
+          'SELECT count FROM player_items WHERE user_id=? AND item_id=? AND is_bound=0',
+          [userId, itemId],
+        );
+        const owned = Math.max(0, Number(ownedRow?.count || 0));
+        if (owned < need) throw new Error('提交的材料不够，先去打够再来');
+        const left = owned - need;
+        if (left > 0) {
+          await conn.run('UPDATE player_items SET count=? WHERE user_id=? AND item_id=? AND is_bound=0', [left, userId, itemId]);
+        } else {
+          await conn.run('DELETE FROM player_items WHERE user_id=? AND item_id=? AND is_bound=0', [userId, itemId]);
+        }
+      }
+
       for (const cardId of reward.cards) await addCard(conn, userId, cardId);
       for (const item of reward.items) await addItem(conn, userId, item.itemId, item.count);
 

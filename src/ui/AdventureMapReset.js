@@ -18,7 +18,7 @@ function challengeCards(stage, db) {
   return (a.final ? [56,55,58] : [CHALLENGE_PORTRAITS[a.route][a.act-1]]).map(id=>db.getById(id));
 }
 function challengeEmblem(cards, final) {
-  return `<span class="reset-challenge-emblem ${final?'reset-trio-emblem':''}" aria-hidden="true"><span class="reset-challenge-disc"></span><img class="reset-challenge-frame" src="${ART}challenge-frame.png" alt="">${cards.map((card,index)=>`<img class="reset-challenge-portrait reset-portrait-${index}" data-portrait-card="${card.id}" src="/sprites/cards/${card.spriteRes}.png" alt="">`).join('')}</span>`;
+  return `<span class="reset-challenge-emblem ${final?'reset-trio-emblem':''}" aria-hidden="true"><img class="reset-challenge-frame" src="${ART}challenge-frame.png" alt="">${cards.map((card,index)=>`<img class="reset-challenge-portrait reset-portrait-${index}" data-portrait-card="${card.id}" src="/sprites/cards/${card.spriteRes}.png" alt="">`).join('')}</span>`;
 }
 function setup(root, html) {
   const content = root.querySelector('#worldmap-content');
@@ -43,8 +43,7 @@ export function renderAdventureMap(view, root) {
     const clearedIds=new Set(clears(view).map(Number));
     const cleared=cards ? variants(stage).some(s=>clearedIds.has(s.id)) : clearedIds.has(stage.id);
     const description=`${stage.stage_name}${cards?' · '+cards.map(c=>c.name).join('、'):''}${cleared?' 已通关':' 未通关'}${unlocked?'':' 未解锁'}`;
-    const clearBadge = cards && cleared ? '<span class="reset-clear-badge">已通关</span>' : '';
-    return `<button class="reset-node ${cards?'reset-challenge-node':''} ${a.final?'reset-final-node':''} ${cleared?'reset-cleared':''}" style="left:${x}%;top:${y}%" data-stage="${stage.id}" ${unlocked?'':'disabled'} aria-label="${escape(description)}" title="${escape(description)}">${cards?challengeEmblem(cards,a.final):`<img src="${ART}${unlocked?'node.png':'node-locked.png'}" alt="">`}<span class="reset-node-label">${a.final?'最终关':`${a.act}-${a.node}${a.challenge?' ◆':''}`}</span>${clearBadge}</button>`;
+    return `<button class="reset-node ${cards?'reset-challenge-node':''} ${a.final?'reset-final-node':''} ${cleared?'reset-cleared':''}" style="left:${x}%;top:${y}%" data-stage="${stage.id}" ${unlocked?'':'disabled'} aria-label="${escape(description)}" title="${escape(description)}">${cards?challengeEmblem(cards,a.final):`<img src="${ART}${unlocked?'node.png':'node-locked.png'}" alt="">`}<span class="reset-node-label">${a.final?'最终关':`${a.act}-${a.node}${a.challenge?' ◆':''}`}</span></button>`;
   }).join('');
   const content = setup(root, `<section class="reset-campaign"><header><button data-back>← 目的地</button><strong>冒险大陆</strong><small>左键点击关卡选择难度</small></header><div class="reset-map-frame"><div class="reset-map-canvas">${buttons}<span class="reset-route-label reset-plant-label">植物线</span><span class="reset-route-label reset-monster-label">怪物线</span></div></div>${difficultyMenuMarkup()}</section>`);
   content.querySelector('[data-back]').onclick = () => { view.selectedMap = null; renderAdventureDestinations(view, root); };
@@ -99,14 +98,11 @@ const FOREST_PLACEMENT = {
 };
 
 // Locked presentation is separate from unlock policy; this release keeps both regions open.
-export function bossPortraitMarkup(boss, unlocked, forest = false, cleared = isBossCleared(boss.id)) {
+export function bossPortraitMarkup(boss, unlocked, forest = false) {
   const src = forest ? FOREST_ART[boss.id] : boss.referenceArt || `/sprites/cards/${boss.sprite}.png`;
   const position = forest ? FOREST_PLACEMENT[boss.id] : null;
   const style = position ? `style="--boss-x:${position[0]}%;--boss-y:${position[1]}%;--boss-width:${position[2]}%;--boss-ratio:${position[3]}"` : '';
-  const status = cleared
-    ? '<span class="reset-boss-status reset-boss-status-cleared">已通关</span>'
-    : (unlocked ? '' : '<span class="reset-boss-status reset-boss-status-locked">未解锁</span>');
-  return `<button class="reset-boss-choice ${cleared?'reset-boss-cleared ':''}${unlocked?'':'reset-boss-locked'}" ${style} data-boss="${escape(boss.id)}" ${unlocked?'':'disabled'} aria-haspopup="menu" aria-label="${escape(boss.name)}${cleared?' 已通关':unlocked?' 选择难度':' 未解锁'}"><span class="reset-boss-portrait"><img src="${escape(src)}" alt="">${forest && boss.id==='boss_forest'?'<span class="reset-lolita-butterfly" aria-hidden="true"></span>':''}</span><span class="reset-boss-name">${escape(boss.name)}</span>${status}</button>`;
+  return `<button class="reset-boss-choice ${unlocked?'':'reset-boss-locked'}" ${style} data-boss="${escape(boss.id)}" ${unlocked?'':'disabled'} aria-haspopup="menu" aria-label="${escape(boss.name)}${unlocked?' 选择难度':' 未解锁'}"><span class="reset-boss-portrait"><img src="${escape(src)}" alt="">${forest && boss.id==='boss_forest'?'<span class="reset-lolita-butterfly" aria-hidden="true"></span>':''}</span><span class="reset-boss-name">${escape(boss.name)}${isBossCleared(boss.id)?' ✓':''}</span>${unlocked?'':'<small>未解锁</small>'}</button>`;
 }
 
 export function renderAdventureBosses(view, root, region) {
@@ -114,10 +110,7 @@ export function renderAdventureBosses(view, root, region) {
   const open = !BOSS_REGION_PREREQUISITES_ENABLED || (isForestUnlocked(clears(view)) && (region !== 'temple' || isBossCleared('boss_forest')));
   if (!open) return renderAdventureDestinations(view, root);
   const forest = region === 'forest';
-  const portraits = ids.map(id => getBossById(id)).filter(Boolean).map((b) => {
-    const cleared = isBossCleared(b.id) || Boolean(view.state?.clearedMaps?.[region]?.[b.id]);
-    return bossPortraitMarkup(b, isBossUnlocked(b.id), forest, cleared);
-  }).join('');
+  const portraits = ids.map(id => getBossById(id)).filter(Boolean).map(b => bossPortraitMarkup(b, isBossUnlocked(b.id), forest)).join('');
   const choices = forest ? `<div class="reset-forest-frame"><nav class="reset-forest-map" aria-label="悲伤密林 BOSS 地图">${portraits}</nav></div>` : `<nav class="reset-boss-choices" aria-label="选择挑战 BOSS">${portraits}</nav>`;
   const content = setup(root, `<section class="reset-boss-list ${forest?'reset-forest':''}"><header><button data-back>← 目的地</button><h2>${forest?'悲伤密林':'海底神殿'}</h2><p>左键点击 BOSS 选择难度</p></header><div class="reset-boss-layout">${choices}</div>${difficultyMenuMarkup()}</section>`);
   content.querySelector('[data-back]').onclick = () => { view.selectedMap = null; renderAdventureDestinations(view, root); };

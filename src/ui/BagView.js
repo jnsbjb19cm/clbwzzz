@@ -27,6 +27,7 @@ import {
   getCraftMaterialSprite,
   getCraftMaterialSpriteStyle,
 } from './SmithyMaterialArtwork.js';
+import { namedItemIconUrl } from './NamedItemIcons.js';
 
 const MODE_TABS = [
   { id: 'item', label: '背包' },
@@ -571,6 +572,12 @@ export class BagView {
       const scale = Math.min(0.5, 62 / Math.max(extension.width, extension.height));
       const rect = [extension.x, extension.y, extension.width, extension.height].join(',');
       return `<span class='bag-item-atlas bag-item-extension' data-sprite-rect='${rect}' aria-hidden='true'><i style='width:${extension.width}px;height:${extension.height}px;background-image:url(${ITEM_EXTENSION_URL});background-position:-${extension.x}px -${extension.y}px;transform:translate(-50%,-50%) scale(${scale.toFixed(4)})'></i></span>`;
+    }
+    // 2026-10-06：新材料（多特的巫蛊/沃里尔的铠甲/安娜的冰晶/树妖的精元/神秘技能书）
+    // 是单张美术图 resources/img/<名字>.png，没有图集条目 → 先按文件名兜底。
+    const named = namedItemIconUrl(item);
+    if (named) {
+      return `<span class="bag-item-atlas" aria-hidden="true"><i style="width:52px;height:52px;background-image:url(${named});background-size:contain;background-repeat:no-repeat;background-position:center;transform:translate(-50%,-50%)"></i></span>`;
     }
     const sprite = ITEM_ATLAS.get(String(item?.img ?? item?.id))
       ?? ITEM_ATLAS.get(String(item?.id))

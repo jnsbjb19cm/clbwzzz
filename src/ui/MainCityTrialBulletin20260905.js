@@ -66,15 +66,18 @@ function setClassicTrack(track, text) {
 function applyIdleTrialAnnouncement() {
   if (typeof document === 'undefined') return;
   if (globalThis.__clbwzLastSystemAnnouncement) return;
+  const nextNotice = `${NOTICE_TEXT}　｜　${REFILL_NOTICE_TEXT}　｜　${QQ_GROUP_TEXT}`;
   for (const bar of document.querySelectorAll('.classic-system-broadcast')) {
     bar.dataset.systemKind = 'trial-tip';
     bar.classList.remove('is-idle');
     const label = bar.querySelector('.classic-broadcast-label');
-    if (label) label.textContent = '公告提示';
-    setClassicTrack(
-      bar.querySelector('.classic-broadcast-track'),
-      `${NOTICE_TEXT}　｜　${REFILL_NOTICE_TEXT}　｜　${QQ_GROUP_TEXT}`,
-    );
+    if (label && label.textContent !== '公告提示') label.textContent = '公告提示';
+    const track = bar.querySelector('.classic-broadcast-track');
+    // 2026-10-06：内容没变就不重写轨道 —— 重写等于 replaceChildren，跑马灯动画会被顶回起点，
+    // 从大厅来回切换时看起来就像"公告被刷新了"。（轨道被系统公告顶掉时要能重新写回，所以两个条件都要看。）
+    if (bar.dataset.trialNotice === nextNotice && track?.textContent?.includes(NOTICE_TEXT)) continue;
+    bar.dataset.trialNotice = nextNotice;
+    setClassicTrack(track, nextNotice);
   }
 }
 
@@ -147,7 +150,10 @@ function injectMainCityBulletin(view, root) {
 function updateLobbyAnnouncement(view) {
   const track = view.root?.querySelector?.('.classic-game-hall .lobby-announcement-track');
   if (!track) return;
-  track.textContent = `${LOBBY_NOTICE_TEXT}　｜　补卡：主城 → 背包 → 卡牌 →「补全卡」　｜　补强化粉和制作材料：主城 → 铁匠铺 → 强化 →「补发道具」（每次各100个，每日最多500次，全部绑定）　｜　玩家交流群：QQ群 1060910192　｜　房间最长保留2小时，无真人玩家的房间会自动回收　｜　绑定材料制作出的产物一定绑定`;
+  const nextText = `${LOBBY_NOTICE_TEXT}　｜　补卡：主城 → 背包 → 卡牌 →「补全卡」　｜　补强化粉和制作材料：主城 → 铁匠铺 → 强化 →「补发道具」（每次各100个，每日最多500次，全部绑定）　｜　玩家交流群：QQ群 1060910192　｜　房间最长保留2小时，无真人玩家的房间会自动回收　｜　绑定材料制作出的产物一定绑定`;
+  // 2026-10-06：内容一致就不写 —— 每次回到大厅都写一遍会让公告栏闪一下（文字被重排、动画重开）。
+  if (track.textContent === nextText) return;
+  track.textContent = nextText;
 }
 
 export function installMainCityTrialBulletin20260905() {

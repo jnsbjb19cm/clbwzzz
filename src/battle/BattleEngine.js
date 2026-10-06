@@ -312,8 +312,10 @@ export class BattleEngine {
         const dc = Math.abs(Math.round(Number(u.col)) - gridCol);
         if (dl <= radius && dc <= radius) add(u, Math.max(dl, dc));
       }
-      if (found.length) return found;
-      // 3×3 里没人 → 继续走原来的同路逻辑（推进/拦截行为不变）
+      // 2026-10-06（用户报告"索敌居然不是自身范围3×3"）：
+      // 3×3 里没人就**不出手** —— 之前这里会退回同路逻辑，于是站着的喷喷怪会去打
+      // 2 格外、甚至更远的敌人（主目标被 resolveMeleeImpact 强制纳入命中，溅射判定形同虚设）。
+      return found;
     }
 
     for (const u of this.getUnitsAt(lane, gridCol)) {

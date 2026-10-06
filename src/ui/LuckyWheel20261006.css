@@ -1,0 +1,272 @@
+/* 大厅 · 幸运大转盘 + 更新公告（2026-10-06） */
+
+.lucky-wheel-entry {
+  /* 2026-10-06：挂在主界面里，用百分比定位（避开"游戏大厅" 46.3%/17.9%），所以是 absolute 不是 fixed */
+  position: absolute;
+  z-index: 62;
+  transform: translate(-50%, -50%);   /* left/top 按中心点算，方便对着"游戏大厅"排位 */
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px 8px 10px;
+  border: 2px solid #7c5422;
+  border-radius: 22px;
+  background: radial-gradient(circle at 32% 22%, #f7ecc4, #d8b267 62%, #8d6a3c);
+  color: #4b3416;
+  font-size: .82rem;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: inset 0 0 0 2px rgba(255, 255, 255, .32), 0 3px 8px rgba(0, 0, 0, .35);
+}
+.lucky-wheel-entry:hover { filter: brightness(1.06); }
+.lucky-wheel-entry span { font-size: 1.05rem; }
+
+.lucky-wheel-mask {
+  position: fixed;
+  inset: 0;
+  z-index: 70;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(12, 16, 10, .62);
+  backdrop-filter: blur(2px);
+}
+.lucky-wheel-mask[hidden] { display: none; }
+
+.lucky-wheel-panel {
+  width: min(880px, 94vw);
+  max-height: 90vh;
+  overflow: auto;
+  border: 3px solid #6b4a1e;
+  border-radius: 14px;
+  background: linear-gradient(180deg, #f6efd8, #e3d2ac);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, .45);
+}
+
+.lucky-wheel-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  border-bottom: 2px solid rgba(107, 74, 30, .4);
+  background: linear-gradient(180deg, #e8d6a8, #d2ba86);
+}
+.lucky-wheel-head strong { color: #4b3416; font-size: 1rem; letter-spacing: 1px; }
+.lucky-wheel-head-actions { display: flex; gap: 8px; align-items: center; }
+.lucky-wheel-log-btn,
+.lucky-wheel-back {
+  padding: 5px 12px;
+  border: 1px solid #7c5422;
+  border-radius: 8px;
+  background: #f3e6c0;
+  color: #4b3416;
+  font-size: .76rem;
+  cursor: pointer;
+}
+.lucky-wheel-close {
+  width: 28px;
+  height: 28px;
+  border: 1px solid #7c5422;
+  border-radius: 50%;
+  background: #f3e6c0;
+  color: #4b3416;
+  font-size: 1rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.lucky-wheel-body { display: flex; gap: 16px; padding: 16px; }
+.lucky-wheel-body[hidden] { display: none; }
+
+.lucky-wheel-stage { flex: 0 0 320px; display: flex; flex-direction: column; align-items: center; gap: 10px; }
+.lucky-wheel-disc {
+  position: relative;
+  width: 268px;
+  height: 268px;
+  border: 6px solid #7c5422;
+  border-radius: 50%;
+  box-shadow: inset 0 0 0 4px #e7d5a8, 0 4px 12px rgba(0, 0, 0, .35);
+}
+.lucky-wheel-pointer {
+  position: absolute;
+  left: 50%;
+  top: -20px;
+  width: 0;
+  height: 0;
+  transform: translateX(-50%);
+  border-left: 12px solid transparent;
+  border-right: 12px solid transparent;
+  border-top: 24px solid #c0392b;
+  filter: drop-shadow(0 1px 1px rgba(0, 0, 0, .5));
+}
+.lucky-wheel-hub {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 64px;
+  height: 64px;
+  transform: translate(-50%, -50%);
+  border: 3px solid #7c5422;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #f8efcd, #cbab6a);
+  color: #4b3416;
+  font-size: 1.1rem;
+  font-weight: 700;
+}
+.lucky-wheel-count { margin: 0; color: #5b421f; font-size: .76rem; }
+.lucky-wheel-spin {
+  padding: 10px 26px;
+  border: 2px solid #7c5422;
+  border-radius: 24px;
+  background: radial-gradient(circle at 34% 26%, #f6d68a, #c8973f 66%, #8a6127);
+  color: #3d2a10;
+  font-size: .88rem;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: inset 0 0 0 2px rgba(255, 255, 255, .3), 0 3px 6px rgba(0, 0, 0, .3);
+}
+.lucky-wheel-spin:disabled { opacity: .5; cursor: not-allowed; }
+.lucky-wheel-result { min-height: 20px; margin: 0; color: #7a3b12; font-size: .8rem; text-align: center; }
+
+.lucky-wheel-side { flex: 1 1 auto; min-width: 0; }
+.lucky-wheel-side h4 { margin: 10px 0 6px; color: #5b421f; font-size: .8rem; }
+.lucky-wheel-tasks ul,
+.lucky-wheel-prizes ul { display: flex; flex-wrap: wrap; gap: 6px; margin: 0; padding: 0; list-style: none; }
+.lucky-wheel-tasks li,
+.lucky-wheel-prizes li {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 6px;
+  padding: 4px 9px;
+  border: 1px solid rgba(124, 88, 37, .45);
+  border-radius: 6px;
+  background: rgba(255, 250, 211, .6);
+  color: #5b421f;
+  font-size: .72rem;
+}
+.lucky-wheel-tasks li.is-done { opacity: .55; }
+.lucky-wheel-tasks li span,
+.lucky-wheel-prizes li span { color: #8a5a1e; font-weight: 700; }
+.lucky-wheel-prizes li em { color: #7b623a; font-style: normal; font-size: .68rem; }
+.lucky-wheel-prizes .lucky-wheel-rare li {
+  border-color: #b8860b;
+  background: linear-gradient(180deg, #fdf3cd, #efd489);
+  box-shadow: 0 0 0 1px rgba(184, 134, 11, .35);
+}
+
+.lucky-wheel-log { display: block; }
+.lucky-wheel-log article { margin-bottom: 14px; }
+.lucky-wheel-log h3 { margin: 0 0 6px; color: #4b3416; font-size: .9rem; }
+.lucky-wheel-log ul { margin: 0; padding-left: 18px; color: #5b421f; font-size: .78rem; line-height: 1.7; }
+.lucky-wheel-back { margin-top: 4px; }
+
+@media (max-width: 720px) {
+  .lucky-wheel-body { flex-direction: column; }
+  .lucky-wheel-stage { flex: 0 0 auto; }
+}
+
+/* 大厅公告栏里的「更新公告」入口 */
+.lucky-wheel-log-entry {
+  margin-left: 8px;
+  padding: 2px 10px;
+  border: 1px solid #7c5422;
+  border-radius: 12px;
+  background: #f3e6c0;
+  color: #4b3416;
+  font-size: .72rem;
+  font-weight: 700;
+  cursor: pointer;
+  vertical-align: middle;
+}
+.lucky-wheel-log-entry:hover { filter: brightness(1.06); }
+
+/* 扇区上的道具图标 + 名字（转盘上直接看得见奖励） */
+.lucky-wheel-sector {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1px;
+  width: 78px;
+  pointer-events: none;
+  text-align: center;
+}
+.lucky-wheel-sector b {
+  color: #3d2a10;
+  font-size: .6rem;
+  font-weight: 700;
+  line-height: 1.15;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, .5);
+}
+.lucky-wheel-sector-emoji { font-size: .95rem; line-height: 1; }
+.lucky-wheel-sector [data-item-icon] { transform: scale(.82); }
+
+/* 入口图标（备用）：resources/img/大转盘.png。当前用 emoji，需要时把 img 换回来即可。 */
+.lucky-wheel-entry-art {
+  width: 30px;
+  height: 30px;
+  object-fit: contain;
+  filter: drop-shadow(0 1px 1px rgba(0, 0, 0, .35));
+}
+
+/* 转盘容器：指针和中心钮放这一层，只有里面的 .lucky-wheel-disc 会转 */
+.lucky-wheel-wheel {
+  position: relative;
+  width: 268px;
+  height: 268px;
+}
+.lucky-wheel-wheel .lucky-wheel-disc { width: 100%; height: 100%; }
+.lucky-wheel-wheel .lucky-wheel-pointer { top: -16px; }
+.lucky-wheel-wheel .lucky-wheel-hub { z-index: 2; }
+
+/* 更新公告 · 独立面板（不再借转盘的壳） */
+.update-log-mask {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(12, 16, 10, .62);
+  backdrop-filter: blur(2px);
+}
+.update-log-mask[hidden] { display: none; }
+.update-log-panel {
+  width: min(620px, 92vw);
+  max-height: 84vh;
+  overflow: auto;
+  border: 3px solid #6b4a1e;
+  border-radius: 14px;
+  background: linear-gradient(180deg, #f6efd8, #e3d2ac);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, .45);
+}
+.update-log-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  border-bottom: 2px solid rgba(107, 74, 30, .4);
+  background: linear-gradient(180deg, #e8d6a8, #d2ba86);
+}
+.update-log-head strong { color: #4b3416; font-size: 1rem; letter-spacing: 1px; }
+.update-log-close {
+  width: 28px;
+  height: 28px;
+  border: 1px solid #7c5422;
+  border-radius: 50%;
+  background: #f3e6c0;
+  color: #4b3416;
+  font-size: 1rem;
+  line-height: 1;
+  cursor: pointer;
+}
+.update-log-body { padding: 14px 18px; }
+.update-log-body article { margin-bottom: 16px; }
+.update-log-body h3 { margin: 0 0 6px; color: #4b3416; font-size: .9rem; }
+.update-log-body h3 time { margin-right: 8px; color: #8a5a1e; font-size: .78rem; }
+.update-log-body ul { margin: 0; padding-left: 18px; color: #5b421f; font-size: .78rem; line-height: 1.75; }

@@ -11,6 +11,9 @@ export const QUEST_ITEM_IDS = Object.freeze({
   rerollStat: 81,
   qualityStone: 82,
   skillBookAttack: 84,
+  // 2026-10-06：悲伤密林 BOSS 材料（击败对应 BOSS 概率掉落）。任务"以毒攻毒/铠甲的研发/海德的请求/神秘的魔法"用它们做目标。
+  bossMaterial: { dot: 53001, gravo: 53002, ice: 53003, forest: 53004 },
+  bossSkillBook: 53005,
 });
 
 function clampTier(value, max = 5) {
@@ -32,6 +35,8 @@ const PROFILE_BASE = Object.freeze({
   main_boss:       { gold: [1400,2100,3000,4100,5400], exp: [420,600,820,1050,1350], honor: [30,45,65,90,120], gem: [3,5,8,12,18] },
   main_final:      { gold: [6500,6500,6500,6500,6500], exp: [1800,1800,1800,1800,1800], honor: [260,260,260,260,260], gem: [50,50,50,50,50] },
   side:            { gold: [320,480,680,900,1200], exp: [90,130,180,240,320], honor: [0,0,8,12,18], gem: [0,0,0,0,2] },
+  // 2026-10-06：主线补充（"小水"）任务专用 —— 金币/经验都很轻，主要靠给材料。
+  filler:          { gold: [60,90,120,150,190], exp: [40,55,70,90,110], honor: [0,0,4,6,8], gem: [0,0,0,0,1] },
   side_growth:     { gold: [380,560,760,980,1300], exp: [100,150,210,280,360], honor: [0,6,10,16,24], gem: [0,0,0,2,3] },
   side_social:     { gold: [400,600,800,1050,1350], exp: [90,130,180,230,300], honor: [12,20,30,42,58], gem: [0,0,2,3,5] },
   daily:           { gold: [220,280,340,400,460], exp: [55,70,85,100,120], honor: [0,0,0,0,0], gem: [0,0,0,0,0] },
@@ -141,6 +146,21 @@ function levelTier(lv) {
   return 5;
 }
 
+// 2026-10-06：等级奖励分散给卡 —— 低等级给低品质卡，高等级给相对高级的卡，**最高不超过 4 级**。
+// 每 5 级一张；Lv.50 收官给两张。品质：Lv.5~10 → 1级卡，Lv.15~20 → 2级卡，Lv.25~30 → 3级卡，Lv.35+ → 4级卡。
+const LEVEL_CARD_AWARDS = Object.freeze({
+  5:  [4],       // 仙人掌（1级）
+  10: [7],       // 西瓜太郎（1级）
+  15: [15],      // 地刺（2级）
+  20: [16],      // 菠萝勇士（2级）
+  25: [18],      // 花生神射手（3级）
+  30: [22],      // 蒲公英医生（3级）
+  35: [32],      // 嗜血稻草人（4级）
+  40: [36],      // 蒲公英精灵（4级）
+  45: [38],      // 外星哨兵（4级）
+  50: [41,43],   // 地道工兵 + 钻地大蒜（4级，收官两张）
+});
+
 export function levelReward(lv) {
   const tier = levelTier(lv);
   const mt = clampTier(tier, 4);
@@ -177,7 +197,7 @@ export function levelReward(lv) {
     gem: major ? 8 + Math.floor(lv / 5) : (milestone ? 3 + Math.floor(lv / 10) : 0),
     honor: milestone ? 20 + lv * 2 : 0,
     exp: 0,
-    cards: [],
+    cards: LEVEL_CARD_AWARDS[lv] ? [...LEVEL_CARD_AWARDS[lv]] : [],
     items,
   };
 }

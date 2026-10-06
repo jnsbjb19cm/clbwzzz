@@ -103,7 +103,6 @@ export class AuctionView {
   async buy(listingId) {
     try {
       await this.api.post('/auction/buy', { listingId });
-      alert('购买成功');
       await this.load();
     } catch (e) { alert(e.message); }
   }

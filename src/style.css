@@ -3810,12 +3810,13 @@ body.battle-immersive .top-ui {
 .quest-detail-progress i { display: block; height: 100%; border-radius: inherit; background: linear-gradient(90deg, #789e3f, #d4b042); }
 .quest-detail-block > span { display: block; margin-top: 4px; color: #7b623a; font-size: .7rem; }
 .quest-detail-rewards > div { display: flex; flex-wrap: wrap; gap: 6px; }
-.quest-reward-chip { display: inline-flex; align-items: center; gap: 3px; min-height: 24px; padding: 3px 7px 3px 4px; border: 1px solid rgba(124, 88, 37, .46); border-radius: 5px; background: rgba(255, 250, 211, .55); color: #5b421f; font-size: .69rem; white-space: nowrap; }
-.quest-reward-icon { width: 17px; height: 17px; display: inline-block; flex: 0 0 17px; background-image: url('/atlas/modulesUI.png'); background-repeat: no-repeat; background-size: 512px 1024px; }
-.quest-reward-icon.gold { background-position: -266px -985px; }
-.quest-reward-icon.gem { background-position: -269px -968px; }
-.quest-reward-icon.honor { background-position: -272px -947px; }
-.quest-reward-icon.exp { background-position: -218px -990px; }
+.quest-reward-chip { display: inline-flex; align-items: center; gap: 5px; min-height: 36px; padding: 4px 10px 4px 5px; border: 1px solid rgba(124, 88, 37, .46); border-radius: 6px; background: rgba(255, 250, 211, .55); color: #5b421f; font-size: .78rem; white-space: nowrap; }
+/* 2026-10-06：奖励图标放大（17→26），图集坐标用 calc 等比缩放，避免取错格子。 */
+.quest-reward-icon { width: 26px; height: 26px; display: inline-block; flex: 0 0 26px; background-image: url('/atlas/modulesUI.png'); background-repeat: no-repeat; background-size: calc(512px * 1.529) calc(1024px * 1.529); }
+.quest-reward-icon.gold { background-position: calc(-266px * 1.529) calc(-985px * 1.529); }
+.quest-reward-icon.gem { background-position: calc(-269px * 1.529) calc(-968px * 1.529); }
+.quest-reward-icon.honor { background-position: calc(-272px * 1.529) calc(-947px * 1.529); }
+.quest-reward-icon.exp { background-position: calc(-218px * 1.529) calc(-990px * 1.529); }
 .quest-reward-icon.card, .quest-reward-icon.item { border: 1px solid #96703c; border-radius: 3px; background-image: none; background-color: #c39346; box-sizing: border-box; }
 .quest-reward-icon.item { background-color: #83a950; }
 .quest-detail-footer { display: flex; justify-content: flex-end; align-items: center; min-height: 52px; padding-top: 10px; }

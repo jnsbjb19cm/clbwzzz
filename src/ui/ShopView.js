@@ -501,11 +501,9 @@ export class ShopView {
     }
     this.cart = remaining;
     if (purchased > 0) {
+      // 2026-10-06：去掉"成功购买 N 件商品"这类调试味提示 —— 购物车清空、金币变化本身就是反馈。
       this.onPlayerUpdate?.();
       this.renderClassicCatalog(root);
-      this.toast(root, remaining.size
-        ? `成功购买 ${purchased} 件商品，其余商品保留在购物车`
-        : `成功购买 ${purchased} 件商品`);
     }
   }
 
@@ -596,7 +594,6 @@ export class ShopView {
           return;
         }
         this.player.gold-=price;
-        this.toast(root,'购买成功：'+it.name);
         this.onPlayerUpdate?.();
         return;
       }

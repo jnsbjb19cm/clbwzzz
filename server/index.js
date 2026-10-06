@@ -27,6 +27,7 @@ import { playerEconomyAuthorityRouter20260908 } from './routes/playerEconomyAuth
 import { functionalItemAuthorityRouter20260908 } from './routes/functionalItemAuthority20260908.js';
 import { playerStateDocumentRouter20260908 } from './routes/playerStateDocument20260908.js';
 import { questRewardAuthorityRouter20260908 } from './routes/questRewardAuthority20260908.js';
+import { luckyWheelAuthorityRouter20261006 } from './routes/luckyWheelAuthority20261006.js';
 import { questPinPersistenceRouter20260908 } from './routes/questPinPersistence20260908.js';
 import { materialRefillRouter } from './routes/materialRefill.js';
 import { smithyAuthorityRouter20260907 } from './routes/smithyAuthority20260907.js';
@@ -109,6 +110,7 @@ app.use('/api/player', playerEconomyAuthorityRouter20260908);
 app.use('/api/player', functionalItemAuthorityRouter20260908);
 app.use('/api/player', playerStateDocumentRouter20260908);
 app.use('/api/player', questRewardAuthorityRouter20260908);
+app.use('/api/player', luckyWheelAuthorityRouter20261006);
 app.use('/api/player', questPinPersistenceRouter20260908);
 app.use('/api/player/smithy', smithyAuthorityRouter20260907);
 app.use('/api/player', playerRouter);

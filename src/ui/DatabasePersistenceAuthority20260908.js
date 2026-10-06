@@ -267,8 +267,8 @@ function installShopAuthority() {
     }
     this.cart = remaining;
     this.renderClassicCatalog(root);
+    // 2026-10-06：不再播报"已购买 N 件/成功购买"这类调试信息；有失败才提示原因（那才是有用的）。
     if (stopMessage) this.toast(root, purchased ? `已购买 ${purchased} 件；其余未购买：${stopMessage}` : stopMessage);
-    else this.toast(root, `成功购买 ${purchased} 件商品，`);
   };
 
   const originalRenderRecharge = ShopView.prototype.renderRecharge;
@@ -323,7 +323,6 @@ function installShopAuthority() {
         try {
           const data = await buyClassicProduct(this, product);
           applyServerData(this, data);
-          this.toast(root, `购买成功：${product.name}`);
         } catch (error) {
           this.toast(root, error?.message || '购买失败');
         } finally {
