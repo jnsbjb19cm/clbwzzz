@@ -21,7 +21,8 @@ export async function refillCollectibleCardsHandler(req, res) {
   }
 
   const collectibleIds = getPvpCardDb().cards
-    .filter((card) => card?.isCollectible?.())
+    // “补全卡”只补白~金卡；红卡（原始 card_quality=6）保留为正常获取内容。
+    .filter((card) => card?.isCollectible?.() && Number(card.card_quality ?? card.quality) < 6)
     .map((card) => Number(card.id))
     .filter((id) => Number.isInteger(id) && id > 0);
 
