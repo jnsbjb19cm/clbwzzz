@@ -17,7 +17,7 @@ function defaultState(){
     dailyDate:todayKey(),weeklyDate:weekKey(),dailyProgress:{},dailyClaimed:[],weeklyProgress:{},weeklyClaimed:[],
     mainProgress:{},mainClaimed:[],sideProgress:{},sideClaimed:[],achievementProgress:{},achievementClaimed:[],
     challengeProgress:{},challengeClaimed:[],levelClaimed:[],
-    _extra:{totalKills:0,totalBattles:0,totalAdventures:0,totalUpgrades:0,totalStrengthens:0,totalCrafts:0,totalItems:0,totalQuests:0,totalGold:0,totalHonor:0,loginDays:0},
+    _extra:{totalKills:0,totalBattles:0,totalAdventures:0,totalUpgrades:0,totalStrengthens:0,totalCrafts:0,totalItems:0,totalItemGains:0,totalQuests:0,totalGold:0,totalHonor:0,loginDays:0},
   };
 }
 function normalizeState(state){
@@ -176,6 +176,7 @@ export class QuestView{
     if(event==='card_strengthen')extra.totalStrengthens=(extra.totalStrengthens||0)+dataCount(data);
     if(event==='card_craft')extra.totalCrafts=(extra.totalCrafts||0)+dataCount(data);
     if(event==='item_use')extra.totalItems=(extra.totalItems||0)+dataCount(data);
+    if(event==='item_gain')extra.totalItemGains=(extra.totalItemGains||0)+dataCount(data);
     if(event==='quest_complete')extra.totalQuests=(extra.totalQuests||0)+dataCount(data);
     if(event==='gold_gain')extra.totalGold=(extra.totalGold||0)+Math.max(0,Number(data?.amount||0));
     if(event==='honor_gain')extra.totalHonor=(extra.totalHonor||0)+Math.max(0,Number(data?.amount||0));
@@ -193,6 +194,7 @@ export class QuestView{
       else if(quest.event==='adventure_total')ach[quest.id]=Math.min(quest.goal,extra.totalAdventures||0);
       else if(quest.event==='strengthen_total')ach[quest.id]=Math.min(quest.goal,extra.totalUpgrades||0);
       else if(quest.event==='item_total')ach[quest.id]=Math.min(quest.goal,extra.totalItems||0);
+      else if(quest.event==='item_gain_total')ach[quest.id]=Math.min(quest.goal,extra.totalItemGains||0);
       else if(quest.event==='achieve_total')ach[quest.id]=ACHIEVEMENT_QUESTS.filter((x)=>x.id!==quest.id&&state.achievementClaimed.includes(x.id)).length;
     }
     state.achievementProgress=ach;
@@ -283,6 +285,7 @@ export class QuestView{
       if(quest.event==='adventure_total')this.state.achievementProgress[quest.id]=Math.min(quest.goal,extra.totalAdventures||0);
       if(quest.event==='strengthen_total')this.state.achievementProgress[quest.id]=Math.min(quest.goal,extra.totalUpgrades||0);
       if(quest.event==='item_total')this.state.achievementProgress[quest.id]=Math.min(quest.goal,extra.totalItems||0);
+      if(quest.event==='item_gain_total')this.state.achievementProgress[quest.id]=Math.min(quest.goal,extra.totalItemGains||0);
       if(quest.event==='achieve_total')this.state.achievementProgress[quest.id]=ACHIEVEMENT_QUESTS.filter((x)=>x.id!==quest.id&&this.state.achievementClaimed.includes(x.id)).length;
     }
     this.state._lastPlayerLevel=this.player.level||1;this.state._lastCardCount=this.cardInventory?.getUsedCount?.()||0;saveState(this.state);
