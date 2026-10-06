@@ -207,6 +207,31 @@ const SIDE_PVP=sideArc('sr','竞技切磋',[
   ['不止赢一次','累计获得5场PVP胜利。','能反复取胜，说明阵容已经不只适合打固定关卡。',5,'pvp_win',{cumulativeKey:'totalPvpWins'}],
 ],sideEconomy);
 
+
+// ---- 支线：混合目标短任务弧。每条会改变玩家动词，避免一直做同一种计数。 ----
+const SIDE_STORY_ARCS=[
+  ...sideArc('sn1','损坏的补给册',[
+    ['被雨泡烂的记录','累计收集8个一级羊皮纸。','前线找回的补给册几乎被雨水泡烂，只能先准备新的纸张，把还能辨认的信息重新誊写。',8,'item_gain',{requiresMain:'m3',itemId:50001,lifetimeItemId:50001}],
+    ['重新装订','加工2个二级羊皮纸。','普通纸张经不起前线反复使用，把其中一部分加工成更耐用的二级羊皮纸。',2,'material_combine',{materialKind:'parchment',materialLevel:2}],
+    ['把记录变成战力','成功制作1张卡牌。','补给册里最有价值的不是文字本身，而是记录下来的阵形。照着其中一套思路制作一张新的卡牌。',1,'card_craft'],
+  ],sideEconomy),
+  ...sideArc('sn2','冻裂的晶石',[
+    ['碎在冰里的光','累计收集6个一级宝石。','寒冷让一些低阶晶石出现裂纹，先把还能使用的碎片收起来。',6,'item_gain',{requiresMain:'m7',itemId:50011,lifetimeItemId:50011}],
+    ['回到寒冰前哨','完成植物线第5节点“寒冰前哨”。','带着新的观察再走一次控制型关卡，确认低温对部署节奏究竟造成了什么影响。',1,'adventure_complete',{route:0,adventureIndex:5,adventureKey:'0:5'}],
+    ['让核心先适应','将1张卡牌强化到2星。','在真正遇到更强的冰系敌人之前，先让一名核心伙伴拥有更稳定的基础属性。',1,'card_strengthen',{minStar:2}],
+  ],sideEconomy),
+  ...sideArc('sn3','地下回廊样本',[
+    ['地底来客','完成植物线第10节点“地底来客”。','钻地单位让后排第一次失去绝对安全的位置。把这一战的异常样本带回去分析。',1,'adventure_complete',{requiresMain:'m18',route:0,adventureIndex:10,adventureKey:'0:10'}],
+    ['整理样本','累计收集5个二级卡牌DNA。','把零散样本整理到能够实际用于制作的数量。',5,'item_gain',{itemId:50032,lifetimeItemId:50032}],
+    ['验证结果','成功制作1张2级卡牌。','真正的验证不是把样本放在仓库里，而是确认它能不能转化成可用的战团成员。',1,'card_craft',{craftLevel:2}],
+  ],sideEconomy),
+  ...sideArc('sn4','树影后的准备',[
+    ['穿过蘑菇回廊','完成植物线第14节点“蘑菇回廊”。','这一区域的地下牵制与持续支援让推进变得缓慢，先完整走过一次。',1,'adventure_complete',{requiresMain:'m22',route:0,adventureIndex:14,adventureKey:'0:14'}],
+    ['准备保护','累计收集3个二级保护符。','越接近树妖活动区域，强化失败带来的资源损失越难补回来。',3,'item_gain',{itemId:50022,lifetimeItemId:50022}],
+    ['不冒险的强化','成功强化卡牌1次。','材料已经准备好，把一次谨慎的强化真正完成，再继续进入高压区域。',1,'card_strengthen'],
+  ],sideEconomy),
+];
+
 // ---- 支线：BOSS人物弧。沿用现有背景，作为主线之外的补充理解。 ----
 const SIDE_BOSS=[
   ...sideArc('sb1','多特 · 失去之后',[
@@ -234,7 +259,7 @@ const SIDE_BOSS=[
 const SIDE_QUESTS=[
   ...SIDE_ADVENTURE_PLANT,...SIDE_ADVENTURE_MONSTER,
   ...SIDE_POWDER,...SIDE_PARCHMENT,...SIDE_GEM,...SIDE_DNA,...SIDE_CHARM,
-  ...SIDE_MATERIAL,...SIDE_STRENGTH,...SIDE_CRAFT,...SIDE_COMBAT,...SIDE_COOP,...SIDE_PVP,...SIDE_BOSS,
+  ...SIDE_MATERIAL,...SIDE_STRENGTH,...SIDE_CRAFT,...SIDE_COMBAT,...SIDE_COOP,...SIDE_PVP,...SIDE_STORY_ARCS,...SIDE_BOSS,
 ];
 
 // ---- 日常：12项，覆盖不同核心循环，不做同类3/5/8套娃 ----
