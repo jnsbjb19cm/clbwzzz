@@ -2,6 +2,15 @@ const STORAGE_KEY = 'clbwz_boss_progress_v1';
 import { FOREST_BOSS_IDS, TEMPLE_BOSS_IDS, isForestUnlocked, BOSS_REGION_PREREQUISITES_ENABLED } from '../data/AdventureCampaign.js';
 const BOSS_ORDER = [...FOREST_BOSS_IDS, ...TEMPLE_BOSS_IDS];
 
+function legacyBossCleared(bossId) {
+  try {
+    const state = JSON.parse(globalThis.localStorage?.getItem?.('clbwz_worldmap_v1') || '{}');
+    return Boolean(state?.clearedMaps?.forest?.[String(bossId)] || state?.clearedMaps?.temple?.[String(bossId)]);
+  } catch {
+    return false;
+  }
+}
+
 function emptyProgress() {
   return { cleared: {}, difficulties: {} };
 }
@@ -32,17 +41,33 @@ export function markBossCleared(bossId, difficulty = '简单') {
 }
 
 export function isBossCleared(bossId) {
-  return loadBossProgress().cleared[String(bossId)] === true;
+  return loadBossProgress().cleared[String(bossId)] === true || legacyBossCleared(bossId);
 }
 
 export function isBossUnlocked(bossId) {
-  if (!BOSS_REGION_PREREQUISITES_ENABLED) return BOSS_ORDER.includes(String(bossId)) || bossId === 'boss_fire';
-  if (isBossCleared(bossId)) return true;
+  const id = String(bossId);
+  if (isBossCleared(id)) return true;
+
+  // 悲伤密林始终使用独立链式解锁：
+  // 第1只默认开放，之后必须击败上一只才会变亮。
+  const forestIndex = FOREST_BOSS_IDS.indexOf(id);
+  if (forestIndex >= 0) {
+    if (BOSS_REGION_PREREQUISITES_ENABLED) {
+      let cleared = [];
+      try { cleared = JSON.parse(globalThis.localStorage?.getItem?.('clbwz_worldmap_v1') || '{}').stageClaimed || []; } catch { /* optional storage */ }
+      if (!isForestUnlocked(cleared)) return false;
+    }
+    return forestIndex === 0 || isBossCleared(FOREST_BOSS_IDS[forestIndex - 1]);
+  }
+
+  // 其它区域暂时维持当前开放策略；boss_fire 仍保留旧兼容入口。
+  if (!BOSS_REGION_PREREQUISITES_ENABLED) return TEMPLE_BOSS_IDS.includes(id) || id === 'boss_fire';
+
   let cleared = [];
   try { cleared = JSON.parse(globalThis.localStorage?.getItem?.('clbwz_worldmap_v1') || '{}').stageClaimed || []; } catch { /* optional storage */ }
   if (!isForestUnlocked(cleared)) return false;
-  const index = BOSS_ORDER.indexOf(String(bossId));
-  if (index <= 0) return index === 0;
+  const index = BOSS_ORDER.indexOf(id);
+  if (index <= 0) return index === 0 || id === 'boss_fire';
   return isBossCleared(BOSS_ORDER[index - 1]);
 }
 
