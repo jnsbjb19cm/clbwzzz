@@ -778,6 +778,11 @@ export class SmithyView {
     });
     body.querySelector('#do-combine')?.addEventListener('click', () => {
       const res = this.materialSys.combine(this.inventory, this.matType, this.matFromLevel);
+      if (res.ok) this.onQuestEvent?.('material_combine', {
+        count: 1,
+        materialKind: this.matType,
+        materialLevel: Number(res.toLevel || this.matFromLevel + 1),
+      });
       this.toast(root, res.ok ? `获得 ${res.itemName}` : res.error);
       this.renderBody(root);
     });
