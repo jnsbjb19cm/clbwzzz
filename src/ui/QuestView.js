@@ -190,6 +190,7 @@ export class QuestView{
       else if(quest.event==='card_total')ach[quest.id]=Math.min(quest.goal,state._lastCardCount||0);
       else if(quest.event==='gold_total')ach[quest.id]=Math.min(quest.goal,extra.totalGold||0);
       else if(quest.event==='honor_total')ach[quest.id]=Math.min(quest.goal,extra.totalHonor||0);
+      else if(quest.event==='craft_total')ach[quest.id]=Math.min(quest.goal,extra.totalCrafts||0);
       else if(quest.event==='battle_total')ach[quest.id]=Math.min(quest.goal,extra.totalBattles||0);
       else if(quest.event==='adventure_total')ach[quest.id]=Math.min(quest.goal,extra.totalAdventures||0);
       else if(quest.event==='strengthen_total')ach[quest.id]=Math.min(quest.goal,extra.totalUpgrades||0);
@@ -281,6 +282,7 @@ export class QuestView{
       if(quest.event==='card_total')this.state.achievementProgress[quest.id]=Math.min(quest.goal,this.cardInventory?.getUsedCount?.()||0);
       if(quest.event==='gold_total')this.state.achievementProgress[quest.id]=Math.min(quest.goal,extra.totalGold||0);
       if(quest.event==='honor_total')this.state.achievementProgress[quest.id]=Math.min(quest.goal,extra.totalHonor||0);
+      if(quest.event==='craft_total')this.state.achievementProgress[quest.id]=Math.min(quest.goal,extra.totalCrafts||0);
       if(quest.event==='battle_total')this.state.achievementProgress[quest.id]=Math.min(quest.goal,extra.totalBattles||0);
       if(quest.event==='adventure_total')this.state.achievementProgress[quest.id]=Math.min(quest.goal,extra.totalAdventures||0);
       if(quest.event==='strengthen_total')this.state.achievementProgress[quest.id]=Math.min(quest.goal,extra.totalUpgrades||0);
