@@ -56,19 +56,6 @@ function rewardChips(reward,cardDb,itemDb){
   return out.join('');
 }
 
-function materialItemId(kind,level){
-  const lv=Math.max(1,Math.min(4,Number(level)||1));
-  if(kind==='parchment')return 50000+lv;
-  if(kind==='gem')return 50010+lv;
-  if(kind==='charm')return 50020+lv;
-  if(kind==='dna')return 50030+lv;
-  if(kind==='powder')return 10000+Math.max(1,Math.min(5,Number(level)||1));
-  return null;
-}
-function isProcessedMaterial(itemId){
-  const id=Number(itemId);
-  return (id>=50002&&id<=50004)||(id>=50012&&id<=50014)||(id>=50022&&id<=50024)||(id>=50032&&id<=50034)||(id>=10002&&id<=10005);
-}
 function dataCount(data){return Math.max(0,Number(data?.count??data?.amount??1)||0);}
 
 function progressDelta(quest,event,data){
@@ -76,7 +63,7 @@ function progressDelta(quest,event,data){
   if(quest.event==='card_upgrade'&&(event==='card_craft'||event==='card_strengthen'))return dataCount(data)||1;
   if(quest.event==='any')return 1;
 
-  // 收集指定道具：只记录任务运行期间真正新增到背包的数量，不读取试玩初始库存。
+  // 收集指定道具：事件记录本次新增；带 lifetimeItemId 的永久任务还会读取长期收集统计。
   if(quest.event==='item_gain'){
     if(event!=='item_gain')return 0;
     if(quest.itemId&&Number(quest.itemId)!==Number(data?.itemId))return 0;
