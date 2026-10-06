@@ -12,6 +12,8 @@ import {
 const craftQualityLabel = (craftQuality) => resolveCraftQuality(craftQuality).name;
 import { roundBattleAmount } from '../battle/BattleConfig.js';
 import { audio } from '../core/AudioManager.js';
+import { referenceCharacterMarkup, refreshReferenceInventory } from './ReferenceInventoryLayout.js';
+import { usesFoodCost, isPlantCard, isMonsterCard } from '../battle/BattleConfig.js';
 import { authStore } from '../core/AuthStore.js';
 import { validateNickname } from '../core/ContentFilter.js';
 import { ItemUseSystem } from '../systems/ItemUseSystem.js';
@@ -90,9 +92,9 @@ export class BagView {
         <div class="bag-body">
           <aside class="bag-profile-panel classic-bag-profile" aria-label="角色资料">
             <div class="bag-profile-title"><span id="bag-profile-name">${this.player?.nickname ?? this.player?.name ?? '森林守卫'}</span><b id="bag-profile-level"></b></div>
-            <div class="bag-profile-lines"><span>公会：${this.player?.guildName ?? '无'}</span><span>排名 <b>${Math.max(1, Number(this.player?.rank) || 4044)}</b></span></div>
+            <div class="bag-profile-lines"><span>公会：${this.player?.guildName ?? '无'}</span><span>排名 <b>${Number(this.player?.rank) > 0 ? Number(this.player.rank) : '暂无'}</b></span></div>
             <div class="bag-role-frame">
-              <span class="bag-role-mark" aria-hidden="true"><i></i><b>森林守卫</b></span>
+              ${referenceCharacterMarkup(this.player)}
               <button type="button" class="bag-equip-slot bag-equip-hat">帽子</button>
               <button type="button" class="bag-equip-slot bag-equip-hair">头发</button>
               <button type="button" class="bag-equip-slot bag-equip-glass">眼镜</button>
@@ -414,6 +416,8 @@ export class BagView {
         if (!slot) return true;
         const card = this.cardDb.getById(slot.cardId);
         if (!card) return false;
+        if (this.referenceFaction === 'plant' && !isPlantCard(card)) return false;
+        if (this.referenceFaction === 'monster' && !isMonsterCard(card)) return false;
         if (type != null && card.type !== type) return false;
         if (quality != null && card.quality !== quality) return false;
         if (kwRaw) {
@@ -484,6 +488,7 @@ export class BagView {
       detail.className = 'bag-detail empty';
       detail.innerHTML = `<p>${hint?.textContent ?? '点击查看详情'}</p>`;
     }
+    refreshReferenceInventory(this, root);
   }
 
   renderItemGrid(root, grid) {
@@ -530,9 +535,10 @@ export class BagView {
         const label = formatCraftCardName(slot.craftQuality, card.name, slot.customName);
         return `
           <button type="button" class="bag-slot card-bag-slot${this.selectedIndex === index ? ' selected' : ''}"
-            data-index="${index}" style="--quality:${cq.color}" title="${label}">
+            data-index="${index}" data-card-grade="${Math.max(1, Number(card.quality) || 1)}" style="--quality:${cq.color}" title="${label}">
             <img src="/sprites/cards/${card.spriteRes}.png" alt="" loading="lazy" />
             <span class="bag-slot-card-name" style="color:${cq.color}">${label}</span>
+            <span class="reference-card-cost"><img src="/battle/jungle/${usesFoodCost(card) ? 'res_food_original' : 'res_sun_complete'}.png" alt="${usesFoodCost(card) ? '食物' : '阳光'}">${Number(card.cost) || 0}</span>
             ${(slot.strengthLv ?? 0) > 0 ? `<span class="bag-slot-star">+${slot.strengthLv}</span>` : ''}
             ${slot.star > 0 ? `<span class="bag-slot-count">${slot.star}★</span>` : ''}
           </button>`;

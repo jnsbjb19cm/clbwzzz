@@ -239,7 +239,7 @@
     "atk_style": 3,
     "card_quality": 2,
     "desc": "优先对敌方空中单位进行打击,还可无视中立障碍",
-    "card_category": 1,
+    "card_category": 0,
     "card_type": 1,
     "born_line": 0,
     "self_grade": 2,

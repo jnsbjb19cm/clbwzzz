@@ -268,7 +268,7 @@ function installShopAuthority() {
     this.cart = remaining;
     this.renderClassicCatalog(root);
     if (stopMessage) this.toast(root, purchased ? `已购买 ${purchased} 件；其余未购买：${stopMessage}` : stopMessage);
-    else this.toast(root, `成功购买 ${purchased} 件商品，数据已写入数据库`);
+    else this.toast(root, `成功购买 ${purchased} 件商品，`);
   };
 
   const originalRenderRecharge = ShopView.prototype.renderRecharge;
@@ -281,7 +281,7 @@ function installShopAuthority() {
         try {
           const data = await authStore.api.post('/player/shop/recharge-demo', { payId: Number(current.dataset.id) });
           applyServerData(this, data);
-          this.toast(root, '充值演示数据已写入数据库');
+          this.toast(root, '充值成功');
         } catch (error) {
           this.toast(root, error?.message || '充值失败');
         } finally {

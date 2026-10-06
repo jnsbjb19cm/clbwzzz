@@ -1,0 +1,171 @@
+/* 用户的透明卡槽 / 方卡参考。仅负责手牌外观，不修改棋盘坐标或战斗规则。
+ * #hand 标识为旧样式提供明确的覆盖边界；玻璃只在整条 HUD 合成一次。 */
+.top-ui:has(#hand.reference-battle-hand) {
+  background: linear-gradient(180deg, rgba(238, 251, 243, .23), rgba(191, 218, 221, .06) 48%, rgba(226, 240, 232, .17)) !important;
+  border: 2px solid rgba(237, 242, 215, .72) !important;
+  border-radius: 4px !important;
+  box-shadow: inset 0 1px 2px #ffffff9c, inset 0 -2px 2px #16272680, 0 1px 3px #12272160 !important;
+  backdrop-filter: blur(2px) !important;
+  box-sizing: border-box !important;
+}
+.top-ui:has(#hand.reference-battle-hand)::before,
+.top-ui:has(#hand.reference-battle-hand)::after,
+.top-ui:has(#hand.reference-battle-hand) .top-ui-bg { display: none !important; }
+.top-ui:has(#hand.reference-battle-hand) .slots-container {
+  left: 112px !important;
+  right: 5px !important;
+  top: 4px !important;
+  bottom: 4px !important;
+  height: auto !important;
+  min-height: 0 !important;
+  max-height: none !important;
+  width: auto !important;
+  padding: 0 !important;
+  border: 0 !important;
+  background: none !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+}
+.top-ui:has(#hand.reference-battle-hand) .res-icon {
+  left: 10px !important;
+  width: 40px !important;
+  height: 40px !important;
+  object-fit: contain !important;
+}
+.top-ui:has(#hand.reference-battle-hand) .res-sun-icon { top: 7px !important; }
+.top-ui:has(#hand.reference-battle-hand) .res-food-icon { top: 53px !important; }
+.top-ui:has(#hand.reference-battle-hand) .res-num {
+  left: 50px !important;
+  right: auto !important;
+  width: 59px !important;
+  text-align: left !important;
+  color: #fff !important;
+  font: 900 25px/36px Arial, sans-serif !important;
+  text-shadow: -1px -1px #142019, 1px -1px #142019, -1px 1px #142019, 1px 2px #142019 !important;
+}
+.top-ui:has(#hand.reference-battle-hand) .res-sun-num { top: 7px !important; }
+.top-ui:has(#hand.reference-battle-hand) .res-food-num { top: 53px !important; }
+body #hand.reference-battle-hand.video-battle-hand {
+  display: grid !important;
+  grid-template-columns: repeat(10, minmax(0, 1fr)) !important;
+  align-items: center !important;
+  height: 100% !important;
+  min-height: 0 !important;
+  max-height: none !important;
+  gap: 3px !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: none !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+}
+body #hand.reference-battle-hand::before,
+body #hand.reference-battle-hand::after { display: none !important; }
+body #hand.reference-battle-hand.video-battle-hand .deck-slot.battle-hand-card:is(.filled, .locked) {
+  box-sizing: border-box !important;
+  align-self: center !important;
+  aspect-ratio: 1 !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: none !important;
+  height: auto !important;
+  min-height: 0 !important;
+  max-height: none !important;
+  padding: 0 !important;
+  border: 2px solid #dce1b8 !important;
+  border-right-color: #8d9c75 !important;
+  border-bottom-color: #81916e !important;
+  border-radius: 0 !important;
+  background: none !important;
+  box-shadow: inset 1px 1px 0 #ffffed8c, 0 0 1px #2a422780 !important;
+  backdrop-filter: none !important;
+  overflow: hidden !important;
+}
+body #hand.reference-battle-hand .deck-slot::before { display: none !important; }
+body #hand.reference-battle-hand .card-grade-1 { --card-tone: #929582; }
+body #hand.reference-battle-hand .card-grade-2 { --card-tone: #53a23b; }
+body #hand.reference-battle-hand .card-grade-3 { --card-tone: #318db3; }
+body #hand.reference-battle-hand .card-grade-4 { --card-tone: #9244ab; }
+body #hand.reference-battle-hand .card-grade-5 { --card-tone: #dbb438; }
+body #hand.reference-battle-hand .card-grade-6 { --card-tone: #be4e48; }
+body .battle-game-wrap #hand.reference-battle-hand.video-battle-hand .slot-face {
+  inset: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: none !important;
+  box-shadow: none !important;
+}
+body #hand.reference-battle-hand.video-battle-hand .slot-bg {
+  position: absolute !important;
+  inset: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  background: linear-gradient(130deg, #ffffff53, transparent 45%, #07130aa6), var(--card-tone, #929582) !important;
+  opacity: 1 !important;
+  filter: none !important;
+}
+body .battle-game-wrap #hand.reference-battle-hand.video-battle-hand .slot-portrait {
+  left: -10% !important;
+  top: -11% !important;
+  width: 120% !important;
+  height: 120% !important;
+  max-width: none !important;
+  object-fit: contain !important;
+  object-position: center !important;
+  filter: drop-shadow(0 1px 1px #12251180) !important;
+}
+body #hand.reference-battle-hand.video-battle-hand .slot-meta {
+  left: 2px !important;
+  right: 2px !important;
+  bottom: 1px !important;
+  height: 22px !important;
+  background: none !important;
+}
+body #hand.reference-battle-hand.video-battle-hand .slot-cost {
+  padding: 0 !important;
+  gap: 2px !important;
+  height: 22px !important;
+  background: none !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  color: #fff !important;
+  font: 900 19px/1 Arial, sans-serif !important;
+  text-shadow: -1px -1px #071206, 1px -1px #071206, -1px 1px #071206, 1px 1px #071206, 0 2px #071206 !important;
+}
+body #hand.reference-battle-hand .slot-cost img { width: 20px !important; height: 20px !important; object-fit: contain !important; }
+body #hand.reference-battle-hand .slot-cost b { color: inherit !important; font: inherit !important; }
+/* 分类仍保留在按钮悬停描述；不再占用参考图没有的圆形功能底座。 */
+body #hand.reference-battle-hand .slot-function { display: none !important; }
+body #hand.reference-battle-hand .slot-stars { top: 1px !important; max-height: 10px !important; }
+body #hand.reference-battle-hand.video-battle-hand .deck-slot.battle-hand-card.locked {
+  height: 100% !important;
+  aspect-ratio: auto !important;
+  border: 1px solid #e7eddd85 !important;
+  background: linear-gradient(110deg, #edfaff24, #c5dcd608 55%, #eefaff21) !important;
+  box-shadow: inset 1px 0 1px #ffffff60, inset -1px -1px 2px #29443c66 !important;
+  opacity: 1 !important;
+  filter: none !important;
+}
+body .battle-game-wrap #hand.reference-battle-hand.video-battle-hand .battle-slot-lock {
+  position: absolute !important;
+  inset: 50% auto auto 50% !important;
+  width: 46px !important;
+  height: 48px !important;
+  margin: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  transform: translate(-50%, -50%) !important;
+  background: url('/battle/jungle/lock.png') center / 220% auto no-repeat !important;
+  filter: drop-shadow(0 1px 1px #22383180) !important;
+}
+body #hand.reference-battle-hand .battle-slot-lock::before,
+body #hand.reference-battle-hand .battle-slot-lock::after,
+body #hand.reference-battle-hand .battle-slot-lock-img { display: none !important; }
+body #hand.reference-battle-hand.video-battle-hand .deck-slot.selected,
+body #hand.reference-battle-hand.video-battle-hand .deck-slot:focus-visible {
+  outline: 2px solid #fff8a0 !important;
+  outline-offset: -3px !important;
+  box-shadow: inset 0 0 8px #fffbbdaf !important;
+}

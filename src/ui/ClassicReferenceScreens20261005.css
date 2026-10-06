@@ -1,0 +1,289 @@
+/* Reference screens only: no battle, chat, map or economy-rule selectors. */
+body .classic-bag-screen, body .classic-shop-screen, body .reference-guild-screen,
+body .quest-page-formal .quest-window {
+  --ref-line:#667920; --ref-paper:#e1e5a3; --ref-green:#aaba57;
+  color:#28340e; border:4px solid #637516!important; border-radius:10px!important;
+  background:linear-gradient(110deg,#bcc877,#a7b854 65%,#93a543)!important;
+  box-shadow:inset 0 0 0 2px #e5edb1,0 5px 22px #10210066!important;
+  box-sizing:border-box;
+}
+body .classic-bag-screen button, body .classic-shop-screen button,
+body .reference-guild-screen button, body .quest-page-formal button {cursor:pointer}
+body .classic-bag-screen button:disabled,body .classic-shop-screen button:disabled {cursor:default;opacity:.45}
+body .classic-bag-screen :focus-visible,body .classic-shop-screen :focus-visible,
+body .reference-guild-screen :focus-visible,body .quest-page-formal :focus-visible {outline:3px solid #fff4a1;outline-offset:2px}
+
+/* Backpack: shared character/profile at left, paginated square slots at right. */
+body .classic-bag-screen {
+  inset:2vh 2vw!important;width:96vw!important;height:96dvh!important;
+  display:grid!important;grid-template-columns:minmax(0,46fr) minmax(0,54fr)!important;
+  grid-template-rows:58px 112px minmax(0,1fr) 38px 76px!important;gap:0 10px;padding:0 12px 10px!important;
+}
+body .classic-bag-screen .bag-header {grid-area:1/1/2/3;background:linear-gradient(#d6edb8,#89a72e 58%,#728b18)!important;margin:0 -12px;padding-left:16px!important}
+body .classic-bag-screen .bag-header h1 {display:none}
+body .classic-bag-screen .classic-bag-tabs {position:absolute!important;inset:8px 76px auto auto!important;width:auto!important;height:46px!important;margin:0!important;padding:0!important;border:0!important;background:none!important;display:flex!important}
+body .classic-bag-screen .classic-bag-section-tabs button,body .classic-bag-screen .bag-mode-tab {height:44px;min-width:76px;padding:0 14px;color:#68782e;background:transparent;border:2px solid transparent;font-size:22px;box-shadow:none}
+body .classic-bag-screen .classic-bag-section-tabs button.active,body .classic-bag-screen .bag-mode-tab.active {color:#ffe848;text-shadow:1px 2px #7c6315;background:linear-gradient(#abbf59,#c2cf87);border-color:#61731b}
+body .classic-bag-screen .bag-capacity {margin:0 auto!important;font-size:13px;color:#f5fad7!important}
+body .classic-bag-screen #bag-debug-btn {font-size:12px;padding:4px;margin-left:12px}
+body .classic-bag-screen .bag-toolbar {grid-area:2/2/3/3;position:relative!important;inset:auto!important;display:flex!important;flex-wrap:wrap;align-content:center;gap:5px;margin:0!important;padding:6px 0!important;min-height:0!important;background:none!important;border:0!important;overflow:visible!important;z-index:3}
+body .classic-bag-screen .bag-tabs {display:flex;gap:4px;flex-basis:100%}
+body .classic-bag-screen .bag-tab {padding:3px 12px;min-height:28px;border:2px solid #768930;border-radius:7px;background:#a3b754;color:#edf3bc;font-size:16px;white-space:nowrap}
+body .classic-bag-screen .bag-tab.active {background:#a6ba56;border-color:#f1f6c6;color:#fff;text-shadow:1px 1px #4d6119}
+body .classic-bag-screen .bag-card-search,body .classic-bag-screen .bag-card-quality {display:flex;align-items:center;gap:4px;font-size:12px;margin:0}
+body .classic-bag-screen #bag-card-search {width:135px;min-width:0;padding:4px;background:#edf0cf;color:#263811}
+body .classic-bag-screen #bag-card-quality {max-width:82px;padding:4px;background:#edf0cf;color:#263811}
+.reference-bag-tools {margin-left:auto;font-size:13px;position:relative}
+.reference-bag-tools summary {list-style:none;cursor:pointer;padding:5px 8px;border:1px solid #677c23;border-radius:4px;background:linear-gradient(#dce9a5,#a0b94d)}
+.reference-bag-tools-menu {position:absolute;right:0;top:100%;width:220px;padding:10px;display:grid;gap:6px;background:#dae4a1;border:3px solid #708525;border-radius:7px;box-shadow:0 6px 15px #18250666;z-index:20}
+body .classic-bag-screen .reference-bag-tools-menu button {width:100%;margin:0;padding:7px;border:1px solid #728a2d;border-radius:4px;color:#32410f;background:linear-gradient(#e2edb5,#a5bc59);font-size:13px}
+body .classic-bag-screen .bag-body {display:contents!important}
+body .classic-bag-screen .classic-bag-profile {grid-area:2/1/6/2;min-width:0;min-height:0;display:grid!important;grid-template-columns:minmax(0,1fr) 116px;grid-template-rows:36px 36px minmax(0,1fr);gap:5px;padding:10px!important;margin:12px 0 0!important;border:3px solid #6e8027;border-radius:7px;background:linear-gradient(90deg,#c9d589,#dce2a1);overflow:auto}
+body .classic-bag-screen .bag-profile-title,body .classic-bag-screen .bag-profile-lines {grid-column:1/-1;padding:5px;margin:0;display:flex;align-items:center;justify-content:space-between;background:linear-gradient(90deg,#faf26f,#e4e4a1);font-size:15px;color:#354010}
+body .classic-bag-screen .bag-profile-lines {background:linear-gradient(90deg,#e5d356,#d9e09a);border:0;font-size:13px}
+body .classic-bag-screen .bag-role-frame {grid-column:1;position:relative;height:auto;min-height:310px;margin:0;border:0;background:radial-gradient(ellipse at 50% 65%,#a5b95c66,transparent 50%)}
+.reference-character {position:absolute;inset:50% auto auto 50%;width:180px;height:224px;transform:translate(-50%,-50%);pointer-events:none;filter:drop-shadow(0 5px 3px #354b2844)}
+.reference-character>i {position:absolute;top:50%;left:50%;display:block;background-image:url('/atlas/createCharacter.png');background-repeat:no-repeat;transform:translate(-50%,-50%) scale(.48)}
+body .classic-bag-screen .bag-equip-slot {width:60px;height:58px;max-width:23%;font-size:15px;border-radius:5px;border:2px solid #839334;background:linear-gradient(145deg,#abbc55,#c3d078);box-shadow:inset 2px 2px 5px #60761c;color:#e5ecb2;text-shadow:1px 1px #637321}
+body .classic-bag-screen .bag-equip-hat,body .classic-bag-screen .bag-equip-hair {top:6%}
+body .classic-bag-screen .bag-equip-glass,body .classic-bag-screen .bag-equip-eye {top:28%}
+body .classic-bag-screen .bag-equip-cloth,body .classic-bag-screen .bag-equip-face {top:50%}
+body .classic-bag-screen .bag-equip-ring {left:27%;bottom:7%}
+body .classic-bag-screen .bag-equip-neck {right:27%;bottom:7%}
+body .classic-bag-screen .bag-equip-suit,body .classic-bag-screen .bag-equip-badge {bottom:7%}
+body .classic-bag-screen .bag-profile-stats {grid-column:2;display:flex;flex-direction:column;justify-content:center;gap:9px;margin:0;padding:4px;overflow:auto}
+body .classic-bag-screen .bag-profile-stats>div {display:block;border:0;padding:0;background:none}
+body .classic-bag-screen .bag-profile-stats dt {font-size:17px;color:#fff;text-shadow:1px 1px 2px #26330f,-1px -1px #526928}
+body .classic-bag-screen .bag-profile-stats dd {margin:4px 0;background:#e0e8b0;color:#465727;text-align:center;border:1px solid #a6b46a;border-radius:3px;font-size:14px}
+body .classic-bag-screen #bag-grid {grid-area:3/2/4/3;display:grid!important;grid-template-columns:repeat(8,minmax(0,1fr))!important;grid-template-rows:repeat(6,minmax(0,1fr));align-content:stretch;gap:4px!important;padding:5px!important;overflow:hidden!important;height:100%!important;min-height:0!important;background:#929f42!important;border:3px solid #6f8025!important;border-radius:3px!important}
+body .classic-bag-screen #bag-grid.bag-grid-cards {grid-template-columns:repeat(6,minmax(0,1fr))!important;grid-template-rows:repeat(5,minmax(0,1fr))}
+body .classic-bag-screen #bag-grid .bag-slot {position:relative;width:100%!important;height:100%!important;min-height:0!important;min-width:0!important;aspect-ratio:auto!important;padding:0!important;border:2px solid #e1e7b3!important;border-radius:0!important;box-shadow:inset 2px 2px 3px #42500b!important;background:#738818!important;overflow:hidden!important}
+body .classic-bag-screen #bag-grid .bag-slot[hidden] {display:none!important}
+body .classic-bag-screen #bag-grid .bag-slot.selected {outline:3px solid #ffdf48;outline-offset:-3px}
+body .classic-bag-screen #bag-grid .card-bag-slot {background:linear-gradient(130deg,#e1e1d7,#8c8f81)!important}
+body .classic-bag-screen #bag-grid [data-card-grade='2'] {background:linear-gradient(130deg,#76cd42,#285f2f)!important}
+body .classic-bag-screen #bag-grid [data-card-grade='3'] {background:linear-gradient(130deg,#45a5cf,#24557e)!important}
+body .classic-bag-screen #bag-grid [data-card-grade='4'] {background:linear-gradient(130deg,#b77cdc,#653791)!important}
+body .classic-bag-screen #bag-grid [data-card-grade='5'] {background:linear-gradient(130deg,#ffe85c,#b78917)!important}
+body .classic-bag-screen #bag-grid [data-card-grade='6'] {background:linear-gradient(130deg,#f1827a,#953339)!important}
+body .classic-bag-screen #bag-grid .card-bag-slot>img {width:100%!important;height:100%!important;object-fit:contain;position:absolute;inset:0;margin:0!important}
+body .classic-bag-screen #bag-grid .bag-slot-card-name {position:absolute;left:0;bottom:0;right:0;background:#152111d9;font-size:10px!important;line-height:16px;max-height:16px;padding:0 2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;visibility:hidden}
+body .classic-bag-screen #bag-grid .card-bag-slot:hover .bag-slot-card-name,body .classic-bag-screen #bag-grid .card-bag-slot:focus-visible .bag-slot-card-name {visibility:visible;z-index:4}
+.reference-card-cost {position:absolute;left:1px;bottom:0;display:flex;align-items:center;gap:2px;color:white;font-size:15px;line-height:20px;text-shadow:1px 1px 2px #000,-1px -1px #000;z-index:2}
+.reference-card-cost img {width:20px;height:20px;object-fit:contain}
+body .classic-bag-screen .bag-slot-star {top:1px;left:3px;bottom:auto;color:#ffe754;background:none;text-shadow:1px 1px #513b00}
+body .classic-bag-screen .bag-slot-count {bottom:1px;right:2px;left:auto;color:white;text-shadow:1px 1px #000;font-size:13px}
+.reference-bag-pager {grid-area:4/2/5/3;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:3px;color:#faffd5;font-size:14px}
+.reference-bag-pager button {padding:3px 14px;border:2px solid #6b8123;border-radius:4px;color:#fff;background:linear-gradient(#c3dd86,#809b29);font-size:14px}
+body .classic-bag-screen .classic-bag-footer {grid-area:5/2/6/3;display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr));grid-template-rows:26px 34px;align-content:center;gap:5px;padding:2px 0!important;background:none!important;border:0!important}
+body .classic-bag-screen .classic-bag-footer>* {min-width:0!important;width:auto!important;margin:0!important;white-space:nowrap;font-size:15px;padding:3px!important;text-align:center;border-radius:3px}
+body .classic-bag-screen .classic-bag-footer .bag-currency {background:#e0e7ab;color:#344414;border:1px solid #8da349}
+body .classic-bag-screen #bag-detail {position:absolute!important;inset:110px 22px 100px auto!important;z-index:12;width:min(380px,65vw)!important;max-height:none!important;height:auto!important;padding:24px 18px 16px!important;overflow:auto!important;background:linear-gradient(#f5edc0,#e3d391)!important;border:3px solid #82752f!important;border-radius:8px!important;box-shadow:0 8px 30px #1b230e88;color:#3d461c}
+body .classic-bag-screen #bag-detail.empty {display:none!important}
+.reference-detail-close {position:absolute;right:5px;top:3px;border:0;background:transparent;font-size:26px;color:#72462a}
+
+/* Quest book: category rail, green task cards, parchment details. */
+body .classic-bag-screen .bag-toolbar {grid-area:2/2/3/3!important;align-items:center}
+body .classic-bag-screen .classic-bag-footer {grid-area:5/2/6/3!important}
+body .classic-bag-screen .bag-role-frame {width:100%!important;min-width:0;box-shadow:none!important;grid-row:3!important}
+body .classic-bag-screen .bag-role-frame::before {display:none}
+body .classic-bag-screen .bag-profile-stats {grid-row:3!important}
+body .classic-bag-screen .bag-equip-slot {writing-mode:horizontal-tb;line-height:1.2;white-space:nowrap;padding:2px!important}
+body .classic-bag-screen .bag-tab,body .classic-bag-screen .reference-faction-tabs button {height:28px!important;min-height:0!important;min-width:50px!important;font-size:14px!important;padding:2px 8px!important}
+.reference-faction-tabs {display:flex;gap:5px;flex-basis:100%}
+body .classic-bag-screen .reference-faction-tabs button {background:linear-gradient(#c4d67f,#9ab143)!important;color:#eff5d1!important}
+body .classic-bag-screen .reference-faction-tabs button.active {color:#ffe143!important;border-color:#f1f6c6!important;background:linear-gradient(#89a63f,#658621)!important}
+body .classic-bag-screen .bag-tabs {gap:3px}
+body .quest-page-formal .quest-window-title {position:relative;display:flex;justify-content:center;align-items:center}
+body .quest-page-formal .quest-window-title h1 {font-size:30px!important}
+.reference-quest-close {position:absolute;right:8px;top:6px;width:40px;height:40px;padding:0!important;border:2px solid #bf772b;border-radius:6px;background:linear-gradient(#ffa977,#d8522b);color:#fff22f;font-size:32px!important;line-height:32px}
+body .quest-page-formal .quest-workspace {background:none!important}
+body .quest-page-formal .quest-detail-parchment {margin:0!important}
+body .quest-page-formal .quest-list-copy strong {font-size:19px!important}
+body .quest-page-formal .quest-detail-block h3 {font-size:24px!important}
+body .quest-page-formal .quest-detail-block p {font-size:17px!important}
+body .quest-page-formal .quest-parchment-inner h2 {font-size:25px!important}
+body .reference-guild-screen:has(.guild-warehouse-grid-shell) .reference-guild-summary {display:none!important}
+body .reference-guild-screen .guild-warehouse-grid-shell .economy-grid-title {display:none}
+body .reference-guild-screen .guild-warehouse-grid-shell .economy-item-grid {max-height:calc(100dvh - 315px)}
+body .quest-page-formal {position:fixed!important;inset:3vh 3vw!important;width:94vw!important;height:94dvh!important;min-height:0!important;max-height:94dvh!important;box-sizing:border-box;margin:0!important;padding:0!important;z-index:86;max-width:none!important}
+body .quest-page-formal .quest-window {height:100%;display:grid;grid-template-rows:58px minmax(0,1fr);padding:0;overflow:hidden}
+body .quest-page-formal .quest-window-title {padding:6px 20px!important;text-align:center;background:linear-gradient(#d3eeb5,#8aab32 62%,#708c17);border-bottom:3px solid #66791e}
+body .quest-page-formal .quest-window-title h1 {margin:0;color:#ffea36;font-size:30px;text-shadow:2px 2px #34420d}
+body .quest-page-formal .quest-window-title p {display:none}
+body .quest-page-formal .quest-workspace {display:grid!important;grid-template-columns:78px minmax(220px,38%) minmax(0,1fr);gap:10px;min-height:0;padding:12px 12px 12px 0;overflow:hidden}
+body .quest-page-formal .quest-category-rail {display:flex!important;flex-direction:column;gap:4px;overflow:auto;background:none;padding:0}
+body .quest-page-formal .quest-category-btn {flex:1 0 76px;min-width:0;border:2px solid #6d7e22;border-left:0;border-radius:0 9px 9px 0;background:linear-gradient(90deg,#85982e,#b6c870);color:#d6e697;padding:8px 6px}
+body .quest-page-formal .quest-category-btn strong {writing-mode:vertical-rl;font-size:20px;letter-spacing:3px;line-height:1.2}
+body .quest-page-formal .quest-category-btn small {display:none}
+body .quest-page-formal .quest-category-btn.active {color:#ffec25;text-shadow:1px 1px #66560e;background:linear-gradient(90deg,#70831d,#9caf3e);border-color:#d6df8d}
+body .quest-page-formal .quest-list-panel {min-height:0;display:flex;flex-direction:column;padding:8px;border:3px solid #667b23;border-radius:2px;background:#b4c36e;box-shadow:inset 0 0 0 2px #d8e59c}
+body .quest-page-formal .quest-list-panel-head {display:flex;justify-content:space-between;align-items:center;gap:8px;color:#526221;padding:3px 6px}
+body .quest-page-formal .quest-list-panel-head h2 {font-size:17px;margin:4px 0}
+body .quest-page-formal .quest-list-panel-head span {font-size:12px}
+body .quest-page-formal .quest-list {overflow:auto;min-height:0;display:flex;flex-direction:column;gap:12px;padding:8px 4px;scrollbar-color:#728624 #c4d080}
+body .quest-page-formal .quest-list-item {position:relative;display:flex;align-items:center;flex:none;gap:10px;min-height:90px;border:2px solid #68852a;border-radius:18px;background:linear-gradient(#e8f7ae,#bfdf77 42%,#8daf3c);box-shadow:inset 0 0 0 2px #d8ee9d;color:#243511;padding:8px;text-align:left}
+body .quest-page-formal .quest-list-item.selected {border-color:#d9a218;box-shadow:0 0 5px 3px #ffe25c,inset 0 0 0 2px #f3ffc5}
+body .quest-page-formal .quest-list-icon {flex:0 0 52px;width:52px;height:52px;border-radius:50%;border:3px solid #e6c451;background-color:#567721;box-shadow:0 0 0 2px #567121}
+body .quest-page-formal .quest-list-copy {min-width:0;flex:1;display:flex;flex-direction:column;gap:5px}
+body .quest-page-formal .quest-list-copy strong {font-size:19px;color:#1b2d0b;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+body .quest-page-formal .quest-list-copy>span:not(.quest-list-progress) {font-size:12px;color:#496326;line-height:1.4}
+body .quest-page-formal .quest-list-progress {height:10px;background:#365501;border:2px solid #668e28;border-radius:4px;overflow:hidden}
+body .quest-page-formal .quest-list-progress i {display:block;height:100%;background:#e8cc48}
+body .quest-page-formal .quest-list-state {position:absolute;right:6px;top:5px;font-size:11px;color:#3b5b11;background:#e1eb9e;padding:2px 4px;border-radius:5px;font-style:normal}
+body .quest-page-formal .quest-list-state.ready {transform:rotate(-18deg);border:3px solid #ec9212;border-radius:50%;padding:8px;color:#fff125;background:#e88015cc;font-size:17px;text-shadow:1px 1px #a2520c}
+body .quest-page-formal .quest-detail-parchment {min-height:0;overflow:auto;position:relative;border:5px solid #c59c62;border-radius:26px 18px 24px 20px;background:radial-gradient(ellipse at 50% 45%,#fff3d0,#e6c994);box-shadow:inset 0 0 18px #a86c3466;color:#4c4124;padding:22px 26px}
+body .quest-page-formal .quest-parchment-inner {padding:0;background:none;border:0}
+body .quest-page-formal .quest-detail-kicker {display:none}
+body .quest-page-formal .quest-parchment-inner h2 {font-size:25px;margin:0 0 16px;padding:10px 12px;background:linear-gradient(90deg,#fff9eb,transparent);border-radius:24px;color:#4c4124}
+body .quest-page-formal .quest-parchment-rule {height:2px;background:#b9a374;margin-bottom:12px}
+body .quest-page-formal .quest-detail-block {padding:12px 0;border-bottom:1px solid #baa273}
+body .quest-page-formal .quest-detail-block h3 {margin:0 0 8px;color:#f4ce28;font-size:24px;text-shadow:1px 2px #866824,-1px -1px #fff6b2}
+body .quest-page-formal .quest-detail-block p {font-size:17px;line-height:1.7;margin:6px 0;color:#4c4124}
+body .quest-page-formal .quest-detail-block:first-of-type p {color:#548444}
+body .quest-page-formal .quest-detail-footer {display:flex;justify-content:flex-end;padding-top:15px}
+body .quest-page-formal .quest-detail-claim {width:104px;height:104px;border:4px solid #e97817;border-radius:50%;font-size:24px;line-height:1.25;color:#fff4b0;padding:16px;background:radial-gradient(circle at 45% 25%,#ffe6a7,#ef7f24 55%,#d9580c);box-shadow:0 0 8px #ffb83a,inset 0 0 0 3px #ffc575;text-shadow:1px 2px #ac4c15}
+
+/* Guild is its own scene. Member management and warehouse still use original APIs. */
+body .reference-guild-screen {position:relative;width:100%;min-height:calc(100dvh - 130px);padding:12px;overflow:auto}
+.reference-guild-title {display:flex;align-items:center;justify-content:space-between;background:linear-gradient(#c9e5a3,#7d9a24);margin:-12px -12px 12px;padding:8px 14px;border-bottom:3px solid #5e741b}
+.reference-guild-title h2 {margin:0;color:#fff244;font-size:34px;text-shadow:2px 2px #34450e}
+.reference-guild-title button {width:42px;height:42px;font-size:34px;line-height:30px;border:2px solid #a95c22;border-radius:7px;background:linear-gradient(#ffa16b,#d65732);color:#fff039}
+body .reference-guild-screen .reference-guild-summary {background:#aebe60!important;border:2px solid #7a8e2e!important;border-radius:6px!important;padding:12px!important;display:flex;flex-wrap:wrap;align-items:center;gap:10px}
+.reference-guild-summary>div {flex:1 0 100%;padding:7px 10px;background:linear-gradient(#d9e5a8,#b3c779);border-radius:5px}
+body .reference-guild-summary h3 {font-size:25px;color:#394919}
+body .reference-guild-summary p {margin:0 12px 0 0;color:#394919!important}
+body .reference-guild-summary>div>span {color:#536b1d!important}
+body .reference-guild-summary>button {min-height:48px;padding:8px 20px!important;border:2px solid #72822b!important;border-radius:9px!important;font-size:18px;font-weight:bold;color:#fff2a0!important;background:linear-gradient(#c8e292,#6c962b)!important;box-shadow:inset 0 2px #f0fbc5}
+body .reference-guild-summary #guild-warehouse-btn {background:linear-gradient(#82dafa,#287bbc)!important}
+body .reference-guild-summary #guild-approve-btn {background:linear-gradient(#d9a4db,#ab5f9a)!important}
+body .reference-guild-summary #guild-upgrade-btn {background:linear-gradient(#ffce83,#d79226)!important}
+body .reference-guild-summary #guild-leave-btn {margin-left:auto;background:linear-gradient(#ffc193,#ca713e)!important}
+.reference-guild-layout {display:grid;grid-template-columns:minmax(0,7fr) minmax(280px,3fr);gap:12px;min-height:420px}
+.reference-guild-layout #guild-detail {min-width:0;overflow:auto}
+.reference-guild-members {height:100%;padding:0 0 12px;border:3px solid #718025;border-radius:5px;background:#bac775;box-shadow:inset 0 0 0 2px #e0e8a7}
+.reference-guild-members h4 {margin:0;padding:10px 12px;background:#a0b65c;color:#3c4f14}
+.reference-guild-table-scroll {overflow:auto;max-height:60vh}
+.reference-guild-members table {width:100%;border-collapse:collapse;color:#354312;font-size:16px}
+.reference-guild-members th {position:sticky;top:0;padding:10px 8px;background:linear-gradient(#d1e8a1,#7b9c29);color:white;text-shadow:1px 1px #465f1a;white-space:nowrap}
+.reference-guild-members td {padding:10px 8px;border:1px solid #94a54c;text-align:center}
+.reference-guild-members tr:nth-child(even) {background:#cad68a}
+.reference-guild-notice {background:radial-gradient(ellipse,#fff1cd,#e7ca91);border:4px solid #a39047;border-radius:14px;padding:18px;color:#574422;box-shadow:inset 0 0 16px #b1824377}
+.reference-guild-notice h3 {margin:0 0 12px;padding:5px 0 10px;border-bottom:1px solid #b9a275;font-size:23px;color:#9d6c1b}
+.reference-guild-notice p {line-height:1.8;white-space:pre-wrap;overflow-wrap:anywhere;margin:0 0 26px}
+.reference-guild-layout:has(.guild-warehouse-grid-shell) {grid-template-columns:minmax(0,1fr)}
+.reference-guild-layout:has(.guild-warehouse-grid-shell) .reference-guild-notice {display:none}
+body .reference-guild-screen .guild-warehouse-grid-shell {padding:10px!important;background:#aebe63!important;border:3px solid #6f8126!important;box-shadow:inset 0 0 0 2px #dde7a2}
+body .reference-guild-screen .guild-warehouse-grid-shell .economy-grid-workbench {display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:14px}
+body .reference-guild-screen .guild-warehouse-grid-shell .economy-grid-workbench>.economy-grid-panel:first-child {order:2}
+body .reference-guild-screen .guild-warehouse-grid-shell .economy-grid-panel {min-width:0;padding:8px;background:#bac779!important;border:2px solid #75872d!important;border-radius:5px;color:#425017}
+body .reference-guild-screen .guild-warehouse-grid-shell h2,body .reference-guild-screen .guild-warehouse-grid-shell h3 {color:#425017;margin:5px 0 12px}
+body .reference-guild-screen .guild-warehouse-grid-shell .muted {color:#5b6e25}
+body .reference-guild-screen .guild-warehouse-grid-shell .economy-item-grid {display:grid!important;grid-template-columns:repeat(8,minmax(0,1fr))!important;gap:5px;padding:4px;max-height:58vh;overflow:auto;background:#8d9d39!important}
+body .reference-guild-screen .guild-warehouse-grid-shell .economy-item-slot {width:100%;min-width:0;min-height:0;height:auto;aspect-ratio:1;border:2px solid #e1e7b4!important;border-radius:0!important;background:#74871b!important;box-shadow:inset 2px 2px 4px #48560d!important;padding:0;overflow:hidden}
+body .reference-guild-screen .guild-warehouse-grid-shell .economy-item-slot .name {display:none}
+body .reference-guild-screen .guild-warehouse-grid-shell .economy-item-slot .count {color:white;text-shadow:1px 1px #000;font-size:13px}
+body .reference-guild-screen .guild-warehouse-grid-shell .economy-transfer-panel {margin-top:12px}
+body .reference-guild-screen .guild-warehouse-grid-shell .economy-transfer-card {color:#425017;background:#d3dda0;border:0;display:flex;flex-wrap:wrap;align-items:center;gap:12px}
+
+/* Shop: fit eight products on the page, retain quantity controls and cart. */
+body .classic-shop-screen {inset:2vh 2vw!important;width:96vw!important;height:96dvh!important;padding:0!important;grid-template-rows:66px minmax(0,1fr) 36px!important}
+body .classic-shop-screen .classic-shop-header {background:linear-gradient(#cee7a7,#8aa234)!important;padding:8px 64px 0 18px!important;border-bottom:3px solid #647820}
+body .classic-shop-screen .classic-shop-header h1 {color:#ffe640;text-shadow:2px 2px #5e7024;font-size:35px;margin-right:18px}
+body .classic-shop-screen .classic-shop-categories {gap:5px;overflow-x:auto;min-width:0}
+body .classic-shop-screen .classic-shop-categories button {min-width:70px;padding:5px 10px;height:43px;border:2px solid #6b8327;border-radius:13px 13px 0 0;color:#e7eec1;font-size:18px;background:linear-gradient(#b7c779,#819c36)}
+body .classic-shop-screen .classic-shop-categories button.active {color:#fff3a3;background:linear-gradient(#ffe0a8,#e69c55);border-color:#b28a38}
+body .classic-shop-screen .classic-shop-layout {grid-template-columns:minmax(260px,43fr) minmax(0,57fr)!important;gap:12px;padding:10px;min-height:0}
+body .classic-shop-screen .classic-shop-profile {grid-template-rows:30px minmax(200px,1fr) minmax(170px,35%);gap:5px;padding:8px;border:3px solid #6d8329;background:linear-gradient(90deg,#c1d185,#d7e19f)}
+body .classic-shop-screen .classic-shop-avatar {background:none;border:0;margin:0}
+body .classic-shop-screen .shop-equip {height:45px;width:60px;background:linear-gradient(#bacd77,#99b046);box-shadow:inset 2px 2px 4px #637e24;color:#e7eec7;font-size:15px}
+body .classic-shop-screen .shop-equip-hat,body .classic-shop-screen .shop-equip-eye {top:4%}
+body .classic-shop-screen .shop-equip-glass,body .classic-shop-screen .shop-equip-face {top:29%}
+body .classic-shop-screen .shop-equip-cloth,body .classic-shop-screen .shop-equip-ring {top:54%}
+body .classic-shop-screen .shop-equip-suit,body .classic-shop-screen .shop-equip-neck {bottom:3%}
+body .classic-shop-screen .classic-shop-cart {background:linear-gradient(#f6d9a0,#dbe59f)!important;border:2px solid #8a9e39!important;box-shadow:inset 0 0 0 2px #f2ecc0!important;padding:7px}
+body .classic-shop-screen .classic-shop-checkout {background:linear-gradient(#cde68e,#7f9b32)!important;border-color:#607820!important;color:#fff6b0!important}
+body .classic-shop-screen .classic-shop-catalog {padding:8px;grid-template-rows:36px 28px minmax(0,1fr) 36px!important;background:#acbd65;border:3px solid #6c8424}
+body .classic-shop-screen .classic-shop-title h2 {font-size:16px}
+body .classic-shop-screen .classic-shop-title span {font-size:12px;color:#536c23}
+body .classic-shop-screen .classic-shop-products {grid-template-columns:repeat(2,minmax(0,1fr))!important;grid-template-rows:repeat(4,minmax(0,1fr));grid-auto-rows:minmax(0,1fr);gap:5px;padding:5px 0;overflow:auto}
+body .classic-shop-screen .classic-shop-product {position:relative;display:grid!important;grid-template-columns:minmax(52px,30%) minmax(0,1fr)!important;grid-template-rows:minmax(0,1fr) 30px;gap:3px 5px;padding:5px;min-height:100px;border:2px solid #e7eada;border-radius:3px;background:linear-gradient(#fff,#d8ded4);box-shadow:inset 0 0 0 1px #9daaa0}
+body .classic-shop-screen .classic-shop-product-art {grid-area:1/1/3/2;min-width:0;width:100%;height:100%;max-height:110px;background:linear-gradient(#192a20,#091a0b);border:2px solid #bac7bc}
+body .classic-shop-screen .classic-shop-product-copy {grid-area:1/2/2/3;align-self:start;min-width:0}
+body .classic-shop-screen .classic-shop-product-copy h3 {margin:0 0 4px;padding:3px;border-radius:3px;color:#244c57;font-size:14px;line-height:1.25;background:linear-gradient(#f2ffff,#85d1df);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+body .classic-shop-screen .classic-shop-product-copy p {font-size:10px;line-height:1.25;margin:2px 0;max-height:25px;overflow:auto;color:#546556}
+body .classic-shop-screen .classic-shop-product-copy>span {font-size:13px;color:#3b483d}
+body .classic-shop-screen .classic-shop-product>.shop-buy-btn,body .classic-shop-screen .classic-shop-product>.classic-shop-product-action {grid-area:2/2/3/3;height:28px;min-height:0;min-width:0;width:100%;font-size:14px;padding:2px;border-radius:4px}
+body .classic-shop-screen .classic-shop-product>.shop-buy-btn {background:linear-gradient(#ffe486,#efa722)!important;border:2px solid #d29a3c;color:#fff;text-shadow:1px 1px #7c601e}
+body .classic-shop-screen .classic-shop-product-action>button {height:26px;width:26px;font-size:17px;line-height:20px}
+body .classic-shop-screen .classic-shop-pager {padding:2px;gap:8px;color:#f7ffd7;background:#7e922b}
+body .classic-shop-screen .classic-shop-pager button {height:30px;padding:2px 22px;background:linear-gradient(#d2e9a9,#7f9e34);color:#f4ffe0;border:2px solid #6e8428;border-radius:5px}
+body .classic-shop-screen .classic-shop-player-wallet {position:static!important;display:flex;justify-content:flex-end;gap:12px;width:auto!important;margin:0 12px 4px!important;padding:2px 10px!important;background:#dae3a3!important;color:#455b1c!important;border:1px solid #7e9430!important}
+
+@media(max-width:1050px) {
+  body .classic-bag-screen {grid-template-columns:minmax(0,42fr) minmax(0,58fr)!important}
+  body .classic-bag-screen .classic-bag-profile {grid-template-columns:minmax(0,1fr) 88px;padding:5px!important}
+  body .classic-bag-screen .bag-profile-stats dt {font-size:14px}
+  body .classic-bag-screen .bag-equip-slot {font-size:12px;height:42px}
+  body .classic-bag-screen .bag-profile-title,body .classic-bag-screen .bag-profile-lines {font-size:12px}
+  .reference-character {transform:translate(-50%,-50%) scale(.8)}
+  body .classic-bag-screen #bag-debug-btn {display:none}
+  body .classic-shop-screen .classic-shop-categories button {min-width:55px;font-size:14px;padding:4px}
+  .reference-guild-layout {grid-template-columns:minmax(0,1fr) 260px}
+  body .quest-page-formal .quest-workspace {grid-template-columns:62px minmax(220px,38%) minmax(0,1fr);gap:6px}
+  body .quest-page-formal .quest-detail-parchment {padding:14px}
+  body .quest-page-formal .quest-list-copy strong {font-size:16px}
+}
+
+body .classic-bag-screen .bag-equip-suit,body .classic-bag-screen .bag-equip-ring,
+body .classic-bag-screen .bag-equip-neck,body .classic-bag-screen .bag-equip-badge {top:auto!important;bottom:7%!important}
+body .reference-guild-screen {height:calc(100dvh - 20px);min-height:560px;display:grid;grid-template-rows:auto minmax(0,1fr) 150px;gap:10px;overflow:hidden}
+.reference-guild-screen #guild-main {min-height:0;display:flex;flex-direction:column;overflow:auto}
+.reference-guild-screen .reference-guild-layout {min-height:0;flex:1}
+.reference-guild-screen .reference-guild-members {box-sizing:border-box;display:flex;flex-direction:column;min-height:0}
+.reference-guild-screen .reference-guild-table-scroll {min-height:0;flex:1}
+.reference-guild-screen .reference-guild-notice {overflow:auto}
+.reference-guild-footer {display:grid;grid-template-columns:minmax(0,1fr) minmax(270px,1fr);gap:12px;min-height:0}
+body .reference-guild-screen .reference-guild-footer .classic-chat {position:relative!important;inset:auto!important;width:100%!important;height:150px!important;max-width:none!important;box-sizing:border-box;align-self:stretch;margin:0!important}
+.reference-guild-navigation {display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;align-content:center}
+.reference-guild-navigation button {height:56px;border:2px solid #6c8522;border-radius:8px;background:linear-gradient(#d9eba3,#87a13b);color:#fff6a1;font-size:19px;text-shadow:1px 2px #667724;box-shadow:inset 0 2px #f0f9c9}
+body .reference-guild-screen:has(.guild-warehouse-grid-shell) {grid-template-rows:auto minmax(0,1fr)}
+body .reference-guild-screen:has(.guild-warehouse-grid-shell) .reference-guild-footer {display:none}
+body .reference-guild-screen .guild-warehouse-grid-shell .economy-transfer-card {min-height:48px}
+/* Keep transfer controls outside the scrolling grids at every desktop size. */
+body .reference-guild-screen:has(.guild-warehouse-grid-shell) #guild-main {overflow:hidden}
+body .reference-guild-screen:has(.guild-warehouse-grid-shell) #guild-detail {height:100%;overflow:hidden}
+body .reference-guild-screen .guild-warehouse-grid-shell {box-sizing:border-box;height:100%;min-height:0;display:grid;grid-template-rows:minmax(0,1fr) auto;gap:8px;overflow:hidden}
+body .reference-guild-screen .guild-warehouse-grid-shell .economy-grid-workbench {min-height:0;overflow:hidden}
+body .reference-guild-screen .guild-warehouse-grid-shell .economy-grid-workbench>.economy-grid-panel {display:flex;flex-direction:column;min-height:0;overflow:hidden}
+body .reference-guild-screen .guild-warehouse-grid-shell .economy-item-grid {flex:1;min-height:0;max-height:none;align-content:start;overflow:auto;grid-auto-rows:max-content}
+body .reference-guild-screen .guild-warehouse-grid-shell .economy-transfer-panel {margin:0;min-height:0;padding:6px 10px}
+body .reference-guild-screen .guild-warehouse-grid-shell .economy-transfer-panel h3 {margin:0 0 3px;font-size:16px}
+body .reference-guild-screen .guild-warehouse-grid-shell .economy-transfer-card {display:flex;align-items:center;padding:6px 8px;gap:8px;min-height:68px}
+body .reference-guild-screen .guild-warehouse-grid-shell .economy-transfer-card>img {width:48px;height:48px;object-fit:contain}
+body .reference-guild-screen .guild-warehouse-grid-shell .economy-transfer-form {display:flex;flex:0 1 150px;min-width:110px}
+body .reference-guild-screen .guild-warehouse-grid-shell .economy-transfer-form label {display:flex;align-items:center;gap:5px;width:100%;margin:0}
+body .reference-guild-screen #guild-transfer-count {box-sizing:border-box;width:90px;min-width:0;padding:7px;background:#f5f1d4;color:#36461c;border:1px solid #83933a}
+body .reference-guild-screen .guild-warehouse-grid-shell .economy-transfer-actions {display:flex;gap:7px;margin-left:auto}
+body .reference-guild-screen .guild-warehouse-grid-shell .economy-transfer-actions button,
+body .reference-guild-screen .guild-warehouse-grid-shell [data-warehouse-retry],
+.warehouse-transfer-status button {padding:8px 14px;border:2px solid #75882a;border-radius:5px;background:linear-gradient(#e0eda9,#9cba48);color:#314713;font-size:14px}
+.warehouse-transfer-status {min-height:18px;margin:2px 0 5px;color:#44581b;font-size:13px}
+.warehouse-transfer-status:empty {display:none}
+.warehouse-transfer-status button {margin-left:10px}
+body .reference-guild-screen .warehouse-load-error,body .reference-guild-screen .warehouse-loading {display:block;padding:24px!important;overflow:auto}
+@media(max-width:760px) {
+  body .classic-bag-screen,body .classic-shop-screen {inset:0!important;width:100vw!important;height:100dvh!important}
+  body .classic-bag-screen {grid-template-columns:minmax(0,30fr) minmax(0,70fr)!important}
+  body .classic-bag-screen .classic-bag-profile {display:flex!important;flex-direction:column;overflow:auto}
+  body .classic-bag-screen .bag-role-frame {flex:none;height:260px;min-height:260px}
+  body .classic-bag-screen .bag-profile-stats {flex:none}
+  body .classic-bag-screen .bag-header {padding-left:4px!important}
+  body .classic-bag-screen .bag-capacity {display:none}
+  body .classic-bag-screen .classic-bag-section-tabs button {min-width:50px;padding:4px;font-size:17px}
+  body .classic-shop-screen .classic-shop-layout {grid-template-columns:30% minmax(0,1fr)!important}
+  body .classic-shop-screen .classic-shop-profile {grid-template-rows:30px minmax(160px,1fr) 240px}
+  body .classic-shop-screen .shop-equip {width:40px;height:30px;font-size:11px}
+  body .classic-shop-screen .classic-shop-header h1 {font-size:24px;margin-right:5px}
+  .reference-guild-layout {grid-template-columns:minmax(0,1fr)}
+}

@@ -125,7 +125,7 @@ function renderCartEntries(view, root) {
   if (!list) return;
   const entries = [...view.cart.values()].filter((entry) => Number(entry.quantity) > 0);
   list.innerHTML = entries.length
-    ? entries.slice(0, 5).map((entry) => `<li>
+    ? entries.map((entry) => `<li>
         <span title="${entry.product.name}">${entry.product.name}</span>
         <span class="classic-shop-cart-quantity">
           <button type="button" data-classic-cart-list-minus="${entry.product.key}" aria-label="减少 ${entry.product.name}">−</button>

@@ -9,6 +9,21 @@
 .reset-map-canvas{position:relative;width:min(100cqw,166.735cqh);aspect-ratio:1619/971;background:url('/adventure-reset/map.png') center/100% 100% no-repeat}
 .reset-node{position:absolute;transform:translate(-50%,-50%);width:4.4%;min-width:26px;aspect-ratio:1;padding:0!important;border:0!important;background:transparent!important;z-index:1}.reset-node img{width:100%;height:100%;object-fit:contain;display:block}.reset-node span{position:absolute;left:50%;top:75%;transform:translateX(-50%);white-space:nowrap;background:#152632df;color:white;text-shadow:0 1px #000;padding:1px 3px;border-radius:3px;font-size:clamp(9px,1.2vw,13px)}.reset-boss-node{width:6%}.reset-node:disabled{cursor:not-allowed;opacity:.82}.reset-cleared img{filter:drop-shadow(0 0 5px #69ff70)}.reset-node:not(:disabled):hover{filter:brightness(1.3)}.reset-node:focus-visible{outline:3px solid #fff}
 .reset-route-label{position:absolute;background:#1a3531dd;padding:3px 8px;border-radius:12px;font-size:12px}.reset-plant-label{left:19%;top:57%}.reset-monster-label{left:77%;top:4%}
+/* 章末关头像：原立绘叠原图集金属框。灰色表示未通关，而非未解锁。 */
+.reset-node.reset-challenge-node{width:8.5%;min-width:34px;z-index:2;overflow:visible;border-radius:50%}
+.reset-node .reset-challenge-emblem{position:absolute;inset:0;display:block;transform:none;padding:0;background:none;border-radius:0;pointer-events:none;filter:grayscale(1) brightness(.83);isolation:isolate}
+.reset-challenge-node.reset-cleared .reset-challenge-emblem{filter:none}
+.reset-node.reset-challenge-node img{position:absolute;filter:none}
+.reset-node.reset-challenge-node .reset-challenge-frame{inset:10% 0 0;width:100%;height:90%;z-index:0}
+.reset-node.reset-challenge-node .reset-challenge-portrait{left:-11%;top:-24%;width:122%;height:122%;z-index:1;object-fit:contain;filter:drop-shadow(0 2px 1px #17201dc0)}
+.reset-challenge-node>.reset-node-label{top:94%;z-index:5}
+.reset-node.reset-challenge-node:disabled{opacity:1}
+.reset-node.reset-final-node{width:18%;min-width:72px}
+.reset-trio-emblem::before{content:'';position:absolute;inset:7% -3% -3%;border:3px double #b4a071;border-radius:50%;background:repeating-conic-gradient(#bda673 0deg 3deg,#3c3930 3deg 9deg);mask:radial-gradient(ellipse,transparent 62%,#000 64%);z-index:-1}
+.reset-node.reset-final-node .reset-challenge-portrait{width:86%;height:125%;top:-2%}
+.reset-node.reset-final-node .reset-portrait-0{left:-18%;z-index:2}
+.reset-node.reset-final-node .reset-portrait-1{left:7%;top:-17%;z-index:1}
+.reset-node.reset-final-node .reset-portrait-2{left:38%;z-index:3}
 .reset-stage-modal{position:absolute;inset:0;z-index:4;background:#0009;display:grid;place-items:center}.reset-stage-modal[hidden]{display:none}.reset-stage-modal>div{width:min(80%,420px);padding:24px;background:#182d28;border:2px solid #c6ac62;border-radius:12px}.reset-stage-modal button{margin:8px}.reset-boss-list{overflow:auto;padding:18px;background:linear-gradient(#13372e,#081b2b)}.reset-boss-list article{display:flex;gap:18px;padding:16px;max-width:700px;margin:12px auto;background:#ffffff0d;border:1px solid #8a9a73;border-radius:8px}.reset-boss-list img{width:90px;height:100px;object-fit:contain}.reset-boss-list h3{margin:0 0 8px}.reset-boss-list p,.reset-boss-list small{font-size:12px;line-height:1.5;color:#bcccb9}.reset-boss-list button{margin:4px}.reset-boss-list button:disabled{opacity:.35;cursor:not-allowed}
 @media(max-width:600px){.reset-destination-panel{width:58%;padding:12px}.reset-campaign header small{display:none}.reset-boss-list article{gap:8px}.reset-boss-list img{width:60px}}
 

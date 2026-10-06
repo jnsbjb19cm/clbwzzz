@@ -57,7 +57,7 @@ const BOTTOM_NAV = [
 ];                                                   /*UI索引值  */
 
 const PLACEHOLDER_MODULES = new Set(['guild', 'social', 'hall', 'auction']);
-const CITY_OVERLAY_ROUTES = new Set(['gallery', 'guild', 'quest', 'worldmap', 'social', 'hall', 'auction', 'settings', 'bag', 'shop', 'mail']);
+const CITY_OVERLAY_ROUTES = new Set(['gallery', 'quest', 'worldmap', 'social', 'hall', 'auction', 'settings', 'bag', 'shop', 'mail']);
 
 const CITY_BGM_ROUTES = new Set([
   'main',
@@ -360,11 +360,16 @@ export class App {
   }
 
   navigateFromPanel(route, opts) {
+    if (route === 'main' && this._guildPanelActive) return this.navigate('guild', opts);
     return this.navigate(route === 'main' && this.adventureDestination ? 'worldmap' : route, opts);
   }
 
   navigate(route, opts = {}) {
     const prevRoute = this.route;
+    this.views.guild?.destroy();
+    this.views.guild = null;
+    if (prevRoute === 'guild' && CITY_OVERLAY_ROUTES.has(route)) this._guildPanelActive = true;
+    if (['guild', 'main', 'worldmap', 'battle', 'room'].includes(route)) this._guildPanelActive = false;
     this.views.gallery?.destroy();
     this.views.gallery = null;
     this._adventureChatCleanup?.();
@@ -393,7 +398,11 @@ export class App {
     viewRoot.innerHTML = '';
     let renderRoot = viewRoot;
     if (CITY_OVERLAY_ROUTES.has(route) && !independentAdventure) {
-      if (this.adventureDestination) this.renderAdventureScene(viewRoot);
+      if (this._guildPanelActive) {
+        const guild = new GuildView({onNavigate:(next) => this.navigate(next)});
+        this.views.guild = guild;
+        guild.render(viewRoot);
+      } else if (this.adventureDestination) this.renderAdventureScene(viewRoot);
       else {
         const city = new MainCityView((nextRoute) => this.navigate(nextRoute));
         city.render(viewRoot);
@@ -401,7 +410,7 @@ export class App {
       const overlay = document.createElement('section');
       overlay.className = 'city-modal-overlay';
       overlay.innerHTML = `<div class="city-modal-window"><button type="button" class="city-modal-close" aria-label="\u5173\u95ed">X</button><div class="city-modal-content"></div></div>`;
-      overlay.querySelector('.city-modal-close').addEventListener('click', () => this.navigate(this.adventureDestination ? 'worldmap' : 'main'));
+      overlay.querySelector('.city-modal-close').addEventListener('click', () => this.navigate(this._guildPanelActive ? 'guild' : this.adventureDestination ? 'worldmap' : 'main'));
       viewRoot.append(overlay);
       renderRoot = overlay.querySelector('.city-modal-content');
     }
@@ -543,7 +552,8 @@ export class App {
       hall.render(renderRoot);
       this.updateResourceDisplay('--', '--');
     } else if (route === 'guild') {
-      const guild = new GuildView();
+      const guild = new GuildView({ onNavigate: (next) => this.navigate(next) });
+      this.views.guild = guild;
       guild.render(renderRoot);
       this.updateResourceDisplay('--', '--');
     } else if (route === 'auction') {

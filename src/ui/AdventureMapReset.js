@@ -10,6 +10,16 @@ const routes = [
 ];
 const escape = value => String(value ?? '').replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
 const clears = view => view.state.stageClaimed || [];
+// 仅地图标识；不改变关卡出怪、难度或解锁规则。
+const CHALLENGE_PORTRAITS = [[7,54,25,58],[5,27,45,56]];
+function challengeCards(stage, db) {
+  const a=stage.adventure;
+  if (!a.final && a.node!==4) return null;
+  return (a.final ? [56,55,58] : [CHALLENGE_PORTRAITS[a.route][a.act-1]]).map(id=>db.getById(id));
+}
+function challengeEmblem(cards, final) {
+  return `<span class="reset-challenge-emblem ${final?'reset-trio-emblem':''}" aria-hidden="true"><img class="reset-challenge-frame" src="${ART}challenge-frame.png" alt="">${cards.map((card,index)=>`<img class="reset-challenge-portrait reset-portrait-${index}" data-portrait-card="${card.id}" src="/sprites/cards/${card.spriteRes}.png" alt="">`).join('')}</span>`;
+}
 function setup(root, html) {
   const content = root.querySelector('#worldmap-content');
   content.innerHTML = html;
@@ -29,8 +39,11 @@ export function renderAdventureMap(view, root) {
     const a = stage.adventure;
     const [x,y] = a.final ? [52,48] : routes[a.route][a.index - 1];
     const unlocked = variants(stage).some(s => isAdventureStageUnlocked(s, clears(view)));
-    const cleared = clears(view).map(Number).includes(stage.id);
-    return `<button class="reset-node ${a.final?'reset-final-node':''} ${cleared?'reset-cleared':''}" style="left:${x}%;top:${y}%" data-stage="${stage.id}" ${unlocked?'':'disabled'} aria-label="${escape(stage.stage_name)}${unlocked?'':' 未解锁'}" title="${escape(stage.stage_name)}"><img src="${ART}${unlocked?'node.png':'node-locked.png'}" alt=""><span>${a.final?'最终关':`${a.act}-${a.node}${a.challenge?' ◆':''}`}</span></button>`;
+    const cards=challengeCards(stage,view.cardDb);
+    const clearedIds=new Set(clears(view).map(Number));
+    const cleared=cards ? variants(stage).some(s=>clearedIds.has(s.id)) : clearedIds.has(stage.id);
+    const description=`${stage.stage_name}${cards?' · '+cards.map(c=>c.name).join('、'):''}${cleared?' 已通关':' 未通关'}${unlocked?'':' 未解锁'}`;
+    return `<button class="reset-node ${cards?'reset-challenge-node':''} ${a.final?'reset-final-node':''} ${cleared?'reset-cleared':''}" style="left:${x}%;top:${y}%" data-stage="${stage.id}" ${unlocked?'':'disabled'} aria-label="${escape(description)}" title="${escape(description)}">${cards?challengeEmblem(cards,a.final):`<img src="${ART}${unlocked?'node.png':'node-locked.png'}" alt="">`}<span class="reset-node-label">${a.final?'最终关':`${a.act}-${a.node}${a.challenge?' ◆':''}`}</span></button>`;
   }).join('');
   const content = setup(root, `<section class="reset-campaign"><header><button data-back>← 目的地</button><strong>冒险大陆</strong><small>左键点击关卡选择难度</small></header><div class="reset-map-frame"><div class="reset-map-canvas">${buttons}<span class="reset-route-label reset-plant-label">植物线</span><span class="reset-route-label reset-monster-label">怪物线</span></div></div>${difficultyMenuMarkup()}</section>`);
   content.querySelector('[data-back]').onclick = () => { view.selectedMap = null; renderAdventureDestinations(view, root); };

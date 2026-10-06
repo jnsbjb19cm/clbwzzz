@@ -1,4 +1,5 @@
 import { authStore } from '../core/AuthStore.js';
+import { bindClassicChat, classicChatMarkup } from './ClassicCityChrome.js';
 import { ItemDatabase } from '../core/ItemDatabase.js';
 import { getCraftMaterialImage } from './SmithyMaterialArtwork.js';
 import {
@@ -19,23 +20,40 @@ function esc(text) {
 }
 
 export class GuildView {
-  constructor() {
+  constructor({ onNavigate } = {}) {
     this.api = authStore.api;
+    this.onNavigate = onNavigate;
     this.guild = null;
   }
 
   async render(root) {
+    this._destroyed = false;
     root.innerHTML = `
-      <div style="max-width:1100px;margin:10px auto;padding:16px;color:#fff;">
-        <h2 style="margin:0 0 12px;">公会</h2>
+      <div class="reference-guild-screen">
+        <header class="reference-guild-title"><h2>公会</h2><button type="button" data-guild-close aria-label="返回主城">×</button></header>
         <div id="guild-main"></div>
+        <footer class="reference-guild-footer">${classicChatMarkup({messages:[]})}
+          <nav class="reference-guild-navigation" aria-label="公会快捷入口">
+            ${[['shop','商城'],['bag','背包'],['quest','任务'],['smithy','铁匠铺'],['social','好友'],['main','返回主城']].map(([route,label]) => `<button type="button" data-guild-route="${route}">${label}</button>`).join('')}
+          </nav>
+        </footer>
       </div>`;
     this.root = root;
+    this._chatCleanup = bindClassicChat(root.querySelector('.reference-guild-footer'));
+    root.querySelector('[data-classic-chat-channel="guild"]')?.click();
+    root.querySelectorAll('[data-guild-route]').forEach(button => button.addEventListener('click', () => this.onNavigate?.(button.dataset.guildRoute)));
+    root.querySelector('[data-guild-close]').addEventListener('click', () => {
+      if (root.querySelector('.guild-warehouse-grid-shell')) this.renderGuild(this.guild);
+      else this.onNavigate?.('main');
+    });
     await this.load();
   }
 
+  destroy() { this._destroyed = true; this._panelRequest = (this._panelRequest || 0) + 1; this._chatCleanup?.(); }
+
   async load() {
     const data = await this.api.get('/guild/my').catch(() => ({ guild: null }));
+    if (this._destroyed || !this.root?.isConnected) return;
     this.guild = data.guild || null;
     if (!data.guild) return this.renderNoGuild();
     this.renderGuild(data.guild);
@@ -44,6 +62,7 @@ export class GuildView {
   async renderNoGuild() {
     const el = this.root.querySelector('#guild-main');
     const listData = await this.api.get('/guild/list').catch(() => ({ guilds: [] }));
+    if (this._destroyed || !el?.isConnected) return;
     const guilds = listData.guilds ?? [];
     el.innerHTML = `
       <div style="background:#101d10;border:1px solid #3a5a3a;border-radius:12px;padding:14px;max-width:520px;margin-bottom:12px;">
@@ -84,6 +103,7 @@ export class GuildView {
 
   renderGuild(g) {
     this.guild = g;
+    this.root.querySelector('.reference-guild-title h2').textContent = '公会';
     const el = this.root.querySelector('#guild-main');
     const bonus = Math.round((g.craftStrengthBonus ?? 0) * 100);
     const normalizedRole = normalizeGuildRole20260906(g.role);
@@ -106,7 +126,11 @@ export class GuildView {
         ${normalizedRole === 'president' && g.level < 5 ? `<button id="guild-upgrade-btn" type="button" style="padding:6px 12px;border-radius:6px;border:0;background:#6a5a2a;color:#fff;cursor:pointer;">升级公会（${nextUpgradeCost}金币）</button>` : ''}
         <button id="guild-leave-btn" type="button" style="padding:6px 12px;border-radius:6px;border:0;background:#6a3a3a;color:#fff;cursor:pointer;">退出公会</button>
       </div>
-      <div id="guild-detail"></div>`;
+      <div class="reference-guild-layout"><div id="guild-detail"></div>
+        <aside class="reference-guild-notice"><h3>公会公告</h3><p>${esc(g.notice || g.announcement || '暂无公会公告。')}</p>
+          <h3>公会说明</h3><p>成员可在公会仓库中存取非绑定物品；操作仍遵循当前公会权限。会长可管理成员职位并升级公会，有审批权限的成员可处理入会申请。</p></aside>
+      </div>`;
+    el.firstElementChild.classList.add('reference-guild-summary');
 
     el.querySelector('#guild-members-btn').addEventListener('click', () => this.showMembers(g.guildId));
     el.querySelector('#guild-upgrade-btn')?.addEventListener('click', async () => {
@@ -124,11 +148,14 @@ export class GuildView {
       const res = await this.api.post('/guild/leave', {}).catch((e) => { alert(e.message); return null; });
       if (res) this.load();
     });
+    void this.showMembers(g.guildId);
   }
 
   async showMembers(guildId) {
+    const request = this._panelRequest = (this._panelRequest || 0) + 1;
     const data = await this.api.get(`/guild/${guildId}/members`).catch(() => ({ members: [] }));
     const el = this.root.querySelector('#guild-detail');
+    if (!el || request !== this._panelRequest) return;
     const canManageRoles = normalizeGuildRole20260906(this.guild?.role) === 'president';
     const roleControls = (member) => {
       const role = normalizeGuildRole20260906(member.role);
@@ -144,15 +171,12 @@ export class GuildView {
         </span>`;
     };
     el.innerHTML = `
-      <div style="background:#101d10;border:1px solid #3a5a3a;border-radius:12px;padding:14px;">
-        <h4 style="margin:0 0 8px;">公会成员</h4>
+      <div class="reference-guild-members">
+        <h4>公会成员 · ${data.members.length} 人</h4>
+        <div class="reference-guild-table-scroll"><table><thead><tr><th>名称</th><th>职位</th><th>等级</th><th>荣誉</th><th>状态</th><th>管理</th></tr></thead><tbody>
         ${data.members.map((m) => `
-          <div style="padding:7px 0;border-bottom:1px solid #223322;display:flex;justify-content:space-between;gap:10px;align-items:center;">
-            <span style="min-width:0;">${esc(m.nickname || '玩家')} <small style="color:#888;">${esc(m.roleLabel)}</small>
-            <span style="color:${m.online ? '#8bff9b' : '#888'};font-size:12px;">${m.online ? '在线' : '离线'}</span>
-            ${roleControls(m)}</span>
-            <span style="color:#bbb;white-space:nowrap;">Lv.${m.level} · ${m.honor}荣誉</span>
-          </div>`).join('')}
+          <tr><td>${esc(m.nickname || '玩家')}</td><td>${esc(m.roleLabel || ROLE_LABEL[normalizeGuildRole20260906(m.role)])}</td><td>${Number(m.level) || 1}</td><td>${Number(m.honor) || 0}</td><td>${m.online ? '在线' : '离线'}</td><td>${roleControls(m)}</td></tr>`).join('')}
+        </tbody></table></div>
       </div>`;
 
     el.querySelectorAll('[data-guild-role-change]').forEach((btn) => btn.addEventListener('click', async () => {
@@ -173,8 +197,10 @@ export class GuildView {
   }
 
   async showJoinRequests(guildId) {
+    const request = this._panelRequest = (this._panelRequest || 0) + 1;
     const data = await this.api.get(`/guild/${guildId}/requests`).catch(() => ({ requests: [] }));
     const el = this.root.querySelector('#guild-detail');
+    if (!el || request !== this._panelRequest) return;
     el.innerHTML = `
       <div style="background:#101d10;border:1px solid #3a5a3a;border-radius:12px;padding:14px;">
         <h4 style="margin:0 0 8px;">入会申请审批</h4>

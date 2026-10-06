@@ -280,7 +280,7 @@ export function installBattleAttackTimingFix() {
     unit.atkTimer -= TICK_INTERVAL;
     if (unit.atkTimer > 0) return false;
 
-    if (unit.cardId === 46) {
+    if (getCardTraits(unit.cardId)?.farthestInLane) {
       const hasEnemy = this.getEnemiesInLane(unit, unit.lane).length > 0;
       if (!hasEnemy) return false;
       unit.atkTimer = Math.max(

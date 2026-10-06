@@ -8,7 +8,6 @@ import {
 } from '../battle/BattleConfig.js';
 import {
   formatCraftCardName,
-  getCardQualityBgPart,
   getStrengthStarPart,
   resolveCraftQuality,
 } from '../core/constants.js';
@@ -100,9 +99,6 @@ function renderCardSlot(view, entry, handIndex) {
   const craftQuality = resolveCraftQuality(craftQualityId);
   const label = formatCraftCardName(craftQualityId, card.name);
   const cardGrade = Math.min(6, Math.max(1, Number(card.quality) || 1));
-  // AS 原版底座按 card_quality(1~6)取 card_bg_X；card.quality 被压缩到 1~5，
-  // 会丢掉 6 级(如死神)的底座，故优先用原始 card_quality。
-  const qualityBg = getCardQualityBgPart(card.card_quality ?? card.quality);
   const starPart = getStrengthStarPart(stars);
   const costIcon = usesFoodCost(card) ? JUNGLE_ASSETS.resFood : JUNGLE_ASSETS.resSun;
   const functionMeta = resolveFunctionPart(card);
@@ -113,11 +109,11 @@ function renderCardSlot(view, entry, handIndex) {
       data-hand-idx="${handIndex}"
       draggable="${canDrag}"
       style="--quality:${craftQuality.color}"
-      title="${escapeAttr(label)}(拖拽到战场放置)">
+      title="${escapeAttr(label)} · ${cardGrade}级 · ${functionMeta.label}${stars > 0 ? ` · 强化${stars}星` : ''}(拖拽到战场放置)">
       <span class="slot-face">
-        <img class="slot-bg" src="/sprites/parts/${qualityBg}.png" alt="" draggable="false" />
+        <span class="slot-bg" aria-hidden="true"></span>
         <img class="slot-portrait" src="/sprites/cards/${card.spriteRes}.png" alt="${escapeAttr(label)}" draggable="false" />
-        <img class="slot-stars" src="/sprites/parts/${starPart}.png" alt="" draggable="false" />
+        ${stars > 0 ? `<img class="slot-stars" src="/sprites/parts/${starPart}.png" alt="强化${stars}星" draggable="false" />` : ''}
         ${canDrag ? '<span class="slot-flicker" aria-hidden="true"></span>' : ''}
       </span>
       <span class="slot-meta">
@@ -146,9 +142,9 @@ export function installExactBattleHand() {
     const hand = root?.querySelector?.('#hand');
     if (!hand || !this.engine) return;
 
-    // 卡槽材质的唯一所有者是 BattleHandExact.css：保持透明玻璃态。
+    // 参考图样式只作用于战斗手牌，不影响房间编辑器、图鉴和棋盘。
     hand.classList.remove('opaque-battle-hand');
-    hand.classList.add('card-slots', 'video-battle-hand', 'transparent-battle-hand');
+    hand.classList.add('card-slots', 'video-battle-hand', 'transparent-battle-hand', 'reference-battle-hand');
     hand.innerHTML = Array.from({ length: HAND_SLOT_COUNT }, (_, handIndex) => {
       const entry = this.engine.deck[handIndex];
       return entry ? renderCardSlot(this, entry, handIndex) : renderLockedSlot(handIndex);

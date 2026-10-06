@@ -420,8 +420,13 @@ function installFinalRenderer() {
       let drawn = false;
       if (fx.res != null) {
         const pack = this.bulletAnims.get(String(fx.res));
-        if (impactPackIsSafe(pack)) {
-          const anim = pack.meta.animations.baoza;
+        // Lightning is emitted directly on the farthest enemy. Its native
+        // yidong strip intentionally reaches the top edge of the source frame;
+        // it must not be rejected as an unsafe generic baoza explosion.
+        const directSpell = [46, 83].includes(Number(fx.res));
+        const animation = directSpell ? 'yidong' : 'baoza';
+        if (directSpell ? pack?.meta?.animations?.[animation]?.frames?.length : impactPackIsSafe(pack)) {
+          const anim = pack.meta.animations[animation];
           const rate = Math.max(1, finite(anim.frameRate, 12));
           const duration = Math.max(0.001, finite(anim.duration, anim.frames.length / rate));
           const elapsed = Math.max(0, finite(fx.t));
@@ -433,10 +438,10 @@ function installFinalRenderer() {
             this.drawBulletAnimFrame(
               ctx,
               pack,
-              'baoza',
+              animation,
               x,
               y,
-              cellW * (Number(fx.res) === 54 ? 2.4 : 1.05),
+              cellW * (directSpell ? 1.85 : Number(fx.res) === 54 ? 2.4 : 1.05),
               elapsed,
               false,
               alpha,

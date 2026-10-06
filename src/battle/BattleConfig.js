@@ -187,8 +187,8 @@ export function laneFracToY(fracLane, arcOffset = 0) {
 }
 
 export const JUNGLE_ASSETS = {
-  resSun: '/battle/jungle/res_sun.png',
-  resFood: '/battle/jungle/res_food.png',
+  resSun: '/battle/jungle/res_sun_complete.png',
+  resFood: '/battle/jungle/res_food_original.png', // resources/img/items.png → coin-power
 };
 
 export const BATTLE_UI_PARTS = {

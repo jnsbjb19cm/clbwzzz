@@ -42,14 +42,18 @@ export function installBattleImpactSafetyFinal() {
 
       if (fx.res != null) {
         const pack = this.bulletAnims.get(String(fx.res));
-        const hasImpact = Boolean(pack?.meta?.animations?.baoza);
-        const safe = hasImpact && animationHasSafeFrameMargin(pack, 'baoza');
+        // These spells originate on the victim. Their original lightning strip
+        // intentionally touches the top edge; it is not a clipped explosion.
+        const directSpell = [46, 83].includes(Number(fx.res));
+        const animation = directSpell ? 'yidong' : 'baoza';
+        const hasImpact = Boolean(pack?.meta?.animations?.[animation]);
+        const safe = hasImpact && (directSpell || animationHasSafeFrameMargin(pack, animation));
         unsafeSourceAnimation = hasImpact && !safe;
         if (safe) {
-          const anim = pack.meta.animations.baoza;
+          const anim = pack.meta.animations[animation];
           const rate = Number(anim.frameRate) || 12;
           const duration = Math.max(0.001, Number(anim.duration) || anim.frames.length / rate);
-          const slow = 0.55;
+          const slow = directSpell ? 1 : 0.55;
           const played = Math.max(0, finite(fx.t)) * slow;
           const alpha = played >= duration
             ? Math.max(0, 1 - (played - duration) / 0.12)
@@ -57,10 +61,10 @@ export function installBattleImpactSafetyFinal() {
           this.drawBulletAnimFrame(
             ctx,
             pack,
-            'baoza',
+            animation,
             cx,
             cy,
-            CELL_W * 1.05,
+            CELL_W * (directSpell ? 1.85 : 1.05),
             finite(fx.t),
             false,
             alpha,

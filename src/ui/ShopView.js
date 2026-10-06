@@ -1,4 +1,5 @@
 import { audio } from '../core/AudioManager.js';
+import { referenceCharacterMarkup } from './ReferenceInventoryLayout.js';
 import payData from '../data/pay.json';
 import packData from '../data/tearPackageItem.json';
 import itemAtlasData from '../data/atlas/preload_items.json';
@@ -134,8 +135,9 @@ export class ShopView {
       </header>
       <div class="classic-shop-layout">
         <aside class="classic-shop-profile">
-          <div class="classic-shop-player-line"><strong>${this.player?.nickname ?? this.player?.name ?? '森林守卫'}</strong><span>排名 ${Math.max(1, Number(this.player?.rank) || 57334)}</span></div>
-          <div class="classic-shop-avatar" data-character-empty="true" aria-label="人物形象预留区域">
+          <div class="classic-shop-player-line"><strong>${this.player?.nickname ?? this.player?.name ?? '森林守卫'}</strong><span>排名 ${Number(this.player?.rank) > 0 ? Number(this.player.rank) : '暂无'}</span></div>
+          <div class="classic-shop-avatar" aria-label="角色预览">
+            ${referenceCharacterMarkup(this.player)}
             <button type="button" class="shop-equip shop-equip-hat">帽子</button>
             <button type="button" class="shop-equip shop-equip-glass">眼镜</button>
             <button type="button" class="shop-equip shop-equip-cloth">衣服</button>

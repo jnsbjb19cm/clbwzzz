@@ -204,6 +204,13 @@ export class QuestView{
       '<section class="quest-list-panel"><div class="quest-list-panel-head"><h2 id="quest-list-title"></h2><span id="quest-list-meta"></span></div><div id="quest-list" class="quest-list"></div></section>',
       '<section id="quest-detail" class="quest-detail-parchment"></section></div></div><p id="quest-toast" class="bag-toast hidden"></p></div>',
     ].join('');
+    const parentClose = root.closest('.city-modal-window')?.querySelector('.city-modal-close');
+    if (parentClose) {
+      const close = document.createElement('button'); close.type = 'button'; close.className = 'reference-quest-close';
+      close.textContent = '×'; close.setAttribute('aria-label', '关闭任务');
+      close.addEventListener('click', () => parentClose.click());
+      root.querySelector('.quest-window-title').append(close);
+    }
     root.querySelector('#quest-category-rail').innerHTML=CATEGORIES.map((c)=>'<button type="button" class="quest-category-btn" data-category="'+c.id+'"><strong>'+c.label+'</strong><small>'+c.subtitle+'</small></button>').join('');
     root.querySelectorAll('.quest-category-btn').forEach((b)=>b.addEventListener('click',()=>{audio.playSfx('click');this.category=b.dataset.category;this.renderContent(root);}));
     this.renderContent(root);
