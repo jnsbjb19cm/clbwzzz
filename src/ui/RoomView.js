@@ -13,6 +13,7 @@ import { BattleUnit } from '../battle/BattleUnit.js';
 import { LANES, COLS, CELL_W, CELL_H, cellX, cellY, FIELD_LEFT, FIELD_TOP, FIELD_BOTTOM, FIELD_W, FIELD_H } from '../battle/BattleConfig.js';
 import { audio } from '../core/AudioManager.js';
 import { BOSS_LIST } from '../data/bossList.js';
+import { markBossCleared } from '../core/BossProgress.js';
 import { resolveBattleBackground } from '../battle/BattleBackground.js';
 import { DeckSelectView } from './DeckSelectView.js';
 import { BagView } from './BagView.js';
@@ -402,7 +403,10 @@ export class RoomView {
         }
         if (this.room.mode === 'boss') {
           QuestView.dispatch('boss_challenge', { bossId: this.room.bossId, count: 1 });
-          if (won) QuestView.dispatch('boss_defeated', { bossId: this.room.bossId, count: 1 });
+          if (won) {
+            QuestView.dispatch('boss_defeated', { bossId: this.room.bossId, count: 1 });
+            markBossCleared(this.room.bossId, this.room.difficulty || '简单');
+          }
           return;
         }
         if (this.room.mode === 'pve') {
