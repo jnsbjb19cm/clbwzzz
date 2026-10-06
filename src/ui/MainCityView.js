@@ -29,65 +29,11 @@ export class MainCityView {
     this.onNavigate = onNavigate;
   }
 
-  disposeAmbient() {
-    this._ambientResizeObserver?.disconnect?.();
-    this._ambientResizeObserver = null;
-
-    if (this._ambientWindowResize && typeof window !== 'undefined') {
-      window.removeEventListener('resize', this._ambientWindowResize);
-    }
-    this._ambientWindowResize = null;
-  }
-
-  mountAmbient(stage) {
-    const background = stage?.querySelector('.classic-city-background');
-    const plane = stage?.querySelector('.city-ambient-plane');
-    if (!background || !plane) return;
-
-    const sync = () => {
-      const naturalWidth = background.naturalWidth;
-      const naturalHeight = background.naturalHeight;
-      const stageWidth = stage.clientWidth;
-      const stageHeight = stage.clientHeight;
-      if (!naturalWidth || !naturalHeight || !stageWidth || !stageHeight) return;
-
-      const scale = Math.max(stageWidth / naturalWidth, stageHeight / naturalHeight);
-      const renderWidth = naturalWidth * scale;
-      const renderHeight = naturalHeight * scale;
-
-      plane.style.left = `${(stageWidth - renderWidth) / 2}px`;
-      plane.style.top = `${(stageHeight - renderHeight) / 2}px`;
-      plane.style.width = `${renderWidth}px`;
-      plane.style.height = `${renderHeight}px`;
-    };
-
-    if (background.complete && background.naturalWidth) {
-      sync();
-    } else {
-      background.addEventListener('load', sync, { once: true });
-    }
-
-    if (typeof ResizeObserver !== 'undefined') {
-      this._ambientResizeObserver = new ResizeObserver(sync);
-      this._ambientResizeObserver.observe(stage);
-    } else if (typeof window !== 'undefined') {
-      this._ambientWindowResize = sync;
-      window.addEventListener('resize', sync);
-    }
-  }
-
   render(root) {
-    this.disposeAmbient();
     root.innerHTML = `
       <div class='main-city classic-city-screen'>
         <div class="classic-city-stage">
         <img class="classic-city-background" src="/background/hallbackground.png" alt="丛林保卫战主城">
-        <div class="city-ambient-plane" aria-hidden="true">
-          <span class="city-tree-eye city-tree-eye-left"></span>
-          <span class="city-tree-eye city-tree-eye-right"></span>
-          <span class="city-owl-eye city-owl-eye-left"></span>
-          <span class="city-owl-eye city-owl-eye-right"></span>
-        </div>
         <div class="classic-city-vignette"></div>
         ${classicBroadcastMarkup(['欢迎进入魔幻森林，选择你要前往的区域。'])}
         ${BUILDINGS.map(b => `
@@ -105,7 +51,6 @@ export class MainCityView {
     bindClassicChat(root);
     root.querySelector('.classic-recharge-btn')?.addEventListener('click', () => audio.playButton('mainCity'));
     const stage = root.querySelector('.classic-city-stage');
-    this.mountAmbient(stage);
     for (const building of BUILDINGS) {
       const button = root.querySelector('.city-btn[data-route=' + building.id + ']');
       const shine = button?.querySelector('.city-shiny-layer');
