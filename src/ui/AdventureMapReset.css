@@ -27,11 +27,11 @@
 }
 .reset-node.reset-challenge-node img{position:absolute;opacity:1!important}
 .reset-node.reset-challenge-node .reset-challenge-frame{
-  inset:3% -2% -2%;width:104%;height:99%;z-index:3;object-fit:contain;
+  inset:3% -2% -2%;width:104%;height:99%;z-index:1;object-fit:contain;
   filter:grayscale(1) contrast(1.18) brightness(.78) drop-shadow(0 2px 2px #000)!important
 }
 .reset-node.reset-challenge-node .reset-challenge-portrait{
-  left:-7%;top:-17%;width:114%;height:114%;z-index:2;object-fit:contain;
+  left:-7%;top:-17%;width:114%;height:114%;z-index:3;object-fit:contain;
   filter:grayscale(1) contrast(1.12) brightness(.82) drop-shadow(0 2px 1px #111)!important;
   opacity:1!important
 }
@@ -88,9 +88,9 @@
 .reset-trio-emblem::before{
   content:'';position:absolute;inset:3% -3% -3%;border:clamp(3px,.4vw,6px) double #777c79;border-radius:50%;
   background:repeating-conic-gradient(#777c79 0deg 3deg,#313638 3deg 9deg);
-  mask:radial-gradient(ellipse,transparent 62%,#000 64%);z-index:4;opacity:1
+  mask:radial-gradient(ellipse,transparent 62%,#000 64%);z-index:2;opacity:1
 }
-.reset-node.reset-final-node .reset-challenge-frame{inset:4% -1% -1%;width:102%;height:96%;z-index:5}
+.reset-node.reset-final-node .reset-challenge-frame{inset:4% -1% -1%;width:102%;height:96%;z-index:1}
 .reset-node.reset-final-node .reset-challenge-portrait{
   width:82%;height:112%;top:0;filter:grayscale(1) contrast(1.18) brightness(.78) drop-shadow(0 3px 2px #111)!important
 }
@@ -100,9 +100,9 @@
 .reset-node.reset-final-node.reset-cleared .reset-challenge-portrait{
   filter:contrast(1.08) saturate(1.05) brightness(.92) drop-shadow(0 3px 2px #111)!important
 }
-.reset-node.reset-final-node .reset-portrait-0{left:-12%;z-index:2}
-.reset-node.reset-final-node .reset-portrait-1{left:9%;top:-8%;z-index:3}
-.reset-node.reset-final-node .reset-portrait-2{left:36%;z-index:2}
+.reset-node.reset-final-node .reset-portrait-0{left:-12%;z-index:3}
+.reset-node.reset-final-node .reset-portrait-1{left:9%;top:-8%;z-index:4}
+.reset-node.reset-final-node .reset-portrait-2{left:36%;z-index:3}
 .reset-stage-modal{position:absolute;inset:0;z-index:4;background:#0009;display:grid;place-items:center}.reset-stage-modal[hidden]{display:none}.reset-stage-modal>div{width:min(80%,420px);padding:24px;background:#182d28;border:2px solid #c6ac62;border-radius:12px}.reset-stage-modal button{margin:8px}.reset-boss-list{overflow:auto;padding:18px;background:linear-gradient(#13372e,#081b2b)}.reset-boss-list article{display:flex;gap:18px;padding:16px;max-width:700px;margin:12px auto;background:#ffffff0d;border:1px solid #8a9a73;border-radius:8px}.reset-boss-list img{width:90px;height:100px;object-fit:contain}.reset-boss-list h3{margin:0 0 8px}.reset-boss-list p,.reset-boss-list small{font-size:12px;line-height:1.5;color:#bcccb9}.reset-boss-list button{margin:4px}.reset-boss-list button:disabled{opacity:.35;cursor:not-allowed}
 @media(max-width:600px){.reset-destination-panel{width:58%;padding:12px}.reset-campaign header small{display:none}.reset-boss-list article{gap:8px}.reset-boss-list img{width:60px}}
 
