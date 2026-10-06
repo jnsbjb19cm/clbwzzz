@@ -232,6 +232,7 @@ export class BattleView {
       DeckSelectView.saveDeck(deckSlots, this.cardInventory, this.deckGroup);
     }
     this.phase = 'fighting';
+    this.questBattleStats = { cardIds: new Set(), lanes: new Set() };
     this.engine = new BattleEngine(this.db, stageId, deckSlots, this.cardInventory, {
       skillLoadout: this.heroSkills?.getLoadout() ?? [],
       heroMpMax: this.heroSkills?.getMpMax() ?? 100,
@@ -809,29 +810,36 @@ export class BattleView {
       if (!this.trainingMode) {
         const bossId = this.pvp?.bossId ?? this.boss?.id ?? null;
         const adventure = this.engine.stage?.adventure ?? null;
-        const questMeta = adventure ? {
+        const questMeta = {
           count: 1,
+          won: win,
           stageId: Number(this.engine.stage?.stage_id ?? this.engine.stage?.id ?? 0) || null,
-          adventureIndex: Number(adventure.index ?? 0) || null,
-          route: Number(adventure.route ?? 0),
-          act: Number(adventure.act ?? 0) || null,
-          node: Number(adventure.node ?? 0) || null,
-          difficulty: Number(adventure.difficulty ?? 0),
-          challenge: Boolean(adventure.challenge),
-          final: Boolean(adventure.final),
-        } : null;
-        if (win) this.onQuestEvent?.('battle_win', { count: 1 });
+          adventureIndex: adventure ? (Number(adventure.index ?? 0) || null) : null,
+          route: adventure ? Number(adventure.route ?? 0) : null,
+          act: adventure ? (Number(adventure.act ?? 0) || null) : null,
+          node: adventure ? (Number(adventure.node ?? 0) || null) : null,
+          difficulty: adventure ? Number(adventure.difficulty ?? 0) : null,
+          challenge: Boolean(adventure?.challenge),
+          final: Boolean(adventure?.final),
+        };
+        const distinctCards = this.questBattleStats?.cardIds?.size ?? 0;
+        const lanesUsed = this.questBattleStats?.lanes?.size ?? 0;
+        if (win) this.onQuestEvent?.('battle_win', questMeta);
         if (win && adventure && !bossId && !this.pvp) this.onQuestEvent?.('adventure_complete', questMeta);
-        this.onQuestEvent?.('battle_complete', { count: 1 });
+        this.onQuestEvent?.('battle_complete', questMeta);
         const kills = this.engine.killsThisBattle ?? 0;
-        if (kills > 0) this.onQuestEvent?.('kill_enemy', { count: kills });
+        if (kills > 0) this.onQuestEvent?.('kill_enemy', { ...questMeta, count: kills });
         const dur = Math.round(this.engine.time || 0);
-        this.onQuestEvent?.('battle_duration', { duration: dur });
-        if (kills > 0) this.onQuestEvent?.('battle_kill', { count: kills });
+        this.onQuestEvent?.('battle_duration', { ...questMeta, duration: dur });
+        if (kills > 0) this.onQuestEvent?.('battle_kill', { ...questMeta, count: kills });
         const lostAny = (this.engine.units ?? []).some(
           (u) => u.team === 'player' && u._diedThisBattle,
         );
-        if (!lostAny) this.onQuestEvent?.('battle_nodeath', { count: 1 });
+        if (win && !lostAny) this.onQuestEvent?.('battle_nodeath', questMeta);
+        if (win) {
+          this.onQuestEvent?.('battle_variety', { ...questMeta, distinctCards });
+          this.onQuestEvent?.('battle_lane_spread', { ...questMeta, lanesUsed });
+        }
       }
     }
     root.querySelector('#result-desc').textContent = win
@@ -1025,6 +1033,8 @@ export class BattleView {
     const entry = this.engine.deck[handIndex];
     try {
       if (await this.engine.deploy(lane, col, handIndex)) {
+        this.questBattleStats?.cardIds?.add?.(Number(entry?.card?.id));
+        this.questBattleStats?.lanes?.add?.(Number(lane));
         if (this.pvp) {
           this.pvpSocket?.sendPvpDeploy?.({ cardId: entry.card.id, lane, col });
         }
