@@ -5,6 +5,7 @@ import { InventoryStore } from '../core/ItemDatabase.js';
 import { CardInventoryStore } from '../core/CardInventoryStore.js';
 import { BattleView } from './BattleView.js';
 import { questPeriodKey } from '../data/QuestPeriods.js';
+import { markBossCleared } from '../core/BossProgress.js';
 import { MAX_PLAYER_LEVEL, QUEST_GROUPS, ACHIEVEMENT_QUESTS, CATEGORIES, LEVEL_REWARDS } from '../data/QuestCatalog.js';
 
 const STORAGE_KEY = 'clbwz_quest_v8';
@@ -429,7 +430,10 @@ if(!BattleView.prototype.__questBossResultPatched){
     try{originalUpdateResultOverlay.call(this,root);}finally{this.onQuestEvent=originalQuestEvent;}
     if(!wasReported&&this._resultReported&&bossId){
       QuestView.dispatch('boss_challenge',{bossId,count:1});
-      if(this.engine?.status==='win')QuestView.dispatch('boss_defeated',{bossId,count:1});
+      if(this.engine?.status==='win'){
+        QuestView.dispatch('boss_defeated',{bossId,count:1});
+        markBossCleared(bossId,this.pvp?.difficulty??this.boss?.difficulty??'简单');
+      }
     }
   };
   BattleView.prototype.__questBossResultPatched=true;
