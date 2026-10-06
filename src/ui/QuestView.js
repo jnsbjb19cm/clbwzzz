@@ -17,7 +17,7 @@ function defaultState(){
     dailyDate:todayKey(),weeklyDate:weekKey(),dailyProgress:{},dailyClaimed:[],weeklyProgress:{},weeklyClaimed:[],
     mainProgress:{},mainClaimed:[],sideProgress:{},sideClaimed:[],achievementProgress:{},achievementClaimed:[],
     challengeProgress:{},challengeClaimed:[],levelClaimed:[],
-    _extra:{totalKills:0,totalBattles:0,totalBattleWins:0,totalAdventures:0,totalUpgrades:0,totalStrengthens:0,totalCrafts:0,totalMaterialCombines:0,totalItems:0,totalItemGains:0,totalBossChallenges:0,totalBossDefeats:0,totalNoDeath:0,totalQuests:0,totalGold:0,totalHonor:0,loginDays:0,itemGainsById:{},bossChallengesById:{},bossDefeatsById:{}},
+    _extra:{totalKills:0,totalBattles:0,totalBattleWins:0,totalAdventures:0,totalUpgrades:0,totalStrengthens:0,totalCrafts:0,totalMaterialCombines:0,totalItems:0,totalItemGains:0,totalBossChallenges:0,totalBossDefeats:0,totalNoDeath:0,totalQuests:0,totalGold:0,totalHonor:0,loginDays:0,itemGainsById:{},bossChallengesById:{},bossDefeatsById:{},adventureClears:{}},
   };
 }
 function normalizeState(state){
@@ -31,6 +31,7 @@ function normalizeState(state){
   r._extra.itemGainsById={...(r._extra.itemGainsById??{})};
   r._extra.bossChallengesById={...(r._extra.bossChallengesById??{})};
   r._extra.bossDefeatsById={...(r._extra.bossDefeatsById??{})};
+  r._extra.adventureClears={...(r._extra.adventureClears??{})};
   return r;
 }
 function loadState(){
@@ -149,6 +150,7 @@ function cumulativeProgress(quest,state){
   if(quest.lifetimeItemId!=null)return Math.max(0,Number(state?._extra?.itemGainsById?.[String(quest.lifetimeItemId)]||0));
   if(quest.bossChallengeId)return Math.max(0,Number(state?._extra?.bossChallengesById?.[String(quest.bossChallengeId)]||0));
   if(quest.bossDefeatId)return Math.max(0,Number(state?._extra?.bossDefeatsById?.[String(quest.bossDefeatId)]||0));
+  if(quest.adventureKey)return Math.max(0,Number(state?._extra?.adventureClears?.[String(quest.adventureKey)]||0));
   return null;
 }
 function syncCumulativeProgress(state){
@@ -188,7 +190,15 @@ export class QuestView{
     if(event==='battle_complete')extra.totalBattles=(extra.totalBattles||0)+dataCount(data);
     if(event==='battle_win')extra.totalBattleWins=(extra.totalBattleWins||0)+dataCount(data);
     if(event==='battle_nodeath')extra.totalNoDeath=(extra.totalNoDeath||0)+dataCount(data);
-    if(event==='adventure_complete')extra.totalAdventures=(extra.totalAdventures||0)+dataCount(data);
+    if(event==='adventure_complete'){
+      extra.totalAdventures=(extra.totalAdventures||0)+dataCount(data);
+      const route=Number(data?.route),index=Number(data?.adventureIndex),difficulty=Number(data?.difficulty);
+      if(Number.isFinite(route)&&Number.isFinite(index)&&index>0){
+        extra.adventureClears[route+':'+index]=1;
+        if(Number.isFinite(difficulty))extra.adventureClears[route+':'+index+':'+difficulty]=1;
+      }
+      if(data?.final)extra.adventureClears.final=1;
+    }
     if(event==='card_craft'||event==='card_strengthen'||event==='card_upgrade')extra.totalUpgrades=(extra.totalUpgrades||0)+dataCount(data);
     if(event==='card_strengthen')extra.totalStrengthens=(extra.totalStrengthens||0)+dataCount(data);
     if(event==='card_craft')extra.totalCrafts=(extra.totalCrafts||0)+dataCount(data);
