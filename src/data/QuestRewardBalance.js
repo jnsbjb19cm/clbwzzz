@@ -61,7 +61,7 @@ function basicMaterialPack(category, tier, index, event) {
   return items;
 }
 
-// 保留任务 ID / 进度链，只重做任务奖励。测试任务 d14 的 380000 经验明确不参与平衡。
+// 任务奖励按分类与成长阶段补充材料；任务本身显式配置的奖励优先保留。
 export function balanceQuestReward(entry, category, index) {
   const tier = questTier(category, index);
   const items = basicMaterialPack(category, tier, index, entry.event);
@@ -85,7 +85,7 @@ export function balanceQuestReward(entry, category, index) {
 
   return {
     ...entry,
-    exp: entry.id === 'd14' ? 380000 : (Number(entry.exp) || 0),
+    exp: Number(entry.exp) || 0,
     cards: Array.isArray(entry.cards) ? entry.cards : [],
     items,
   };
@@ -136,7 +136,7 @@ export function levelReward(lv) {
     name: `Lv.${lv} 等级奖励`,
     desc: `角色达到 Lv.${lv} 后即可领取。`,
     story: milestone
-      ? `达到 Lv.${lv}，任务猫头鹰为你送来阶段成长礼包。继续强化战团，准备迎接更高难度的冒险与BOSS挑战。`
+      ? `达到 Lv.${lv}，阶段成长补给已经解锁。继续强化战团，为更高难度的冒险与BOSS挑战做准备。`
       : '等级提升后领取日常成长补给，为后续冒险、强化和制作积累材料。',
     gold: 500 + lv * 180 + (milestone ? lv * 220 : 0),
     gem: major ? 20 + lv : (milestone ? 10 + Math.floor(lv / 2) : 0),
