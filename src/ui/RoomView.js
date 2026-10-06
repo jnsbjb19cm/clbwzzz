@@ -390,7 +390,37 @@ export class RoomView {
         this.renderBattle();
       }),
       this.socket.on('pvp:end', ({ winner }) => {
-        this.notice(winner === this.myTeam ? '胜利！' : '失败…');
+        const won = winner === this.myTeam;
+        this.notice(won ? '胜利！' : '失败…');
+        if (!this.room || this.watchingRoomId) return;
+        QuestView.dispatch('battle_complete', { count: 1 });
+        if (won) QuestView.dispatch('battle_win', { count: 1 });
+        if (this.room.mode === 'pvp') {
+          QuestView.dispatch('battle_pvp', { count: 1 });
+          if (won) QuestView.dispatch('pvp_win', { count: 1 });
+          return;
+        }
+        if (this.room.mode === 'boss') {
+          QuestView.dispatch('boss_challenge', { bossId: this.room.bossId, count: 1 });
+          if (won) QuestView.dispatch('boss_defeated', { bossId: this.room.bossId, count: 1 });
+          return;
+        }
+        if (this.room.mode === 'pve') {
+          QuestView.dispatch('coop_battle_complete', { count: 1 });
+          const stage = this.db.stages?.find?.((s) => Number(s.stage_id ?? s.id) === Number(this.room.stageId));
+          const adventure = stage?.adventure;
+          if (won && adventure) QuestView.dispatch('adventure_complete', {
+            count: 1,
+            stageId: Number(stage.stage_id ?? stage.id) || null,
+            adventureIndex: Number(adventure.index ?? 0) || null,
+            route: Number(adventure.route ?? 0),
+            act: Number(adventure.act ?? 0) || null,
+            node: Number(adventure.node ?? 0) || null,
+            difficulty: Number(adventure.difficulty ?? 0),
+            challenge: Boolean(adventure.challenge),
+            final: Boolean(adventure.final),
+          });
+        }
       }),
     ];
     this.bindRoomChat();
