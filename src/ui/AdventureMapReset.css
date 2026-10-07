@@ -64,6 +64,7 @@
 33.333%{background-position:0% 50%}36.667%{background-position:11.111% 50%}40%{background-position:22.222% 50%}43.333%{background-position:33.333% 50%}46.667%{background-position:44.444% 50%}50%{background-position:55.556% 50%}53.333%{background-position:66.667% 50%}56.667%{background-position:77.778% 50%}60%{background-position:88.889% 50%}63.333%{background-position:100% 50%}
 66.667%{background-position:0% 100%}70%{background-position:11.111% 100%}73.333%{background-position:22.222% 100%}76.667%{background-position:33.333% 100%}80%{background-position:44.444% 100%}83.333%{background-position:55.556% 100%}86.667%{background-position:66.667% 100%}90%{background-position:77.778% 100%}93.333%{background-position:88.889% 100%}96.667%{background-position:100% 100%}
 }
-.reset-campaign .reset-nightmare-btn{position:absolute;right:10px;top:10px;z-index:5;background:#5a2b3a;border-color:#c9986a}
-.reset-campaign .reset-nightmare-btn:hover{background:#6d3446}
-.reset-campaign .reset-nightmare-btn[data-locked='true']{opacity:.6}
+/* 噩梦模式：作为"选难度"弹层里的第 4 项（仅冒险大陆传 nightmareUnlocked 时出现） */
+.reset-boss-difficulty [data-nightmare]{background:#5a2b3a;border-color:#c9986a}
+.reset-boss-difficulty [data-nightmare]:hover{background:#6d3446}
+.reset-boss-difficulty [data-nightmare][data-locked='true']{opacity:.6}
