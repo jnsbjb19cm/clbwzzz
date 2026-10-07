@@ -28,6 +28,7 @@ import { functionalItemAuthorityRouter20260908 } from './routes/functionalItemAu
 import { playerStateDocumentRouter20260908 } from './routes/playerStateDocument20260908.js';
 import { questRewardAuthorityRouter20260908 } from './routes/questRewardAuthority20260908.js';
 import { luckyWheelAuthorityRouter20261006 } from './routes/luckyWheelAuthority20261006.js';
+import { installProcessGuards } from './processGuards.js';
 import { questPinPersistenceRouter20260908 } from './routes/questPinPersistence20260908.js';
 import { materialRefillRouter } from './routes/materialRefill.js';
 import { smithyAuthorityRouter20260907 } from './routes/smithyAuthority20260907.js';
@@ -81,6 +82,9 @@ installPvpNeutralDamageOwnership20260903();
 installPvpBotAi20260905();
 installBattleRuntimePerformance20260905();
 installAuthorityPerformance20260905();
+
+// 2026-10-07：进程级兜底 —— 任何漏网异常都不该让整站变成 502（详见 processGuards.js）
+installProcessGuards();
 
 const app = express();
 app.disable('x-powered-by');

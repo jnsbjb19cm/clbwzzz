@@ -644,9 +644,27 @@ function migrateSqlite() {
   }
 }
 
+/**
+ * 给 mysql2 连接池挂 'error' 监听（2026-10-07 全站 502 的根因）。
+ *
+ * mysql2 的池子在**连接层**出错时（MySQL 重启、wait_timeout 掐断、PROTOCOL_CONNECTION_LOST、
+ * 网络抖动…）会执行 pool.emit('error')。EventEmitter 的 'error' 事件**没有监听器就会直接抛**，
+ * 变成未捕获异常 → 整个 Node 进程退出 → 反向代理对**所有**接口返回 502。
+ * 现场表现就是：先是某个接口报错，紧接着 /api/player/snapshot 和 socket.io 全部 502。
+ *
+ * 这里只记日志、不让进程死：单条连接坏了由池子自己重连，不该拖垮整个服务。
+ */
+export function guardPool(target, label = 'mysql-pool') {
+  if (!target || typeof target.on !== 'function') return target;
+  target.on('error', (error) => {
+    console.error(`[clbwzdb] ${label} 连接出错（已忽略，服务继续运行）:`, error?.code || error?.message || error);
+  });
+  return target;
+}
+
 async function initMysql() {
   const safeDbName = String(config.db.database).replace(/`/g, '');
-  const bootstrap = mysql.createPool({
+  const bootstrap = guardPool(mysql.createPool({
     host: config.db.host,
     port: config.db.port,
     user: config.db.user,
@@ -655,7 +673,7 @@ async function initMysql() {
     connectTimeout: config.db.connectTimeout,
     waitForConnections: true,
     charset: 'utf8mb4',
-  });
+  }), 'mysql-bootstrap');
   try {
     await bootstrap.query(`CREATE DATABASE IF NOT EXISTS \`${safeDbName}\` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci`);
   } catch (error) {
@@ -675,6 +693,7 @@ async function initMysql() {
     waitForConnections: true,
     charset: 'utf8mb4',
   });
+  guardPool(pool, 'mysql-pool');
   for (const sql of MYSQL_TABLES) {
     await pool.query(sql);
   }
