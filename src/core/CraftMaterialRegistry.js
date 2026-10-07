@@ -33,8 +33,13 @@ export class CraftMaterialRegistry {
     return this.config.combineRatio ?? 10;
   }
 
-  /** 材料类型链：parchment / gem / charm */
+  /**
+   * 材料类型链：parchment / gem / charm / dna / powder。
+   * 只取该类型真实存在的等级 —— 强化粉可到 5 级，其余材料最高 4 级（level 5 没有它们的 itemId）。
+   */
   getMaterialChain(type) {
-    return this.config.levels.map((l) => ({ level: l.level, itemId: l[type] }));
+    return this.config.levels
+      .filter((l) => l[type] != null)
+      .map((l) => ({ level: l.level, itemId: l[type] }));
   }
 }

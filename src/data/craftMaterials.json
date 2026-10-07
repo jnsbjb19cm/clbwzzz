@@ -6,28 +6,36 @@
       "parchment": 50001,
       "gem": 50011,
       "charm": 50021,
-      "dna": 50031
+      "dna": 50031,
+      "powder": 10001
     },
     {
       "level": 2,
       "parchment": 50002,
       "gem": 50012,
       "charm": 50022,
-      "dna": 50032
+      "dna": 50032,
+      "powder": 10002
     },
     {
       "level": 3,
       "parchment": 50003,
       "gem": 50013,
       "charm": 50023,
-      "dna": 50033
+      "dna": 50033,
+      "powder": 10003
     },
     {
       "level": 4,
       "parchment": 50004,
       "gem": 50014,
       "charm": 50024,
-      "dna": 50034
+      "dna": 50034,
+      "powder": 10004
+    },
+    {
+      "level": 5,
+      "powder": 10005
     }
   ],
   "items": [
@@ -184,6 +192,51 @@
       "max_num": 9999,
       "sell_price": 500,
       "desc": "可从铁匠铺销毁层还原尚未过期的副卡。"
+    },
+    {
+      "item_id": 10001,
+      "item_name": "一级强化粉",
+      "item_type": 3,
+      "show_type": "强化材料",
+      "quality": 1,
+      "max_num": 9999,
+      "sell_price": 20
+    },
+    {
+      "item_id": 10002,
+      "item_name": "二级强化粉",
+      "item_type": 3,
+      "show_type": "强化材料",
+      "quality": 2,
+      "max_num": 9999,
+      "sell_price": 60
+    },
+    {
+      "item_id": 10003,
+      "item_name": "三级强化粉",
+      "item_type": 3,
+      "show_type": "强化材料",
+      "quality": 3,
+      "max_num": 9999,
+      "sell_price": 150
+    },
+    {
+      "item_id": 10004,
+      "item_name": "四级强化粉",
+      "item_type": 3,
+      "show_type": "强化材料",
+      "quality": 4,
+      "max_num": 9999,
+      "sell_price": 400
+    },
+    {
+      "item_id": 10005,
+      "item_name": "五级强化粉",
+      "item_type": 3,
+      "show_type": "强化材料",
+      "quality": 5,
+      "max_num": 9999,
+      "sell_price": 1000
     }
   ],
   "starterCounts": {

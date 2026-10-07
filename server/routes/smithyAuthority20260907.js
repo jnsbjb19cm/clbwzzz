@@ -29,7 +29,8 @@ const PIECE_BY_CARD = new Map(pieceReward.map((raw) => [Number(raw.card_id), raw
 const LEVEL_CONFIG = new Map(craftMaterials.levels.map((raw) => [Number(raw.level), raw]));
 const MATERIAL_ITEMS = new Map(craftMaterials.items.map((raw) => [Number(raw.item_id), raw]));
 const STRENGTH_ROWS = smithyJson[0]?.strength ?? [];
-const ALLOWED_MATERIAL_TYPES = new Set(['parchment', 'gem', 'charm']);
+// 强化粉(powder)可加工到 5 级；其余材料最高 4 级（level 5 只有 powder）。
+const ALLOWED_MATERIAL_TYPES = new Set(['parchment', 'gem', 'charm', 'powder']);
 
 await db.run(`
   CREATE TABLE IF NOT EXISTS player_smithy_state (
