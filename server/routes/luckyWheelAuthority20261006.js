@@ -14,6 +14,7 @@
 import { Router } from 'express';
 import { createRequire } from 'node:module';
 import { pickExactTierCard } from '../../src/core/CardEgg.js';
+import { config } from '../config.js';
 import { db, withTransaction } from '../database.js';
 import { requireAuth } from '../middleware/auth.js';
 import {
@@ -37,17 +38,58 @@ function todayKey(now = new Date()) {
   return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
 }
 
+/**
+ * 建表语句按方言生成。
+ *
+ * 2026-10-07 修复"抽奖失败"：MySQL 不允许 TEXT/BLOB/JSON 列带 DEFAULT ——
+ * 原来的 `claimed_tasks TEXT NOT NULL DEFAULT '[]'` 会让建表直接报
+ *   "BLOB, TEXT, GEOMETRY or JSON column 'claimed_tasks' can't have a default value"
+ * → ensureTable() 抛错 → 整个转盘接口 500（客户端显示"抽奖失败"）。
+ * MySQL 版因此不写默认值（claimed_tasks 一律由下面的 INSERT 显式写入），
+ * 时间列也从 TEXT 换成 DATETIME（MySQL 的 TEXT 同样不能 DEFAULT CURRENT_TIMESTAMP）。
+ */
+export function luckyWheelSchemaSql(client = config.db.client) {
+  if (client === 'mysql') {
+    return `CREATE TABLE IF NOT EXISTS player_lucky_wheel_20261006 (
+      user_id BIGINT NOT NULL PRIMARY KEY,
+      date_key VARCHAR(16) NOT NULL,
+      used_today INT NOT NULL DEFAULT 0,
+      extra_spins INT NOT NULL DEFAULT 0,
+      claimed_tasks TEXT NOT NULL,
+      updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci`;
+  }
+  return `CREATE TABLE IF NOT EXISTS player_lucky_wheel_20261006 (
+    user_id INTEGER PRIMARY KEY,
+    date_key TEXT NOT NULL,
+    used_today INTEGER NOT NULL DEFAULT 0,
+    extra_spins INTEGER NOT NULL DEFAULT 0,
+    claimed_tasks TEXT NOT NULL,
+    updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+  )`;
+}
+
+/**
+ * "第一次 / 新的一天"把当天次数归零的落库语句。
+ * SQLite 用 `ON CONFLICT ... DO UPDATE`，MySQL 用 `ON DUPLICATE KEY UPDATE`
+ * （原代码只写了 SQLite 那套 → MySQL 上语法错误）。
+ * MySQL 版把参数重复传一次，避免用到已废弃的 VALUES() 函数。
+ */
+export function luckyWheelResetSql(client = config.db.client) {
+  const head = `INSERT INTO player_lucky_wheel_20261006(user_id,date_key,used_today,extra_spins,claimed_tasks,updated_at)
+       VALUES(?,?,0,0,?,CURRENT_TIMESTAMP)`;
+  if (client === 'mysql') {
+    return `${head}
+       ON DUPLICATE KEY UPDATE date_key=?, used_today=0, extra_spins=0, claimed_tasks=?, updated_at=CURRENT_TIMESTAMP`;
+  }
+  return `${head}
+       ON CONFLICT(user_id) DO UPDATE SET date_key=excluded.date_key, used_today=0, extra_spins=0, claimed_tasks=excluded.claimed_tasks, updated_at=CURRENT_TIMESTAMP`;
+}
+
 async function ensureTable() {
   if (!readyPromise) {
     readyPromise = (async () => {
-      await db.run(`CREATE TABLE IF NOT EXISTS player_lucky_wheel_20261006 (
-        user_id INTEGER PRIMARY KEY,
-        date_key TEXT NOT NULL,
-        used_today INTEGER NOT NULL DEFAULT 0,
-        extra_spins INTEGER NOT NULL DEFAULT 0,
-        claimed_tasks TEXT NOT NULL DEFAULT '[]',
-        updated_at TEXT DEFAULT CURRENT_TIMESTAMP
-      )`);
+      await db.run(luckyWheelSchemaSql());
     })().catch((error) => { readyPromise = null; throw error; });
   }
   return readyPromise;
@@ -59,10 +101,8 @@ async function readState(userId) {
   const row = await db.get('SELECT * FROM player_lucky_wheel_20261006 WHERE user_id=?', [userId]);
   if (!row || row.date_key !== today) {
     await db.run(
-      `INSERT INTO player_lucky_wheel_20261006(user_id,date_key,used_today,extra_spins,claimed_tasks,updated_at)
-       VALUES(?,?,0,0,'[]',CURRENT_TIMESTAMP)
-       ON CONFLICT(user_id) DO UPDATE SET date_key=excluded.date_key, used_today=0, extra_spins=0, claimed_tasks='[]', updated_at=CURRENT_TIMESTAMP`,
-      [userId, today],
+      luckyWheelResetSql(),
+      config.db.client === 'mysql' ? [userId, today, '[]', today, '[]'] : [userId, today, '[]'],
     );
     return { dateKey: today, usedToday: 0, extraSpins: 0, claimedTasks: [] };
   }
