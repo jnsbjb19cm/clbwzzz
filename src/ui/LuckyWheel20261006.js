@@ -59,20 +59,40 @@ let sessionStartAt = Date.now();
 let state = null;
 
 let serverSpins = null;   // 服务端返回的剩余次数，优先于本地推算
+let claimsGeneration = 0; // 每领一次任务就 +1；期间取回的旧状态必须丢弃
+let lastPanel = null;     // 最近一次渲染的面板，用于服务端状态回来后再刷一次
+
+/** 从服务端同步次数与任务状态（拿不到就继续用本地的） */
+async function syncServerState() {
+  const generation = claimsGeneration;
+  try {
+    const data = await authStore.api.get('/player/lucky-wheel/state');
+    // 请求期间领过任务：这次 GET 的结果已经比已知的旧，丢掉，
+    // 否则会把刚领到的次数又压回领取之前的值（用户报的"任务不计入次数"）。
+    if (generation === claimsGeneration && data && Number.isFinite(Number(data.spinsLeft))) {
+      serverSpins = Number(data.spinsLeft);
+    }
+  } catch { /* 离线时忽略 */ }
+  return serverSpins;
+}
+
+/** 把"完成任务"同步给服务端换真实次数；离线时忽略（本地照记） */
+async function pushTaskClaims(taskIds) {
+  claimsGeneration += 1;
+  let changed = false;
+  for (const taskId of taskIds) {
+    try {
+      const data = await authStore.api.post('/player/lucky-wheel/claim-task', { taskId });
+      if (data && Number.isFinite(Number(data.spinsLeft))) { serverSpins = Number(data.spinsLeft); changed = true; }
+    } catch { /* 离线/服务端不认：本地已经记了次数，忽略 */ }
+  }
+  if (changed) refresh(lastPanel);
+}
 
 function spinsLeft() {
   if (serverSpins != null) return Math.max(0, Number(serverSpins));
   const st = state ?? (state = loadState());
   return Math.max(0, DAILY_FREE_SPINS + Number(st.extraSpins || 0) - Number(st.usedToday || 0));
-}
-
-/** 从服务端同步次数与任务状态（拿不到就继续用本地的） */
-async function syncServerState() {
-  try {
-    const data = await authStore.api.get('/player/lucky-wheel/state');
-    if (data && Number.isFinite(Number(data.spinsLeft))) serverSpins = Number(data.spinsLeft);
-  } catch { /* 离线时忽略 */ }
-  return serverSpins;
 }
 
 function describeGranted(granted, data = {}) {
@@ -99,19 +119,24 @@ function taskDone(task) {
   return got >= Number(task.count || 1);
 }
 
-/** 结算"转盘任务"，把完成的换成额外次数 */
+/** 结算"转盘任务"，把完成的换成额外次数；返回本次新领取的任务 id */
 function settleTasks() {
   const st = state ?? (state = loadState());
-  let gained = 0;
+  const newly = [];
   for (const task of WHEEL_TASKS) {
     if ((st.claimedTasks || []).includes(task.id)) continue;
     if (!taskDone(task)) continue;
     st.claimedTasks = [...(st.claimedTasks || []), task.id];
     st.extraSpins = Number(st.extraSpins || 0) + Number(task.spins || 0);
-    gained += Number(task.spins || 0);
+    newly.push(task.id);
   }
-  if (gained) saveState(st);
-  return gained;
+  if (newly.length) {
+    saveState(st);
+    // 2026-10-07：只记在本地不够 —— 在线时 spinsLeft() 优先用服务端的次数，
+    // 不同步过去任务就等于白做（用户报的"转盘任务不计入计数"）。
+    void pushTaskClaims(newly);
+  }
+  return newly;
 }
 
 function app() {
@@ -240,6 +265,7 @@ function wheelMarkup() {
 
 function refresh(panel) {
   if (!panel) return;
+  lastPanel = panel;
   settleTasks();
   const count = panel.querySelector('[data-lucky-count]');
   if (count) count.textContent = `今天还剩 ${spinsLeft()} 次（每日免费 ${DAILY_FREE_SPINS} 次 + 任务获得的次数）`;
@@ -267,7 +293,17 @@ async function spin(panel, random = Math.random) {
     message = describeGranted(data?.granted, data);
     if (Number.isFinite(Number(data?.spinsLeft))) serverSpins = Number(data.spinsLeft);
   } catch (error) {
-    // 服务端不可用（本地开发断网等）：退回本地抽，并如实说明，不假装成功
+    // 2026-10-07：只有"真的连不上服务端"（ApiError.status === 0）才允许本地兜底。
+    // 服务端明确拒绝（今天没次数 / 卡牌背包满 / 卡池为空）必须如实报错，
+    // 绝不能谎报"离线模式"再在客户端自己发一次奖 —— 那等于白送
+    // （用户报的"转盘不太像正常的、还显示离线模式"）。
+    if (Number(error?.status || 0) !== 0) {
+      const failed = panel.querySelector('[data-lucky-result]');
+      if (failed) failed.textContent = `抽奖失败：${error?.message || '服务端拒绝了这次抽奖'}`;
+      refresh(panel);
+      return null;
+    }
+    // 断网：退回本地抽，并如实说明，不假装成功
     sector = pickWheelPrize(random);
     const prize = resolveWheelPrize(sector, random);
     label = prize.label;

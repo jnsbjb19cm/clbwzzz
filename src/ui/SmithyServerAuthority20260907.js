@@ -172,6 +172,16 @@ function bindServerActions(view, root) {
       type: view.matType,
       fromLevel: view.matFromLevel,
     });
+    // 2026-10-07：服务端权威版把本地按钮 clone 掉了，却漏了任务事件 ——
+    // 于是"完成 1 次材料加工"（主线/支线任务 + 幸运转盘的转盘任务）在线时永远不计数。
+    // 这里补上和本地版（SmithyView 原 #do-combine）一致的事件。
+    if (data?.ok) {
+      view.onQuestEvent?.('material_combine', {
+        count: 1,
+        materialKind: view.matType,
+        materialLevel: Number(data.toLevel) || Number(view.matFromLevel) + 1,
+      });
+    }
     view.toast(root, data?.message ?? data?.error ?? '加工完成');
     view.renderBody(root);
   });
