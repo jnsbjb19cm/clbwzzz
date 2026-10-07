@@ -1,6 +1,7 @@
 import { installAuthorityBattleResultView } from './ui/AuthorityBattleResultView.js';
 import { installLuckyWheel20261006 } from './ui/LuckyWheel20261006.js';
 import { installUpdateLogPanel20261006 } from './ui/UpdateLogPanel20261006.js';
+import { installAssetWarmup20261007 } from './ui/AssetWarmup20261007.js';
 import './battle/BattleEngineBaseEdgeCompat.js';
 import './ui/BattleRoomExact.css';
 import './ui/BattleRoomStability.css';
@@ -174,6 +175,7 @@ installBattlefieldReferenceGridFinal();
 installBattlefieldMinimalHudFinal();
 installMainCityBottomNavFinal();
 installLuckyWheel20261006();
+installAssetWarmup20261007();
 installUpdateLogPanel20261006();
 installBattlefieldCombatPresentationFinal();
 installBattleRoomDeckUiV3();
