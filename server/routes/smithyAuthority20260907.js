@@ -1,7 +1,7 @@
 import { announceSmithyResult } from '../socket/SystemAnnouncementService.js';
 import { Router } from 'express';
 import { createRequire } from 'node:module';
-import { db, getPlayerSnapshot, withTransaction } from '../database.js';
+import { db, getPlayerSnapshot, withTransaction, whenDatabaseReady } from '../database.js';
 import { requireAuth } from '../middleware/auth.js';
 import { readCardInventory } from './cardInventoryPersistence20260906.js';
 import {
@@ -32,12 +32,14 @@ const STRENGTH_ROWS = smithyJson[0]?.strength ?? [];
 // 强化粉(powder)可加工到 5 级；其余材料最高 4 级（level 5 只有 powder）。
 const ALLOWED_MATERIAL_TYPES = new Set(['parchment', 'gem', 'charm', 'powder']);
 
-await db.run(`
+// 2026-10-07：原来是裸的模块顶层 await db.run(建表) —— 数据库不可用时
+// 模块加载失败会让进程在 listen 之前退出（全站 502）。改走 whenDatabaseReady。
+await whenDatabaseReady(`
   CREATE TABLE IF NOT EXISTS player_smithy_state (
     user_id BIGINT NOT NULL PRIMARY KEY,
     state_json TEXT NOT NULL
   )
-`);
+`, 'player_smithy_state');
 
 function int(value, fallback = 0) {
   const number = Number(value);

@@ -29,6 +29,7 @@ import { playerStateDocumentRouter20260908 } from './routes/playerStateDocument2
 import { questRewardAuthorityRouter20260908 } from './routes/questRewardAuthority20260908.js';
 import { luckyWheelAuthorityRouter20261006 } from './routes/luckyWheelAuthority20261006.js';
 import { installProcessGuards } from './processGuards.js';
+import { databaseStatus } from './database.js';
 import { questPinPersistenceRouter20260908 } from './routes/questPinPersistence20260908.js';
 import { materialRefillRouter } from './routes/materialRefill.js';
 import { smithyAuthorityRouter20260907 } from './routes/smithyAuthority20260907.js';
@@ -103,7 +104,10 @@ if (config.corsAllowAll) {
 app.use(express.json({ limit: '2mb' }));
 
 app.get('/api/health', (_req, res) => {
-  res.json({ ok: true, service: 'clbwzzz-server', time: new Date().toISOString() });
+  // 2026-10-07：把数据库状态一起报出来。
+  // 全站 502 时先 curl 这个接口：能通 → 服务活着（看 db 字段就知道是不是库的问题）；
+  // 连不上 → 进程根本没起来，去翻进程日志。
+  res.json({ ok: true, service: 'clbwzzz-server', time: new Date().toISOString(), db: databaseStatus() });
 });
 app.use('/api/auth', authRouter);
 app.use('/api/player', playerSnapshotAuthorityRouter20260908);

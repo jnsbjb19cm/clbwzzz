@@ -58,7 +58,113 @@ function mysqlConn(connection) {
   };
 }
 
+/* ---------------------------------------------------------------------------
+ * 数据库初始化状态（2026-10-07 全站 502 事故）
+ *
+ * 原来这里是**模块级顶层 await**：`if (isMysql) await initMysql(); else await initSqlite();`
+ * 只要初始化抛错（MySQL 挂了 / 权限不足 / 某条 DDL 失败），整个模块加载失败 →
+ * 进程在还没 listen 之前就退出 → 反向代理对**所有**接口返回 502（现场表现：
+ * 先是转盘报错，随后 snapshot、socket.io 握手全 502）。
+ *
+ * 现在改成：失败只记日志、服务照常启动（代理能拿到真正的 HTTP 报错而不是 502），
+ * 之后每次访问数据库前会按冷却时间自动重试初始化，MySQL 恢复后无需人工重启。
+ * ------------------------------------------------------------------------- */
+let dbReady = false;
+let dbInitError = null;
+let dbInitPromise = null;
+let dbInitFailedAt = 0;
+const DB_INIT_RETRY_COOLDOWN_MS = 15000;
+/** 数据库不可用时被延后的建表语句（见 whenDatabaseReady） */
+const pendingDdl = [];
+
+/** 初始化（幂等）：成功返回 true，失败抛错并记录 */
+export async function ensureDatabaseReady() {
+  if (dbReady) return true;
+  if (dbInitPromise) return dbInitPromise;
+  dbInitPromise = (async () => {
+    if (isMysql) await initMysql();
+    else await initSqlite();
+    dbReady = true;
+    dbInitError = null;
+    void flushPendingDdl();   // 数据库恢复后，把延后的建表补上
+    return true;
+  })()
+    .catch((error) => {
+      dbInitError = error;
+      dbInitFailedAt = Date.now();
+      throw error;
+    })
+    .finally(() => { dbInitPromise = null; });
+  return dbInitPromise;
+}
+
+/** 给 /api/health 用：数据库到底连上没有、上次为什么失败 */
+export function databaseStatus() {
+  return {
+    ready: dbReady,
+    client: isMysql ? 'mysql' : 'sqlite',
+    error: dbInitError ? String(dbInitError?.code || dbInitError?.message || dbInitError) : null,
+    deferredDdl: pendingDdl.length,
+  };
+}
+
+/** 不走就绪检查的裸执行（给建表用） */
+async function execRaw(sql) {
+  if (isMysql) {
+    const [result] = await pool.query(sql);
+    return mysqlResult(result);
+  }
+  return sqliteRun(sql);
+}
+
+/**
+ * 模块顶层建表专用（2026-10-07 全站 502 事故）。
+ *
+ * `server/routes/*.js` 里有两处模块顶层 `await db.run(CREATE TABLE …)`：
+ * 数据库连不上（或某条 DDL 失败）时，模块加载直接失败 → 进程还没 listen 就退出
+ * → 反向代理对**所有**接口回 502。这里把它变成：
+ *   · 数据库正常：和以前一样 await 建完表（行为不变）；
+ *   · 数据库不可用：**只记日志不抛**，把这条 DDL 挂到 pendingDdl，
+ *     等数据库恢复（initialize 成功）后自动补执行。
+ */
+export async function whenDatabaseReady(sql, label = 'ddl') {
+  try {
+    await ensureDatabaseReady();
+    await execRaw(sql);
+  } catch (error) {
+    console.error(`[clbwzdb] ${label} 初始化失败（已延后，数据库恢复后自动补）:`, error?.code || error?.message || error);
+    pendingDdl.push({ sql, label });
+  }
+}
+
+async function flushPendingDdl() {
+  if (!pendingDdl.length || !dbReady) return;
+  const batch = pendingDdl.splice(0, pendingDdl.length);
+  for (const task of batch) {
+    try {
+      await execRaw(task.sql);
+      console.log(`[clbwzdb] 补建表成功：${task.label}`);
+    } catch (error) {
+      console.error(`[clbwzdb] 补建表失败：${task.label}`, error?.code || error?.message || error);
+      pendingDdl.push(task);
+    }
+  }
+}
+
+/** 查询前确保已初始化；失败过就按冷却时间重试（避免每个请求都去连一次死库） */
+async function ensureReadyForQuery() {
+  if (dbReady) return;
+  const cooling = dbInitFailedAt && (Date.now() - dbInitFailedAt) < DB_INIT_RETRY_COOLDOWN_MS;
+  if (dbInitError && cooling) return;
+  try {
+    await ensureDatabaseReady();
+  } catch {
+    /* 交给下面的 mustInit() 抛出清晰错误 */
+  }
+}
+
 export async function run(sql, params = []) {
+  await ensureReadyForQuery();
   mustInit();
   if (isMysql) {
     const [result] = await pool.query(sql, params);
@@ -68,6 +174,7 @@ export async function run(sql, params = []) {
 }
 
 export async function get(sql, params = []) {
+  await ensureReadyForQuery();
   mustInit();
   if (isMysql) {
     const [rows] = await pool.query(sql, params);
@@ -77,6 +184,7 @@ export async function get(sql, params = []) {
 }
 
 export async function all(sql, params = []) {
+  await ensureReadyForQuery();
   mustInit();
   if (isMysql) {
     const [rows] = await pool.query(sql, params);
@@ -86,6 +194,7 @@ export async function all(sql, params = []) {
 }
 
 export async function withTransaction(fn) {
+  await ensureReadyForQuery();
   mustInit();
   if (!isMysql) {
     await run('BEGIN');
@@ -740,10 +849,17 @@ async function migrateMysql() {
   }
 }
 
-if (isMysql) {
-  await initMysql();
-} else {
-  await initSqlite();
+// 启动时初始化数据库：失败**只记日志、不终止进程**。
+// 以前这里是裸的顶层 await，初始化一抛错整个模块就加载失败、进程直接退出，
+// 反向代理就会对所有接口回 502（外面只看得到"全站挂了"，看不到真正原因）。
+try {
+  await ensureDatabaseReady();
+  console.log(`[clbwzdb] 数据库就绪（${isMysql ? 'mysql' : 'sqlite'}）`);
+} catch (error) {
+  dbInitError = error;
+  dbInitFailedAt = Date.now();
+  console.error(`[clbwzdb] 数据库初始化失败（${isMysql ? 'mysql' : 'sqlite'}）：`, error?.code || error?.message || error);
+  console.error('[clbwzdb] 服务仍会启动：数据接口会返回错误信息（不再是 502），数据库恢复后会自动重试初始化');
 }
 
 const STARTER_DECK = [1, 2, 4, 15, 19, 25, 22, 17, 11, 3];

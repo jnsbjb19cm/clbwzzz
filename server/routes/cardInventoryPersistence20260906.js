@@ -1,17 +1,20 @@
-import { db, getPlayerSnapshot, withTransaction } from '../database.js';
+import { db, getPlayerSnapshot, withTransaction, whenDatabaseReady } from '../database.js';
 
 const MIN_SLOTS = 200;
 const MAX_SLOTS = 500;
 const MAX_CARDS = 500;
 
-await db.run(`
+// 2026-10-07：这里原来是裸的模块顶层 await db.run(建表) —— 数据库连不上时
+// 模块加载失败会让整个进程在 listen 之前退出（反向代理全站 502）。
+// 改用 whenDatabaseReady：数据库正常时行为不变，不可用时只记日志、等恢复后补建。
+await whenDatabaseReady(`
   CREATE TABLE IF NOT EXISTS player_card_instance_state (
     user_id BIGINT NOT NULL,
     slot_index INTEGER NOT NULL,
     state_json TEXT NOT NULL,
     PRIMARY KEY(user_id, slot_index)
   )
-`);
+`, 'player_card_instance_state');
 
 function safeJsonParse(value) {
   try {
