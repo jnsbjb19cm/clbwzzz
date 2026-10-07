@@ -885,7 +885,7 @@
     "card_hp": 60,
     "move_speed": 0,
     "atk_speed": 6,
-    "cost_a": 17,
+    "cost_a": 11,
     "atk_style": 11,
     "card_quality": 4,
     "desc": "来自星星的哨兵,可将指定敌方地面单位吸走,吸收过程5秒,对橙、红卡无效",
