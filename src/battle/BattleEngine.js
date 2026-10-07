@@ -51,7 +51,7 @@ import { unitAnimPlayer } from './UnitAnimPlayer.js';
 import { WaveManager } from './WaveManager.js';
 import { attackColdBrew, COLD_BREW_CARD_ID } from './ColdBrewMachine.js';
 import { calculateCardStats } from './CardStatFormula.js';
-import { adventurePlacementCells, adventureQuality, ADVENTURE_ENEMY_HP_SCALE } from '../data/AdventureCampaign.js';
+import { adventurePlacementCells, adventureQuality, ADVENTURE_ENEMY_HP_SCALE, adventureBaseHp } from '../data/AdventureCampaign.js';
 import { getCardTraits, getAttackPattern, isSuicideCard } from '../core/CardTraitRegistry.js';
 import { TALENT_NODE_MAP } from '../core/TalentRegistry.js';
 
@@ -139,7 +139,9 @@ export class BattleEngine {
       this.sunlight = TRAINING_RESOURCE;
       this.food = TRAINING_RESOURCE;
     } else {
-      const stageHeroHp = calcHeroHp(this.stage.hp);
+      const stageHeroHp = this.stage.adventure
+        ? adventureBaseHp(this.stage)
+        : calcHeroHp(this.stage.hp);
       this.heroMaxHp = playerLevel == null
         ? stageHeroHp + talentHpBonus
         : calcPlayerHeroHp(playerLevel) + talentHpBonus;

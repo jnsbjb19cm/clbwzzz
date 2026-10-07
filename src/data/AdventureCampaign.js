@@ -49,6 +49,20 @@ export function isForestUnlocked(cleared = []) {
 // 想整体削弱就把数字调小（0.8 = 削 20%，0.7 = 削 30%）。
 export const ADVENTURE_ENEMY_HP_SCALE = 1;
 
+/**
+ * 冒险大陆"基地"血量系数：沿用现有 stage.hp 曲线，只调系数（不在结果上再单乘）。
+ * 原公式 calcHeroHp 的系数 = 50 × BATTLE_STAT_SCALE(0.75) = 37.5；
+ * 终关 stage.hp=580 → 21750，太高。目标终关 5550 → 系数 = 37.5 × (5550 / 21750) = 9.568965517241379。
+ * 例：1-1=400、1-3=1435、2-3=2679、4-4=4401、最终关=5550。
+ */
+export const ADVENTURE_BASE_HP_COEFFICIENT = 9.568965517241379;
+
+export function adventureBaseHp(stage) {
+  const hp = Number(stage?.hp);
+  if (!Number.isFinite(hp) || hp <= 0) return 400;
+  return Math.max(400, Math.floor(hp * ADVENTURE_BASE_HP_COEFFICIENT));
+}
+
 // Keep existing craft-quality enum: 普通=2, 优秀=4, 精良=3, 完美=5.
 export function adventureQuality(stage, ordinal = 0) {
   const { difficulty, act, final } = stage.adventure;

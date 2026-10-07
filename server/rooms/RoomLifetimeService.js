@@ -43,12 +43,22 @@ function realMembersOf(room) {
   return [...(room?.members?.values?.() ?? [])].filter((member) => member?.isBot !== true);
 }
 
+/**
+ * 清掉某个房间的寿命定时器。
+ * 房间被 leave/destroyRoom 从 map 删除时也必须清；否则 allocateRoomId 会把同一个 id
+ * 分给新房，旧定时器到点就会把新房按 lifetime 解散（用户报告：刚建的房被提示"120 分钟上限"）。
+ */
+function clearLifetimeTimer(room) {
+  if (!room) return;
+  if (room._lifetimeTimer) clearTimeout(room._lifetimeTimer);
+  room._lifetimeTimer = null;
+}
+
 /** 完整销毁，避免 userRoom 残留导致玩家被误判为仍在旧房间。 */
 function fullyDestroyRoom(room) {
   if (!room) return false;
 
-  if (room._lifetimeTimer) clearTimeout(room._lifetimeTimer);
-  room._lifetimeTimer = null;
+  clearLifetimeTimer(room);
 
   for (const member of room.members?.values?.() ?? []) {
     if (member?.disconnectTimer) clearTimeout(member.disconnectTimer);
@@ -67,11 +77,11 @@ function fullyDestroyRoom(room) {
  */
 export function startRoomLifetimeService(io, { stopBattle } = {}) {
   let stopped = false;
-  const originalCreateRoom = roomManager.createRoom.bind(roomManager);
+  const originalCreateRoom = roomManager.createRoom;
 
   const expire = (room, reason) => {
     const roomId = Number(room?.id);
-    if (!roomId || !roomManager.getRoom(roomId)) return false;
+    if (!roomId || roomManager.getRoom(roomId) !== room) return false;
 
     const isLifetime = reason === 'lifetime';
     const message = isLifetime
@@ -100,7 +110,7 @@ export function startRoomLifetimeService(io, { stopBattle } = {}) {
 
   const scheduleLifetime = (room) => {
     if (!room || stopped) return;
-    if (room._lifetimeTimer) clearTimeout(room._lifetimeTimer);
+    clearLifetimeTimer(room);
 
     const createdAt = Number(room.createdAt) || Date.now();
     const remaining = Math.max(0, createdAt + ROOM_LIFETIME_MS - Date.now());
@@ -111,7 +121,9 @@ export function startRoomLifetimeService(io, { stopBattle } = {}) {
     }
     room._lifetimeTimer = setTimeout(() => {
       const current = roomManager.getRoom(room.id);
-      if (current) expire(current, 'lifetime');
+      // 只解散"同一个房间对象"：旧房删除后 id 可能被新房复用，旧定时器不能误杀新房。
+      if (current === room) expire(current, 'lifetime');
+      else clearLifetimeTimer(room);
     }, remaining);
     room._lifetimeTimer.unref?.();
   };
@@ -121,7 +133,7 @@ export function startRoomLifetimeService(io, { stopBattle } = {}) {
 
   // 包装创建房间：不改变原返回结构，只在创建完成后给真实 room 设置 2h 定时器。
   roomManager.createRoom = function createRoomWithLifetime(args) {
-    const snapshot = originalCreateRoom(args);
+    const snapshot = originalCreateRoom.call(roomManager, args);
     const room = roomManager.getRoom(snapshot?.id);
     if (room) {
       scheduleLifetime(room);
@@ -129,6 +141,26 @@ export function startRoomLifetimeService(io, { stopBattle } = {}) {
     }
     return snapshot;
   };
+
+  // leave / destroyRoom 会从 rooms map 删除房间，但不会清寿命定时器 → 这里补上清理，
+  // 保证被删除的房间不会留下一个"会误杀复用 id 新房"的定时器。
+  const originalLeave = roomManager.leave;
+  roomManager.leave = function leaveWithLifetimeCleanup(userId) {
+    const room = roomManager.getRoomByUser(userId);
+    const result = originalLeave.call(roomManager, userId);
+    if (room && roomManager.getRoom(room.id) !== room) clearLifetimeTimer(room);
+    return result;
+  };
+
+  const originalDestroyRoom = roomManager.destroyRoom;
+  if (typeof originalDestroyRoom === 'function') {
+    roomManager.destroyRoom = function destroyRoomWithLifetimeCleanup(roomId) {
+      const room = roomManager.getRoom(roomId);
+      const result = originalDestroyRoom.call(roomManager, roomId);
+      if (room) clearLifetimeTimer(room);
+      return result;
+    };
+  }
 
   const sweepOrphans = () => {
     if (stopped) return;
@@ -147,9 +179,8 @@ export function startRoomLifetimeService(io, { stopBattle } = {}) {
     stopped = true;
     clearInterval(orphanTimer);
     roomManager.createRoom = originalCreateRoom;
-    for (const room of roomManager.rooms.values()) {
-      if (room._lifetimeTimer) clearTimeout(room._lifetimeTimer);
-      room._lifetimeTimer = null;
-    }
+    roomManager.leave = originalLeave;
+    if (typeof originalDestroyRoom === 'function') roomManager.destroyRoom = originalDestroyRoom;
+    for (const room of roomManager.rooms.values()) clearLifetimeTimer(room);
   };
 }

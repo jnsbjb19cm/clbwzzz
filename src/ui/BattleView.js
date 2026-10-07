@@ -1,4 +1,5 @@
 import { BattleEngine } from '../battle/BattleEngine.js';
+import { shouldReportAdventureComplete } from '../battle/QuestEventRules.js';
 import { BattleRenderer } from '../battle/BattleRenderer.js';
 import {
   BASE_HP_SLOT_EDGE,
@@ -825,7 +826,11 @@ export class BattleView {
         const distinctCards = this.questBattleStats?.cardIds?.size ?? 0;
         const lanesUsed = this.questBattleStats?.lanes?.size ?? 0;
         if (win) this.onQuestEvent?.('battle_win', questMeta);
-        if (win && adventure && !bossId && !this.pvp) this.onQuestEvent?.('adventure_complete', questMeta);
+        // 2026-10-07（P0）：PVE 联机（野外冒险）也是 this.pvp（mode='pve'）。
+        // 旧写法 !this.pvp 把联机冒险的「通关」事件也挡掉了 → 主线关卡任务永远不涨。
+        if (shouldReportAdventureComplete({ win, adventure, bossId, pvp: this.pvp })) {
+          this.onQuestEvent?.('adventure_complete', questMeta);
+        }
         this.onQuestEvent?.('battle_complete', questMeta);
         const kills = this.engine.killsThisBattle ?? 0;
         if (kills > 0) this.onQuestEvent?.('kill_enemy', { ...questMeta, count: kills });
