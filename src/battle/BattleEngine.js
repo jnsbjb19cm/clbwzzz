@@ -53,6 +53,7 @@ import { attackColdBrew, COLD_BREW_CARD_ID } from './ColdBrewMachine.js';
 import { calculateCardStats } from './CardStatFormula.js';
 import { adventurePlacementCells, adventureQuality, ADVENTURE_ENEMY_HP_SCALE, adventureBaseHp } from '../data/AdventureCampaign.js';
 import { getCardTraits, getAttackPattern, isSuicideCard } from '../core/CardTraitRegistry.js';
+import { collectSelfCenteredTargets } from './SelfCenteredTargeting.js';
 import { TALENT_NODE_MAP } from '../core/TalentRegistry.js';
 
 /**
@@ -303,22 +304,10 @@ export class BattleEngine {
       if (!found.some((e) => e.unit.uid === u.uid)) found.push({ unit: u, dist });
     };
 
-    // 2026-09-13（用户要求）：以自身为中心的 3×3 单位（喷喷怪62 / 超级喷喷怪101 / 土岩兽116）
-    // 是"喷周围一圈"的近战 —— 周围 3×3 里的敌人（**含跨行**）都算可打目标，
-    // 否则只有斜角站着敌人时它根本不出手（用户报告的"3×3 范围要改"）。
-    if (unit.isSelfCenteredMelee?.() && Number(lane) === Number(unit.lane)) {
-      const radius = Math.max(1, Number(getAttackPattern(unit.cardId)?.radius ?? 1));
-      for (const u of this.units) {
-        if (!this.isValidEnemyTarget(unit, u)) continue;
-        const dl = Math.abs(Math.round(Number(u.lane)) - Math.round(Number(unit.lane)));
-        const dc = Math.abs(Math.round(Number(u.col)) - gridCol);
-        if (dl <= radius && dc <= radius) add(u, Math.max(dl, dc));
-      }
-      // 2026-10-06（用户报告"索敌居然不是自身范围3×3"）：
-      // 3×3 里没人就**不出手** —— 之前这里会退回同路逻辑，于是站着的喷喷怪会去打
-      // 2 格外、甚至更远的敌人（主目标被 resolveMeleeImpact 强制纳入命中，溅射判定形同虚设）。
-      return found;
-    }
+    // 以自身为中心的 3×3 单位（喷喷怪62 / 超级喷喷怪101 / 土岩兽116）：只认周围 3×3（含跨行），
+    // 3×3 里没人就不出手。规则集中在 collectSelfCenteredTargets，所有重写 getEnemiesInLane 的地方共用。
+    const selfCentered = collectSelfCenteredTargets(this, unit, lane);
+    if (selfCentered) return selfCentered;
 
     for (const u of this.getUnitsAt(lane, gridCol)) {
       if (this.isValidEnemyTarget(unit, u)) add(u, 0);

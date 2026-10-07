@@ -1,4 +1,5 @@
 import { BattleEngine } from './BattleEngine.js';
+import { collectSelfCenteredTargets } from './SelfCenteredTargeting.js';
 
 const PATCH_FLAG = Symbol.for('clbwz.battleQueryPerformance20260905');
 const REAR_CONTACT_TOLERANCE = 1.1;
@@ -21,6 +22,11 @@ function finite(value, fallback = 0) {
  * 因此这里只减少重复遍历，不改变攻击目标语义。
  */
 export function collectEnemiesInLaneSinglePass20260905(engine, unit, lane) {
+  // 自中心 3×3 单位（喷喷怪62/超级喷喷怪101/土岩兽116）不适用"只看本行"的单遍逻辑，
+  // 否则会把它们的索敌退回本行（用户报告的 bug）。
+  const selfCentered = collectSelfCenteredTargets(engine, unit, lane);
+  if (selfCentered) return selfCentered;
+
   const dir = engine.getMoveDir(unit);
   const gridCol = engine.getUnitGridCol(unit);
   const range = Math.max(0, Math.floor(finite(unit?.range)));

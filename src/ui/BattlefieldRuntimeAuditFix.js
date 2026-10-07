@@ -1,4 +1,5 @@
 import { BattleEngine } from '../battle/BattleEngine.js';
+import { collectSelfCenteredTargets } from '../battle/SelfCenteredTargeting.js';
 import { BattleRenderer } from '../battle/BattleRenderer.js';
 import { BattleView } from './BattleView.js';
 import {
@@ -132,6 +133,10 @@ export function installBattlefieldRuntimeAuditFix() {
    * 但 melee range=0.5 的整数循环一次都不执行。改为连续坐标距离判定。
    */
   BattleEngine.prototype.getEnemiesInLane = function getEnemiesInLaneContinuous(unit, lane) {
+    // 自中心 3×3 单位（喷喷怪/超级喷喷怪/土岩兽）必须走 3×3 索敌，不能只看本行。
+    const selfCentered = collectSelfCenteredTargets(this, unit, lane);
+    if (selfCentered) return selfCentered;
+
     const direction = unit.team === 'player' ? 1 : -1;
     const ranged = Boolean(unit.isRanged?.());
     const maxDistance = ranged
