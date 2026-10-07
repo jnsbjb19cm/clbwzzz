@@ -70,6 +70,11 @@ const SWALLOW_PUFF_FRAME = 35;
 const AERIAL_CONTACT_COLS = 1.02;
 /** 自爆卡(40 飞行水蜜桃 / 61 黑铁土豆雷 / 65 热血火龙果)借用的爆炸序列 res（bullet anim 里有 baoza）*/
 const SUICIDE_BOOM_RES = Object.freeze({ 40: 4, 61: 4, 65: 17 });
+/**
+ * 死亡爆炸(30 真.西瓜太郎 / 69 / 102 这类"死亡后触发"的卡)借用的爆炸序列 res。
+ * 这些卡自己的子弹包里没有 baoza，所以借一个有的；否则死亡爆炸只有飘字、看不到爆炸。
+ */
+const DEATH_BOOM_RES = 4;
 
 export class BattleEngine {
   constructor(
@@ -2081,6 +2086,10 @@ export class BattleEngine {
   deathExplosion(unit, radius, damage, stunSec = 0) {
     const t = this.time;
     const centerCol = Math.round(unit.col);
+    const dmg = roundBattleAmount(Math.max(1, damage));
+    // 2026-10-07：以前这里只飘伤害字、一个爆炸动画都不放，玩家以为"真.西瓜太郎的自爆没做"。
+    // 借自爆卡(40/61/65)那套带 baoza 的爆炸序列，让死亡爆炸看得见。
+    this.spawnImpactFx(unit.lane, centerCol, dmg, unit.res, DEATH_BOOM_RES);
     for (let dr = -radius; dr <= radius; dr++) {
       for (let dc = -radius; dc <= radius; dc++) {
         const tr = unit.lane + dr;
@@ -2088,7 +2097,6 @@ export class BattleEngine {
         if (tr < 0 || tr >= LANES || tc < 0 || tc >= COLS) continue;
         for (const u of this.getUnitsAt(tr, tc)) {
           if (!u.alive || u.team === unit.team || u.isLowTarget?.()) continue;
-          const dmg = roundBattleAmount(Math.max(1, damage));
           const dealt = u.takeDamage(dmg, t);
           this.spawnDamageFloat(u, dealt);
           if (stunSec && u.alive) u.stunnedUntil = Math.max(u.stunnedUntil ?? 0, t + stunSec);
