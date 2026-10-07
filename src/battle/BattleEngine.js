@@ -870,9 +870,11 @@ export class BattleEngine {
       if (unit._burrowEmergeUntil && this.time < unit._burrowEmergeUntil) continue;
       if (unit.isFrozen(this.time) || unit.isStunned(this.time)) continue;
 
-      // 蒲公英医生/精灵：常态化攻击就是治疗(每5秒，与图鉴描述一致)
+      // 蒲公英医生/精灵：常态化攻击就是治疗。
+      // battleTick 每 TICK_INTERVAL(0.155s) 走一格：32 格 = 4.96s ≈ 图鉴写的"每5秒"。
+      // 原来写 >50（=51×0.155 = 7.9 秒）和描述对不上，2026-10-07 修正。
       if (unit.cardId === 22 || unit.cardId === 36) {
-        if (this.battleTick - unit.lastHealTick > 50) {
+        if (this.battleTick - unit.lastHealTick > 31) {
           unit.lastHealTick = this.battleTick;
           const radius = unit.cardId === 22 ? 1 : 12;
           const healed = this.doAreaHeal(unit.lane, unit.col, unit.team, 10, radius);
