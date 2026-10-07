@@ -2037,9 +2037,10 @@ export class BattleEngine {
         pvpOwnerUserId: unit.pvpOwnerUserId ?? null,
       });
     }
-    // 真.西瓜太郎：死亡后爆炸，对周围3x3格范围内敌方单位造成伤害
+    // 真.西瓜太郎：死亡后爆炸，对周围3x3格范围内敌方单位造成伤害。
+    // 2026-10-07（用户要求）：爆炸伤害 = 1.5 倍单次攻击（原来 1 倍，和普通一拳一样没打击感）。
     if (unit.cardId === 30) {
-      this.deathExplosion(unit, 1, unit.atk);
+      this.deathExplosion(unit, 1, unit.atk * 1.5);
     }
     // 猕猴桃剑客：死亡后单格附近所有敌方单位眩晕
     if (unit.cardId === 69) {
@@ -2204,8 +2205,9 @@ export class BattleEngine {
     // 邪恶狼骑：对防御类伤害 ×2；疯狂战士：对远程/法师伤害 ×2
     if (traits.doubleVsDefender && (vic.isProtector?.() || vic.isDefensive?.() || vic.atkStyle === 1)) dmg *= 2;
     if (traits.doubleVsRanged && vic.isRanged?.()) dmg *= 2;
-    // 石巨人：重拳秒杀敌方地面单位，对橙、红卡(quality>=5)无效
-    if (traits.executeLowQuality && !vic.isFlying?.() && (vic.quality ?? 1) < 4) dmg = Math.max(dmg, vic.hp);
+    // 石巨人：重拳秒杀敌方地面单位。图鉴写"对橙、红卡无效"，而 4=紫、5=橙、6=红
+    // （见 ResetEconomy.RESET_TIER_NAMES），所以门槛是 < 5 —— 之前写的 < 4 把紫卡也免疫了，和文案不符。
+    if (traits.executeLowQuality && !vic.isFlying?.() && (vic.quality ?? 1) < 5) dmg = Math.max(dmg, vic.hp);
     dmg = roundBattleAmount(Math.max(1, dmg));
 
     const dealt = vic.takeDamage(dmg, t);
