@@ -22,6 +22,13 @@ function renderSmithyMaterialArt(type, level = 1, className = '') {
   // 强化粉可到 5 级；其余材料最高 4 级。
   const maxTier = type === 'powder' ? 5 : 4;
   const tier = Math.max(1, Math.min(maxTier, Number(level) || 1));
+  if (type === 'powder') {
+    // 强化粉改用 items.png 图集里的 10001~10005 独立图标（与背包/奖励一致）。
+    // powder.png 只有 4 格（1~4 级，没有第 5 格），所以不再用那张图。
+    const size = String(className).includes('large') ? 72 : 42;
+    return '<span class="smithy-material-art ' + className + '" data-smithy-art="powder" data-tier="' + tier
+      + '">' + itemIconMarkup(10000 + tier, size) + '</span>';
+  }
   if (type === 'gem') {
     const sprite = getCraftMaterialSprite(50010 + tier);
     const rect = [sprite.x, sprite.y, sprite.width, sprite.height].join(',');
@@ -37,13 +44,8 @@ function renderSmithyMaterialArt(type, level = 1, className = '') {
       + '" data-tier="' + tier + '"><img src="' + src + '" alt="" /></span>';
   }
   if (!individual) return '';
-  const vertical = type === 'powder';
-  // powder.png 只有 4 格（1~4 级）；5 级没有独立图，复用第 4 格，靠 data-tier=5 金色描边区分。
-  const cell = type === 'powder' ? Math.min(4, tier) : tier;
-  const offset = ((cell - 1) / 3) * 100;
-  const style = vertical
-    ? 'background-image:url(' + individual + ');background-size:100% 400%;background-position:50% ' + offset + '%'
-    : 'background-image:url(' + individual + ');background-size:400% 100%;background-position:' + offset + '% 50%';
+  const offset = ((tier - 1) / 3) * 100;
+  const style = 'background-image:url(' + individual + ');background-size:400% 100%;background-position:' + offset + '% 50%';
   return '<span class="smithy-material-art ' + className + '" data-smithy-art="' + type
     + '" data-tier="' + tier + '" style="' + style + '"></span>';
 }

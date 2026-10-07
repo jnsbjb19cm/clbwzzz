@@ -2598,11 +2598,6 @@ body.main-city-nav-active .bottom-nav .bottom-nav-logout {
   flex-basis: 72px;
 }
 
-/* 强化粉 5 级复用 4 级贴图（powder.png 只有 4 格），加金色描边区分 */
-.smithy-material-art[data-smithy-art='powder'][data-tier='5'] {
-  box-shadow: 0 0 0 2px #f5c542, 0 0 10px rgba(245, 197, 66, .8);
-}
-
 .classic-smithy-screen .smithy-mat-list {
   padding-left: 0;
   list-style: none;
