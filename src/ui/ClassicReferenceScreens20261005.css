@@ -124,7 +124,14 @@ body .quest-page-formal .quest-list-panel {min-height:0;display:flex;flex-direct
 body .quest-page-formal .quest-list-panel-head {display:flex;justify-content:space-between;align-items:center;gap:8px;color:#526221;padding:3px 6px}
 body .quest-page-formal .quest-list-panel-head h2 {font-size:17px;margin:4px 0}
 body .quest-page-formal .quest-list-panel-head span {font-size:12px}
-body .quest-page-formal .quest-list {overflow:auto;min-height:0;display:flex;flex-direction:column;gap:12px;padding:8px 4px;scrollbar-color:#728624 #c4d080}
+body .quest-page-formal .quest-list {overflow:auto;min-height:0;flex:1 1 auto;max-height:none;display:flex;flex-direction:column;gap:12px;padding:8px 4px;scrollbar-color:#728624 #c4d080}
+/* 2026-10-07（用户反馈）：quest-list-panel 是撑满高度的，但列表被 style.css 的
+   .quest-list{max-height:456px} 卡住 → 面板下方留一大片空白。
+   让列表占满面板剩余高度（内容多时内部滚动），任务就能填满这块区域。 */
+@media (max-width:900px){
+  /* 窄屏是单列堆叠：列表不能吃满，用回 270px，免得把下方详情挤没 */
+  body .quest-page-formal .quest-list {flex:0 1 auto;max-height:270px}
+}
 body .quest-page-formal .quest-list-item {position:relative;display:flex;align-items:center;flex:none;gap:10px;min-height:90px;border:2px solid #68852a;border-radius:18px;background:linear-gradient(#e8f7ae,#bfdf77 42%,#8daf3c);box-shadow:inset 0 0 0 2px #d8ee9d;color:#243511;padding:8px;text-align:left}
 body .quest-page-formal .quest-list-item.selected {border-color:#d9a218;box-shadow:0 0 5px 3px #ffe25c,inset 0 0 0 2px #f3ffc5}
 body .quest-page-formal .quest-list-icon {flex:0 0 52px;width:52px;height:52px;border-radius:50%;border:3px solid #e6c451;background-color:#567721;box-shadow:0 0 0 2px #567121}
