@@ -1,4 +1,4 @@
-import { ADVENTURE_DIFFICULTIES, FOREST_BOSS_IDS, TEMPLE_BOSS_IDS, isAdventureStageUnlocked, isForestUnlocked, BOSS_REGION_PREREQUISITES_ENABLED } from '../data/AdventureCampaign.js';
+import { ADVENTURE_DIFFICULTIES, FOREST_BOSS_IDS, TEMPLE_BOSS_IDS, isAdventureStageUnlocked, isForestUnlocked, isNightmareUnlocked, BOSS_REGION_PREREQUISITES_ENABLED } from '../data/AdventureCampaign.js';
 import { getBossById } from '../data/bossList.js';
 import { isBossCleared, isBossUnlocked } from '../core/BossProgress.js';
 import './AdventureMapReset.css';
@@ -45,8 +45,11 @@ export function renderAdventureMap(view, root) {
     const description=`${stage.stage_name}${cards?' · '+cards.map(c=>c.name).join('、'):''}${cleared?' 已通关':' 未通关'}${unlocked?'':' 未解锁'}`;
     return `<button class="reset-node ${cards?'reset-challenge-node':''} ${a.final?'reset-final-node':''} ${cleared?'reset-cleared':''}" style="left:${x}%;top:${y}%" data-stage="${stage.id}" ${unlocked?'':'disabled'} aria-label="${escape(description)}" title="${escape(description)}">${cards?challengeEmblem(cards,a.final):`<img src="${ART}${unlocked?'node.png':'node-locked.png'}" alt="">`}<span class="reset-node-label">${a.final?'最终关':`${a.act}-${a.node}${a.challenge?' ◆':''}`}</span></button>`;
   }).join('');
-  const content = setup(root, `<section class="reset-campaign"><header><button data-back>← 目的地</button><strong>冒险大陆</strong><small>左键点击关卡选择难度</small></header><div class="reset-map-frame"><div class="reset-map-canvas">${buttons}<span class="reset-route-label reset-plant-label">植物线</span><span class="reset-route-label reset-monster-label">怪物线</span></div></div>${difficultyMenuMarkup()}</section>`);
+  // 噩梦模式：需通关全部「困难」关卡才解锁；目前模式本身尚未开放，点击只提示。
+  const nightmareUnlocked = isNightmareUnlocked(clears(view));
+  const content = setup(root, `<section class="reset-campaign"><header><button data-back>← 目的地</button><strong>冒险大陆</strong><small>左键点击关卡选择难度</small></header><button type="button" class="reset-nightmare-btn" data-nightmare data-locked="${nightmareUnlocked?'false':'true'}" title="${nightmareUnlocked?'噩梦模式':'通关全部「困难」关卡后解锁'}">噩梦模式</button><div class="reset-map-frame"><div class="reset-map-canvas">${buttons}<span class="reset-route-label reset-plant-label">植物线</span><span class="reset-route-label reset-monster-label">怪物线</span></div></div>${difficultyMenuMarkup()}</section>`);
   content.querySelector('[data-back]').onclick = () => { view.selectedMap = null; renderAdventureDestinations(view, root); };
+  content.querySelector('[data-nightmare]')?.addEventListener('click', () => view.toast?.(root, '噩梦模式暂未开放'));
   const menu = content.querySelector('.reset-boss-difficulty');
   let selectedVariants = [];
   content.querySelectorAll('[data-stage]').forEach(button => button.onclick = event => {

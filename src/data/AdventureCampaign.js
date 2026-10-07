@@ -44,6 +44,20 @@ export function isForestUnlocked(cleared = []) {
   return [0, 1, 2].some(d => cleared.map(Number).includes(campaignFinalId(d)));
 }
 
+/**
+ * 噩梦模式解锁条件：通关全部「困难」关卡（两条线的 1-1~4-4 + 困难最终关）。
+ * 模式本身尚未开放，界面点击现在只提示"暂未开放"。
+ */
+export function isNightmareUnlocked(cleared = []) {
+  const ids = new Set(cleared.map(Number));
+  for (const route of [0, 1]) {
+    for (let index = 1; index <= 16; index++) {
+      if (!ids.has(campaignStageId(route, index, 2))) return false;
+    }
+  }
+  return ids.has(campaignFinalId(2));
+}
+
 // 冒险大陆敌方单位血量全局系数（1 = 原值）。
 //   敌方单位血量 = 参考卡 card_hp × CRAFT_QUALITY_MULT[adventureQuality(stage, 本关第几个出怪)] × ADVENTURE_ENEMY_HP_SCALE
 // 想整体削弱就把数字调小（0.8 = 削 20%，0.7 = 削 30%）。
@@ -57,9 +71,32 @@ export const ADVENTURE_ENEMY_HP_SCALE = 1;
  */
 export const ADVENTURE_BASE_HP_COEFFICIENT = 9.568965517241379;
 
+/** 旧公式（calcHeroHp = stage.hp × 37.5）下的基地血量：只用来判断"改系数之前是否超过 5000"。 */
+const LEGACY_HERO_HP_COEFFICIENT = 37.5;
+
+/** 改之前基地血量就超过这个值的关卡，不走等比缩小，改走"缓坡"。 */
+export const ADVENTURE_HIGH_HP_THRESHOLD = 5000;
+/** 缓坡终点：最终关（旧 21750）落在 8000。 */
+export const ADVENTURE_HIGH_HP_MAX = 8000;
+// 缓坡斜率 = (8000 - 5000) / (21750 - 5000)，21750 = 最终关 stage.hp 580 在旧公式下的基地血量。
+const ADVENTURE_HIGH_HP_SLOPE = (ADVENTURE_HIGH_HP_MAX - ADVENTURE_HIGH_HP_THRESHOLD)
+  / (580 * LEGACY_HERO_HP_COEFFICIENT - ADVENTURE_HIGH_HP_THRESHOLD);
+
+/**
+ * 冒险基地血量：
+ *  - 旧公式下 ≤5000 的关卡：沿用等比缩小（ADVENTURE_BASE_HP_COEFFICIENT）。
+ *  - 旧公式下 >5000 的关卡：从 5000 缓慢升到 8000（最终关 = 8000），不再一起被压到 5000 档。
+ */
 export function adventureBaseHp(stage) {
   const hp = Number(stage?.hp);
   if (!Number.isFinite(hp) || hp <= 0) return 400;
+  const legacyHp = hp * LEGACY_HERO_HP_COEFFICIENT;
+  if (legacyHp > ADVENTURE_HIGH_HP_THRESHOLD) {
+    return Math.round(
+      ADVENTURE_HIGH_HP_THRESHOLD
+      + (legacyHp - ADVENTURE_HIGH_HP_THRESHOLD) * ADVENTURE_HIGH_HP_SLOPE,
+    );
+  }
   return Math.max(400, Math.floor(hp * ADVENTURE_BASE_HP_COEFFICIENT));
 }
 
