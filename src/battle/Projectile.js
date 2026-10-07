@@ -251,6 +251,17 @@ export function resolveProjectileHit(proj, engine, collisionTarget = null) {
     u.uid === proj.targetUid
     && isProjectileTarget(proj, u, engine));
   if (!primary) {
+    // Piercing area attacks still resolve when their original target dies in
+    // flight. Select any surviving victim in the original forward area.
+    if (proj.attackPattern?.kind === 'forward_area') {
+      const dir = proj.owner === 'player' ? 1 : -1;
+      primary = engine.units.find(u => {
+        const ahead = dir * (Number(u.col) - Number(proj.attackerCol));
+        return isProjectileTarget(proj,u,engine) && ahead >= 0 && ahead <= proj.attackPattern.cells + .5;
+      });
+    }
+  }
+  if (!primary) {
     const dl = Math.round(proj.hitLane), dc = Math.round(proj.resolveCol ?? proj.hitCol);
     const v = engine.getUnitsAt(dl, dc).filter(u => isProjectileTarget(proj, u, engine));
     if (v.length) primary = v[0];

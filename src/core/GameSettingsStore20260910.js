@@ -21,6 +21,7 @@ export const GAME_SETTINGS_DEFAULTS = Object.freeze({
   showUnitHp: true,
   /** FPS / 性能面板。默认关。 */
   showPerfPanel: false,
+  peanutMouthBullet: false,
   /** BGM 总开关；下面三个是各场景开关（战斗含 BOSS）。 */
   bgmEnabled: true,
   bgmCity: true,
@@ -47,7 +48,7 @@ function normalize(key, value) {
     return GRAPHICS_QUALITY_LEVELS.includes(raw) ? raw : GAME_SETTINGS_DEFAULTS.graphicsQuality;
   }
   if (key === 'gallerySilhouetteUnowned') return Boolean(value);
-  if (key === 'showDamageNumbers' || key === 'showUnitHp' || key === 'showPerfPanel'
+  if (key === 'peanutMouthBullet' || key === 'showDamageNumbers' || key === 'showUnitHp' || key === 'showPerfPanel'
     || key === 'bgmEnabled' || key === 'bgmCity' || key === 'bgmRoom' || key === 'bgmBattle') {
     return value === true;
   }

@@ -1568,6 +1568,8 @@ export class BattleEngine {
         owner: unit.team,
         lane: unit.lane,
         startCol: unit.col,
+        attackerCol: unit.col,
+        attackerLane: unit.lane,
         hitLane: opts.hitLane ?? target.lane,
         hitCol,
         resolveCol,
@@ -1576,7 +1578,7 @@ export class BattleEngine {
         // 反弹的子弹可以用 opts.attackPattern 指定形状（null = 单目标直线），否则用发射者卡牌自己的形状
         attackPattern: 'attackPattern' in opts ? (opts.attackPattern ?? null) : (getAttackPattern(unit.cardId) || null),
         // 黑暗精灵雷电直接命中同行最远目标，无视路径阻挡
-        pierce: unit.cardId === 46 || opts.pierce === true,
+        pierce: unit.cardId === 46 || unit.cardId === 48 || unit.cardId === 92 || opts.pierce === true,
         // 2026-09-13：允许显式传 targetUid: null（反弹子弹不锁定原射手，只按本行路径命中）
         targetUid: isBaseShot ? null : ('targetUid' in opts ? (opts.targetUid ?? null) : target.uid),
         targetLayerMask: getUnitAttackLayerMask(unit),

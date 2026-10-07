@@ -1,4 +1,6 @@
 import { itemIconMarkup } from './ItemIcon.js';
+import { authStore } from '../core/AuthStore.js';
+import { reconcileAdventureQuestClears } from '../core/AdventureQuestReconcile.js';
 import { audio } from '../core/AudioManager.js';
 import { grantPlayerExp } from '../core/PlayerProgression.js';
 import { InventoryStore } from '../core/ItemDatabase.js';
@@ -359,7 +361,14 @@ export class QuestView{
   }
   renderContent(root){
     this.state=loadState();
+    const clearedIds=(authStore.snapshot?.stages || []).filter(s=>s.cleared).map(s=>s.stageId);
+    // Logged-in progress is authoritative; local progress is only the offline fallback.
+    if(!authStore.snapshot){
+      try{clearedIds.push(...(JSON.parse(localStorage.getItem('clbwz_worldmap_v1')||'{}').stageClaimed||[]));}catch{}
+    }
+    reconcileAdventureQuestClears(this.state,this.cardDb?.stages,clearedIds);
     syncCumulativeProgress(this.state);
+    saveState(this.state);
     const extra=this.state._extra||{};
     for(const quest of ACHIEVEMENT_QUESTS){
       if(this.state.achievementClaimed?.includes(quest.id))continue;

@@ -15,7 +15,9 @@ export function installRoomLifetimeClientPatch() {
     const unsub = this.socket?.on?.('room:expired', (payload = {}) => {
       const expiredId = Number(payload.roomId);
       const currentId = Number(this.room?.id || this.watchingRoomId || this.watchingRoom?.id || 0);
-      if (expiredId && currentId && expiredId !== currentId) return;
+      // Old spectator subscriptions can deliver unrelated expiry notifications.
+      // A user browsing the lobby has no active room and must not be expelled.
+      if (!expiredId || !currentId || expiredId !== currentId) return;
 
       this.room = null;
       this.watchingRoomId = null;

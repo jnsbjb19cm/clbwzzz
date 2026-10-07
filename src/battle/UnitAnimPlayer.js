@@ -1,4 +1,5 @@
 const metaCache = new Map();
+import { presentationFrame } from './UnitFramePresentation.js';
 /** loadAnimPack 完成后立即可用，避免 preload 判定过严导致 ready 为空 */
 const resolvedPacks = new Map();
 let skipAnimRes = null;
@@ -228,13 +229,13 @@ function frameSource(pack, state, frameIndex, res) {
     void ensureDeferredMainSheet(pack, res);
     return null;
   }
-  return {
+  return presentationFrame(pack,state,frameIndex,res,{
     sheet,
     frame: pack.meta.animations?.[state]?.frames?.[frameIndex],
     originX: 0,
     originY: 0,
     packed: false,
-  };
+  });
 }
 
 async function loadAnimPack(res) {
