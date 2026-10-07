@@ -63,41 +63,26 @@ export function isNightmareUnlocked(cleared = []) {
 // 想整体削弱就把数字调小（0.8 = 削 20%，0.7 = 削 30%）。
 export const ADVENTURE_ENEMY_HP_SCALE = 1;
 
-/**
- * 冒险大陆"基地"血量系数：沿用现有 stage.hp 曲线，只调系数（不在结果上再单乘）。
- * 原公式 calcHeroHp 的系数 = 50 × BATTLE_STAT_SCALE(0.75) = 37.5；
- * 终关 stage.hp=580 → 21750，太高。目标终关 5550 → 系数 = 37.5 × (5550 / 21750) = 9.568965517241379。
- * 例：1-1=400、1-3=1435、2-3=2679、4-4=4401、最终关=5550。
- */
-export const ADVENTURE_BASE_HP_COEFFICIENT = 9.568965517241379;
+// 冒险大陆"基地"血量（2026-10-07 起）：每关一张表。
+// 之前试过公式（等比缩小 → 旧值>5000 走缓坡），但目标数值里同一输入对应多个结果
+// （2-3 与 2-4 的 stage.hp 都是 100；3-3 与 3-4 的旧基地都是 12000），公式做不到，只能查表。
+//
+// 怪物线：下面 16 个数对应 index 1~16（1-1 … 4-4）；最终关单独 9000。
+// 植物线：怪物线 × ADVENTURE_PLANT_HP_RATIO；最终关不参与，两条线都 9000。
+const ADVENTURE_MONSTER_BASE_HP = Object.freeze([
+  750, 900, 2225, 1125, 2250, 2550, 3000, 3750,
+  4800, 6650, 7330, 8550, 7890, 8000, 8350, 8750,
+]);
+const ADVENTURE_FINAL_BASE_HP = 9000;
+export const ADVENTURE_PLANT_HP_RATIO = 0.85;
 
-/** 旧公式（calcHeroHp = stage.hp × 37.5）下的基地血量：只用来判断"改系数之前是否超过 5000"。 */
-const LEGACY_HERO_HP_COEFFICIENT = 37.5;
-
-/** 改之前基地血量就超过这个值的关卡，不走等比缩小，改走"缓坡"。 */
-export const ADVENTURE_HIGH_HP_THRESHOLD = 5000;
-/** 缓坡终点：最终关（旧 21750）落在 8000。 */
-export const ADVENTURE_HIGH_HP_MAX = 8000;
-// 缓坡斜率 = (8000 - 5000) / (21750 - 5000)，21750 = 最终关 stage.hp 580 在旧公式下的基地血量。
-const ADVENTURE_HIGH_HP_SLOPE = (ADVENTURE_HIGH_HP_MAX - ADVENTURE_HIGH_HP_THRESHOLD)
-  / (580 * LEGACY_HERO_HP_COEFFICIENT - ADVENTURE_HIGH_HP_THRESHOLD);
-
-/**
- * 冒险基地血量：
- *  - 旧公式下 ≤5000 的关卡：沿用等比缩小（ADVENTURE_BASE_HP_COEFFICIENT）。
- *  - 旧公式下 >5000 的关卡：从 5000 缓慢升到 8000（最终关 = 8000），不再一起被压到 5000 档。
- */
 export function adventureBaseHp(stage) {
-  const hp = Number(stage?.hp);
-  if (!Number.isFinite(hp) || hp <= 0) return 400;
-  const legacyHp = hp * LEGACY_HERO_HP_COEFFICIENT;
-  if (legacyHp > ADVENTURE_HIGH_HP_THRESHOLD) {
-    return Math.round(
-      ADVENTURE_HIGH_HP_THRESHOLD
-      + (legacyHp - ADVENTURE_HIGH_HP_THRESHOLD) * ADVENTURE_HIGH_HP_SLOPE,
-    );
-  }
-  return Math.max(400, Math.floor(hp * ADVENTURE_BASE_HP_COEFFICIENT));
+  const adv = stage?.adventure;
+  if (!adv) return 400;
+  if (adv.final) return ADVENTURE_FINAL_BASE_HP;
+  const monsterHp = ADVENTURE_MONSTER_BASE_HP[Number(adv.index) - 1];
+  if (!Number.isFinite(monsterHp)) return 400;
+  return Number(adv.route) === 0 ? Math.round(monsterHp * ADVENTURE_PLANT_HP_RATIO) : monsterHp;
 }
 
 // Keep existing craft-quality enum: 普通=2, 优秀=4, 精良=3, 完美=5.
