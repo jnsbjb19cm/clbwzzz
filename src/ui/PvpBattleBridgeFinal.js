@@ -108,7 +108,13 @@ export function installPvpBattleBridgeFinal() {
     this.deckSlots = preferred.length
       ? preferred
       : loadBattleDeckSlots20260911(this.cardInventory, this.db, this.pvp.deckGroup ?? null);
-    return this.enterBattle(this.deckSlots, 1, {});
+    // 2026-10-07（P0）：这里原来**写死 1**，于是所有 pvp 战斗的本地引擎都加载第 1 关。
+    // 冒险大陆的房间 PvE（pvp.mode==='pve'）也走这条路 → engine.stage 变成第 1 关、
+    // stage.adventure === null → BattleView 上报不了「adventure_complete」，
+    // 直接后果就是「通关植物线/怪物线 1-1」这类主线任务永远不完成（两条线都一样）。
+    // 真实关卡号优先取 pvp.stageId（房间/入口给的），退回 this.stageId，最后才是 1。
+    const stageId = Number(this.pvp?.stageId) || Number(this.stageId) || 1;
+    return this.enterBattle(this.deckSlots, stageId, {});
   };
 
   const originalEnterBattle = BattleView.prototype.enterBattle;
