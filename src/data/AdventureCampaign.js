@@ -44,6 +44,11 @@ export function isForestUnlocked(cleared = []) {
   return [0, 1, 2].some(d => cleared.map(Number).includes(campaignFinalId(d)));
 }
 
+// 冒险大陆敌方单位血量全局系数（1 = 原值）。
+//   敌方单位血量 = 参考卡 card_hp × CRAFT_QUALITY_MULT[adventureQuality(stage, 本关第几个出怪)] × ADVENTURE_ENEMY_HP_SCALE
+// 想整体削弱就把数字调小（0.8 = 削 20%，0.7 = 削 30%）。
+export const ADVENTURE_ENEMY_HP_SCALE = 1;
+
 // Keep existing craft-quality enum: 普通=2, 优秀=4, 精良=3, 完美=5.
 export function adventureQuality(stage, ordinal = 0) {
   const { difficulty, act, final } = stage.adventure;

@@ -51,7 +51,7 @@ import { unitAnimPlayer } from './UnitAnimPlayer.js';
 import { WaveManager } from './WaveManager.js';
 import { attackColdBrew, COLD_BREW_CARD_ID } from './ColdBrewMachine.js';
 import { calculateCardStats } from './CardStatFormula.js';
-import { adventurePlacementCells, adventureQuality } from '../data/AdventureCampaign.js';
+import { adventurePlacementCells, adventureQuality, ADVENTURE_ENEMY_HP_SCALE } from '../data/AdventureCampaign.js';
 import { getCardTraits, getAttackPattern, isSuicideCard } from '../core/CardTraitRegistry.js';
 import { TALENT_NODE_MAP } from '../core/TalentRegistry.js';
 
@@ -686,6 +686,12 @@ export class BattleEngine {
           const referenceStats = calculateCardStats(reference, unit.craftQuality, 0);
           unit.hp = unit.maxHp = unit.baseMaxHp = Math.max(1, roundBattleAmount(referenceStats.hp));
           unit.atk = roundBattleAmount(unit.atk * (wave.adventureAttackScale ?? 1));
+        }
+        // 冒险大陆敌方血量全局削弱系数（ADVENTURE_ENEMY_HP_SCALE，默认 1 = 原值）。
+        // 放在两条血量来源（参考卡 / 自身卡）之后统一乘，改一个常量就能整体削弱。
+        const hpScale = Number(ADVENTURE_ENEMY_HP_SCALE) > 0 ? Number(ADVENTURE_ENEMY_HP_SCALE) : 1;
+        if (hpScale !== 1) {
+          unit.hp = unit.maxHp = unit.baseMaxHp = Math.max(1, roundBattleAmount(unit.maxHp * hpScale));
         }
         this.initUnitSpawnFade(unit);
         this.units.push(unit);
@@ -2338,9 +2344,14 @@ export class BattleEngine {
       victims = [primary];
     }
 
+    // 玉米炮手(70)这类带 splashFactor 的溅射：命中格吃满伤，其余范围格按系数衰减。
+    // splashFactor 默认 1（不衰减），只有显式配置的卡牌才生效（如玉米炮手 0.1 = 周围只吃 10%）。
+    const splashFactor = Number.isFinite(Number(p?.splashFactor)) ? Number(p.splashFactor) : 1;
     for (const vic of victims) {
       if (!vic.alive) continue;
-      this.applyCardHit(attacker, vic, proj.damage, {
+      const isPrimaryVictim = primary ? vic.uid === primary.uid : true;
+      const victimDamage = isPrimaryVictim ? proj.damage : roundBattleAmount(proj.damage * splashFactor);
+      this.applyCardHit(attacker, vic, victimDamage, {
         ranged: true,
         ignoreCombatLayers: true,
         // 这颗子弹是不是"被弹回来的"：是的话不再二次反射（2026-09-12）

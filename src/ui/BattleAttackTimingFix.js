@@ -38,6 +38,16 @@ function fireProjectileAtReleasedFrame(engine, unit, target, damage, opts = {}) 
   }
 }
 
+/**
+ * shots=2 的卡（小麦14/超级小麦91）每次攻击都要"连续吐 2 发"。
+ * 第二发挂在第一次出手之后 0.22s；打基地时也必须补第二发，
+ * 否则目标刚死/本行没敌人（转去打基地）时就会偶发地只吐 1 发。
+ */
+function queueSecondShotIfNeeded(engine, unit, action) {
+  if ((getCardTraits(unit?.cardId) || {}).shots !== 2 || action?._isSecondShot) return;
+  queueAttackRelease(engine, { ...action, _isSecondShot: true, at: action.at + 0.22 });
+}
+
 function resolveReleasedAttack(engine, action) {
   const unit = engine.units.find((candidate) => candidate.uid === action.sourceUid && candidate.alive);
   if (!unit) return;
@@ -94,6 +104,7 @@ function resolveReleasedAttack(engine, action) {
           trajectory: action.trajectory,
         },
       );
+      queueSecondShotIfNeeded(engine, unit, action);
       return;
     }
 
@@ -130,9 +141,7 @@ function resolveReleasedAttack(engine, action) {
       hitCol: action.hitCol,
       resolveCol: action.hitCol,
     });
-    if ((getCardTraits(unit.cardId) || {}).shots === 2 && !action._isSecondShot) {
-      queueAttackRelease(engine, { ...action, _isSecondShot: true, at: action.at + 0.22 });
-    }
+    queueSecondShotIfNeeded(engine, unit, action);
     return;
   }
 

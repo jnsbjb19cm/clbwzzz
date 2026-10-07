@@ -16,7 +16,7 @@ export const ATTACK_PATTERNS = new Map([
   [58, { kind: 'all' }],
   [62, { kind: 'square_self', radius: 1 }],
   [64, { kind: 'col_splash', radius: 1 }],
-  [70, { kind: 'square', radius: 1 }],
+  [70, { kind: 'square', radius: 1, splashFactor: 0.1 }],
   [72, { kind: 'x', radius: 1 }],
   [73, { kind: 'rect', laneRadius: 1, colBack: 0, colForward: 1 }],
   [74, { kind: 'forward', cells: 2 }],

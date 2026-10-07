@@ -80,6 +80,9 @@ body .classic-bag-screen .classic-bag-footer>* {min-width:0!important;width:auto
 body .classic-bag-screen .classic-bag-footer .bag-currency {background:#e0e7ab;color:#344414;border:1px solid #8da349}
 body .classic-bag-screen #bag-detail {position:absolute!important;inset:110px 22px 100px auto!important;z-index:12;width:min(380px,65vw)!important;max-height:none!important;height:auto!important;padding:24px 18px 16px!important;overflow:auto!important;background:linear-gradient(#f5edc0,#e3d391)!important;border:3px solid #82752f!important;border-radius:8px!important;box-shadow:0 8px 30px #1b230e88;color:#3d461c}
 body .classic-bag-screen #bag-detail.empty {display:none!important}
+/* 背包卡牌数值：详情面板是浅黄羊皮纸底，dt/dd 必须用深色，不能被全局近白 --text 盖住（用户反馈 攻击 5.76 看不清） */
+body .classic-bag-screen #bag-detail .bag-card-stats dt {color:#6a5428}
+body .classic-bag-screen #bag-detail .bag-card-stats dd {color:#274b2b}
 .reference-detail-close {position:absolute;right:5px;top:3px;border:0;background:transparent;font-size:26px;color:#72462a}
 
 /* Quest book: category rail, green task cards, parchment details. */
