@@ -219,6 +219,7 @@ function splashVictims(proj, primary, engine) {
     const ah = dir * (c - selfC);
     switch (p.kind) {
       case 'forward':     return u.lane === selfL && ah >= -0.15 && ah <= p.cells + 0.5;
+      case 'forward_area': return ah >= -0.15 && ah <= p.cells + 0.5;
       case 'row_splash':  return u.lane === primary.lane && dc <= p.radius;
       case 'col_splash':  return Math.abs(u.lane - primary.lane) <= p.radius && Math.abs(c - ctr) <= 0.5;
       case 'square':      return dl <= p.radius && dc <= p.radius;

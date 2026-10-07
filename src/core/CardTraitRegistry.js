@@ -8,7 +8,7 @@ export const SUICIDE_CARD_IDS = new Set([40, 61, 65]);
 export const ATTACK_PATTERNS = new Map([
   [16, { kind: 'forward', cells: 2 }],
   [18, { kind: 'row_splash', radius: 1 }],
-  [48, { kind: 'forward', cells: 6 }],
+  [48, { kind: 'forward_area', cells: 6 }],
   [54, { kind: 'square', radius: 1 }],
   [55, { kind: 'forward', cells: 2 }],
   [56, { kind: 'forward', cells: 3, addResources: true }],
@@ -23,7 +23,7 @@ export const ATTACK_PATTERNS = new Map([
   [75, { kind: 'forward', cells: 2 }],
   [76, { kind: 'forward', cells: 2 }],
   [82, { kind: 'square', radius: 1 }],
-  [92, { kind: 'forward', cells: 4 }],
+  [92, { kind: 'forward_area', cells: 4 }],
   [95, { kind: 'forward', cells: 2 }],
   [100, { kind: 'forward', cells: 3 }],
   [101, { kind: 'square_self', radius: 1 }],

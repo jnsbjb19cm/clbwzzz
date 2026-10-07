@@ -2316,6 +2316,8 @@ export class BattleEngine {
         if (!pat) return u.uid === primary.uid;
         switch (pat.kind) {
           case 'forward':     return u.lane === selfL && ah >= -0.15 && ah <= pat.cells + 0.5;
+          // 小臭鼬(92)/臭鼬王(48)："对自身前方 N 格范围内所有敌方单位造成伤害" —— 覆盖范围内所有行，不限同一行。
+          case 'forward_area': return ah >= -0.15 && ah <= pat.cells + 0.5;
           case 'row_splash':  return u.lane === primary.lane && dc <= pat.radius;
           case 'col_splash':  return Math.abs(u.lane - primary.lane) <= pat.radius && Math.abs(c - ctr) <= 0.5;
           case 'square':      return dl <= pat.radius && dc <= pat.radius;
@@ -2385,6 +2387,8 @@ export class BattleEngine {
         if (!pat) return u.uid === primary.uid;
         switch (pat.kind) {
           case 'forward':     return u.lane === selfL && ah >= -0.15 && ah <= pat.cells + 0.5;
+          // 小臭鼬(92)/臭鼬王(48)："对自身前方 N 格范围内所有敌方单位造成伤害" —— 覆盖范围内所有行，不限同一行。
+          case 'forward_area': return ah >= -0.15 && ah <= pat.cells + 0.5;
           case 'row_splash':  return u.lane === primary.lane && dc <= pat.radius;
           case 'col_splash':  return Math.abs(u.lane - primary.lane) <= pat.radius && Math.abs(c - ctr) <= 0.5;
           case 'square':      return dl <= pat.radius && dc <= pat.radius;
