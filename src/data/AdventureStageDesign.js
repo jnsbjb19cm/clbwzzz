@@ -62,6 +62,69 @@ export function finalAdventureWaves() {
   ];
 }
 
+// ==================== 按难度调整冒险阵型（2026-10-07）====================
+// 简单：原阵型。普通/困难：左右镜像微调 + 按下面规则补后排。
+export const ADVENTURE_REAR_COL = 5;
+const MINE_CARD_ID = 61;   // 黑铁土豆雷（植物卡，铺在植物线后排）
+const SPRAY_CARD_ID = 62;  // 喷喷怪（怪物卡，站在怪物线挑战关/最终关后排）
+// 补后排时的落点优先级：先中路，再两侧，尽量避免和已有单位同格。
+const REAR_LANE_ORDER = [3, 1, 5, 2, 4];
+
+function rearCountOf(wave) {
+  return wave.filter((entry) => Number(entry[2]) >= ADVENTURE_REAR_COL).length;
+}
+function lanesTakenAt(wave, col) {
+  return new Set(wave.filter((entry) => Number(entry[2]) === col).map((entry) => Number(entry[1])));
+}
+
+/** 每波往后排空位补 count 只；该波后排已经 >2 只就整波跳过（用户定的规则）。 */
+export function reinforceRear(waves, cardId, count) {
+  return waves.map((wave) => {
+    if (rearCountOf(wave) > 2) return wave;
+    const taken = lanesTakenAt(wave, ADVENTURE_REAR_COL);
+    const extra = [];
+    for (const lane of REAR_LANE_ORDER) {
+      if (extra.length >= count) break;
+      if (taken.has(lane)) continue;
+      extra.push([cardId, lane, ADVENTURE_REAR_COL]);
+    }
+    return extra.length ? [...wave, ...extra] : wave;
+  });
+}
+
+/** 左右镜像：row → 6-row。单位、列、强度都不变，只是站位镜像。 */
+export function mirrorLanes(waves) {
+  return waves.map((wave) => wave.map((entry) => {
+    const [id, row, col, ...rest] = entry;
+    return [id, 6 - Number(row), col, ...rest];
+  }));
+}
+
+/**
+ * 按 `stage.adventure.difficulty` 调整波次：
+ *  - 简单(0)：原样；
+ *  - 普通(1)/困难(2)：先左右镜像；
+ *  - 植物线：后排补黑铁土豆雷（普通 +1/波、困难 +2/波）；
+ *  - 怪物线：普通难度的挑战关(node 4)与最终关，后排补 1 只喷喷怪。
+ */
+export function applyAdventureDifficulty(stage, waves) {
+  const a = stage?.adventure;
+  if (!a || !Array.isArray(waves) || waves.length === 0) return waves;
+  const difficulty = Number(a.difficulty) || 0;
+  if (difficulty <= 0) return waves;
+
+  let out = mirrorLanes(waves);
+  // 最终关是"双线会合"（route 2），按怪物线那侧处理。
+  const monsterSide = Number(a.route) === 1 || a.final === true;
+  const isChallenge = a.final === true || Number(a.node) === 4;
+  if (Number(a.route) === 0) {
+    out = reinforceRear(out, MINE_CARD_ID, difficulty >= 2 ? 2 : 1);
+  } else if (monsterSide && difficulty === 1 && isChallenge) {
+    out = reinforceRear(out, SPRAY_CARD_ID, 1);
+  }
+  return out;
+}
+
 export function adventureDesignSummary(route,index) {
   const p=PLANT_STAGE_DESIGNS[index-1];
   if(!p)return {name:'双线会合',tip:'植物与怪物混编的最终难关，无独立 BOSS。'};

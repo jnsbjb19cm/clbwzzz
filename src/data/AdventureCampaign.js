@@ -1,4 +1,4 @@
-import { designedPlantWaves, monsterMirrorWaves, finalAdventureWaves, adventureDesignSummary } from './AdventureStageDesign.js';
+import { designedPlantWaves, monsterMirrorWaves, finalAdventureWaves, adventureDesignSummary, applyAdventureDifficulty } from './AdventureStageDesign.js';
 // Reset specification: independent stage IDs preserve all legacy saves and rewards.
 export const ADVENTURE_DIFFICULTIES = ['简单', '普通', '困难'];
 // Current release: forest and ocean are always open; prerequisites are future work.
@@ -104,8 +104,14 @@ const base = [
 export function adventureWaveTemplate(stage) {
   const a = stage.adventure;
   if (!a) return null;
+  // 难度调整只在最外层做一次：否则怪物线镜像时会连带把"植物线专属"的后排补怪也镜像过去。
+  return applyAdventureDifficulty(stage, baseAdventureWaves(stage));
+}
+
+function baseAdventureWaves(stage) {
+  const a = stage.adventure;
   if (a.final) return finalAdventureWaves();
-  if (a.route === 1) return monsterMirrorWaves(adventureWaveTemplate({ ...stage, adventure: { ...a, route: 0 } }));
+  if (a.route === 1) return monsterMirrorWaves(baseAdventureWaves({ ...stage, adventure: { ...a, route: 0 } }));
   if (a.index > 5) return designedPlantWaves(a.index);
   const waves = base.map(w => w.map(entry => [...entry]));
   if (a.index === 2) { waves[0][4] = [9,4,3]; waves[2].push([4,2,5]); }
