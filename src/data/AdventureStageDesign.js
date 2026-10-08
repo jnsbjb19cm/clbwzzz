@@ -101,6 +101,56 @@ export function mirrorLanes(waves) {
 }
 
 /**
+ * 同一波里两只怪刷在同一格 → 把后者挪到最近的空格（不改数量、不改波次时间）。
+ *
+ * 2026-10-07 排查 2-4 时发现：designedPlantWaves 的"补怪"和它自带的编排撞格 ——
+ *   · `index % 4 === 0` 的关（2-4 / 3-4 / 4-4）第 5 波：补进来的 [p.raider, opposite, 4]
+ *     在 opposite === 1 时正好压在已有的 [p.ranged, 1, 4] 上
+ *     （植物线 2-4 简单第 5 波 (1,4) 同时刷 18 和 30）；
+ *   · 奇数关（2-3 / 3-1 / 3-3 / 4-1 / 4-3）第 3 波：[p.raider, opposite, 4] 与 [p.ranged, 5, 4] 撞格。
+ * 全关卡共 48 处（简单/普通/困难都有，因为该函数与难度无关）。
+ * WaveManager 的换算是 `lane = row-1, col = column + 6`，同格就是真的两只怪叠在一起。
+ *
+ * 这里在最外层统一兜一遍：同格就找最近的空格（优先上下换行，其次换列），
+ * **没有撞格的编队一个字节都不动**。
+ */
+export function dedupeWaveCells(waves) {
+  const all = waves.flat();
+  const lanes = [...new Set(all.map((e) => Number(e[1])))].sort((a, b) => a - b);
+  const cols = [...new Set(all.map((e) => Number(e[2])))].sort((a, b) => a - b);
+  return waves.map((wave) => {
+    const used = new Set();
+    return wave.map((entry) => {
+      const [id, row, col, ...rest] = entry;
+      const lane = Number(row);
+      const column = Number(col);
+      const key = (l, c) => `${l},${c}`;
+      if (!used.has(key(lane, column))) {
+        used.add(key(lane, column));
+        return [id, lane, column, ...rest];
+      }
+      // 撞格：同列上下找最近空格
+      for (let distance = 1; distance <= lanes.length; distance += 1) {
+        for (const candidateLane of [lane - distance, lane + distance]) {
+          if (!lanes.includes(candidateLane)) continue;
+          if (used.has(key(candidateLane, column))) continue;
+          used.add(key(candidateLane, column));
+          return [id, candidateLane, column, ...rest];
+        }
+      }
+      // 再退一步：同行的其它列
+      for (const candidateCol of cols) {
+        if (candidateCol === column || used.has(key(lane, candidateCol))) continue;
+        used.add(key(lane, candidateCol));
+        return [id, lane, candidateCol, ...rest];
+      }
+      used.add(key(lane, column));
+      return [id, lane, column, ...rest];
+    });
+  });
+}
+
+/**
  * 按 `stage.adventure.difficulty` 调整波次：
  *  - 简单(0)：原样；
  *  - 普通(1)/困难(2)：先左右镜像；
