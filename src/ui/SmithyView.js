@@ -251,8 +251,9 @@ export class SmithyView {
           <h3></h3>
           <p></p>
           <div class="smithy-confirm-actions">
-            <button type="button" class="bag-action" data-confirm-cancel></button>
+            <!-- 2026-10-09（用户要求）：确认（分解/升星…）在左，取消在右。 -->
             <button type="button" class="bag-action danger" data-confirm-ok></button>
+            <button type="button" class="bag-action" data-confirm-cancel></button>
           </div>
         </section>`;
       dialog.querySelector('h3').textContent = title;
