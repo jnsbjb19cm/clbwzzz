@@ -2985,14 +2985,15 @@ body.battle-immersive .top-ui {
 .bag-toast {
   position: fixed;
   left: 50%;
-  top: 50%;
+  /* 2026-10-09（用户反馈「字有点向下，向上一些」）：50% → 44% */
+  top: 44%;
   transform: translate(-50%, -50%);
   padding: 0;
   background: none;
   border: none;
   border-radius: 0;
   font-family: 'SimSun', '宋体', 'Songti SC', serif;
-  font-size: 2.4rem;
+  font-size: 2.9rem;
   font-weight: 900;
   letter-spacing: .02em;
   color: #000;
@@ -3003,14 +3004,20 @@ body.battle-immersive .top-ui {
   box-shadow: none;
 }
 
-/* 2026-10-09（用户要求「消失时向上飞一段再消失」）：
-   用 keyframes + JS 重启动画（比 transition 可靠，transition 在某些渲染下不触发）。
+/* 2026-10-09（用户要求）：从**右侧淡入**飞到屏幕中心 → 停留 → 再**向上飞**淡出，要灵动。
+   用 keyframes + JS 重播（classList.remove → void offsetWidth → add），
+   比 transition 可靠（transition 在部分渲染下不触发）。
    BagView / ShopView / QuestView 三处 toast 共用 .bag-toast。 */
 @keyframes bag-toast-rise {
-  0%   { opacity: 0; transform: translate(-50%, -50%); }
-  8%   { opacity: 1; transform: translate(-50%, -50%); }
-  62%  { opacity: 1; transform: translate(-50%, -50%); }
-  100% { opacity: 0; transform: translate(-50%, -160px); }
+  /* 从右边屏幕外飞进来，同时淡入 + 略微放大，落地时有一点回弹感 */
+  0%   { opacity: 0; transform: translate(calc(-50% + 34vw), -50%) scale(.9); }
+  16%  { opacity: 1; transform: translate(calc(-50% + 6vw), -50%) scale(1.04); }
+  26%  { opacity: 1; transform: translate(-50%, -50%) scale(.985); }
+  32%  { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+  /* 停在正中央给玩家看清楚 */
+  62%  { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+  /* 再向上飞走并淡出 */
+  100% { opacity: 0; transform: translate(-50%, -270px) scale(.94); }
 }
 .bag-toast.bag-toast-rise {
   animation: bag-toast-rise 2.2s cubic-bezier(.22, .61, .36, 1) forwards;
@@ -3022,7 +3029,7 @@ body.battle-immersive .top-ui {
 
 /* 鎴樻枟娴姩鏁板瓧锛堜激瀹?娌荤枟锛夋斁澶с€?*/
 .bag-toast.battle-toast {
-  font-size: 2.6rem;
+  font-size: 3.1rem;
   padding: 0;
 }
 
