@@ -813,8 +813,12 @@ export class SmithyView {
   toast(root, msg) {
     const el = root.querySelector('#smithy-toast');
     el.textContent = msg;
-    el.classList.remove('hidden');
+    // 2026-10-09（用户要求「铁匠铺的那些跳字也改成那个」）：
+    // #smithy-toast 本来就带 .bag-toast 类，但这里没有重播动画，所以只淡出、不飞。
+    el.classList.remove('hidden', 'bag-toast-rise');
+    void el.offsetWidth;
+    el.classList.add('bag-toast-rise');
     clearTimeout(this._toastTimer);
-    this._toastTimer = setTimeout(() => el.classList.add('hidden'), 2800);
+    this._toastTimer = setTimeout(() => el.classList.add('hidden'), 3200);
   }
 }

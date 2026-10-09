@@ -471,8 +471,11 @@ export class WorldMapView {
     const toast = root.querySelector('#worldmap-toast');
     if (!toast) return;
     toast.textContent = message;
-    toast.classList.remove('hidden');
+    // 2026-10-09（用户要求「其他所有的这种文字都要这样」）：重播 右侧淡入 → 中心停留 → 上飞淡出。
+    toast.classList.remove('hidden', 'bag-toast-rise');
+    void toast.offsetWidth;
+    toast.classList.add('bag-toast-rise');
     clearTimeout(this.toastTimer);
-    this.toastTimer = setTimeout(() => toast.classList.add('hidden'), 2200);
+    this.toastTimer = setTimeout(() => toast.classList.add('hidden'), 3200);
   }
 }
