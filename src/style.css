@@ -2980,7 +2980,8 @@ body.battle-immersive .top-ui {
 
 .ch-stage-chest { font-size: 0.65rem; position: absolute; top: -4px; right: -4px; }
 
-/* 2026-10-09（用户要求「去框」）：提示不再画黑框，只留文字 + 描边保证可读性。 */
+/* 2026-10-09（用户要求「去框」+「字变黑、用宋体、放大1.5倍」）：不画框，只留黑色宋体大字；
+   加一圈浅色描边只是因为游戏底图偏深，纯黑字不带描边会看不清。 */
 .bag-toast {
   position: fixed;
   left: 50%;
@@ -2990,11 +2991,12 @@ body.battle-immersive .top-ui {
   background: none;
   border: none;
   border-radius: 0;
-  font-size: 1.05rem;
-  font-weight: 800;
-  color: #fff6cf;
+  font-family: 'SimSun', '宋体', 'Songti SC', serif;
+  font-size: 1.58rem;
+  font-weight: 700;
+  color: #000;
   text-align: center;
-  text-shadow: 0 2px 6px rgba(0, 0, 0, .95), 0 0 3px rgba(0, 0, 0, .9);
+  text-shadow: 0 0 5px rgba(255, 255, 255, .9), 0 0 2px rgba(255, 255, 255, .95);
   z-index: 999;
   pointer-events: none;
   transition: opacity 0.25s;

@@ -2,6 +2,7 @@ import { authStore } from '../core/AuthStore.js';
 import { BagView } from './BagView.js';
 import { ShopView } from './ShopView.js';
 import { audio } from '../core/AudioManager.js';
+import { emitQuestEvent } from '../core/QuestEventBus.js';
 
 const PATCH_FLAG = Symbol.for('clbwz.databasePersistenceAuthority20260908');
 const FUNCTIONAL_CARD_ITEMS = new Set([80,81,82,83,84,85,86,87,88,89,90,91]);
@@ -223,22 +224,30 @@ function installBagAuthority() {
 
 async function buyClassicProduct(view, product) {
   if (product.kind === 'recharge') {
+    // 充值不算「从商场购买道具」，不上报主线8。
     return authStore.api.post('/player/shop/recharge-demo', { payId: Number(product.data?.pay_id) });
   }
+  let data;
   if (product.kind === 'pack') {
-    return authStore.api.post('/player/shop/buy-pack', { packId: Number(product.data?.item_id) });
-  }
-  if (product.kind === 'item' || product.kind === 'gem-item') {
+    data = await authStore.api.post('/player/shop/buy-pack', { packId: Number(product.data?.item_id) });
+  } else if (product.kind === 'item' || product.kind === 'gem-item') {
     const effect = product.data?.effect;
     if (effect?.type !== 'inventory') throw new Error('该商品尚未接入数据库道具发放');
-    return authStore.api.post('/player/shop/buy-item', {
+    data = await authStore.api.post('/player/shop/buy-item', {
       itemId: Number(effect.realId),
       count: Math.max(1, Number(effect.count) || 1),
       goldCost: product.kind === 'gem-item' ? 0 : Math.max(0, Number(product.data?.price) || 0),
       gemCost: product.kind === 'gem-item' ? Math.max(0, Number(product.data?.gemPrice) || 0) : 0,
     });
+  } else {
+    throw new Error('未知商品类型');
   }
-  throw new Error('未知商品类型');
+  // 2026-10-09（用户报「买东西任务不涨」）：
+  // 购买是入库权威的 —— 这一层把 ShopView.purchaseClassicProduct / checkoutClassicCart / renderPack
+  // 整条链路都接管了，ShopView 里那几个 emitQuestEvent 根本没机会执行。
+  // 所以成功后必须在这里补上报主线8「商场采购」。
+  emitQuestEvent('shop_buy', { count: 1 });
+  return data;
 }
 
 function installShopAuthority() {
@@ -301,6 +310,8 @@ function installShopAuthority() {
         try {
           const data = await authStore.api.post('/player/shop/buy-pack', { packId: Number(current.dataset.id) });
           applyServerData(this, data);
+          // 2026-10-09：卡包购买也走入库权威，这里补上报主线8。
+          emitQuestEvent('shop_buy', { count: 1 });
           this.toast(root, `🎉抽到「${data.cardName || data.cardId}」`);
         } catch (error) {
           this.toast(root, error?.message || '购买卡牌包失败');

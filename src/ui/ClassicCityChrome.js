@@ -1,6 +1,7 @@
 import { authStore } from '../core/AuthStore.js';
 import { containsBlockedWord, maskBlockedWords } from '../core/ContentFilter.js';
 import { SocketClient } from '../network/SocketClient.js';
+import { emitQuestEvent } from '../core/QuestEventBus.js';
 
 const DEFAULT_MESSAGES = [
   { tone: 'system', text: '欢迎进入丛林保卫战！' },
@@ -209,6 +210,10 @@ export function bindClassicChat(root, { onSend } = {}) {
     }
     try {
       await socket.sendLobbyChat(value, channel, targetId);
+      // 2026-10-09（用户报「世界频道发了任务不涨」）：
+      // 主城聊天走的是这一条（ClassicCityChrome 的 send → sendLobbyChat），
+      // 之前只在房间聊天（LobbyChatPatch / RoomChatMerge）里上报，所以主城发言永远不计数。
+      if (channel === 'world') emitQuestEvent('world_chat', { count: 1 });
     } catch (error) {
       diagnostics.sendFailures += 1;
       appendChatLine(root, `发送失败：${error?.message ?? '网络未连接'}`, 'system');
