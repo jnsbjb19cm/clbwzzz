@@ -2535,19 +2535,21 @@ export class BattleEngine {
 
   spawnFloat(lane, col, amount) {
     const amt = roundBattleAmount(amount);
+    if (!amt) return;
+    const targetUid = this._floatTargetUid ?? null;
     const existing = this.floats.find(
       (f) =>
         f.lane === lane &&
         f.col === col &&
-        f.life > 0.85 &&
+        f.targetUid === targetUid &&
+        this.time - f.createdAt <= 0.12 &&
         Math.sign(f.amount) === Math.sign(amt),
     );
     if (existing) {
       existing.amount = roundBattleAmount(existing.amount + amt);
-      existing.life = 1.2;
       return;
     }
-    this.floats.push({ lane, col, amount: amt, life: 1.2, y: 0 });
+    this.floats.push({ lane, col, amount: amt, life: 1.2, y: 0, targetUid, createdAt: this.time });
     // 卡牌多时浮字数量上限（超出丢最旧，避免每帧渲染大量伤害数字卡顿）
     if (this.floats.length > 40) this.floats.splice(0, this.floats.length - 40);
   }
@@ -2566,12 +2568,15 @@ export class BattleEngine {
   spawnDamageFloat(target, fallbackAmount = 0) {
     if (!target) return;
     const recorded = Number(target.lastDamageDealt);
-    const shown = Number.isFinite(recorded) && recorded > 0
+    const shown = target.lastDamageDealt != null && Number.isFinite(recorded)
       ? recorded
       : Math.max(0, Number(fallbackAmount) || 0);
     const dealt = roundBattleAmount(shown);
     if (dealt > 0) {
-      this.spawnFloat(target.lane, target.col, -dealt);
+      const previousUid = this._floatTargetUid;
+      this._floatTargetUid = target.uid ?? null;
+      try { this.spawnFloat(target.lane, target.col, -dealt); }
+      finally { this._floatTargetUid = previousUid; }
       // 记下"这个单位本帧已经飘过数字"，onUnitDeath 用它判断要不要补死亡结算数字
       target.__damageFloatAt = this.time;
     }

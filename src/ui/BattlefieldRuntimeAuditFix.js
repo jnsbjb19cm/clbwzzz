@@ -182,8 +182,9 @@ export function installBattlefieldRuntimeAuditFix() {
     radius = 0,
     skillId = null,
     duration = 0.9,
+    loop = false,
   ) {
-    originalPushSkillEffect?.call(this, kind, target, radius, skillId, duration);
+    originalPushSkillEffect?.call(this, kind, target, radius, skillId, duration, loop);
     const fallbackTarget = target ?? { lane: 2, col: 5.5 };
     pushRuntimeEffect(this, {
       kind: 'skill',

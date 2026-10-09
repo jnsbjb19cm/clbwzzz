@@ -42,12 +42,12 @@ function installFloatBudget() {
       const existing = (this.floats ?? []).find((float) => (
         Number(float.lane) === Number(lane)
         && Math.abs(Number(float.col) - Number(col)) <= 0.34
-        && Number(float.life) > 0.78
+        && float.targetUid === (this._floatTargetUid ?? null)
+        && this.time - float.createdAt <= 0.12
         && Math.sign(Number(float.amount) || 0) === Math.sign(amt)
       ));
       if (existing) {
         existing.amount = roundBattleAmount((Number(existing.amount) || 0) + amt);
-        existing.life = Math.max(Number(existing.life) || 0, 1.05);
         existing.col = (Number(existing.col) + Number(col)) / 2;
         trimOldest(this.floats, limits.floats);
         return;

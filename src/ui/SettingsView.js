@@ -7,6 +7,8 @@ import {
 } from '../core/GameSettingsStore20260910.js';
 import {
   applyGraphicsQualityPreset,
+  lobbyMusicChoice,
+  lobbyMusicSrc,
   readBagAutoOrganizeFlag,
   readUnitNameFlag,
   setBagAutoOrganizeFlag,
@@ -51,6 +53,8 @@ export class SettingsView {
     const bgmCity = gameSettings.get('bgmCity') !== false;
     const bgmRoom = gameSettings.get('bgmRoom') !== false;
     const bgmBattle = gameSettings.get('bgmBattle') !== false;
+    // 2026-10-09（用户要求）：大厅音乐二选一，默认 A（新大厅曲 homehall.wav）。
+    const lobbyMusic = lobbyMusicChoice();
 
     root.innerHTML = `
       <div class="page gset-page gset-chrome">
@@ -65,6 +69,14 @@ export class SettingsView {
             <label class="gset-row gset-row-check">主城 BGM<input id="setting-bgm-city" type="checkbox" ${bgmCity ? 'checked' : ''} /></label>
             <label class="gset-row gset-row-check">房间 BGM<input id="setting-bgm-room" type="checkbox" ${bgmRoom ? 'checked' : ''} /></label>
             <label class="gset-row gset-row-check">战斗 BGM<input id="setting-bgm-battle" type="checkbox" ${bgmBattle ? 'checked' : ''} /></label>
+            <div class="gset-row gset-row-stack">
+              <span>大厅音乐</span>
+              <div class="gset-seg" id="setting-lobby-music">
+                <button type="button" class="gset-seg-btn${lobbyMusic === 'A' ? ' active' : ''}" data-lobby-music="A">音乐A</button>
+                <button type="button" class="gset-seg-btn${lobbyMusic === 'B' ? ' active' : ''}" data-lobby-music="B">音乐B</button>
+              </div>
+            </div>
+            <p class="gset-hint">音乐A = 新大厅曲（默认）；音乐B = 原来的主城音乐。改完立刻生效，下次进大厅/主城会一直用这一首。</p>
             <div class="gset-actions gset-actions-inline">
               <button id="setting-mute" type="button" class="gset-btn">${audio.isMuted() ? '恢复声音' : '静音'}</button>
             </div>
@@ -249,6 +261,22 @@ export class SettingsView {
         syncBattleDisplayRuntime();   // 关掉的如果是正在放的那首，立即停
       });
     }
+
+    // 2026-10-09（用户要求）：大厅音乐二选一（音乐A / 音乐B）。
+    // 仍然用 'city' 这个键播放，所以 BGM 总开关 / 主城 BGM / 静音 / 音量都不受影响。
+    root.querySelector('#setting-lobby-music').addEventListener('click', (e) => {
+      const choice = e.target.closest('[data-lobby-music]')?.dataset.lobbyMusic;
+      if (!choice) return;
+      gameSettings.set('lobbyMusic', choice);
+      root.querySelectorAll('#setting-lobby-music [data-lobby-music]').forEach((button) => {
+        button.classList.toggle('active', button.dataset.lobbyMusic === choice);
+      });
+      // 正在放大厅/主城音乐时立刻换曲；在别的场景不用管，下次回大厅自然按新设置播。
+      if (audio.getBgmKey() === 'city') {
+        audio.playBgm('city', { src: lobbyMusicSrc() });
+      }
+      this.flash(`大厅音乐已切换为「音乐${choice}」`);
+    });
 
     const fxInput = root.querySelector('#setting-fx-scale');
     fxInput.addEventListener('input', (e) => {

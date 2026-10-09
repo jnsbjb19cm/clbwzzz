@@ -49,7 +49,10 @@ export class AudioManager {
   constructor() {
     this.bgm = null;
     this.bgmKey = null;
+    this.bgmSrc = null;
     this.desiredBgmKey = null;
+    // 2026-10-09：记住「期望播放的实际地址」（大厅音乐可切换；手势解锁恢复时不能退回默认曲）
+    this.desiredBgmSrc = null;
     this.muted = false;
     this.volume = 0.45;
     this.sfxVolume = 0.6;
@@ -73,7 +76,7 @@ export class AudioManager {
       if (this.bgm?.paused) {
         this.bgm.play().catch(() => {});
       } else if (this.desiredBgmKey && !this.bgmKey) {
-        this.playBgm(this.desiredBgmKey, { fade: true });
+        this.playBgm(this.desiredBgmKey, { fade: true, src: this.desiredBgmSrc });
       }
       window.removeEventListener('pointerdown', unlock);
       window.removeEventListener('keydown', unlock);
@@ -109,13 +112,20 @@ export class AudioManager {
     return this.sfxVolume * mult;
   }
 
-  playBgm(key, { loop = true, fade = false } = {}) {
-    const src = BGM[key];
+  /**
+   * 播放 BGM。
+   * 2026-10-09（用户要求）：新增 src 覆盖 —— 大厅音乐可在设置里二选一（音乐A / 音乐B），
+   * 但仍然用同一个 key（'city'）播放，这样「主城 BGM」开关、静音、音量那一套逻辑完全不用动，
+   * 只是替换实际播放的音频地址。同一 key 但 src 变了也必须换曲，所以判断里带上 src。
+   */
+  playBgm(key, { loop = true, fade = false, src: srcOverride = null } = {}) {
+    const src = srcOverride || BGM[key];
     if (!src) return;
     this.desiredBgmKey = key;
+    this.desiredBgmSrc = src;
     if (this.muted) return;
 
-    if (this.bgmKey === key && this.bgm) {
+    if (this.bgmKey === key && this.bgmSrc === src && this.bgm) {
       if (this.bgm.paused) this.bgm.play().catch(() => {});
       return;
     }
@@ -126,6 +136,7 @@ export class AudioManager {
     }
 
     this.bgmKey = key;
+    this.bgmSrc = src;
     const track = new Audio(src);
     this.bgm = track;
     track.loop = loop;

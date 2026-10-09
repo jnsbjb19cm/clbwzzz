@@ -138,6 +138,18 @@ app.use('/api/guild', guildWarehouseGridRouter);
 app.use('/api/guild', guildRouter);
 app.use('/api/auction', auctionRouter);
 
+/**
+ * 2026-10-09：仓库根目录 resources/ 不在 Vite 的 publicDir（那是 assets/），
+ * 所以 vite build 不会把它复制进 dist，生产模式（Express 只服务 dist/）里
+ * /resources/... 会 404 —— 大厅音乐 resources/newsound/homehall.wav 就在里面。
+ * 这里单独挂一份，开发（5173）与生产都能按同一个路径访问。必须挂在下面的
+ * catch-all（把未知路径回 index.html）之前，否则会被 index.html 顶掉。
+ */
+const resourcesDir = path.resolve(__dirname, '../resources');
+if (fs.existsSync(resourcesDir)) {
+  app.use('/resources', express.static(resourcesDir, { maxAge: '7d' }));
+}
+
 const distDir = path.resolve(__dirname, '../dist');
 const indexHtml = path.join(distDir, 'index.html');
 if (fs.existsSync(indexHtml)) {

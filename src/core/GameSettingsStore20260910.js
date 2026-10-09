@@ -27,6 +27,12 @@ export const GAME_SETTINGS_DEFAULTS = Object.freeze({
   bgmCity: true,
   bgmRoom: true,
   bgmBattle: true,
+  /**
+   * 2026-10-09（用户要求）：大厅（主城）音乐用哪一首。
+   * 'A' = resources/newsound/homehall.wav（新大厅曲，默认）
+   * 'B' = 原来的主城音乐 /assets/sound/music/scene.mp3
+   */
+  lobbyMusic: 'A',
 });
 
 /** 画质预设可选值。 */

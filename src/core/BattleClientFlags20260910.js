@@ -152,6 +152,28 @@ export const shouldShowDamageNumbers = () => gameSettings.get('showDamageNumbers
 /** FPS / 性能面板是否开启（默认关）。 */
 export const perfPanelEnabled = () => gameSettings.get('showPerfPanel') === true;
 
+/**
+ * 2026-10-09（用户要求）：大厅（主城）音乐二选一。
+ *   A = 新大厅曲 resources/newsound/homehall.wav（**默认**）
+ *   B = 原来的主城音乐 /assets/sound/music/scene.mp3
+ * 仍然用 'city' 这个 BGM 键播放，所以「主城 BGM」开关、静音、音量那一套逻辑都不用改，
+ * 只是换掉实际播放的音频地址。
+ */
+export const LOBBY_MUSIC_SRC = Object.freeze({
+  A: '/resources/newsound/homehall.wav',
+  B: '/assets/sound/music/scene.mp3',
+});
+
+/** 当前选择：'A' 或 'B'（非法值一律当 A）。 */
+export function lobbyMusicChoice() {
+  return gameSettings.get('lobbyMusic') === 'B' ? 'B' : 'A';
+}
+
+/** 当前大厅音乐的实际地址。 */
+export function lobbyMusicSrc() {
+  return LOBBY_MUSIC_SRC[lobbyMusicChoice()];
+}
+
 /** BGM 是否允许在该场景播放；key 为 AudioManager 里的 BGM 键（city/room/battle/boss/ambient）。 */
 export function bgmAllowedFor(key) {
   if (gameSettings.get('bgmEnabled') !== true) return false;

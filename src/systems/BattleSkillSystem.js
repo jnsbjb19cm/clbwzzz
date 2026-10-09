@@ -146,6 +146,12 @@ export class BattleSkillSystem {
 
   showEffect(skillId, effect, target) {
     const eng = this.engine;
+    if (effect.kind === 'fire_wall') {
+      for (let lane = 0; lane < (eng.lanes || 5); lane += 1) {
+        eng.pushSkillEffect?.('fire_wall', { lane, col: target.col }, 0, Number(skillId), effect.duration, true);
+      }
+      return;
+    }
     // Meteor rain (517): 原实现 push 8 个全屏 fx，drawSkillFx 会对每个 fx 全屏画一遍
     // → 同一动画叠 8 层(t 同步推进)，画面糊/错乱。改为只推 1 个全屏 fx，
     // 陨石雨本来就是 position=2 全屏动画，落点分散交给 impactFx 表现。
@@ -429,11 +435,6 @@ export class BattleSkillSystem {
           dps: effect.dps,
           until: t + effect.duration,
         });
-        // 2026-10-09（用户要求）：火墙要有视觉表现 —— 目标这一列 5 格都摆上火焰柱子，
-        // 持续时间 = 火墙持续时间，直到火墙消失（渲染器按 skillFx 绘制火焰柱子）。
-        for (let lane = 0; lane < 5; lane += 1) {
-          eng.pushSkillEffect('fire_wall', { lane, col: target.col }, 0, Number(skillId), effect.duration);
-        }
         break;
       case 'poison_aoe':
         this.poisonInRadius(

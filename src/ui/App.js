@@ -3,6 +3,8 @@ import { ItemDatabase, InventoryStore } from '../core/ItemDatabase.js';
 import { CardInventoryStore } from '../core/CardInventoryStore.js';
 import { HeroSkillStore } from '../core/HeroSkillStore.js';
 import { audio } from '../core/AudioManager.js';
+// 2026-10-09（用户要求）：大厅音乐可在设置里二选一（音乐A / 音乐B）。
+import { lobbyMusicSrc } from '../core/BattleClientFlags20260910.js';
 import { authStore } from '../core/AuthStore.js';
 import { CardGallery } from './CardGallery.js';
 import { getCraftMaterialImage } from './SmithyMaterialArtwork.js';
@@ -344,7 +346,8 @@ export class App {
     if (!CITY_BGM_ROUTES.has(route)) return;
     const fromBattle = prevRoute === 'battle';
     const firstBoot = audio.getBgmKey() == null;
-    audio.playBgm('city', { fade: fromBattle || firstBoot });
+    // 2026-10-09（用户要求）：大厅音乐按设置取地址（音乐A = 新大厅曲，音乐B = 原主城曲）。
+    audio.playBgm('city', { fade: fromBattle || firstBoot, src: lobbyMusicSrc() });
   }
 
   renderAdventureScene(root) {
