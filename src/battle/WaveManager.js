@@ -178,8 +178,7 @@ export class WaveManager {
       });
       // 2026-10-09：长周期滴灌（4-2 蘑菇仙人：累计 3 个后每 18 波补 1 个）
       const absoluteWave = this.adventureCycle * 5 + index + 1;
-      const dripCardId = adventureDripSpawn(this.stage, absoluteWave);
-      if (dripCardId != null) {
+      for (const dripCardId of adventureDripSpawn(this.stage, absoluteWave)) {
         const dripCard = this.db.getById(dripCardId);
         if (dripCard) {
           this.queue.push({ time: this.nextBuildTime + index * interval, card: dripCard,

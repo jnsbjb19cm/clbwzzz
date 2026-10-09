@@ -5,7 +5,7 @@
     "3": {"successRate": 0.7, "targetRate": 0.7, "ascendRate": 0.12, "wrongRate": 0.18},
     "4": {"successRate": 0.6, "targetRate": 0.65, "ascendRate": 0.15, "wrongRate": 0.2}
   },
-  "materialsPerCraft": {"parchment": 2, "gem": 3},
+  "materialsPerCraft": {"parchment": 1, "gem": 3},
   "charmBonus": {"successRate": 0.1, "qualityWeight": 0.35},
   "highTierBonus": {"ascendRate": 0.08},
   "failureCompensate": 1,
@@ -17,11 +17,11 @@
     {"id":4,"name":"完美","weight":3,"color":"#9c27b0"}
   ],
   "decomposeBase": {
-    "1": {"gem": 1, "parchmentChance": 0.15},
-    "2": {"gem": 2, "parchmentChance": 0.25},
-    "3": {"gem": 3, "parchmentChance": 0.4},
-    "4": {"gem": 5, "parchmentChance": 0.55},
-    "5": {"gem": 8, "parchmentChance": 0.75},
-    "6": {"gem": 12, "parchmentChance": 0.9}
+    "1": {"gem": 2, "parchmentChance": 0.5},
+    "2": {"gem": 2, "parchmentChance": 0.5},
+    "3": {"gem": 2, "parchmentChance": 0.5},
+    "4": {"gem": 2, "parchmentChance": 0.5},
+    "5": {"gem": 2, "parchmentChance": 0.5},
+    "6": {"gem": 2, "parchmentChance": 0.5}
   }
 }

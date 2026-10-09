@@ -45,6 +45,11 @@ const STAGE_CARD_THINNING = Object.freeze({
   12: { cardId: 70, maxPerWave: 1, maxPerCycle: 3 },
   // 4-2 蘑菇回廊：蘑菇仙人最多 3 个，削掉的位置补偿极寒冰椰子（每循环最多 2 个）
   14: { cardId: 58, maxPerWave: 1, maxPerCycle: 3, compensateCardId: 54, compensateMaxPerCycle: 2 },
+  // 4-4 古树攻坚：战争古树(55) 不再随波出（改成每 10 波滴灌 1 只）；玉米炮手削到每循环 2 只
+  16: [
+    { cardId: 55, maxPerWave: 0, maxPerCycle: 0 },
+    { cardId: 70, maxPerWave: 1, maxPerCycle: 2 },
+  ],
 });
 
 /**
@@ -57,7 +62,8 @@ const GLOBAL_CARD_THINNING = Object.freeze([
 function thinStageCards(index, waves) {
   const rules = [];
   const stageRule = STAGE_CARD_THINNING[Number(index)];
-  if (stageRule) rules.push(stageRule);
+  for (const rule of (Array.isArray(stageRule) ? stageRule : stageRule ? [stageRule] : [])) rules.push(rule);
+  // （stageRule 可能是数组，上面统一展开）
   for (const rule of GLOBAL_CARD_THINNING) {
     if (!rules.some((r) => Number(r.cardId) === Number(rule.cardId))) rules.push(rule);
   }
@@ -288,7 +294,9 @@ export function adventureReinforceAliveCap(stage, cardId) {
  * 返回 { cardId, everyWaves } 或 null。
  */
 const STAGE_DRIP_CARD = Object.freeze({
-  14: { cardId: 58, everyWaves: 18 },
+  14: [{ cardId: 58, everyWaves: 18 }],
+  // 4-4 战争古树：用户要求"10 波才来 1 只"
+  16: [{ cardId: 55, everyWaves: 10 }],
 });
 
 /**
@@ -306,12 +314,12 @@ export function adventureSubwavePlan(stage) {
 }
 export function adventureDripSpawn(stage, absoluteWave) {
   const a = stage?.adventure;
-  if (!a || Number(a.route) !== 0) return null;   // 只做植物线
-  const cfg = STAGE_DRIP_CARD[Number(a.index)];
-  if (!cfg) return null;
+  if (!a || Number(a.route) !== 0) return [];   // 只做植物线
+  const list = STAGE_DRIP_CARD[Number(a.index)];
+  if (!Array.isArray(list) || !list.length) return [];
   const wave = Number(absoluteWave);
-  if (!Number.isFinite(wave) || wave <= 0) return null;
-  return wave % cfg.everyWaves === 0 ? cfg.cardId : null;
+  if (!Number.isFinite(wave) || wave <= 0) return [];
+  return list.filter((entry) => wave % Number(entry.everyWaves) === 0).map((entry) => entry.cardId);
 }
 export function adventureDesignSummary(route,index) {
   const p=PLANT_STAGE_DESIGNS[index-1];
