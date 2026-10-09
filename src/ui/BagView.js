@@ -31,6 +31,8 @@ import {
 import { namedItemIconUrl } from './NamedItemIcons.js';
 
 const MODE_TABS = [
+  // 2026-10-09：左侧竖排改成「储藏室 / 背包 / 卡牌」三项（储藏室在最上）。
+  { id: 'storage', label: '储藏室' },
   { id: 'item', label: '背包' },
   { id: 'card', label: '卡牌' },
 ];
@@ -69,6 +71,11 @@ export class BagView {
     this.autoOrganize = (() => {
       try { return localStorage.getItem('clbwz_bag_auto_organize') === '1'; } catch { return false; }
     })();
+    // 2026-10-09：数量输入方式（使用/出售/丢弃 共用）—— 默认滑块，可在工具栏切成填数字。
+    this.qtyMode = (() => {
+      try { return localStorage.getItem('clbwz_bag_qty_mode') === 'number' ? 'number' : 'slider'; } catch { return 'slider'; }
+    })();
+    this.storageView = null;
   }
 
   render(root) {
@@ -87,7 +94,7 @@ export class BagView {
         <div class="bag-mode-tabs classic-bag-tabs">
           ${MODE_TABS.map(
             (t) =>
-              `<button type="button" class="bag-mode-tab" data-mode="${t.id}" data-bag-page="${t.id === 'item' ? 'items' : 'cards'}">${t.label}</button>`,
+              `<button type="button" class="bag-mode-tab" data-mode="${t.id}" data-bag-page="${t.id === 'item' ? 'items' : t.id === 'storage' ? 'storage' : 'cards'}">${t.label}</button>`,
           ).join('')}
         </div>
         <div class="bag-toolbar" id="bag-toolbar"></div>
@@ -188,8 +195,33 @@ export class BagView {
     return this.mode === 'card' ? this.cardInventory : this.inventory;
   }
 
+  /** 2026-10-09：储藏室页签渲染（复用同一个 StorageView，切换页签不重复发请求）。 */
+  renderStorage(root, host) {
+    if (!this.storageView) {
+      this.storageView = new StorageView20261009({
+        inventory: this.inventory,
+        itemDb: this.itemDb,
+        onInventorySync: () => this.onPlayerUpdate?.(),
+        onCapacity: (used, capacity) => {
+          const usedEl = root.querySelector('#bag-used');
+          const maxEl = root.querySelector('#bag-max');
+          const label = root.querySelector('#bag-capacity-text');
+          if (usedEl) usedEl.textContent = used;
+          if (maxEl) maxEl.textContent = capacity;
+          if (label?.childNodes[0]) label.childNodes[0].textContent = '储藏室已用 ';
+        },
+      });
+    }
+    this.storageView.mount(host, root);
+  }
+
   renderToolbar(root) {
     const toolbar = root.querySelector('#bag-toolbar');
+    if (this.mode === 'storage') {
+      // 2026-10-09：储藏室现在是左侧竖排的一个页签，工具栏只放说明。
+      toolbar.innerHTML = '<p class="bag-toolbar-hint">储藏室容量按格子算（不同道具各占一格，上限 2000）。用「全部存入 / 全部取出」在背包与储藏室之间搬运。</p>';
+      return;
+    }
     if (this.mode === 'item') {
       toolbar.innerHTML = `
         <div class="bag-tabs">
@@ -200,6 +232,7 @@ export class BagView {
         </div>
         <button type="button" id="bag-organize" class="bag-deck-btn">整理背包</button>
         <button type="button" id="bag-auto-organize" class="bag-deck-btn${this.autoOrganize ? ' active' : ''}">自动整理：${this.autoOrganize ? '开' : '关'}</button>
+        <button type="button" id="bag-qty-mode" class="bag-deck-btn" title="切换「使用/出售/丢弃」的数量输入方式">数量输入：${this.qtyMode === 'number' ? '填数字' : '滑块'}</button>
         <button type="button" id="bag-expand" class="bag-expand-btn">扩容背包</button>
         <button type="button" id="bag-test-gem" class="bag-deck-btn" title="测试用">测试+红钻</button>
         <button type="button" id="bag-grant-mat" class="bag-deck-btn" title="补发羊皮纸/宝石/保护符等">补发材料</button>
@@ -235,6 +268,14 @@ export class BagView {
       });
       toolbar.querySelector('#bag-organize')?.addEventListener('click', () => this.handleOrganize(root));
       toolbar.querySelector('#bag-auto-organize')?.addEventListener('click', () => this.toggleAutoOrganize(root));
+      // 2026-10-09：切换数量输入方式（滑块 ↔ 填数字），记住选择。
+      toolbar.querySelector('#bag-qty-mode')?.addEventListener('click', () => {
+        audio.playSfx('click');
+        this.qtyMode = this.qtyMode === 'number' ? 'slider' : 'number';
+        try { localStorage.setItem('clbwz_bag_qty_mode', this.qtyMode); } catch { /* 存不下也不影响 */ }
+        this.refresh(root);
+        this.toast(root, this.qtyMode === 'number' ? '数量输入已改为「填数字」' : '数量输入已改为「滑块」');
+      });
       toolbar.querySelector('#bag-expand').addEventListener('click', () => this.handleExpand(root));
       toolbar.querySelector('#bag-test-gem')?.addEventListener('click', () => this.handleTestGem(root));
       toolbar.querySelector('#bag-reset').addEventListener('click', () => this.handleReset(root));
@@ -267,7 +308,6 @@ export class BagView {
       <button type="button" id="bag-grant-all" class="bag-deck-btn" title="补齐当前缺少的可战斗卡牌">补全卡</button>
       <button type="button" id="bag-deck" class="bag-deck-btn">编辑卡组</button>
       <button type="button" id="bag-smithy" class="bag-deck-btn">铁匠铺</button>
-      <button type="button" id="bag-storage" class="bag-deck-btn">储藏室</button>
       <button type="button" id="bag-reset" class="bag-reset-btn" title="重置试玩数据">重置</button>
     `;
 
@@ -317,16 +357,6 @@ export class BagView {
     toolbar.querySelector('#bag-smithy')?.addEventListener('click', () => {
       audio.playSfx('click');
       this.onNavigate?.('smithy');
-    });
-    // 2026-10-09：储藏室入口 —— 独立悬浮界面，背包 ↔ 储藏室 互转（服务端容量 2000）。
-    toolbar.querySelector('#bag-storage')?.addEventListener('click', () => {
-      audio.playSfx('click');
-      const view = new StorageView20261009({
-        inventory: this.inventory,
-        itemDb: this.itemDb,
-        onInventorySync: () => { this.onPlayerUpdate?.(); if (root?.isConnected) this.refresh(root); },
-      });
-      view.open(root);
     });
     toolbar.querySelector('#bag-reset').addEventListener('click', () => this.handleReset(root));
   }
@@ -453,6 +483,16 @@ export class BagView {
     if (rebuildToolbar) {
       this.renderToolbar(root);
     }
+
+    // 2026-10-09：储藏室页签 —— 主区域直接渲染储藏室，隐藏物品详情栏。
+    if (this.mode === 'storage') {
+      root.querySelector('#bag-detail')?.classList.add('bag-detail-hidden');
+      const storageGrid = root.querySelector('#bag-grid');
+      storageGrid.className = 'bag-grid bag-storage-host';
+      this.renderStorage(root, storageGrid);
+      return;
+    }
+    root.querySelector('#bag-detail')?.classList.remove('bag-detail-hidden');
 
     const store = this.getActiveStore();
     const used = store.getUsedCount();
@@ -625,6 +665,7 @@ export class BagView {
 
     const q = item.qualityInfo;
     const canUse = this.itemUse.isUsable(item);
+    const qtyMode = this.qtyMode === 'number' ? 'number' : 'slider';
     detail.className = 'bag-detail';
     detail.innerHTML = `
       <div class="bag-detail-icon" style="--quality:${q.color}">${this.itemIcon(item)}</div>
@@ -636,67 +677,75 @@ export class BagView {
       <div class="bag-batch-trade" data-batch-trade>
         <div class="bag-batch-trade-row">
           <span>数量</span>
-          <input type="range" min="1" max="${slot.count}" value="1" data-trade-range aria-label="出售或丢弃数量" />
-          <input type="number" min="1" max="${slot.count}" value="1" data-trade-count aria-label="出售或丢弃数量输入" />
-          <button type="button" class="bag-action" data-trade-all="sell">出售全部</button>
-          <button type="button" class="bag-action danger" data-trade-all="drop">丢弃全部</button>
+          <input type="range" min="1" max="${slot.count}" value="1" data-trade-range class="${qtyMode === 'slider' ? '' : 'bag-qty-off'}" aria-label="数量滑块" />
+          <input type="number" min="1" max="${slot.count}" value="1" data-trade-count class="${qtyMode === 'number' ? '' : 'bag-qty-off'}" aria-label="数量输入" />
+          <button type="button" class="bag-action" data-trade-all>全部</button>
         </div>
-        <p class="bag-batch-trade-meta">本次操作数量：<b data-trade-value>1</b>（最多 ${slot.count}）</p>
+        <p class="bag-batch-trade-meta">本次操作数量：<b data-trade-value>1</b>（最多 ${slot.count}）· ${qtyMode === 'number' ? '填数字' : '滑块'}</p>
       </div>
-      <div class="bag-detail-actions">
+      <div class="bag-detail-actions bag-actions-stack">
         <button type="button" id="bag-use" class="bag-action primary" ${canUse ? '' : 'disabled'}>${canUse ? '打开/使用' : '不可使用'}</button>
         <button type="button" id="bag-sell" class="bag-action">出售</button>
-        <button type="button" id="bag-drop" class="bag-action danger">丢弃 1 个</button>
+        <button type="button" id="bag-drop" class="bag-action danger">丢弃</button>
       </div>
     `;
 
-    detail.querySelector('#bag-use').addEventListener('click', () => {
-      if (!canUse) return;
-      // 2026-09-11：改名卡（98）不改卡牌，走独立的「改游戏昵称」弹窗。
-      if (Number(item.id) === 98) {
-        this._openRenameDialog(root);
-        return;
-      }
-      const res = this.itemUse.use(item, this.selectedIndex, this.inventory, this.cardInventory, this.player);
-      if (res.picker) {
-        this._showCardPicker(item.id, this.selectedIndex, item, root);
-        return;
-      }
-      if (res.ok) {
-        this.onPlayerUpdate?.();
-        if (!this.inventory.getSlots()[this.selectedIndex]) this.selectedIndex = -1;
-        this.refresh(root);
-      }
-      this.toast(root, res.message ?? res.error ?? '完成');
-    });
-
-    // 2026-10-09：出售/丢弃支持"滑块 + 输入框 + 一键全部"（数量 1~当前堆叠）
+    // 2026-10-09：使用/出售/丢弃 共用一个数量控件（滑块或填数字，见工具栏「数量输入」）。
+    const useBtn = detail.querySelector('#bag-use');
     const sellBtn = detail.querySelector('#bag-sell');
     const dropBtn = detail.querySelector('#bag-drop');
     const tradeRange = detail.querySelector('[data-trade-range]');
     const tradeCount = detail.querySelector('[data-trade-count]');
     const tradeValue = detail.querySelector('[data-trade-value]');
     const ownedCount = () => Math.max(1, Math.floor(Number(slot.count) || 1));
-    const syncTrade = (preferred) => {
+    const syncQty = (preferred) => {
       const max = ownedCount();
-      const raw = preferred == null ? Number(tradeCount?.value) : Number(preferred);
+      const raw = preferred == null ? Number(tradeCount?.value ?? tradeRange?.value) : Number(preferred);
       const amount = Math.max(1, Math.min(max, Math.floor(raw) || 1));
       if (tradeRange) { tradeRange.max = String(max); tradeRange.value = String(amount); }
       if (tradeCount) { tradeCount.max = String(max); tradeCount.value = String(amount); }
       if (tradeValue) tradeValue.textContent = String(amount);
+      if (useBtn && canUse) useBtn.textContent = amount > 1 ? `打开/使用 ×${amount}` : '打开/使用';
       if (sellBtn) sellBtn.textContent = amount > 1 ? `出售 ×${amount}` : '出售';
-      if (dropBtn) dropBtn.textContent = amount > 1 ? `丢弃 ×${amount}` : '丢弃 1 个';
+      if (dropBtn) dropBtn.textContent = amount > 1 ? `丢弃 ×${amount}` : '丢弃';
       return amount;
     };
-    syncTrade(1);
-    tradeRange?.addEventListener('input', () => syncTrade(tradeRange.value));
-    tradeCount?.addEventListener('input', () => syncTrade());
-    tradeCount?.addEventListener('change', () => syncTrade());
-    detail.querySelector('[data-trade-all="sell"]')?.addEventListener('click', () => { syncTrade(ownedCount()); sellBtn?.click(); });
-    detail.querySelector('[data-trade-all="drop"]')?.addEventListener('click', () => { syncTrade(ownedCount()); dropBtn?.click(); });
+    syncQty(1);
+    tradeRange?.addEventListener('input', () => syncQty(tradeRange.value));
+    tradeCount?.addEventListener('input', () => syncQty());
+    tradeCount?.addEventListener('change', () => syncQty());
+    detail.querySelector('[data-trade-all]')?.addEventListener('click', () => syncQty(ownedCount()));
+
+    useBtn.addEventListener('click', () => {
+      if (!canUse) return;
+      // 2026-09-11：改名卡（98）不改卡牌，走独立的「改游戏昵称」弹窗。
+      if (Number(item.id) === 98) {
+        this._openRenameDialog(root);
+        return;
+      }
+      const amount = syncQty();
+      let last = null;
+      for (let i = 0; i < amount; i += 1) {
+        const current = this.inventory.getSlots()[this.selectedIndex];
+        if (!current || current.itemId !== item.id) break;
+        const res = this.itemUse.use(item, this.selectedIndex, this.inventory, this.cardInventory, this.player);
+        last = res;
+        if (res.picker) {
+          this._showCardPicker(item.id, this.selectedIndex, item, root);
+          return;
+        }
+        if (!res.ok) break;
+      }
+      if (last?.ok) {
+        this.onPlayerUpdate?.();
+        if (!this.inventory.getSlots()[this.selectedIndex]) this.selectedIndex = -1;
+        this.refresh(root);
+      }
+      this.toast(root, last?.message ?? last?.error ?? '完成');
+    });
 
     sellBtn.addEventListener('click', () => {
-      const amount = syncTrade();
+      const amount = syncQty();
       const gain = item.sellPrice * amount;
       this.inventory.removeAt(this.selectedIndex, amount);
       this.player.gold += gain;
@@ -707,7 +756,7 @@ export class BagView {
     });
 
     dropBtn.addEventListener('click', () => {
-      const amount = syncTrade();
+      const amount = syncQty();
       this.inventory.removeAt(this.selectedIndex, amount);
       if (!this.inventory.getSlots()[this.selectedIndex]) this.selectedIndex = -1;
       this.refresh(root);

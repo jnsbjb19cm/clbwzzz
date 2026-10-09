@@ -97,6 +97,14 @@ export function installGiftBoxOpening20261009() {
   if (globalThis[PATCH_FLAG]) return;
   globalThis[PATCH_FLAG] = true;
 
+  // 2026-10-09：新礼包的函数码是 60~63，ItemUseSystem.isUsable 不认 → 背包里显示「不可使用」。
+  // 这里补一条：只要道具在 giftPools 里有池，就视为可使用，具体开启交给下面的 use 包装。
+  const previousUsable = ItemUseSystem.prototype.isUsable;
+  ItemUseSystem.prototype.isUsable = function isUsableWithGiftPool20261009(item) {
+    if (item && POOLS?.[String(item.id)]) return true;
+    return previousUsable.call(this, item);
+  };
+
   const previousUse = ItemUseSystem.prototype.use;
   ItemUseSystem.prototype.use = function useWithGiftPool20261009(item, index, inventory, cardInventory, player) {
     const pool = POOLS?.[String(item?.id)];

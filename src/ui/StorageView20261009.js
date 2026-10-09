@@ -1,5 +1,5 @@
 /**
- * 2026-10-09：储藏室界面（背包工具栏入口 + 独立悬浮面板）。
+ * 2026-10-09：储藏室（背包左侧竖排页签「储藏室 / 背包 / 卡牌」的第一项）。
  *
  * 形态按需求：背包 ↔ 储藏室 互转，容量 2000（服务端权威，见 server/routes/storageAuthority20261009.js）。
  * 这里只负责展示与发起请求；每次操作后服务端回传整份背包快照，直接覆盖本地背包缓存。
@@ -7,8 +7,6 @@
 import { authStore } from '../core/AuthStore.js';
 import { audio } from '../core/AudioManager.js';
 import { itemIconMarkup } from './ItemIcon.js';
-
-const OVERLAY_ID = 'storage-overlay-20261009';
 
 function escapeHtml(value) {
   return String(value ?? '')
@@ -33,16 +31,18 @@ function applyBagSnapshot(inventory, items) {
 }
 
 export class StorageView20261009 {
-  constructor({ inventory, itemDb, onClose, onInventorySync } = {}) {
+  constructor({ inventory, itemDb, onInventorySync, onCapacity } = {}) {
     this.inventory = inventory;
     this.itemDb = itemDb;
-    this.onClose = onClose;
     this.onInventorySync = onInventorySync;
+    this.onCapacity = onCapacity;
+    this.container = null;
     this.storage = [];
     this.capacity = 2000;
     this.used = 0;
     this.busy = false;
     this.toastText = '';
+    this.loaded = false;
   }
 
   nameOf(itemId) {
@@ -64,55 +64,40 @@ export class StorageView20261009 {
     return [...map.values()].filter((row) => row.count > 0).sort((a, b) => a.itemId - b.itemId);
   }
 
-  async open(root) {
-    document.getElementById(OVERLAY_ID)?.remove();
-    const overlay = document.createElement('div');
-    overlay.id = OVERLAY_ID;
-    overlay.className = 'storage-overlay';
-    overlay.addEventListener('click', (event) => { if (event.target === overlay) this.close(); });
-    document.body.appendChild(overlay);
-    this.root = overlay;
-    this.render(root);
-    await this.load(root);
+  /** 挂进背包主区域（container 一般是 #bag-grid）。 */
+  mount(container, root) {
+    this.container = container;
+    this.render();
+    if (!this.loaded) void this.load(root);
   }
 
-  close() {
-    document.getElementById(OVERLAY_ID)?.remove();
-    this.onClose?.();
-  }
-
-  render(root) {
-    const overlay = this.root;
-    if (!overlay) return;
-    overlay.innerHTML = `
-      <div class="storage-window" role="dialog" aria-label="储藏室">
-        <header class="storage-head">
-          <h2>储藏室</h2>
-          <p class="storage-cap">已用 <b>${this.used}</b> / <b>${this.capacity}</b> 格</p>
-          <button type="button" class="storage-close" aria-label="关闭">×</button>
+  render() {
+    if (!this.container) return;
+    this.container.innerHTML = `
+      <div class="storage-inline">
+        <header class="storage-inline-head">
+          <h3>储藏室</h3>
+          <p>已用 <b>${this.used}</b> / <b>${this.capacity}</b> 格</p>
         </header>
-        <p class="storage-hint">点右边的按钮在 背包 ↔ 储藏室 之间搬运整组道具。储藏室容量按格子算（不同道具各占一格）。</p>
+        <p class="storage-hint">储藏室与背包互转，容量按格子算（不同道具各占一格）。</p>
         <div class="storage-columns">
           <section class="storage-col">
-            <h3>背包</h3>
+            <h4>背包</h4>
             <div class="storage-list">${this.renderRows(this.bagRows(), 'deposit') || '<p class="storage-empty">背包里没有道具</p>'}</div>
           </section>
           <section class="storage-col">
-            <h3>储藏室</h3>
+            <h4>储藏室</h4>
             <div class="storage-list">${this.renderRows(this.storage, 'withdraw') || '<p class="storage-empty">储藏室是空的</p>'}</div>
           </section>
         </div>
-        <p class="storage-toast${this.toastText ? '' : ' hidden'}">${escapeHtml(this.toastText)}</p>
+        <p class="storage-toast">${escapeHtml(this.toastText)}</p>
       </div>`;
-    overlay.querySelector('.storage-close')?.addEventListener('click', () => this.close());
-    overlay.querySelectorAll('[data-storage-move]').forEach((btn) => {
+    this.container.querySelectorAll('[data-storage-move]').forEach((btn) => {
       btn.addEventListener('click', () => {
         const [itemId, bound, count] = String(btn.dataset.storageMove).split(':');
         this.move(btn.dataset.storageDirection, Number(itemId), Number(count), bound === '1');
       });
     });
-    // root 参数保留：调用方可能传页面根节点，这里只用于定位 overlay。
-    void root;
   }
 
   renderRows(rows, direction) {
@@ -135,10 +120,12 @@ export class StorageView20261009 {
     try {
       const data = await authStore.api.get('/player/storage');
       this.apply(data);
-      this.render(root);
     } catch (error) {
       this.toastText = error?.message || '读取储藏室失败';
-      this.render(root);
+    } finally {
+      this.loaded = true;
+      this.render();
+      void root;
     }
   }
 
@@ -152,6 +139,7 @@ export class StorageView20261009 {
     }
     if (Number.isFinite(Number(data.capacity))) this.capacity = Number(data.capacity);
     if (Number.isFinite(Number(data.used))) this.used = Number(data.used);
+    this.onCapacity?.(this.used, this.capacity);
     if (Array.isArray(data.items)) {
       applyBagSnapshot(this.inventory, data.items);
       this.onInventorySync?.();
