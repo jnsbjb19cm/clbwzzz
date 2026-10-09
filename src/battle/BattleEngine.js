@@ -2275,10 +2275,12 @@ export class BattleEngine {
     // 2026-10-09（用户要求）：子弹反射**只认直线弹道**（抛物线/曲线一律不弹、也不反伤）；
     //   近战只有带 meleeReflectChance 的卡才反伤 —— 21/27 只有 projectileReflectChance，不再吃近战。
     const vicTraits = getCardTraits(vic.cardId) || {};
-    // 2026-10-09（用户要求）：**只有明确标记为直线子弹的才反弹** ——
-    // 抛物线、全屏弹幕、技能直伤一律不弹。因此各条伤害路径必须带上真实的 sourceTrajectory，
-    // 不再用"未标注就当直线"的兜底（那会把全屏/技能伤害也弹回去）。
-    const straightBullet = ranged && sourceTrajectory === 'straight';
+    // 2026-10-09（用户要求）：**只有纯单体直线子弹才反弹** ——
+    //   ① 抛物线、全屏弹幕、技能直伤一律不弹（靠 sourceTrajectory 标记区分）；
+    //   ② 带溅射/范围图案的子弹也不弹（花生神射手 1x3 row_splash 等 —— 用户反馈
+    //      "还在弹花生神射手的"，就是因为它的弹是直线弹道但带溅射，之前只看了弹道）。
+    // 判定：直线弹道 + 无溅射图案。
+    const straightBullet = ranged && sourceTrajectory === 'straight' && sourcePattern == null;
     const reflectChance = straightBullet
       ? (Number(vicTraits.projectileReflectChance) || 0)
       : (ranged ? 0 : (Number(vicTraits.meleeReflectChance) || 0));
