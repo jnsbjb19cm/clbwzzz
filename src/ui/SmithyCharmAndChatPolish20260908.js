@@ -204,6 +204,9 @@ function fixPowderArtwork(scope = document) {
   for (const line of lines) {
     const art = line.querySelector('[data-smithy-art="powder"]');
     if (!art) continue;
+    // 2026-10-09：现在的粉图标是图集 <img>（SmithyView 已按真实消耗的 itemId 选好图），
+    // 这里的 sprite-sheet 位移 hack 反而会把图标改错（5 级被压成 4 级就是它），直接跳过。
+    if (art.querySelector('img')) continue;
     const text = line.textContent ?? '';
     const matched = Object.entries(POWDER_TIER_BY_LABEL).find(([label]) => text.includes(label));
     if (!matched) continue;

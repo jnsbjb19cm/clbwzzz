@@ -18,6 +18,17 @@ import {
   SMITHY_MATERIAL_ART,
 } from './SmithyMaterialArtwork.js';
 
+/**
+ * 强化粉图标等级 = **实际要消耗的那一级粉**（道具 10001~10005 → 1~5 级）。
+ * 2026-10-09 修：原来这里用 Math.min(4, star + 1) 按星数选图标 —— 0 星永远显示 1 级粉，
+ * 而且 5 级粉被封在 4 级。粉的等级由卡牌等级(品质)决定，与星数无关。
+ */
+export function powderTierOfItem(itemId) {
+  const id = Number(itemId);
+  if (id >= 10001 && id <= 10005) return id - 10000;
+  return Math.max(1, Math.min(5, Number(itemId) || 1));
+}
+
 function renderSmithyMaterialArt(type, level = 1, className = '') {
   // 强化粉可到 5 级；其余材料最高 4 级。
   const maxTier = type === 'powder' ? 5 : 4;
@@ -328,7 +339,7 @@ export class SmithyView {
               <p>失败：<strong>${preview?.failureRate?.toFixed(1) ?? '--'}%</strong></p>
               <p class="smithy-meta">基础${preview?.baseRate ?? '--'}% + 同卡${preview ? preview.sameCardBonus * preview.count : 0}% + 星数判定${preview?.formulaBonus ?? 0}%</p>
               <p class="smithy-meta">连续失败：${preview?.failures ?? 0}次${preview?.pityActive ? ' · 九败概率翻倍且不掉星' : ''}</p>` : '<p class="smithy-meta">先从右侧选择主卡。</p>'}
-            ${route === 'powder' ? `<h3>强化粉</h3>${powderNeed ? `<p class="smithy-material-line">${renderSmithyMaterialArt('powder', Math.min(4, star + 1))}${CardStrengthenSystem.powderName(powderNeed.itemId)} ×${powderNeed.count}</p><p class="smithy-meta">背包：${this.inventory.countItem(powderNeed.itemId)}</p>` : '<p class="smithy-warn">当前星级无强化粉配置。</p>'}` : ''}
+            ${route === 'powder' ? `<h3>强化粉</h3>${powderNeed ? `<p class="smithy-material-line">${renderSmithyMaterialArt('powder', powderTierOfItem(powderNeed.itemId))}${CardStrengthenSystem.powderName(powderNeed.itemId)} ×${powderNeed.count}</p><p class="smithy-meta">背包：${this.inventory.countItem(powderNeed.itemId)}</p>` : '<p class="smithy-warn">当前星级无强化粉配置。</p>'}` : ''}
             <h3>保护符(只能选一个)</h3>
             <div class="star-charm-list">${charmIds.map((id) => {
               const item = this.itemDb.getById(id);
