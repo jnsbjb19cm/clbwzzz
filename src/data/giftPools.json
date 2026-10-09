@@ -1,0 +1,176 @@
+{
+  "60100": {
+    "kind": "fixed",
+    "rewards": [
+      {
+        "card": 8,
+        "count": 1
+      },
+      {
+        "item": 50001,
+        "count": 2
+      },
+      {
+        "item": 50011,
+        "count": 3
+      },
+      {
+        "item": 30006,
+        "count": 1
+      }
+    ]
+  },
+  "60101": {
+    "kind": "fixed",
+    "rewards": [
+      {
+        "item": 80,
+        "count": 1
+      },
+      {
+        "item": 82,
+        "count": 1
+      },
+      {
+        "item": 5,
+        "count": 2
+      }
+    ]
+  },
+  "60102": {
+    "kind": "fixed",
+    "rewards": [
+      {
+        "item": 10001,
+        "count": 20
+      },
+      {
+        "item": 10002,
+        "count": 15
+      },
+      {
+        "item": 10003,
+        "count": 10
+      }
+    ]
+  },
+  "60103": {
+    "kind": "fixed",
+    "rewards": [
+      {
+        "item": 60110,
+        "count": 1
+      },
+      {
+        "item": 60111,
+        "count": 1
+      },
+      {
+        "item": 60112,
+        "count": 1
+      },
+      {
+        "item": 50001,
+        "count": 3
+      },
+      {
+        "item": 50012,
+        "count": 3
+      },
+      {
+        "item": 60104,
+        "count": 1
+      }
+    ]
+  },
+  "60104": {
+    "kind": "one_of_cards",
+    "cards": [
+      90,
+      88,
+      20,
+      54
+    ]
+  },
+  "60105": {
+    "kind": "one_of_cards",
+    "quality": 5
+  },
+  "60106": {
+    "kind": "n_of",
+    "pick": 2,
+    "rewards": [
+      {
+        "item": 50003,
+        "count": 1
+      },
+      {
+        "item": 50013,
+        "count": 6
+      },
+      {
+        "item": 50012,
+        "count": 6
+      },
+      {
+        "item": 50002,
+        "count": 2
+      },
+      {
+        "item": 50001,
+        "count": 5
+      },
+      {
+        "item": 50011,
+        "count": 5
+      }
+    ]
+  },
+  "60107": {
+    "kind": "fixed",
+    "rewards": [
+      {
+        "item": 60105,
+        "count": 1
+      }
+    ]
+  },
+  "60108": {
+    "kind": "fixed",
+    "rewards": [
+      {
+        "item": 50004,
+        "count": 1
+      },
+      {
+        "item": 50014,
+        "count": 3
+      },
+      {
+        "item": 53001,
+        "count": 1
+      },
+      {
+        "item": 53002,
+        "count": 1
+      },
+      {
+        "item": 53003,
+        "count": 1
+      },
+      {
+        "item": 53004,
+        "count": 1
+      }
+    ],
+    "extra": {
+      "item": 60106,
+      "count": 1,
+      "chance": 0.5
+    }
+  },
+  "60109": {
+    "kind": "lock"
+  },
+  "_doc": "礼包/卡蛋开启内容（2026-10-09）。kind: fixed=固定给; one_of_cards=随机1张卡; n_of=随机N种; lock=打开不消耗。card=卡牌 id，item=道具 id，count=数量。"
+}
