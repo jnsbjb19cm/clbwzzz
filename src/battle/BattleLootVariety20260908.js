@@ -1,4 +1,5 @@
 import { BattleEngine } from './BattleEngine.js';
+import { DROP_RATE_SCALE } from './BattleConfig.js';
 
 const INSTALL_FLAG = Symbol.for('clbwz.battleLootVariety20260908');
 
@@ -32,7 +33,8 @@ export function installBattleLootVariety20260908() {
 
     unit._lootRolled = true;
     const level = Math.max(1, Math.min(5, Math.floor(Number(unit.quality) || 1)));
-    const chance = Math.min(0.42, 0.14 + level * 0.055);
+    // 2026-10-09：普通掉落整体削弱（DROP_RATE_SCALE = 0.75）
+    const chance = Math.min(0.42, 0.14 + level * 0.055) * DROP_RATE_SCALE;
     const chanceRoll = Number(this.rng());
     if (!Number.isFinite(chanceRoll) || chanceRoll >= chance) return null;
 

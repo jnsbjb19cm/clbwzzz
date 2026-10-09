@@ -1,4 +1,5 @@
 import { BattleEngine } from './BattleEngine.js';
+import { DROP_RATE_SCALE } from './BattleConfig.js';
 
 const PATCH_FLAG = Symbol.for('clbwzzz.battleCraftMaterialDrops20260905');
 
@@ -44,7 +45,8 @@ export function installBattleCraftMaterialDrops20260905() {
 
     const tier = Math.max(1, Math.min(4, Math.floor(Number(unit?.quality) || 1)));
     // 制作材料独立掉落：低品质约 12%，高品质最高 24%；与原有强化粉可同时掉落。
-    const chance = 0.08 + tier * 0.04;
+    // 2026-10-09：普通掉落整体削弱（DROP_RATE_SCALE = 0.75）
+    const chance = (0.08 + tier * 0.04) * DROP_RATE_SCALE;
     const chanceRoll = Number(this.rng?.() ?? Math.random());
     if (!Number.isFinite(chanceRoll) || chanceRoll >= chance) return primary;
 

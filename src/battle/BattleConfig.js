@@ -255,6 +255,13 @@ export const TRAINING_RESOURCE = 9999;
 export const STARTER_DECK = [1, 2, 4, 15, 19, 25, 22, 17, 11, 3];
 
 /** 战斗数值全局缩放(缓解数值膨胀) */
+/**
+ * 普通掉落概率全局系数（2026-10-09 用户要求：所有掉落概率削弱 25%）。
+ * 1 = 原值；0.75 = 砍掉四分之一。**Boss 专属掉落不走这个系数**（那些表在别处，未改）。
+ * 作用于战斗内的普通掉落：强化粉掉落、制作材料（羊皮纸/宝石/DNA）掉落。
+ */
+export const DROP_RATE_SCALE = 0.75;
+
 export const BATTLE_STAT_SCALE = 0.75;
 
 /** 伤害/治疗数值：保留两位小数 */
