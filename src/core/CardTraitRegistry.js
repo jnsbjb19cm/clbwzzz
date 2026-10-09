@@ -16,7 +16,8 @@ export const ATTACK_PATTERNS = new Map([
   [58, { kind: 'all' }],
   [62, { kind: 'square_self', radius: 1 }],
   [64, { kind: 'col_splash', radius: 1 }],
-  [70, { kind: 'square', radius: 1, splashFactor: 0.3 }],
+  // 2026-10-09（用户要求）：玉米炮手(70) 移除溅射，溅射数值与晕眩移植到新卡玉米迫击炮(106)。
+  [106, { kind: 'square', radius: 1, splashFactor: 0.3 }],
   [72, { kind: 'x', radius: 1 }],
   [73, { kind: 'rect', laneRadius: 1, colBack: 0, colForward: 1 }],
   [74, { kind: 'forward', cells: 2 }],
@@ -52,6 +53,8 @@ export const CARD_TRAITS = new Map([
   [55, { healOnHitRatio: 0.2 }],
   [63, { poisonChance: 0.35, poisonDps: 3, poisonSec: 5 }],
   [70, { stunChance: 0.3, stunSec: 1.5 }],
+  // 玉米迫击炮：4 级卡，攻击更高更贵，保留 30% 3x3 溅射 + 晕眩
+  [106, { stunChance: 0.3, stunSec: 1.5 }],
   [71, { stealResource: 1 }],
   [72, { forceParabola: true }],
   [73, { stunChance: 0.3, stunSec: 1.5 }],

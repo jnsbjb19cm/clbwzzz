@@ -116,17 +116,27 @@ function lanesTakenAt(wave, col) {
   return new Set(wave.filter((entry) => Number(entry[2]) === col).map((entry) => Number(entry[1])));
 }
 
-/** 每波往后排空位补 count 只；该波后排已经 >2 只就整波跳过（用户定的规则）。 */
-export function reinforceRear(waves, cardId, count) {
+/** 一个 5 波循环里最多补多少只（2026-10-09 用户要求：5 波之内最多 8 只）。 */
+export const ADVENTURE_REINFORCE_MAX_PER_CYCLE = 8;
+
+/**
+ * 每波往后排空位补 count 只；该波后排已经 >2 只就整波跳过（用户定的规则）。
+ * maxPerCycle：整个循环（5 波）的补充总量上限 —— 困难原本 2/波×5 = 10 只会超，现在封到 8。
+ */
+export function reinforceRear(waves, cardId, count, { maxPerCycle = Number.POSITIVE_INFINITY } = {}) {
+  let placed = 0;
   return waves.map((wave) => {
     if (rearCountOf(wave) > 2) return wave;
+    const budget = Math.max(0, Math.floor(maxPerCycle) - placed);
+    if (budget <= 0) return wave;
     const taken = lanesTakenAt(wave, ADVENTURE_REAR_COL);
     const extra = [];
     for (const lane of REAR_LANE_ORDER) {
-      if (extra.length >= count) break;
+      if (extra.length >= Math.min(count, budget)) break;
       if (taken.has(lane)) continue;
       extra.push([cardId, lane, ADVENTURE_REAR_COL]);
     }
+    placed += extra.length;
     return extra.length ? [...wave, ...extra] : wave;
   });
 }
@@ -207,7 +217,7 @@ export function applyAdventureDifficulty(stage, waves) {
   const monsterSide = Number(a.route) === 1 || a.final === true;
   const isChallenge = a.final === true || Number(a.node) === 4;
   if (Number(a.route) === 0) {
-    out = reinforceRear(out, MINE_CARD_ID, difficulty >= 2 ? 2 : 1);
+    out = reinforceRear(out, MINE_CARD_ID, difficulty >= 2 ? 2 : 1, { maxPerCycle: ADVENTURE_REINFORCE_MAX_PER_CYCLE });
   } else if (monsterSide && difficulty === 1 && isChallenge) {
     out = reinforceRear(out, SPRAY_CARD_ID, 1);
   }
