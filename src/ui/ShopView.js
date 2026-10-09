@@ -627,5 +627,5 @@ export class ShopView {
 
   _catIcon(c){const m={'货币':'💰','强化':'✦','材料':'💎','功能':'🔧','战斗':'⚔️','经济':'📈','特殊':'🌟'};return m[c]||'📦';}
 
-  toast(root,msg){const el=root.querySelector('#shop-toast');if(!el)return;el.textContent=msg;el.classList.remove('hidden','bag-toast-rise');void el.offsetWidth;el.classList.add('bag-toast-rise');clearTimeout(this._t);this._t=setTimeout(()=>el.classList.add('hidden'),2200);}
+  toast(root,msg){const el=root.querySelector('#shop-toast');if(!el)return;el.textContent=msg;el.classList.remove('hidden','bag-toast-rise');void el.offsetWidth;el.classList.add('bag-toast-rise');clearTimeout(this._t);this._t=setTimeout(()=>el.classList.add('hidden'),3200);}
 }

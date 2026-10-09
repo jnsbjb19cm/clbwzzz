@@ -3004,23 +3004,28 @@ body.battle-immersive .top-ui {
   box-shadow: none;
 }
 
-/* 2026-10-09（用户要求）：从**右侧淡入**飞到屏幕中心 → 停留 → 再**向上飞**淡出，要灵动。
+/* 2026-10-09（用户要求）：从**右侧淡入**飞到屏幕中心 → 停留 → 再**向上飞**淡出。
    用 keyframes + JS 重播（classList.remove → void offsetWidth → add），
    比 transition 可靠（transition 在部分渲染下不触发）。
-   BagView / ShopView / QuestView 三处 toast 共用 .bag-toast。 */
+   BagView / ShopView / QuestView 三处 toast 共用 .bag-toast。
+
+   2026-10-09 修正（用户反馈「从右侧到中间卡顿一下、像往左挪了一段」）：
+   根因是入场被我拆成了 16%/26%/32% 三帧（1.04 → .985 → 1 的放大回弹），
+   而缓动是**逐段**生效的（每两帧之间都「先快后慢」），所以 16% 处减速、
+   26% 处又加速 —— 看起来就是顿一下。现在入场只剩 0% → 26% 一整段，
+   中间不停顿、不回弹，一次到位。 */
 @keyframes bag-toast-rise {
-  /* 从右边屏幕外飞进来，同时淡入 + 略微放大，落地时有一点回弹感 */
-  0%   { opacity: 0; transform: translate(calc(-50% + 34vw), -50%) scale(.9); }
-  16%  { opacity: 1; transform: translate(calc(-50% + 6vw), -50%) scale(1.04); }
-  26%  { opacity: 1; transform: translate(-50%, -50%) scale(.985); }
-  32%  { opacity: 1; transform: translate(-50%, -50%) scale(1); }
-  /* 停在正中央给玩家看清楚 */
-  62%  { opacity: 1; transform: translate(-50%, -50%) scale(1); }
-  /* 再向上飞走并淡出 */
-  100% { opacity: 0; transform: translate(-50%, -270px) scale(.94); }
+  /* 入场：从右侧屏幕外一路飞到正中，透明度 0 → 1，尺寸 .92 → 1（单调，不来回） */
+  0%   { opacity: 0; transform: translate(calc(-50% + 34vw), -50%) scale(.92); }
+  26%  { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+  /* 停在正中央：26% → 80%（约 1.7 秒，比原来长得多，够看清） */
+  80%  { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+  /* 出场：向上飞 270px 并淡出 */
+  100% { opacity: 0; transform: translate(-50%, -270px) scale(.96); }
 }
 .bag-toast.bag-toast-rise {
-  animation: bag-toast-rise 2.2s cubic-bezier(.22, .61, .36, 1) forwards;
+  /* 时长要和三处 toast() 里的 3200ms 定时器对齐 */
+  animation: bag-toast-rise 3.2s cubic-bezier(.22, .61, .36, 1) forwards;
 }
 
 .bag-toast.hidden {

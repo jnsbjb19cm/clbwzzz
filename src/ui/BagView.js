@@ -1077,6 +1077,6 @@ export class BagView {
     void el.offsetWidth;
     el.classList.add('bag-toast-rise');
     clearTimeout(this._toastTimer);
-    this._toastTimer = setTimeout(() => el.classList.add('hidden'), 2200);
+    this._toastTimer = setTimeout(() => el.classList.add('hidden'), 3200);
   }
 }
