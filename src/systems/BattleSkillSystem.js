@@ -426,6 +426,11 @@ export class BattleSkillSystem {
           dps: effect.dps,
           until: t + effect.duration,
         });
+        // 2026-10-09（用户要求）：火墙要有视觉表现 —— 目标这一列 5 格都摆上火焰柱子，
+        // 持续时间 = 火墙持续时间，直到火墙消失（渲染器按 skillFx 绘制火焰柱子）。
+        for (let lane = 0; lane < 5; lane += 1) {
+          eng.pushSkillEffect('fire_wall', { lane, col: target.col }, 0, Number(skillId), effect.duration);
+        }
         break;
       case 'poison_aoe':
         this.poisonInRadius(
