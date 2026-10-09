@@ -78,6 +78,28 @@ function saveState(state){try{localStorage.setItem(STORAGE_KEY,JSON.stringify(no
 function escaped(v){return String(v??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');}
 function brokenText(v){return /[?]/.test(String(v??''));}
 function rewardIcon(k){return'<i class="quest-reward-icon '+k+'" aria-hidden="true"></i>';}
+/** 2026-10-09：悬浮详情 —— 卡牌显示品质/等级/三维/技能说明。 */
+function cardTip(card,cq){
+  if(!card)return'';
+  const lines=[`${card.name}（${resolveCraftQuality(cq).name}·${card.qualityInfo?.name??''}）`];
+  const stats=[];
+  if(Number.isFinite(Number(card.atk)))stats.push('攻击 '+card.atk);
+  if(Number.isFinite(Number(card.hp)))stats.push('生命 '+card.hp);
+  if(Number.isFinite(Number(card.cost)))stats.push('费用 '+card.cost);
+  if(Number.isFinite(Number(card.atkSpeed)))stats.push('攻速 '+card.atkSpeed);
+  if(stats.length)lines.push(stats.join(' · '));
+  if(card.trait)lines.push(String(card.trait));
+  return lines.join('\n');
+}
+/** 2026-10-09：悬浮详情 —— 道具显示名称/类型/品质/说明。 */
+function itemTip(item,count){
+  if(!item)return'';
+  const lines=[`${item.name} ×${Math.max(1,Number(count)||1)}`];
+  const meta=[item.showType,item.qualityInfo?.name].filter(Boolean);
+  if(meta.length)lines.push(meta.join(' · '));
+  if(item.desc)lines.push(String(item.desc));
+  return lines.join('\n');
+}
 function rewardChips(reward,cardDb,itemDb){
   const out=[];
   if(reward.gold)out.push('<span class="quest-reward-chip">'+rewardIcon('gold')+'金币 '+reward.gold+'</span>');
@@ -91,9 +113,14 @@ function rewardChips(reward,cardDb,itemDb){
     const card=cardDb?.getById?.(id);const n=card?.name;
     const label=(cq>1?resolveCraftQuality(cq).name+'·':'')+(n&&!brokenText(n)?n:'卡牌 '+id);
     const icon=card?.spriteRes?'<img class="quest-reward-card-icon" src="/sprites/cards/'+escaped(card.spriteRes)+'.png" alt="" loading="lazy"/>':rewardIcon('card');
-    out.push('<span class="quest-reward-chip quest-reward-chip-card">'+icon+escaped(label)+'</span>');
+    const tip=cardTip(card,cq);
+    out.push('<span class="quest-reward-chip quest-reward-chip-card"'+(tip?' data-tip="'+escaped(tip)+'"':'')+'>'+icon+escaped(label)+'</span>');
   }
-  for(const it of reward.items||[]){const n=itemDb?.getById(it.id)?.name;out.push('<span class="quest-reward-chip">'+itemIconMarkup(it.id,40)+escaped(n&&!brokenText(n)?n:'道具 '+it.id)+' ×'+it.count+'</span>');}
+  for(const it of reward.items||[]){
+    const item=itemDb?.getById?.(it.id);const n=item?.name;
+    const tip=itemTip(item,it.count);
+    out.push('<span class="quest-reward-chip"'+(tip?' data-tip="'+escaped(tip)+'"':'')+'>'+itemIconMarkup(it.id,40)+escaped(n&&!brokenText(n)?n:'道具 '+it.id)+' ×'+it.count+'</span>');
+  }
   return out.join('');
 }
 
