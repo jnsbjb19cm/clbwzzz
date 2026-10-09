@@ -1,4 +1,5 @@
 import { audio } from '../core/AudioManager.js';
+import { emitQuestEvent } from '../core/QuestEventBus.js';
 import { TALENT_NODE_MAP, TALENT_NODES } from '../core/TalentRegistry.js';
 import {
   getSkillCooldownSec,
@@ -334,6 +335,8 @@ export class TalentView {
         return;
       }
       this.player.extraTalentPoints = ref.value;
+      // 2026-10-09：主线7「学习一个技能」—— 天赋/技能节点解锁成功即计数。
+      emitQuestEvent('skill_learn', { count: 1 });
       audio.playSfx('click');
       this.onPlayerUpdate?.();
       const rect = button.getBoundingClientRect();

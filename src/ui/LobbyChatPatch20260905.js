@@ -1,5 +1,6 @@
 import './LobbyChatPatch20260905.css';
 import { authStore } from '../core/AuthStore.js';
+import { emitQuestEvent } from '../core/QuestEventBus.js';
 import { containsBlockedWord, maskBlockedWords } from '../core/ContentFilter.js';
 import { RoomView } from './RoomView.js';
 
@@ -306,6 +307,8 @@ export function installLobbyChatPatch20260905() {
       } else {
         await this.socket.sendLobbyChat(text, state.active);
       }
+      // 2026-10-09：支线6「在世界频道发送一次信息」。
+      if (state.active === 'world') emitQuestEvent('world_chat', { count: 1 });
       if (input) input.value = '';
     } catch (error) {
       this.notice?.(error?.message || '消息发送失败');

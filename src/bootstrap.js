@@ -29,6 +29,7 @@ import { installBattleUnitPresentation20260906 } from './ui/BattleUnitPresentati
 import { installBattleQualityHaloFix20260908 } from './ui/BattleQualityHaloFix20260908.js';
 import { installBattleLootMaterialIconFix20260908 } from './ui/BattleLootMaterialIconFix20260908.js';
 import { installBattleUserRegressionFix20260907 } from './ui/BattleUserRegressionFix20260907.js';
+import { installPlaytimeTracker20261009 } from './core/PlaytimeTracker20261009.js';
 import {
   installAccountDeckMirror20260911,
   installDeckGroupStartGuard20260911,
@@ -123,4 +124,6 @@ void import('./main.js').then(() => {
   installDeckGroupStartGuard20260911();
   // 2026-09-11：界面渲染前先用账号里的卡组纠正本地缓存（修掉历史串组的本地数据）。
   installAccountDeckMirror20260911();
+  // 2026-10-09：在线时长每 60 秒上报一次（主线26「等待10分钟」）。
+  installPlaytimeTracker20261009();
 });

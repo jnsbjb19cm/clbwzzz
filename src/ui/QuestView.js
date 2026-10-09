@@ -1,5 +1,6 @@
 import { itemIconMarkup } from './ItemIcon.js';
 import { authStore } from '../core/AuthStore.js';
+import { resolveCraftQuality } from '../core/constants.js';
 import { reconcileAdventureQuestClears } from '../core/AdventureQuestReconcile.js';
 import { audio } from '../core/AudioManager.js';
 import { grantPlayerExp } from '../core/PlayerProgression.js';
@@ -8,6 +9,7 @@ import { CardInventoryStore } from '../core/CardInventoryStore.js';
 import { BattleView } from './BattleView.js';
 import { questPeriodKey } from '../data/QuestPeriods.js';
 import { markBossCleared } from '../core/BossProgress.js';
+import { dataCount, progressDelta, requirementsMet, cumulativeProgress, syncCumulativeProgress, visibleQuests, backfillQuestProgressFromHistory } from '../battle/QuestProgressRules.js';
 import { MAX_PLAYER_LEVEL, QUEST_GROUPS, ACHIEVEMENT_QUESTS, CATEGORIES, LEVEL_REWARDS } from '../data/QuestCatalog.js';
 
 const STORAGE_KEY = 'clbwz_quest_v12';
@@ -20,7 +22,11 @@ function defaultState(){
     dailyDate:todayKey(),weeklyDate:weekKey(),dailyProgress:{},dailyClaimed:[],weeklyProgress:{},weeklyClaimed:[],
     mainProgress:{},mainClaimed:[],sideProgress:{},sideClaimed:[],achievementProgress:{},achievementClaimed:[],
     challengeProgress:{},challengeClaimed:[],levelClaimed:[],
-    _extra:{totalKills:0,totalBattles:0,totalBattleWins:0,totalAdventures:0,totalUpgrades:0,totalStrengthens:0,totalCrafts:0,totalMaterialCombines:0,totalItems:0,totalItemGains:0,totalBossChallenges:0,totalBossDefeats:0,totalNoDeath:0,totalPvpBattles:0,totalPvpWins:0,totalCoopBattles:0,totalQuests:0,totalGold:0,totalHonor:0,loginDays:0,itemGainsById:{},bossChallengesById:{},bossDefeatsById:{},adventureClears:{}},
+    _extra:{totalKills:0,totalBattles:0,totalBattleWins:0,totalAdventures:0,totalUpgrades:0,totalStrengthens:0,totalCrafts:0,totalMaterialCombines:0,totalItems:0,totalItemGains:0,totalBossChallenges:0,totalBossDefeats:0,totalNoDeath:0,totalPvpBattles:0,totalPvpWins:0,totalCoopBattles:0,totalQuests:0,totalGold:0,totalHonor:0,loginDays:0,
+      // 2026-10-09：新任务目录用到的长期统计（教程/技能/购买/转盘/挂机/公会/世界频道/好友/指定卡击杀与获取使用/区域到访）。
+      totalStrengthenAttempts:0,totalSkillCasts:0,totalSkillLearns:0,totalShopBuys:0,totalWheelSpins:0,totalFriendAdds:0,totalWorldChats:0,totalGuildJoins:0,totalTutorials:0,totalPlayMinutes:0,totalAdventureAttempts:0,
+      questBackfillV13:false,
+      itemGainsById:{},bossChallengesById:{},bossDefeatsById:{},adventureClears:{},cardKillsById:{},cardObtainsById:{},cardUsesById:{},areasVisited:{}},
   };
 }
 function normalizeState(state){
@@ -31,10 +37,9 @@ function normalizeState(state){
   for(const key of ['dailyClaimed','weeklyClaimed','mainClaimed','sideClaimed','achievementClaimed','challengeClaimed'])r[key]=Array.isArray(r[key])?r[key]:[];
   r.levelClaimed=Array.isArray(r.levelClaimed)?r.levelClaimed:(r.planClaimed??[]);
   r._extra={...defaultState()._extra,...(r._extra??{})};
-  r._extra.itemGainsById={...(r._extra.itemGainsById??{})};
-  r._extra.bossChallengesById={...(r._extra.bossChallengesById??{})};
-  r._extra.bossDefeatsById={...(r._extra.bossDefeatsById??{})};
-  r._extra.adventureClears={...(r._extra.adventureClears??{})};
+  for(const mapKey of ['itemGainsById','bossChallengesById','bossDefeatsById','adventureClears','cardKillsById','cardObtainsById','cardUsesById','areasVisited']){
+    r._extra[mapKey]={...(r._extra[mapKey]??{})};
+  }
   return r;
 }
 function migrateLegacyState(rawState){
@@ -42,26 +47,32 @@ function migrateLegacyState(rawState){
   const fresh=defaultState();
   // 任务系统重做后不继承旧任务ID进度，只保留真实长期统计和已领等级奖励。
   fresh._extra={...fresh._extra,...(old._extra??{})};
-  fresh._extra.itemGainsById={...(old._extra?.itemGainsById??{})};
-  fresh._extra.bossChallengesById={...(old._extra?.bossChallengesById??{})};
-  fresh._extra.bossDefeatsById={...(old._extra?.bossDefeatsById??{})};
-  fresh._extra.adventureClears={...(old._extra?.adventureClears??{})};
+  for(const mapKey of ['itemGainsById','bossChallengesById','bossDefeatsById','adventureClears','cardKillsById','cardObtainsById','cardUsesById','areasVisited']){
+    fresh._extra[mapKey]={...(old._extra?.[mapKey]??{})};
+  }
   fresh.levelClaimed=[...(old.levelClaimed??[])];
   return normalizeState(fresh);
+}
+function applyBackfillOnce(state){
+  // 2026-10-09：任务目录整体重写后，用保留的长期统计给新任务回填一次进度（只跑一次，不补 claimed）。
+  if(state._extra?.questBackfillV13)return state;
+  try{backfillQuestProgressFromHistory(state,{playerLevel:Number(state._lastPlayerLevel)||1});}catch{}
+  state._extra=state._extra||{};state._extra.questBackfillV13=true;
+  return state;
 }
 function loadState(){
   try{
     const current=localStorage.getItem(STORAGE_KEY);
-    if(current)return normalizeState(JSON.parse(current));
+    if(current)return applyBackfillOnce(normalizeState(JSON.parse(current)));
     for(const key of OLD_STORAGE_KEYS){
       const raw=localStorage.getItem(key);
       if(!raw)continue;
       const migrated=migrateLegacyState(JSON.parse(raw));
       localStorage.setItem(STORAGE_KEY,JSON.stringify(migrated));
-      return migrated;
+      return applyBackfillOnce(migrated);
     }
   }catch{}
-  return defaultState();
+  return applyBackfillOnce(defaultState());
 }
 function saveState(state){try{localStorage.setItem(STORAGE_KEY,JSON.stringify(normalizeState(state)));}catch{}}
 function escaped(v){return String(v??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');}
@@ -73,92 +84,19 @@ function rewardChips(reward,cardDb,itemDb){
   if(reward.gem)out.push('<span class="quest-reward-chip">'+rewardIcon('gem')+'钻石 '+reward.gem+'</span>');
   if(reward.honor)out.push('<span class="quest-reward-chip">'+rewardIcon('honor')+'荣誉 '+reward.honor+'</span>');
   if(reward.exp)out.push('<span class="quest-reward-chip">'+rewardIcon('exp')+'经验 '+reward.exp+'</span>');
-  for(const id of reward.cards||[]){const n=cardDb?.getById(id)?.name;out.push('<span class="quest-reward-chip">'+rewardIcon('card')+escaped(n&&!brokenText(n)?n:'卡牌 '+id)+'</span>');}
+  for(const raw of reward.cards||[]){
+    // 2026-10-09：奖励卡显示卡图标；带制作品质（如「精良的寒冰椰子」）时在名字前标品质。
+    const id=Number(raw?.id??raw);
+    const cq=Math.max(1,Math.min(5,Number(raw?.craftQuality)||1));
+    const card=cardDb?.getById?.(id);const n=card?.name;
+    const label=(cq>1?resolveCraftQuality(cq).name+'·':'')+(n&&!brokenText(n)?n:'卡牌 '+id);
+    const icon=card?.spriteRes?'<img class="quest-reward-card-icon" src="/sprites/cards/'+escaped(card.spriteRes)+'.png" alt="" loading="lazy"/>':rewardIcon('card');
+    out.push('<span class="quest-reward-chip quest-reward-chip-card">'+icon+escaped(label)+'</span>');
+  }
   for(const it of reward.items||[]){const n=itemDb?.getById(it.id)?.name;out.push('<span class="quest-reward-chip">'+itemIconMarkup(it.id,40)+escaped(n&&!brokenText(n)?n:'道具 '+it.id)+' ×'+it.count+'</span>');}
   return out.join('');
 }
 
-function dataCount(data){return Math.max(0,Number(data?.count??data?.amount??1)||0);}
-function battleTargetMatches(quest,data){
-  if(quest.stageId!=null&&Number(data?.stageId)!==Number(quest.stageId))return false;
-  if(quest.route!=null&&Number(data?.route)!==Number(quest.route))return false;
-  if(quest.adventureIndex!=null&&Number(data?.adventureIndex)!==Number(quest.adventureIndex))return false;
-  if(quest.challengeOnly&&!data?.challenge)return false;
-  if(quest.finalOnly&&!data?.final)return false;
-  return true;
-}
-
-function progressDelta(quest,event,data){
-  // 综合工坊任务：造卡、强化任一成功都计数。
-  if(quest.event==='card_upgrade'&&(event==='card_craft'||event==='card_strengthen'))return dataCount(data)||1;
-  if(quest.event==='any')return 1;
-
-  // 收集指定道具：事件记录本次新增；带 lifetimeItemId 的永久任务还会读取长期收集统计。
-  if(quest.event==='item_gain'){
-    if(event!=='item_gain')return 0;
-    if(quest.itemId&&Number(quest.itemId)!==Number(data?.itemId))return 0;
-    return dataCount(data);
-  }
-
-  // 材料加工只认铁匠铺明确上报的成功事件，避免“加工产物入库”与加工本身重复计数。
-  if(quest.event==='material_combine'){
-    if(event!=='material_combine')return 0;
-    if(quest.materialKind&&data?.materialKind&&quest.materialKind!==data.materialKind)return 0;
-    if(quest.materialLevel&&data?.materialLevel&&Number(data.materialLevel)!==Number(quest.materialLevel))return 0;
-    return dataCount(data)||1;
-  }
-
-  // BOSS挑战与冒险模式严格分开，按BOSS id精确匹配。
-  if(quest.event==='boss_challenge'||quest.event==='boss_defeated'){
-    if(event!==quest.event)return 0;
-    if(quest.bossId&&String(quest.bossId)!==String(data?.bossId??''))return 0;
-    return dataCount(data)||1;
-  }
-
-  if(quest.event!==event)return 0;
-
-  if(event==='adventure_complete'){
-    if(!battleTargetMatches(quest,data))return 0;
-    if(quest.minAdventureIndex!=null&&Number(data?.adventureIndex||0)<Number(quest.minAdventureIndex))return 0;
-    return dataCount(data)||1;
-  }
-
-  if(event==='card_strengthen'){
-    if(quest.minStar&&Number(data?.star||0)<Number(quest.minStar))return 0;
-    return dataCount(data)||1;
-  }
-  if(event==='card_craft'){
-    if(quest.craftLevel&&Number(data?.craftLevel||0)!==Number(quest.craftLevel))return 0;
-    return dataCount(data)||1;
-  }
-  if(event==='gold_gain'||event==='honor_gain'||event==='player_healed'||event==='shop_spend')return Math.max(0,Number(data?.amount||0));
-  if(['battle_complete','battle_win','battle_nodeath','battle_duration','battle_kill','battle_variety','battle_lane_spread'].includes(event)&&!battleTargetMatches(quest,data))return 0;
-  if(['kill_enemy','card_collect','battle_kill','elite_kill','item_use','team_diversity','quest_complete','discover_secret','mine_collect'].includes(event))return dataCount(data);
-  if(event==='battle_duration'){
-    if(data?.won===false)return 0;
-    return Number(data?.duration||999)<=Number(quest.maxDuration??180)?1:0;
-  }
-  if(event==='battle_variety')return Number(data?.distinctCards||0)>=Number(quest.minDistinctCards??5)?1:0;
-  if(event==='battle_lane_spread')return Number(data?.lanesUsed||0)>=Number(quest.minLanes??3)?1:0;
-  return dataCount(data)||1;
-}
-
-function requirementIds(requires){
-  if(!requires)return[];
-  return Array.isArray(requires)?requires:[requires];
-}
-function questComplete(state,category,questId){
-  const quest=(QUEST_GROUPS[category]||[]).find((entry)=>String(entry.id)===String(questId));
-  if(!quest)return true;
-  const claimed=state[category+'Claimed']||[];
-  const progress=state[category+'Progress']||{};
-  return claimed.some((id)=>String(id)===String(questId))||Number(progress[quest.id]||0)>=Number(quest.goal||0);
-}
-function requirementsMet(state,category,quest){
-  const localOk=requirementIds(quest.requires).every((id)=>questComplete(state,category,id));
-  const mainOk=requirementIds(quest.requiresMain).every((id)=>questComplete(state,'main',id));
-  return localOk&&mainOk;
-}
 /**
  * 2026-10-06：背包里现有的数量。
  * "收集X个材料"的目标材料是**服务端掉落**的（BOSS 通关奖励，见 AdventureAccess.js），
@@ -177,37 +115,10 @@ function ownedItemCount(itemId){
   }catch{/* 读背包失败不影响任务进度 */}
   return 0;
 }
-function cumulativeProgress(quest,state){
-  // 2026-10-06：等级类任务（等级成就 + 主线"十级学徒"这类）统一读玩家等级。
-  // 原来 event==='level' 只在成就回调里算，主线的等级任务没有任何人派发事件 → 永远不涨。
-  if(quest.event==='level')return Math.max(0,Number(state?._lastPlayerLevel||1));
-  if(quest.cumulativeKey)return Math.max(0,Number(state?._extra?.[quest.cumulativeKey]||0));
-  if(quest.lifetimeItemId!=null){
-    const tracked=Math.max(0,Number(state?._extra?.itemGainsById?.[String(quest.lifetimeItemId)]||0));
-    return Math.max(tracked,ownedItemCount(quest.lifetimeItemId));
-  }
-  if(quest.bossChallengeId)return Math.max(0,Number(state?._extra?.bossChallengesById?.[String(quest.bossChallengeId)]||0));
-  if(quest.bossDefeatId)return Math.max(0,Number(state?._extra?.bossDefeatsById?.[String(quest.bossDefeatId)]||0));
-  if(quest.adventureKey)return Math.max(0,Number(state?._extra?.adventureClears?.[String(quest.adventureKey)]||0));
-  return null;
-}
-function syncCumulativeProgress(state){
-  for(const [category,quests] of Object.entries(QUEST_GROUPS)){
-    if(category==='achievement')continue;
-    const progress=state[category+'Progress']??(state[category+'Progress']={});
-    for(const quest of quests){
-      if(cumulativeProgress(quest,state)==null||!requirementsMet(state,category,quest))continue;
-      progress[quest.id]=Math.min(Number(quest.goal||0),cumulativeProgress(quest,state)??0);
-    }
-  }
-}
-function visibleQuests(category,state,allQuests){
-  if(category==='daily'||category==='weekly'||category==='achievement')return allQuests;
-  return allQuests.filter((entry)=>requirementsMet(state,category,entry));
-}
 
 export class QuestView{
   static _suppressItemGain=false;
+  static _suppressCardObtain=false;
 
   constructor(cardDb,cardInventory,player,{onPlayerUpdate,itemDb,inventory}={}){
     this.cardDb=cardDb;this.cardInventory=cardInventory;this.player=player;this.onPlayerUpdate=onPlayerUpdate;
@@ -260,6 +171,22 @@ export class QuestView{
     if(event==='quest_complete')extra.totalQuests=(extra.totalQuests||0)+dataCount(data);
     if(event==='gold_gain')extra.totalGold=(extra.totalGold||0)+Math.max(0,Number(data?.amount||0));
     if(event==='honor_gain')extra.totalHonor=(extra.totalHonor||0)+Math.max(0,Number(data?.amount||0));
+    // 2026-10-09：新任务目录的长期统计。
+    if(event==='card_strengthen_attempt')extra.totalStrengthenAttempts=(extra.totalStrengthenAttempts||0)+dataCount(data);
+    if(event==='skill_cast')extra.totalSkillCasts=(extra.totalSkillCasts||0)+dataCount(data);
+    if(event==='skill_learn')extra.totalSkillLearns=(extra.totalSkillLearns||0)+dataCount(data);
+    if(event==='shop_buy')extra.totalShopBuys=(extra.totalShopBuys||0)+dataCount(data);
+    if(event==='lucky_wheel')extra.totalWheelSpins=(extra.totalWheelSpins||0)+dataCount(data);
+    if(event==='friend_add')extra.totalFriendAdds=(extra.totalFriendAdds||0)+dataCount(data);
+    if(event==='world_chat')extra.totalWorldChats=(extra.totalWorldChats||0)+dataCount(data);
+    if(event==='guild_join')extra.totalGuildJoins=(extra.totalGuildJoins||0)+dataCount(data);
+    if(event==='tutorial_complete')extra.totalTutorials=(extra.totalTutorials||0)+dataCount(data);
+    if(event==='adventure_attempt')extra.totalAdventureAttempts=(extra.totalAdventureAttempts||0)+dataCount(data);
+    if(event==='playtime'){const m=Math.max(0,Number(data?.minutes||0));extra.totalPlayMinutes=(extra.totalPlayMinutes||0)+(m||dataCount(data));}
+    if(event==='kill_card'){const n=dataCount(data);const key=String(Number(data?.cardId)||0);if(key!=='0')extra.cardKillsById[key]=(extra.cardKillsById[key]||0)+n;}
+    if(event==='card_obtain'){const n=dataCount(data);const key=String(Number(data?.cardId)||0);if(key!=='0')extra.cardObtainsById[key]=(extra.cardObtainsById[key]||0)+n;}
+    if(event==='card_use'){const n=dataCount(data);const key=String(Number(data?.cardId)||0);if(key!=='0')extra.cardUsesById[key]=(extra.cardUsesById[key]||0)+n;}
+    if(event==='visit_area'){const n=dataCount(data);const key=String(data?.areaId||'');if(key)extra.areasVisited[key]=(extra.areasVisited[key]||0)+n;}
     state._extra=extra;changed=true;
 
     const ach=state.achievementProgress??{};
@@ -300,11 +227,15 @@ export class QuestView{
         if(quest.event==='boss_unlock'){
           const needed=Number(quest.unlockAdventures||((quest.bossId==='boss_dot')?12:0));
           if(needed>0&&Number(extra.totalAdventures||0)>=needed)after=quest.goal;
-        }else if(quest.cumulativeKey){
-          after=Math.min(quest.goal,cumulativeProgress(quest,state)??0);
         }else{
-          const delta=progressDelta(quest,event,data);
-          if(delta)after=Math.min(quest.goal,before+delta);
+          // 2026-10-09：只要 cumulativeProgress 有定义（累计统计/等级/自动完成/指定卡统计），就用它；
+          // 否则按本次事件增量推进。
+          const cumulative=cumulativeProgress(quest,state,ownedItemCount);
+          if(cumulative!=null)after=Math.min(quest.goal,cumulative);
+          else{
+            const delta=progressDelta(quest,event,data);
+            if(delta)after=Math.min(quest.goal,before+delta);
+          }
         }
         if(after===before)continue;
         state[pk][quest.id]=after;
@@ -367,7 +298,7 @@ export class QuestView{
       try{clearedIds.push(...(JSON.parse(localStorage.getItem('clbwz_worldmap_v1')||'{}').stageClaimed||[]));}catch{}
     }
     reconcileAdventureQuestClears(this.state,this.cardDb?.stages,clearedIds);
-    syncCumulativeProgress(this.state);
+    syncCumulativeProgress(this.state,ownedItemCount);
     saveState(this.state);
     const extra=this.state._extra||{};
     for(const quest of ACHIEVEMENT_QUESTS){
@@ -410,7 +341,12 @@ export class QuestView{
   renderDetail(root,entry){
     const detail=root.querySelector('#quest-detail');if(!entry){detail.innerHTML='<div class="quest-parchment-empty">选择一个任务查看详情</div>';return;}
     const s=this.stateFor(entry),pct=Math.min(100,s.progress/Math.max(s.goal,1)*100),label=entry.chapter||entry.arc||(this.category==='level'?'成长计划':this.category==='achievement'?'里程碑':'任务委托'),action=s.claimed?'<span class="quest-detail-claimed">已领取</span>':s.ready?'<button type="button" class="quest-claim-btn quest-detail-claim" data-entry="'+entry.id+'">领取奖励</button>':'<span class="quest-detail-locked">继续完成</span>';
-    detail.innerHTML=['<div class="quest-parchment-inner"><p class="quest-detail-kicker">',escaped(label),'</p><h2>',escaped(entry.name),'</h2><div class="quest-parchment-rule"></div><section class="quest-detail-block"><h3>任务目标</h3><p>',escaped(entry.desc),'</p><div class="quest-detail-progress"><i style="width:',pct,'%"></i></div><span>',s.progress,' / ',s.goal,'</span></section><section class="quest-detail-block"><h3>任务说明</h3><p>',escaped(entry.story||entry.desc),'</p></section>',(entry.consumeItems&&entry.consumeItems.length?('<section class="quest-detail-block"><h3>需要提交</h3><p>'+entry.consumeItems.map((c)=>escaped(this.itemDb?.getById?.(Number(c.id))?.name||('道具 '+c.id))+' ×'+Math.max(0,Math.floor(Number(c.count)||0))).join('、')+'（领奖时扣除）</p></section>'):''),'<section class="quest-detail-block quest-detail-rewards"><h3>任务奖励</h3><div>',rewardChips(entry,this.cardDb,this.itemDb),'</div></section><footer class="quest-detail-footer">',action,'</footer></div>'].join('');
+    // 2026-10-09：领奖时要扣的东西（材料 + 金币），在详情里先讲清楚。
+    const submitParts=[];
+    if(entry.consumeGold)submitParts.push('金币 '+Math.max(0,Math.floor(Number(entry.consumeGold)||0)));
+    for(const c of entry.consumeItems||[])submitParts.push(escaped(this.itemDb?.getById?.(Number(c.id))?.name||('道具 '+c.id))+' ×'+Math.max(0,Math.floor(Number(c.count)||0)));
+    const submitNote=submitParts.length?('<section class="quest-detail-block"><h3>需要提交</h3><p>'+submitParts.join('、')+'（领奖时扣除）</p></section>'):'';
+    detail.innerHTML=['<div class="quest-parchment-inner"><p class="quest-detail-kicker">',escaped(label),'</p><h2>',escaped(entry.name),'</h2><div class="quest-parchment-rule"></div><section class="quest-detail-block"><h3>任务目标</h3><p>',escaped(entry.desc),'</p><div class="quest-detail-progress"><i style="width:',pct,'%"></i></div><span>',s.progress,' / ',s.goal,'</span></section><section class="quest-detail-block"><h3>任务说明</h3><p>',escaped(entry.story||entry.desc),'</p></section>',submitNote,'<section class="quest-detail-block quest-detail-rewards"><h3>任务奖励</h3><div>',rewardChips(entry,this.cardDb,this.itemDb),'</div></section><footer class="quest-detail-footer">',action,'</footer></div>'].join('');
     detail.querySelector('.quest-detail-claim')?.addEventListener('click',()=>this.claim(root,entry));
   }
   recordClaim(category,entry,period=questPeriodKey(category)){
@@ -436,18 +372,26 @@ export class QuestView{
     if(reward.honor)this.player.honor=(this.player.honor||0)+reward.honor;
     if(reward.exp)grantPlayerExp(this.player,reward.exp);
     QuestView._suppressItemGain=true;
+    QuestView._suppressCardObtain=true;
     try{
-      for(const id of reward.cards||[])this.cardInventory?.addCard(id,0,{craftQuality:1,strengthLv:0});
+      for(const raw of reward.cards||[]){
+        const id=Number(raw?.id??raw);
+        const cq=Math.max(1,Math.min(5,Number(raw?.craftQuality)||1));
+        this.cardInventory?.addCard(id,0,{craftQuality:cq,strengthLv:0});
+      }
       for(const item of reward.items||[])this.inventory?.addItem(item.id,item.count);
       // 2026-10-06：材料提交类任务，领奖后本地同步扣掉（服务端已扣，这里只对齐界面）
       for(const entry of (reward.consumeItems||[])){
         const id=Number(entry?.id);const need=Math.max(0,Math.floor(Number(entry?.count)||0));
         if(Number.isInteger(id)&&id>0&&need>0)this.inventory?.consumeItem?.(id,need);
       }
-    }finally{QuestView._suppressItemGain=false;}
+    }finally{QuestView._suppressItemGain=false;QuestView._suppressCardObtain=false;}
   }
   toast(root,message){const t=root.querySelector('#quest-toast');if(!t)return;t.textContent=message;t.classList.remove('hidden');clearTimeout(this.toastTimer);this.toastTimer=setTimeout(()=>t.classList.add('hidden'),2200);}
 }
+
+// 2026-10-09：任务事件入口挂全局 —— 底层系统用 core/QuestEventBus.js 上报，避免 import 成环。
+globalThis.__clbwzQuestDispatch = (event, data) => QuestView.dispatch(event, data);
 
 // ---- 任务运行时桥接：不改背包/战斗核心，只在原型外层补任务事件。 ----
 if(!InventoryStore.prototype.__questItemGainPatched){
@@ -479,6 +423,8 @@ if(!CardInventoryStore.prototype.__questCardMetaPatched){
     if(result?.ok){
       const card=this.cardDb?.getById?.(Number(cardId));
       globalThis.__clbwzQuestLastAddedCardLevel=Number(card?.quality||1);
+      // 2026-10-09：「合成或从卡蛋中获得幼小玉米」这类任务要跟踪卡牌入库来源。
+      if(!QuestView._suppressCardObtain)QuestView.dispatch('card_obtain',{cardId:Number(cardId),count:1});
     }
     return result;
   };

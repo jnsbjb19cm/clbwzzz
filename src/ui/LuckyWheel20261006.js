@@ -323,6 +323,9 @@ async function spin(panel, random = Math.random) {
     serverSpins = null;
   }
 
+  // 2026-10-09：主线14「进行一次大转盘抽奖」—— 成功抽到（含断网兜底）才计数。
+  QuestView.dispatch('lucky_wheel', { count: 1 });
+
   const disc = panel.querySelector('[data-lucky-disc]');
   const angle = wheelAngleFor(sector ?? WHEEL_PRIZES[0], 5);   // 按权重扇区中心停，指针才指得准
   if (disc) {

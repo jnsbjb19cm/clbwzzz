@@ -1,4 +1,5 @@
 import { audio } from '../core/AudioManager.js';
+import { emitQuestEvent } from '../core/QuestEventBus.js';
 import { authStore } from '../core/AuthStore.js';
 import { createAdventureStages } from '../data/AdventureCampaign.js';
 import { renderAdventureMap, renderAdventureDestinations, renderAdventureBosses } from './AdventureMapReset.js';
@@ -180,6 +181,8 @@ export class WorldMapView {
     content.querySelectorAll('button[data-map]').forEach(button => {
       button.addEventListener('click', () => {
         this.selectedMap = button.dataset.map;
+        // 2026-10-09：主线51「前往悲伤密林」—— 从世界地图进入悲伤密林即计数。
+        if (button.dataset.map === 'forest') emitQuestEvent('visit_area', { areaId: 'painforest' });
         if (this.onDepart) return this.onDepart(this.selectedMap);
         this.renderMap(root);
       });

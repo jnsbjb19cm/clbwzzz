@@ -5,6 +5,7 @@ import {
   getSkillVisualDuration,
 } from '../battle/SkillAnimationConfig.js';
 import { audio } from '../core/AudioManager.js';
+import { emitQuestEvent } from '../core/QuestEventBus.js';
 import {
   getSkillCooldownSec,
   getSkillEffect,
@@ -138,6 +139,8 @@ export class BattleSkillSystem {
     }
     audio.playSkill(skillId);
     this.engine.pushLog('skill cast');
+    // 2026-10-09：玩家释放技能事件 —— 供「累计释放 N 次技能」任务计数。
+    emitQuestEvent('skill_cast', { count: 1 });
     return { ok: true, message: 'skill cast' };
   }
 

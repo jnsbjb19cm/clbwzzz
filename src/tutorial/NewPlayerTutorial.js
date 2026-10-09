@@ -4,6 +4,7 @@ import {
   NEW_PLAYER_TUTORIAL_STORAGE_KEY,
   TUTORIAL_CARD_IDS,
 } from './TutorialConfig.js';
+import { emitQuestEvent } from '../core/QuestEventBus.js';
 import './NewPlayerTutorial.css';
 import './TrainingResponsiveFix.css';
 
@@ -746,6 +747,8 @@ class NewPlayerTutorialController {
     try {
       localStorage.setItem(NEW_PLAYER_TUTORIAL_STORAGE_KEY, '1');
     } catch {}
+    // 2026-10-09：主线1「完成新手教程（跳过也算）」—— 完成即上报（跳过走的是同一条 complete()）。
+    emitQuestEvent('tutorial_complete', { count: 1 });
 
     this.root.querySelector('#result-overlay')?.classList.add('hidden');
     this.focus.style.display = 'none';

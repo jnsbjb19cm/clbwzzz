@@ -48,8 +48,13 @@ function normalizeIdentity(body) {
 
 function normalizeReward(raw) {
   const reward = raw && typeof raw === 'object' ? raw : {};
+  // 2026-10-09：卡片奖励支持制作品质（{id, craftQuality}）——「精良的寒冰椰子」这类。
   const cards = Array.isArray(reward.cards)
-    ? reward.cards.map(Number).filter((id) => Number.isInteger(id) && id > 0 && id < 500).slice(0, 20)
+    ? reward.cards.map((entry) => {
+      const id = Math.floor(Number(entry?.id ?? entry));
+      if (!Number.isInteger(id) || id <= 0 || id >= 500) return null;
+      return { id, craftQuality: clampInt(entry?.craftQuality ?? 1, 1, 5) };
+    }).filter(Boolean).slice(0, 20)
     : [];
   const items = Array.isArray(reward.items)
     ? reward.items.map((entry) => ({
@@ -85,7 +90,7 @@ async function addItem(conn, userId, itemId, count) {
   }
 }
 
-async function addCard(conn, userId, cardId) {
+async function addCard(conn, userId, cardId, craftQuality = 1) {
   const bag = await conn.get('SELECT slot_count AS slotCount FROM player_card_bags WHERE user_id=?', [userId]);
   const slotCount = Math.max(1, Math.min(500, Number(bag?.slotCount) || 200));
   const rows = await conn.all('SELECT slot_index AS slotIndex FROM player_cards WHERE user_id=?', [userId]);
@@ -97,7 +102,7 @@ async function addCard(conn, userId, cardId) {
   if (slotIndex < 0) throw new Error('卡牌背包已满，任务奖励未领取');
   await conn.run(
     'INSERT INTO player_cards(user_id,slot_index,card_id,star,craft_quality) VALUES(?,?,?,?,?)',
-    [userId, slotIndex, cardId, 0, 1],
+    [userId, slotIndex, cardId, 0, clampInt(craftQuality, 1, 5)],
   );
 }
 
@@ -136,17 +141,22 @@ questRewardAuthorityRouter20260908.post('/quests/claim-reward', async (req, res)
         throw Object.assign(new Error('该任务奖励已经领取'), {alreadyClaimed:true});
       }
 
-      const profile = await conn.get('SELECT level, exp FROM player_profiles WHERE user_id=?', [userId]);
+      const profile = await conn.get('SELECT level, exp, gold FROM player_profiles WHERE user_id=?', [userId]);
       if (!profile) throw new Error('玩家数据不存在');
       if (category === 'level' && Number(profile.level) < definition.lv) throw new Error('尚未达到领取等级');
+      // 2026-10-09：金币提交类任务 —— 支线10「游行商人」给皮埃尔 9999 金币（不够直接抛错，事务回滚）。
+      const consumeGold = Math.max(0, Math.floor(Number(definition.consumeGold) || 0));
+      if (consumeGold && Math.max(0, Number(profile.gold) || 0) < consumeGold) {
+        throw new Error(`金币不足，需要 ${consumeGold} 金币`);
+      }
       const progress = { level: Number(profile.level) || 1, exp: Number(profile.exp) || 0 };
       if (reward.exp > 0) grantPlayerExp(progress, reward.exp);
 
       await conn.run(`
         UPDATE player_profiles
-        SET gold=gold+?, diamond=diamond+?, honor=honor+?, level=?, exp=?, updated_at=CURRENT_TIMESTAMP
+        SET gold=gold+?-?, diamond=diamond+?, honor=honor+?, level=?, exp=?, updated_at=CURRENT_TIMESTAMP
         WHERE user_id=?
-      `, [reward.gold, reward.diamond, reward.honor, progress.level, progress.exp, userId]);
+      `, [reward.gold, consumeGold, reward.diamond, reward.honor, progress.level, progress.exp, userId]);
 
       // 2026-10-06：材料提交类任务 —— 领奖时先扣掉目标材料（不足直接抛错，整个事务回滚）。
       const consume = Array.isArray(definition.consumeItems) ? definition.consumeItems : [];
@@ -168,7 +178,7 @@ questRewardAuthorityRouter20260908.post('/quests/claim-reward', async (req, res)
         }
       }
 
-      for (const cardId of reward.cards) await addCard(conn, userId, cardId);
+      for (const card of reward.cards) await addCard(conn, userId, card.id, card.craftQuality);
       for (const item of reward.items) await addItem(conn, userId, item.itemId, item.count);
 
       await conn.run(

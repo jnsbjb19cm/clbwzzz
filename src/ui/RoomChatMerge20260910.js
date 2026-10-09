@@ -18,6 +18,7 @@
  * 同时保留原有职责：进房间时把重复的 `.lobby-chat` 从 DOM 摘下来，退出再挂回。
  */
 import { authStore } from '../core/AuthStore.js';
+import { emitQuestEvent } from '../core/QuestEventBus.js';
 import { containsBlockedWord, maskBlockedWords } from '../core/ContentFilter.js';
 import { RoomView } from './RoomView.js';
 import './RoomChatMerge20260910.css';
@@ -346,6 +347,8 @@ function handleRoomChatSend(view, detail = {}) {
   }
   if (LOBBY_CHANNELS.has(id)) {
     view.socket?.sendLobbyChat?.(text, id)?.catch?.((error) => view.notice?.(error?.message || '消息发送失败'));
+    // 2026-10-09：支线6「在世界频道发送一次信息」。
+    if (id === 'world') emitQuestEvent('world_chat', { count: 1 });
     return;
   }
   view.sendText?.(text, id === 'team' ? 'team' : 'current');

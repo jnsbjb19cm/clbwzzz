@@ -1,4 +1,5 @@
 import { audio } from '../core/AudioManager.js';
+import { emitQuestEvent } from '../core/QuestEventBus.js';
 import { referenceCharacterMarkup } from './ReferenceInventoryLayout.js';
 import payData from '../data/pay.json';
 import packData from '../data/tearPackageItem.json';
@@ -501,6 +502,8 @@ export class ShopView {
     }
     this.cart = remaining;
     if (purchased > 0) {
+      // 2026-10-09：主线8「从商场购买一个任意道具」—— 结账成功即计数。
+      emitQuestEvent('shop_buy', { count: 1 });
       // 2026-10-06：去掉"成功购买 N 件商品"这类调试味提示 —— 购物车清空、金币变化本身就是反馈。
       this.onPlayerUpdate?.();
       this.renderClassicCatalog(root);
@@ -594,6 +597,7 @@ export class ShopView {
           return;
         }
         this.player.gold-=price;
+        emitQuestEvent('shop_buy', { count: 1 });
         this.onPlayerUpdate?.();
         return;
       }

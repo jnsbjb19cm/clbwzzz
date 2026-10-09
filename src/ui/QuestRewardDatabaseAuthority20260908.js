@@ -42,7 +42,15 @@ function rewardPayload(entry) {
     gem: Math.max(0, Number(entry?.gem) || 0),
     honor: Math.max(0, Number(entry?.honor) || 0),
     exp: Math.max(0, Number(entry?.exp) || 0),
-    cards: Array.isArray(entry?.cards) ? entry.cards.map(Number).filter(Number.isInteger) : [],
+    // 2026-10-09：卡片奖励可能是 { id, craftQuality }（「精良的寒冰椰子」），不能再无脑 Number()。
+    cards: Array.isArray(entry?.cards)
+      ? entry.cards.map((card) => {
+        const id = Math.floor(Number(card?.id ?? card));
+        if (!Number.isInteger(id) || id <= 0) return null;
+        const craftQuality = Math.max(1, Math.min(5, Math.floor(Number(card?.craftQuality) || 1)));
+        return { id, craftQuality };
+      }).filter(Boolean)
+      : [],
     items: Array.isArray(entry?.items)
       ? entry.items.map((item) => ({ id: Number(item?.id), count: Math.max(1, Number(item?.count) || 1) }))
       : [],

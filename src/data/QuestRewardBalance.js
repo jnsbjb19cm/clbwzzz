@@ -110,6 +110,32 @@ function defaultProfile(category) {
   })[category] || 'side';
 }
 
+/**
+ * 2026-10-09：卡片奖励支持带制作品质（txt 里「精良的寒冰椰子」「完美的花生射手」）。
+ * 兼容两种写法：`12` 或 `{ id: 12, craftQuality: 3 }`。
+ */
+function normalizeRewardCards(entries) {
+  const out = [];
+  for (const raw of entries || []) {
+    const id = Math.floor(Number(raw?.id ?? raw));
+    if (!Number.isInteger(id) || id <= 0) continue;
+    const craftQuality = raw && typeof raw === 'object'
+      ? Math.max(1, Math.min(5, Math.floor(Number(raw.craftQuality) || 1)))
+      : 1;
+    out.push(craftQuality > 1 ? { id, craftQuality } : id);
+  }
+  return out;
+}
+
+/** 任务里明确写出的道具奖励：原样采用，不再叠加 profile 主题材料。 */
+function exactRewardItems(entries) {
+  const out = [];
+  for (const raw of entries || []) {
+    pushItem(out, raw?.id ?? raw?.itemId, raw?.count ?? 1);
+  }
+  return out;
+}
+
 export function balanceQuestReward(entry, category) {
   const profile = entry.rewardProfile || defaultProfile(category);
   const tier = clampTier(entry.rewardTier || 1);
@@ -124,8 +150,12 @@ export function balanceQuestReward(entry, category) {
       : entry.event === 'card_upgrade' ? 'workshop'
       : null
   );
+  // exactReward：任务已按规格写死奖励，写了的金币/经验/道具原样发，只有完全没写的项回落到 profile 平衡。
+  const exact = entry.exactReward === true;
   const themed = themedItems(theme, tier, profile);
-  const items = mergeItems(themed, entry.items);
+  const items = exact && Array.isArray(entry.items)
+    ? exactRewardItems(entry.items)
+    : mergeItems(themed, entry.items);
 
   return {
     ...entry,
@@ -133,7 +163,7 @@ export function balanceQuestReward(entry, category) {
     exp: entry.exp ?? base.exp,
     honor: entry.honor ?? base.honor,
     gem: entry.gem ?? base.gem,
-    cards: Array.isArray(entry.cards) ? entry.cards : [],
+    cards: Array.isArray(entry.cards) ? normalizeRewardCards(entry.cards) : [],
     items,
   };
 }

@@ -838,9 +838,15 @@ export class BattleView {
             this.onQuestEvent?.('monster_line_clear', { ...questMeta, oreGain: 1, route: 1 });
           }
         }
+        // 2026-10-09：冒险「尝试通关（没通过也可以）」—— 胜负都上报，供主线15/42 这类任务计数。
+        if (adventure && !bossId) this.onQuestEvent?.('adventure_attempt', questMeta);
         this.onQuestEvent?.('battle_complete', questMeta);
         const kills = this.engine.killsThisBattle ?? 0;
         if (kills > 0) this.onQuestEvent?.('kill_enemy', { ...questMeta, count: kills });
+        // 2026-10-09：指定卡击杀（「累计击败 5 个西瓜太郎或真·西瓜太郎」）—— 每张卡一条，按本场击杀数。
+        for (const [cardId, count] of Object.entries(this.engine.killedCardCounts || {})) {
+          if (Number(count) > 0) this.onQuestEvent?.('kill_card', { ...questMeta, cardId: Number(cardId), count: Number(count) });
+        }
         const dur = Math.round(this.engine.time || 0);
         this.onQuestEvent?.('battle_duration', { ...questMeta, duration: dur });
         if (kills > 0) this.onQuestEvent?.('battle_kill', { ...questMeta, count: kills });
@@ -1047,6 +1053,8 @@ export class BattleView {
       if (await this.engine.deploy(lane, col, handIndex)) {
         this.questBattleStats?.cardIds?.add?.(Number(entry?.card?.id));
         this.questBattleStats?.lanes?.add?.(Number(lane));
+        // 2026-10-09：出牌事件 —— 供「使用 N 次幼小玉米」这类任务计数。
+        this.onQuestEvent?.('card_use', { cardId: Number(entry?.card?.id), count: 1 });
         if (this.pvp) {
           this.pvpSocket?.sendPvpDeploy?.({ cardId: entry.card.id, lane, col });
         }

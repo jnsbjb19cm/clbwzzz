@@ -412,6 +412,8 @@ export class SmithyView {
       });
       audio.playSmithResult(Boolean(result.success));
       if (result.success) this.onQuestEvent?.('card_strengthen', { count: 1 });
+      // 2026-10-09：主线29「强化10次卡牌（成功失败均可）」—— 只要这一次真的执行了升星就算一次尝试。
+      if (result && !result.error) this.onQuestEvent?.('card_strengthen_attempt', { count: 1 });
       this._starSubIdxs = [];
       this.toast(root, result.message ?? result.error ?? '升星完成');
       this.renderBody(root);

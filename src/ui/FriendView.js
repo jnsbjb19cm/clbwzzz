@@ -1,4 +1,5 @@
 import { authStore } from '../core/AuthStore.js';
+import { emitQuestEvent } from '../core/QuestEventBus.js';
 import { CardDatabase } from '../core/CardDatabase.js';
 
 const db = new CardDatabase();
@@ -109,6 +110,8 @@ export class FriendView {
   async addFriend(userId) {
     try {
       const res = await this.api.post('/social/friends/request', { userId });
+      // 2026-10-09：支线4「尝试添加一次好友」—— 申请发出即算一次尝试。
+      emitQuestEvent('friend_add', { count: 1 });
       alert(res.accepted ? '你们已经是好友了' : '好友申请已发送');
       await this.refresh();
     } catch (e) {

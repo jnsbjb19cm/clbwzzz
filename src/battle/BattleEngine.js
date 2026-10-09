@@ -2051,6 +2051,13 @@ export class BattleEngine {
     if (unit.team !== 'player') {
       this.killsThisBattle = (this.killsThisBattle || 0) + 1;
       this.totalKills = (this.totalKills || 0) + 1;
+      // 2026-10-09：按卡 id 累计本场击杀 —— 战斗结束时一次性上报（避免每死一只就写一次任务存档）。
+      // 供「累计击败 N 个西瓜太郎」这类指定卡任务使用。
+      const killedId = Number(unit.cardId) || 0;
+      if (killedId) {
+        this.killedCardCounts = this.killedCardCounts || {};
+        this.killedCardCounts[killedId] = (this.killedCardCounts[killedId] || 0) + 1;
+      }
     }
     if (unit.team === 'player') unit._diedThisBattle = true;
     // 2026-09-12：死亡必须能看到"结算数字"。多数伤害路径会先调 spawnDamageFloat

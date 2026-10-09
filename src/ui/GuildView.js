@@ -1,4 +1,5 @@
 import { authStore } from '../core/AuthStore.js';
+import { emitQuestEvent } from '../core/QuestEventBus.js';
 import { bindClassicChat, classicChatMarkup } from './ClassicCityChrome.js';
 import { ItemDatabase } from '../core/ItemDatabase.js';
 import { getCraftMaterialImage } from './SmithyMaterialArtwork.js';
@@ -89,12 +90,16 @@ export class GuildView {
       const name = el.querySelector('#guild-name').value.trim();
       try {
         await this.api.post('/guild/create', { name });
+        // 2026-10-09：主线31「加入或创建一个公会」。
+        emitQuestEvent('guild_join', { count: 1 });
         this.load();
       } catch (e) { alert(e.message); }
     });
     el.querySelectorAll('[data-join-guild]').forEach((btn) => btn.addEventListener('click', async () => {
       try {
         await this.api.post('/guild/join', { guildId: Number(btn.dataset.joinGuild) });
+        // 2026-10-09：主线31「加入或创建一个公会」。
+        emitQuestEvent('guild_join', { count: 1 });
         alert('加入公会成功');
         this.load();
       } catch (e) { alert(e.message); }

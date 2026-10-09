@@ -118,6 +118,8 @@ function bindServerActions(view, root) {
     });
     audio.playSmithResult(Boolean(data?.ok && data?.success));
     if (data?.ok && data?.success) view.onQuestEvent?.('card_strengthen', { count: 1 });
+    // 2026-10-09：主线29「强化10次卡牌（成功失败均可）」—— 服务端受理了这次升星就算一次尝试。
+    if (data?.ok) view.onQuestEvent?.('card_strengthen_attempt', { count: 1 });
     view._starSubIdxs = [];
     view.toast(root, data?.message ?? data?.error ?? '升星完成');
     view.renderBody(root);
