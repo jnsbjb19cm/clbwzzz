@@ -259,14 +259,17 @@ playerEconomyAuthorityRouter20260908.post('/inventory/use', async (req, res) => 
         const card = def.card_pool_quality ? pickExactTierCard(COLLECTIBLE_CARDS, def.card_pool_quality) : pickWeightedCard(def.quality ?? 2);
         await consumeItem(conn, userId, itemId, 1, requestedBound);
         await addCard(conn, userId, card.card_id);
-        return { message: `获得 ${card.card_name}`, cardId: Number(card.card_id) };
+        // 2026-10-09（用户要求）：开卡蛋要能看出「开出来是什么卡」，带上几级卡。
+        return { message: `获得卡牌「${card.card_name}（${Number(card.card_quality) || 1}级卡）」`, cardId: Number(card.card_id) };
       }
 
       if (fn === 1 && /礼盒/.test(showType)) {
         const rewardId = RANDOM_ITEM_POOL[Math.floor(Math.random() * RANDOM_ITEM_POOL.length)];
         await consumeItem(conn, userId, itemId, 1, requestedBound);
         await addItem(conn, userId, rewardId, 1, false);
-        return { message: `获得道具 #${rewardId}`, rewardItemId: rewardId };
+        // 不再显示裸 ID（用户报「显示 xxxx，不知道是哪个道具」）。
+        const rewardName = String(itemDef(rewardId)?.item_name ?? itemDef(rewardId)?.name ?? `#${rewardId}`);
+        return { message: `获得「${rewardName}」`, rewardItemId: rewardId };
       }
 
       throw new Error('该道具需要选择目标，不能直接使用');

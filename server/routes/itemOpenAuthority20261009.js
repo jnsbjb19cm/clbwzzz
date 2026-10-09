@@ -24,6 +24,7 @@ import { findGiftPool, rollGiftPool } from '../../src/data/giftPoolRoll.js';
 
 const require = createRequire(import.meta.url);
 const giftPools = require('../../src/data/giftPools.json');
+const itemRows = require('../../src/data/item.json');
 const functionalRows = require('../../src/data/functionalItems.json');
 const cardRows = require('../../src/data/card.json');
 
@@ -31,7 +32,26 @@ export const itemOpenAuthorityRouter20261009 = Router();
 itemOpenAuthorityRouter20261009.use(requireAuth);
 
 const POOLS = (giftPools && giftPools.default) ? giftPools.default : giftPools;
-const ITEM_DEFS = new Map(functionalRows.map((row) => [Number(row.item_id), row]));
+// 2026-10-09：礼包奖励里的 50001/50011/53001/10001… 只在 item.json 里，
+// 之前只读 functionalItems.json → 开出来显示「道具50001」这种裸 ID（用户报的就是这个）。
+const ITEM_DEFS = new Map([...itemRows, ...functionalRows].map((row) => [Number(row.item_id), row]));
+const ITEM_NAMES = new Map([...itemRows, ...functionalRows].map((row) => [Number(row.item_id), String(row.item_name ?? row.name ?? '')]));
+
+/** 道具名（拿不到名字就退回 #id，绝不显示裸数字）。 */
+function itemNameOf(itemId) {
+  return ITEM_NAMES.get(Number(itemId)) || `#${itemId}`;
+}
+
+/**
+ * 卡牌展示名：卡名 + 几级卡。
+ * 2026-10-09（用户要求）：开卡蛋 / 神秘卡蛋要能看出「开出来是什么卡」，统一带上等级。
+ */
+function cardDisplayName(card) {
+  const name = String(card?.card_name ?? card?.name ?? '').trim() || `#${card?.card_id}`;
+  const quality = int(card?.card_quality, 0);
+  return quality > 0 ? `${name}（${quality}级卡）` : name;
+}
+
 const GIFT_FUNCTIONS = new Set([60, 61, 62]);
 const TRIAL_CARD_FUNCTION = 64;
 const MAX_USE_COUNT = 9999;
@@ -78,7 +98,19 @@ export {
   openableKind as openableKind20261009,
   trialCardIdOf as trialCardIdOf20261009,
   trialDaysOf as trialDaysOf20261009,
+  itemNameOf as itemNameOf20261009,
 };
+
+/** 2026-10-09：一次性随机道具（用户报「远古召唤卷没法使用」）。 */
+const ROULETTE_FUNCTIONS = new Set([
+  50, // 藏宝图：随机珍贵物品
+  51, // 随机技能书
+  53, // 远古召唤卷：随机 2~4 级卡牌
+]);
+
+/** 藏宝图池（都是「珍贵」档，别再开出 1 级材料）。 */
+const TREASURE_ITEM_POOL = [82, 83, 60105, 50004, 50014, 53001, 53002, 53003, 53004];
+const SKILL_BOOK_POOL = [84, 85, 86];
 
 /** 只有本路由认识的道具才接管；其余交给后续路由。 */
 function openableKind(def) {
@@ -86,6 +118,7 @@ function openableKind(def) {
   if (GIFT_FUNCTIONS.has(int(def.function))) return 'gift_pool';
   if (isTrialCardItem(def)) return 'trial_card';
   if (isEffectValueGift(def)) return 'effect_value_gift';
+  if (ROULETTE_FUNCTIONS.has(int(def.function))) return 'roulette';
   return null;
 }
 
@@ -143,15 +176,14 @@ async function addItem(conn, userId, itemId, count, bound = false) {
 }
 
 function pickCardForEntry(entry) {
-  if (entry?.cardId != null) {
-    const card = CARD_BY_ID.get(int(entry.cardId));
-    return card ? { cardId: Number(card.card_id), cardName: String(card.card_name || card.card_id) } : null;
-  }
+  const wrap = (card) => (card
+    ? { cardId: Number(card.card_id), cardName: String(card.card_name || card.card_id), raw: card }
+    : null);
+  if (entry?.cardId != null) return wrap(CARD_BY_ID.get(int(entry.cardId)));
   if (entry?.quality != null) {
     const pool = COLLECTIBLE_CARDS.filter((card) => int(card.card_quality, 1) === int(entry.quality));
     if (!pool.length) return null;
-    const card = pickExactTierCard(pool, int(entry.quality));
-    return card ? { cardId: Number(card.card_id), cardName: String(card.card_name || card.card_id) } : null;
+    return wrap(pickExactTierCard(pool, int(entry.quality)));
   }
   return null;
 }
@@ -192,16 +224,16 @@ async function grantGiftRoll(conn, userId, out) {
     for (const entry of cardEntries) {
       const card = pickCardForEntry(entry);
       if (!card) { names.push('（卡池为空）'); continue; }
-      if (cursor >= slots.length) { names.push(`卡牌「${card.cardName}」（卡牌背包已满）`); continue; }
+      if (cursor >= slots.length) { names.push(`卡牌「${cardDisplayName(card.raw)}」（卡牌背包已满）`); continue; }
       await addCardInstance(conn, userId, slots[cursor], card.cardId, 0);
       cursor += 1;
-      names.push(`卡牌「${card.cardName}」`);
+      names.push(`卡牌「${cardDisplayName(card.raw)}」`);
     }
   }
   for (const row of itemEntries) {
-    const def = ITEM_DEFS.get(int(row.itemId));
-    await addItem(conn, userId, int(row.itemId), Math.max(1, int(row.count, 1)), false);
-    names.push(`${def?.item_name ?? `道具${row.itemId}`}×${Math.max(1, int(row.count, 1))}`);
+    const count = Math.max(1, int(row.count, 1));
+    await addItem(conn, userId, int(row.itemId), count, false);
+    names.push(`${itemNameOf(row.itemId)}×${count}`);
   }
   return names;
 }
@@ -270,11 +302,41 @@ itemOpenAuthorityRouter20261009.post('/inventory/use', async (req, res, next) =>
         for (const slot of slots.slice(0, count)) {
           await addCardInstance(conn, userId, slot, cardId, expiresAt);
         }
-        const cardName = String(CARD_BY_ID.get(cardId)?.card_name || cardId);
+        const cardName = cardDisplayName(CARD_BY_ID.get(cardId));
         return {
           message: `获得「${cardName}」体验卡（${trialDaysOf(def)} 天）`,
           used: count,
           cardId,
+        };
+      }
+
+      // 2026-10-09：藏宝图 / 随机技能书 / 远古召唤卷 —— 一次性随机奖励。
+      if (kind === 'roulette') {
+        const fn = int(def.function);
+        const count = requestedCount;
+        await consumeItem(conn, userId, itemId, count, requestedBound);
+        const names = [];
+        for (let i = 0; i < count; i += 1) {
+          if (fn === 53) {
+            // 远古召唤卷：随机 2~4 级卡牌
+            const pool = COLLECTIBLE_CARDS.filter((card) => int(card.card_quality, 1) >= 2 && int(card.card_quality, 1) <= 4);
+            const card = pool.length ? pool[Math.floor(Math.random() * pool.length) % pool.length] : null;
+            if (!card) throw new Error('卡池为空');
+            const slots = await freeCardSlots(conn, userId, 1);
+            if (!slots.length) throw new Error('卡牌背包已满');
+            await addCardInstance(conn, userId, slots[0], Number(card.card_id), 0);
+            names.push(`卡牌「${cardDisplayName(card)}」`);
+            continue;
+          }
+          const pool = fn === 51 ? SKILL_BOOK_POOL : TREASURE_ITEM_POOL;
+          const rewardId = pool[Math.floor(Math.random() * pool.length) % pool.length];
+          await addItem(conn, userId, rewardId, 1, false);
+          names.push(`${itemNameOf(rewardId)}×1`);
+        }
+        return {
+          message: `打开「${def.item_name}」获得：${names.join('、')}`,
+          used: count,
+          granted: names.length,
         };
       }
 

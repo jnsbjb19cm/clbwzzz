@@ -9,7 +9,9 @@
 export function emitQuestEvent(event, data = {}) {
   try {
     globalThis.__clbwzQuestDispatch?.(event, data);
-  } catch {
-    /* 任务进度上报失败不应影响主流程 */
+  } catch (error) {
+    // 2026-10-09：这里原来把异常静默吞掉 —— 用户报「买了东西/发了世界频道任务不涨」时，
+    // 若真是 dispatch 内部出错，控制台一点线索都没有。现在至少打出事件名和堆栈。
+    console.error(`[quest] 任务事件「${event}」处理失败（进度可能没记上）`, error);
   }
 }

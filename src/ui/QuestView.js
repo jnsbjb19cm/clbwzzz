@@ -437,6 +437,44 @@ export class QuestView{
 // 2026-10-09：任务事件入口挂全局 —— 底层系统用 core/QuestEventBus.js 上报，避免 import 成环。
 globalThis.__clbwzQuestDispatch = (event, data) => QuestView.dispatch(event, data);
 
+/**
+ * 2026-10-09：自助排查入口。
+ * 用户报「我买了卡包 / 在世界频道发了话，任务还是不涨」时，让他在控制台执行：
+ *   clbwzQuestDebug()            → 看长期统计计数 + 这两个任务的实际进度/前置
+ *   clbwzQuestDebug('mq08')      → 看指定任务的进度、是否满足前置
+ * 这样一次就能分清是「事件没记上」还是「被前置门禁挡住」还是「界面没刷新」。
+ */
+globalThis.clbwzQuestDebug = (questId) => {
+  const state = loadState();
+  const extra = state._extra ?? {};
+  const all = [...QUEST_GROUPS.main, ...QUEST_GROUPS.side];
+  const info = (quest) => {
+    if (!quest) return null;
+    const category = QUEST_GROUPS.main.includes(quest) ? 'main' : 'side';
+    return {
+      id: quest.id,
+      name: quest.name,
+      event: quest.event,
+      goal: quest.goal,
+      progress: state[`${category}Progress`]?.[quest.id] ?? 0,
+      claimed: (state[`${category}Claimed`] ?? []).includes(quest.id),
+      requiresMain: quest.requiresMain ?? null,
+      requirementsMet: requirementsMet(state, category, quest),
+    };
+  };
+  if (questId) return info(all.find((q) => String(q.id) === String(questId))) ?? { error: `没有任务 ${questId}` };
+  const counters = Object.fromEntries(Object.entries(extra)
+    .filter(([key, value]) => /^total[A-Z]/.test(key) && Number.isFinite(Number(value)))
+    .map(([key, value]) => [key, Number(value)]));
+  return {
+    hint: '商城=主线8「商场采购」(mq08)；世界频道=支线6「你好，世界」。progress 不涨先看 requirementsMet。',
+    counters,
+    shopBuy: info(all.find((q) => q.event === 'shop_buy')),
+    worldChat: info(all.find((q) => q.event === 'world_chat')),
+    rawExtra: extra,
+  };
+};
+
 // ---- 任务运行时桥接：不改背包/战斗核心，只在原型外层补任务事件。 ----
 if(!InventoryStore.prototype.__questItemGainPatched){
   const originalAddItem=InventoryStore.prototype.addItem;

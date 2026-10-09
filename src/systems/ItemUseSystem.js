@@ -10,6 +10,13 @@ const DIRECT_ITEMS = new Set([92]);
 const PLAYER_RENAME_ITEM = 98;
 /** 2026-10-09：体验卡（function 64）—— 使用后获得指定卡牌的限时副本。 */
 const TRIAL_CARD_FUNCTION = 64;
+/**
+ * 2026-10-09：一次性随机道具（用户报「远古召唤卷没法使用」）。
+ * 50 藏宝图 / 51 随机技能书 / 53 远古召唤卷。
+ */
+const ROULETTE_FUNCTIONS = new Set([50, 51, 53]);
+const TREASURE_ITEM_POOL = [82, 83, 60105, 50004, 50014, 53001, 53002, 53003, 53004];
+const SKILL_BOOK_POOL = [84, 85, 86];
 
 export class ItemUseSystem {
   constructor(cardDb, itemDb) { this.cardDb = cardDb; this.itemDb = itemDb; }
@@ -20,6 +27,7 @@ export class ItemUseSystem {
     if (id === PLAYER_RENAME_ITEM) return true;
     if (CARD_PICKER_ITEMS.has(id) || DIRECT_ITEMS.has(id)) return true;
     if (item.function === TRIAL_CARD_FUNCTION) return true;
+    if (ROULETTE_FUNCTIONS.has(item.function)) return true;
     if (item.function === 13) return true;
     if (item.function === 2) return /礼盒|礼包|卡包|卡蛋|药水/.test(item.showType ?? '');
     if (item.function === 1 && /礼盒/.test(item.showType ?? '')) return true;
@@ -33,6 +41,7 @@ export class ItemUseSystem {
     const id = Number(item.id);
     if (id === PLAYER_RENAME_ITEM) return { ok: true, requiresRename: true };
     if (item.function === TRIAL_CARD_FUNCTION) return this.useTrialCard(item, slotIndex, inventory, cardInventory);
+    if (ROULETTE_FUNCTIONS.has(item.function)) return this.useRoulette(item, slotIndex, inventory, cardInventory);
     if (CARD_PICKER_ITEMS.has(id)) return { ok: true, picker: true };
     if (DIRECT_ITEMS.has(id)) return this._useDirect(id, slotIndex, inventory, player);
     if (item.function === 13 || /卡包|卡蛋/.test(item.showType ?? '')) {
@@ -59,6 +68,39 @@ export class ItemUseSystem {
     if (res && res.ok === false) return res;
     inventory.consumeAt(slotIndex, 1);
     return { ok: true, message: `获得「${card.name}」体验卡（${days} 天）` };
+  }
+
+  /**
+   * 2026-10-09：一次性随机道具（藏宝图 50 / 随机技能书 51 / 远古召唤卷 53）。
+   * 走「先加奖励再扣道具、加不进去就回滚」的顺序，避免背包满时白扣。
+   */
+  useRoulette(item, slotIndex, inventory, cardInventory) {
+    const fn = Number(item.function);
+    if (fn === 53) {
+      const pool = (this.cardDb?.getCollectibleCards?.() ?? []).filter((card) => {
+        const q = Number(card?.quality) || 1;
+        return q >= 2 && q <= 4;
+      });
+      if (!pool.length) return { ok: false, error: '卡池为空' };
+      if (typeof cardInventory?.getFreeSlots === 'function' && cardInventory.getFreeSlots() < 1) {
+        return { ok: false, error: '卡牌背包已满' };
+      }
+      const card = pool[Math.floor(Math.random() * pool.length) % pool.length];
+      const res = cardInventory.addCard(card.id, 0, { craftQuality: 1 });
+      if (res && res.ok === false) return res;
+      inventory.consumeAt(slotIndex, 1);
+      return { ok: true, message: `获得卡牌「${card.name}（${Number(card.quality) || 1}级卡）」` };
+    }
+
+    const pool = fn === 51 ? SKILL_BOOK_POOL : TREASURE_ITEM_POOL;
+    const rewardId = pool[Math.floor(Math.random() * pool.length) % pool.length];
+    inventory.consumeAt(slotIndex, 1);
+    if (!inventory.addItem(rewardId, 1)) {
+      inventory.addItem(item.id, 1); // 回滚，别白扣
+      return { ok: false, error: '背包已满' };
+    }
+    const name = this.itemDb?.getById?.(rewardId)?.name ?? `#${rewardId}`;
+    return { ok: true, message: `获得「${name}」` };
   }
 
   _useDirect(id, slotIndex, inventory, player) {
