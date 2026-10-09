@@ -493,6 +493,8 @@ export class BagView {
     // 同时隐藏格子区与详情栏，容器自己横跨剩余两列。
     const storagePanel = root.querySelector('#bag-storage-panel');
     if (this.mode === 'storage') {
+      // 2026-10-09（用户要求）：储藏室页签把左侧「人物 + 装备」收起来，储藏室独占整行。
+      root.querySelector('.bag-body')?.classList.add('bag-body-storage');
       root.querySelector('#bag-grid')?.classList.add('bag-grid-hidden');
       root.querySelector('#bag-detail')?.classList.add('bag-detail-hidden');
       if (storagePanel) {
@@ -501,6 +503,7 @@ export class BagView {
       }
       return;
     }
+    root.querySelector('.bag-body')?.classList.remove('bag-body-storage');
     if (storagePanel) storagePanel.hidden = true;
     root.querySelector('#bag-grid')?.classList.remove('bag-grid-hidden');
     root.querySelector('#bag-detail')?.classList.remove('bag-detail-hidden');
