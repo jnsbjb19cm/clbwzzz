@@ -2980,23 +2980,25 @@ body.battle-immersive .top-ui {
 
 .ch-stage-chest { font-size: 0.65rem; position: absolute; top: -4px; right: -4px; }
 
+/* 2026-10-09（用户要求「去框」）：提示不再画黑框，只留文字 + 描边保证可读性。 */
 .bag-toast {
   position: fixed;
   left: 50%;
   top: 50%;
   transform: translate(-50%, -50%);
-  padding: 14px 28px;
-  background: rgba(13, 26, 18, 0.92);
+  padding: 0;
+  background: none;
   border: none;
-  border-radius: 12px;
-  font-size: 1rem;
-  font-weight: 600;
-  color: #f0f5e8;
+  border-radius: 0;
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: #fff6cf;
   text-align: center;
+  text-shadow: 0 2px 6px rgba(0, 0, 0, .95), 0 0 3px rgba(0, 0, 0, .9);
   z-index: 999;
   pointer-events: none;
   transition: opacity 0.25s;
-  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.5);
+  box-shadow: none;
 }
 
 .bag-toast.hidden {
@@ -5216,11 +5218,13 @@ html, body { margin:0; padding:0; width:100%; height:100%; overflow:hidden; }
 .bag-actions-stack { flex-direction: column; align-items: stretch; }
 .bag-actions-stack .bag-action { width: 100%; }
 .bag-qty-off { display: none; }
-/* 2026-10-09：储藏室页签占满主区域 —— 详情栏隐藏后不能再留着第 3 列的宽度，
-   否则两列表格被挤成窄条（用户报「储藏室都被压缩了」）。 */
-.bag-body.bag-body-storage { grid-template-columns: minmax(188px, 220px) minmax(0, 1fr); }
-.bag-body.bag-body-storage .bag-storage-host { min-height: 460px; }
-.bag-body.bag-body-storage .storage-list { max-height: 62vh; }
+/* 2026-10-09：储藏室改用独立容器 —— 之前渲染进 #bag-grid 会继承背包格子的 grid 样式，
+   整块被塞进一个 78px 格子、其余格子空着（用户报「格子占用全是空的 / 被压缩」）。
+   现在 #bag-grid 与 #bag-detail 隐藏，储藏室自己横跨第 2~3 列。 */
+.bag-grid-hidden { display: none; }
+.bag-storage-panel { grid-column: 2 / -1; display: block; min-height: 460px; overflow: auto; padding: 4px 8px; }
+.bag-storage-panel[hidden] { display: none; }
+.bag-storage-panel .storage-list { max-height: 62vh; }
 /* 2026-10-09：体验卡（限时卡牌副本）。 */
 .bag-slot-trial { position: absolute; top: 2px; left: 2px; padding: 0 4px; border-radius: 4px; background: #b8860b; color: #fff; font-size: .6rem; line-height: 1.4; }
 .bag-detail-trial { margin: 0; font-size: .82rem; color: #b8860b; }

@@ -125,6 +125,10 @@ export class BagView {
           <aside id="bag-detail" class="bag-detail empty">
             <p id="bag-detail-hint">点击物品查看详情</p>
           </aside>
+          <!-- 2026-10-09：储藏室独立容器。
+               之前把储藏室渲染进 #bag-grid，会继承背包格子的 grid 样式，
+               结果整块被塞进一个格子、其余格子空着（用户报「格子占用全是空的/被压缩」）。 -->
+          <section id="bag-storage-panel" class="bag-storage-panel" hidden></section>
         </div>
         <footer class="classic-bag-footer">
           <span class="bag-currency bag-currency-gem">◆ ${Math.max(0, Number(this.player?.gem) || 0)}</span>
@@ -484,17 +488,21 @@ export class BagView {
       this.renderToolbar(root);
     }
 
-    // 2026-10-09：储藏室页签 —— 主区域直接渲染储藏室，隐藏物品详情栏，
-    // 并把 bag-body 切成两列，避免详情栏那 240~290px 空着把储藏室挤窄。
+    // 2026-10-09：储藏室页签 —— 用**独立容器**渲染（不再塞进 #bag-grid，
+    // 否则会继承背包格子的 grid 样式，被压成一个格子、其余格子空着），
+    // 同时隐藏格子区与详情栏，容器自己横跨剩余两列。
+    const storagePanel = root.querySelector('#bag-storage-panel');
     if (this.mode === 'storage') {
-      root.querySelector('.bag-body')?.classList.add('bag-body-storage');
+      root.querySelector('#bag-grid')?.classList.add('bag-grid-hidden');
       root.querySelector('#bag-detail')?.classList.add('bag-detail-hidden');
-      const storageGrid = root.querySelector('#bag-grid');
-      storageGrid.className = 'bag-grid bag-storage-host';
-      this.renderStorage(root, storageGrid);
+      if (storagePanel) {
+        storagePanel.hidden = false;
+        this.renderStorage(root, storagePanel);
+      }
       return;
     }
-    root.querySelector('.bag-body')?.classList.remove('bag-body-storage');
+    if (storagePanel) storagePanel.hidden = true;
+    root.querySelector('#bag-grid')?.classList.remove('bag-grid-hidden');
     root.querySelector('#bag-detail')?.classList.remove('bag-detail-hidden');
 
     const store = this.getActiveStore();
