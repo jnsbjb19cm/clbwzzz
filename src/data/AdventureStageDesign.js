@@ -296,12 +296,18 @@ export function adventureReinforceAliveCap(stage, cardId) {
 const STAGE_DRIP_CARD = Object.freeze({
   14: [{ cardId: 58, everyWaves: 18 }],
   // 4-4 战争古树：用户要求"10 波才来 1 只"
-  16: [{ cardId: 55, everyWaves: 10 }],
+  16: [
+    { cardId: 55, everyWaves: 10 },
+    // 蘑菇仙人 2 只：第 4 波第一只、第 18 波第二只；场上最多 2；死后 9 波再来
+    { cardId: 58, everyWaves: 1, atWaves: [4, 18], instances: 2, respawnAfterDeath: 9 },
+  ],
 });
 
 /** 怪物线专用滴灌（2026-10-09）：怪物线 3-4 每 9 波来 1 只幻.飞行忍者(45) */
 const MONSTER_STAGE_DRIP_CARD = Object.freeze({
   12: [{ cardId: 45, everyWaves: 9 }],
+  // 4-4 火龙：场上最多 1 只，死后往后推 9 波才能出下一只
+  16: [{ cardId: 56, everyWaves: 1, atWaves: [4], instances: 1, respawnAfterDeath: 9 }],
 });
 
 /**
@@ -317,6 +323,28 @@ export function adventureSubwavePlan(stage) {
   if (!cfg) return null;
   return { maxPerGroup: cfg.maxPerGroup, gapSec: cfg.gapSec };
 }
+/**
+ * 某张卡在某关的"入场计划"（2026-10-09）：
+ *   atWaves            —— 计划入场的绝对波次（4、18…）
+ *   instances          —— 场上最多个数
+ *   respawnAfterDeath  —— 死后要等多少波才会补下一只
+ * 没有配置返回 null。
+ */
+export function adventureFieldSchedule(stage, cardId) {
+  const a = stage?.adventure;
+  if (!a) return null;
+  const route = Number(a.route);
+  if (route !== 0 && route !== 1) return null;
+  const list = (route === 1 ? MONSTER_STAGE_DRIP_CARD : STAGE_DRIP_CARD)[Number(a.index)] ?? [];
+  const entry = list.find((row) => Number(row.cardId) === Number(cardId));
+  if (!entry || !Array.isArray(entry.atWaves)) return null;
+  return {
+    atWaves: entry.atWaves.map(Number).filter((n) => Number.isFinite(n) && n > 0).sort((x, y) => x - y),
+    instances: Math.max(1, Number(entry.instances) || 1),
+    respawnAfterDeath: Math.max(1, Number(entry.respawnAfterDeath) || 9),
+  };
+}
+
 export function adventureDripSpawn(stage, absoluteWave) {
   const a = stage?.adventure;
   if (!a) return [];

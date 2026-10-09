@@ -52,7 +52,7 @@ import { WaveManager } from './WaveManager.js';
 import { attackColdBrew, COLD_BREW_CARD_ID } from './ColdBrewMachine.js';
 import { calculateCardStats } from './CardStatFormula.js';
 import { adventurePlacementCells, adventureQuality, ADVENTURE_ENEMY_HP_SCALE, adventureBaseHp } from '../data/AdventureCampaign.js';
-import { adventureReinforceAliveCap } from '../data/AdventureStageDesign.js';
+import { adventureReinforceAliveCap, adventureFieldSchedule } from '../data/AdventureStageDesign.js';
 import { getCardTraits, getAttackPattern, isSuicideCard } from '../core/CardTraitRegistry.js';
 import { collectSelfCenteredTargets } from './SelfCenteredTargeting.js';
 import { TALENT_NODE_MAP } from '../core/TalentRegistry.js';
@@ -658,6 +658,57 @@ export class BattleEngine {
     this.placeEnemyUnit(card, Number(lane), false, mirrorCol);
   }
 
+  /**
+   * 定点入场 + 死亡冷却门禁（2026-10-09）：
+   *   · 场上个数达到 instances → 不出；
+   *   · 还有计划波次（atWaves）→ 到点才出；
+   *   · 计划用完 → 需要"死亡波次 + respawnAfterDeath"之后才补下一只。
+   */
+  canSpawnScheduledUnit(cardId) {
+    const plan = adventureFieldSchedule(this.stage, cardId);
+    if (!plan) return true;
+    const key = Number(cardId);
+    this._scheduledSpawns = this._scheduledSpawns ?? new Map();
+    let state = this._scheduledSpawns.get(key);
+    if (!state) {
+      state = { pending: [...plan.atWaves], deaths: [], spawned: 0 };
+      this._scheduledSpawns.set(key, state);
+    }
+    const alive = this.units.filter((u) => u.alive && u.team === 'enemy' && Number(u.cardId) === key).length;
+    if (alive >= plan.instances) return false;
+    const wave = Number(this.waveNumber) || 0;
+    if (state.pending.length) {
+      if (wave < state.pending[0]) return false;
+      state.pending.shift();
+      state.spawned += 1;
+      return true;
+    }
+    if (state.spawned < plan.instances) {   // 还没凑够计划个数（例如第 18 波那只）
+      const lastSpawn = Number(state.lastSpawnWave) || 0;
+      if (wave - lastSpawn < plan.respawnAfterDeath) return false;
+      state.spawned += 1;
+      state.lastSpawnWave = wave;
+      return true;
+    }
+    if (!state.deaths.length) return false;
+    if (wave - state.deaths[0] < plan.respawnAfterDeath) return false;
+    state.deaths.shift();            // 消费掉这次死亡记录，下一次死亡重新计时
+    state.spawned += 1;
+    state.lastSpawnWave = wave;
+    return true;
+  }
+
+  /** 记录"计划单位"的死亡波次（供 9 波冷却用） */
+  noteScheduledUnitDeath(unit) {
+    const plan = adventureFieldSchedule(this.stage, unit?.cardId);
+    if (!plan) return;
+    this._scheduledSpawns = this._scheduledSpawns ?? new Map();
+    const key = Number(unit.cardId);
+    const state = this._scheduledSpawns.get(key) ?? { pending: [...plan.atWaves], deaths: [], spawned: 0 };
+    state.deaths.push(Number(this.waveNumber) || 0);
+    this._scheduledSpawns.set(key, state);
+  }
+
   spawnEnemy(wave) {
     const card = wave.card;
     if (!card) return;
@@ -675,6 +726,8 @@ export class BattleEngine {
           const aliveCount = this.units.filter((u) => u.alive && u.team === 'enemy' && Number(u.cardId) === Number(card.id)).length;
           if (aliveCount >= aliveCap) continue;
         }
+        // 2026-10-09：定点入场 + 死后冷却（4-4 火龙 / 蘑菇仙人）
+        if (!this.canSpawnScheduledUnit(card.id)) continue;
         const ordinal = this.adventureSpawnOrdinal || 0;
         this.adventureSpawnOrdinal = ordinal + 1;
         const cell = adventurePlacementCells(lane + 1, (wave.col ?? 9) - 6).find(({ lane: row, col }) =>
@@ -1990,6 +2043,9 @@ export class BattleEngine {
   }
 
   onUnitDeath(unit) {
+    // 2026-10-09：4-4 的火龙/蘑菇仙人"死后 9 波才补下一只"需要记下死亡波次
+    this.noteScheduledUnitDeath(unit);
+
     unitAnimPlayer.markDeath(unit, this);
     // 击杀计数（任务/成就上报）
     if (unit.team !== 'player') {
