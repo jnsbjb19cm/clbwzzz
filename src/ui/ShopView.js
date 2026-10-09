@@ -562,7 +562,7 @@ export class ShopView {
 
   renderPack(body,root){
     body.innerHTML=`<p class="shop-section-title">🃏卡牌包</p><div class="shop-grid">${packData.map(p=>{const qs=[p.firstQuality,p.secondQuality,p.thirdQuality].filter(Boolean);const qd=qs.map(q=>QUALITY_NAMES[q]||q).join('~');const gp=p.redDiamond>0?p.redDiamond:null;const gop=p.gold>0?p.gold:null;return`<div class="shop-card"><div class="shop-card-icon">🃏</div><div class="shop-card-body"><h3>${p.item_name}</h3><p>随机${qd}卡牌</p><span class="shop-pack-badge">${qd}</span></div><div class="shop-card-footer"><span class="shop-price">${gp?'💎'+gp:''}${gop?'💰'+gop:''}</span><button type="button" class="shop-buy-btn" data-type="pack" data-id="${p.item_id}" data-gem="${gp||0}" data-gold="${gop||0}">购买</button></div></div>`;}).join('')}</div>`;
-    body.querySelectorAll('[data-type=pack]').forEach(btn=>{btn.addEventListener('click',()=>{audio.playSfx('click');const pk=packData.find(x=>x.item_id===Number(btn.dataset.id));if(!pk)return;const gm=Number(btn.dataset.gem),go=Number(btn.dataset.gold);if(gm>0&&(this.player.gem||0)<gm){this.toast(root,'钻石不足');return;}if(go>0&&(this.player.gold||0)<go){this.toast(root,'金币不足');return;}if(gm>0)this.player.gem-=gm;else if(go>0)this.player.gold-=go;const qs=[pk.firstQuality,pk.secondQuality,pk.thirdQuality].filter(Boolean);const q=qs[Math.floor(Math.random()*qs.length)];const cs=this.cardDb.getCollectibleCards().filter(c=>c.quality===q);if(!cs.length){this.toast(root,'无可用卡牌');return;}const c=cs[Math.floor(Math.random()*cs.length)];const r=this.cardInventory.addCard(c.id,0,{craftQuality:1});if(!r.ok){this.toast(root,'背包已满');return;}this.onPlayerUpdate?.();this.toast(root,'🎉抽到「'+c.name+'」');});});
+    body.querySelectorAll('[data-type=pack]').forEach(btn=>{btn.addEventListener('click',()=>{audio.playSfx('click');const pk=packData.find(x=>x.item_id===Number(btn.dataset.id));if(!pk)return;const gm=Number(btn.dataset.gem),go=Number(btn.dataset.gold);if(gm>0&&(this.player.gem||0)<gm){this.toast(root,'钻石不足');return;}if(go>0&&(this.player.gold||0)<go){this.toast(root,'金币不足');return;}if(gm>0)this.player.gem-=gm;else if(go>0)this.player.gold-=go;const qs=[pk.firstQuality,pk.secondQuality,pk.thirdQuality].filter(Boolean);const q=qs[Math.floor(Math.random()*qs.length)];const cs=this.cardDb.getCollectibleCards().filter(c=>c.quality===q);if(!cs.length){this.toast(root,'无可用卡牌');return;}const c=cs[Math.floor(Math.random()*cs.length)];const r=this.cardInventory.addCard(c.id,0,{craftQuality:1});if(!r.ok){this.toast(root,'背包已满');return;}emitQuestEvent('shop_buy', { count: 1 });this.onPlayerUpdate?.();this.toast(root,'🎉抽到「'+c.name+'」');});});
   }
 
   renderItem(body,root){
@@ -602,6 +602,9 @@ export class ShopView {
         return;
       }
       this.player.gold-=price;
+      // 2026-10-09：主线8「从商场购买一个任意道具」—— 之前只有 inventory 类道具会上报，
+      // 买金币/钻石/荣誉/经验/体力/增益类商品时点数不涨（用户报「商城购买还是有问题」）。
+      emitQuestEvent('shop_buy', { count: 1 });
       const e=it.effect;
       switch(e.type){
         case'gold':this.player.gold=(this.player.gold||0)+e.amount;this.toast(root,'获得'+e.amount+'金币！');break;

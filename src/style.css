@@ -18,7 +18,8 @@ body {
   margin: 0;
   scroll-behavior: smooth;
   overflow-y: auto;
-  font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
+  /* 2026-10-09：按用户要求全站先用宋体看效果（'SimSun' / 宋体）。 */
+  font-family: 'SimSun', '宋体', 'Songti SC', 'Microsoft YaHei', serif;
   background: var(--bg);
   color: var(--text);
   min-height: 100vh;
@@ -5215,6 +5216,11 @@ html, body { margin:0; padding:0; width:100%; height:100%; overflow:hidden; }
 .bag-actions-stack { flex-direction: column; align-items: stretch; }
 .bag-actions-stack .bag-action { width: 100%; }
 .bag-qty-off { display: none; }
+/* 2026-10-09：储藏室页签占满主区域 —— 详情栏隐藏后不能再留着第 3 列的宽度，
+   否则两列表格被挤成窄条（用户报「储藏室都被压缩了」）。 */
+.bag-body.bag-body-storage { grid-template-columns: minmax(188px, 220px) minmax(0, 1fr); }
+.bag-body.bag-body-storage .bag-storage-host { min-height: 460px; }
+.bag-body.bag-body-storage .storage-list { max-height: 62vh; }
 /* 2026-10-09：体验卡（限时卡牌副本）。 */
 .bag-slot-trial { position: absolute; top: 2px; left: 2px; padding: 0 4px; border-radius: 4px; background: #b8860b; color: #fff; font-size: .6rem; line-height: 1.4; }
 .bag-detail-trial { margin: 0; font-size: .82rem; color: #b8860b; }

@@ -271,13 +271,19 @@ export class QuestView{
       }
     }
     if(changed)saveState(state);
-    if(typeof window!=='undefined')for(const detail of completed)window.dispatchEvent(new CustomEvent('clbwz:quest-complete',{detail}));
+    if(typeof window!=='undefined'){
+      // 2026-10-09：进度变了就通知已打开的任务面板刷新（用户报「买了东西/发了世界频道任务没反应」）。
+      if(changed)window.dispatchEvent(new CustomEvent('clbwz:quest-progress',{detail:{event}}));
+      for(const detail of completed)window.dispatchEvent(new CustomEvent('clbwz:quest-complete',{detail}));
+    }
     return completed;
   }
 
   render(root){
     this._questEvents?.abort();this._questEvents=new AbortController();
     window.addEventListener('clbwz:quest-complete',()=>{if(root.isConnected&&root.querySelector('.quest-page'))this.renderContent(root);else this._questEvents.abort();},{signal:this._questEvents.signal});
+    // 2026-10-09：进度推进（例如买道具/世界频道发言）时，已打开的任务面板立即刷新。
+    window.addEventListener('clbwz:quest-progress',()=>{if(root.isConnected&&root.querySelector('.quest-page'))this.renderContent(root);},{signal:this._questEvents.signal});
     root.innerHTML=[
       '<div class="page quest-page quest-page-formal"><div class="quest-window">',
       '<header class="quest-window-title"><h1>任务日志</h1><p>推进主线，处理支线委托，并领取日常、周常、成就与挑战奖励</p></header>',
@@ -365,6 +371,17 @@ export class QuestView{
     list.querySelectorAll('.quest-list-item').forEach((b)=>b.addEventListener('click',()=>{audio.playSfx('click');this.selected[this.category]=b.dataset.entry;this.renderContent(root);}));
     this.renderDetail(root,selected);
   }
+  /** 2026-10-09：任务文本里的 %玩家名% 显示玩家自己的昵称（取当前登录用户，读不到就回落「勇士」）。 */
+  playerName(){
+    const raw=this.player?.nickname??this.player?.name??authStore.snapshot?.profile?.nickname??authStore.user?.nickname??'';
+    const name=String(raw).trim();
+    return name||'勇士';
+  }
+
+  fillPlayerName(text){
+    return String(text??'').replace(/%玩家名%/g,this.playerName());
+  }
+
   renderDetail(root,entry){
     const detail=root.querySelector('#quest-detail');if(!entry){detail.innerHTML='<div class="quest-parchment-empty">选择一个任务查看详情</div>';return;}
     const s=this.stateFor(entry),pct=Math.min(100,s.progress/Math.max(s.goal,1)*100),label=entry.chapter||entry.arc||(this.category==='level'?'成长计划':this.category==='achievement'?'里程碑':'任务委托'),action=s.claimed?'<span class="quest-detail-claimed">已领取</span>':s.ready?'<button type="button" class="quest-claim-btn quest-detail-claim" data-entry="'+entry.id+'">领取奖励</button>':'<span class="quest-detail-locked">继续完成</span>';
@@ -373,7 +390,7 @@ export class QuestView{
     if(entry.consumeGold)submitParts.push('金币 '+Math.max(0,Math.floor(Number(entry.consumeGold)||0)));
     for(const c of entry.consumeItems||[])submitParts.push(escaped(this.itemDb?.getById?.(Number(c.id))?.name||('道具 '+c.id))+' ×'+Math.max(0,Math.floor(Number(c.count)||0)));
     const submitNote=submitParts.length?('<section class="quest-detail-block"><h3>需要提交</h3><p>'+submitParts.join('、')+'（领奖时扣除）</p></section>'):'';
-    detail.innerHTML=['<div class="quest-parchment-inner"><p class="quest-detail-kicker">',escaped(label),'</p><h2>',escaped(entry.name),'</h2><div class="quest-parchment-rule"></div><section class="quest-detail-block"><h3>任务目标</h3><p>',escaped(entry.desc),'</p><div class="quest-detail-progress"><i style="width:',pct,'%"></i></div><span>',s.progress,' / ',s.goal,'</span></section><section class="quest-detail-block"><h3>任务说明</h3><p>',escaped(entry.story||entry.desc),'</p></section>',submitNote,'<section class="quest-detail-block quest-detail-rewards"><h3>任务奖励</h3><div>',rewardChips(entry,this.cardDb,this.itemDb),'</div></section><footer class="quest-detail-footer">',action,'</footer></div>'].join('');
+    detail.innerHTML=['<div class="quest-parchment-inner"><p class="quest-detail-kicker">',escaped(label),'</p><h2>',escaped(entry.name),'</h2><div class="quest-parchment-rule"></div><section class="quest-detail-block"><h3>任务目标</h3><p>',escaped(entry.desc),'</p><div class="quest-detail-progress"><i style="width:',pct,'%"></i></div><span>',s.progress,' / ',s.goal,'</span></section><section class="quest-detail-block"><h3>任务说明</h3><p>',escaped(this.fillPlayerName(entry.story||entry.desc)),'</p></section>',submitNote,'<section class="quest-detail-block quest-detail-rewards"><h3>任务奖励</h3><div>',rewardChips(entry,this.cardDb,this.itemDb),'</div></section><footer class="quest-detail-footer">',action,'</footer></div>'].join('');
     detail.querySelector('.quest-detail-claim')?.addEventListener('click',()=>this.claim(root,entry));
   }
   recordClaim(category,entry,period=questPeriodKey(category)){

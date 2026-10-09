@@ -83,75 +83,46 @@ function installBatchPanelAuthority(view, root) {
   if (!selectedSlot) return;
   const item = view.itemDb?.getById?.(selectedSlot.itemId);
   if (!item) return;
-  // 2026-10-09（用户报"改名卡请在背包中点击使用"）：
-  // 改名卡(98) 必须走 BagView 自己的改名弹窗 —— 通用 /inventory/use 会被服务端 400 拒绝
-  // （防止改名卡被通用接口白扣），原来这里把「使用」按钮劫持到了那个接口，点一次报一次。
+  // 不可使用的道具不接管（保持 BagView 的「不可使用」按钮）。
+  if (!view.itemUse?.isUsable?.(item)) return;
+  // 2026-10-09（用户报「改名卡请在背包中点击使用」）：改名卡(98) 必须走 BagView 自己的改名弹窗，
+  // 通用 /inventory/use 会 400 拒绝。
   if (Number(item.id) === 98) return;
 
-  const panel = root?.querySelector?.('#bag-detail .bag-batch-use');
   const oldUseButton = root?.querySelector?.('#bag-detail #bag-use');
-  if (!panel || !oldUseButton) return;
+  if (!oldUseButton || oldUseButton.dataset.databaseBatchAuthority === 'true') return;
 
   const itemId = Number(item.id);
   const bound = Boolean(selectedSlot.bound);
-  const oldInput = panel.querySelector('[data-batch-use-count]');
-  const initialRequested = Math.max(1, Math.floor(Number(oldInput?.value) || 1));
+  // 数量统一读 BagView 自己的控件（滑块或填数字，两者始终同步在同一处）。
+  const detail = root.querySelector('#bag-detail');
+  const amountInput = detail?.querySelector?.('[data-trade-count]');
+  const amountRange = detail?.querySelector?.('[data-trade-range]');
 
-  panel.innerHTML = `
-    <div class="bag-batch-use-row">
-      <span>使用数量</span>
-      <input type="number" min="1" step="1" value="1" data-batch-use-count aria-label="批量使用数量" />
-      <button type="button" data-batch-use-quick="1">1个</button>
-      <button type="button" data-batch-use-quick="10">10个</button>
-      <button type="button" data-batch-use-quick="all">填入全部</button>
-      <button type="button" class="bag-use-all-now" data-batch-use-now-all>一键使用全部</button>
-    </div>
-    <small>数量与下方“批量打开/使用”按钮实时联动；所有消耗和奖励先写数据库，再刷新背包。</small>`;
-
+  // 克隆按钮以去掉 BagView 挂的「本地使用」监听，避免同一份物品被扣两次。
   const useButton = replaceNode(oldUseButton);
   if (!useButton) return;
   useButton.dataset.databaseBatchAuthority = 'true';
 
-  const input = panel.querySelector('[data-batch-use-count]');
-  const allNowButton = panel.querySelector('[data-batch-use-now-all]');
-  const quickButtons = [...panel.querySelectorAll('[data-batch-use-quick]')];
-  const controls = [input, useButton, allNowButton, ...quickButtons].filter(Boolean);
-
-  const available = () => countSameBinding(view, itemId, bound);
-  const sync = (preferred = null) => {
-    const total = available();
-    const max = Math.max(1, total);
-    const raw = preferred == null ? Number(input.value) : Number(preferred);
-    const amount = Math.max(1, Math.min(max, Math.floor(raw) || 1));
-    input.max = String(max);
-    input.value = String(amount);
+  const amountOf = () => Math.max(1, Math.floor(Number(amountInput?.value) || 1));
+  const syncLabel = () => {
+    const amount = amountOf();
     useButton.textContent = amount > 1 ? `批量打开/使用 ×${amount}` : '打开/使用';
-    if (allNowButton) allNowButton.textContent = `一键使用全部 ×${total}`;
-    useButton.disabled = total <= 0;
-    if (allNowButton) allNowButton.disabled = total <= 0;
-    return amount;
   };
-
-  sync(Math.min(initialRequested, Math.max(1, available())));
-  input.addEventListener('input', () => sync());
-  input.addEventListener('change', () => sync());
-
-  for (const button of quickButtons) {
-    button.addEventListener('click', () => {
-      const total = available();
-      const raw = button.dataset.batchUseQuick;
-      sync(raw === 'all' ? total : Number(raw) || 1);
-    });
-  }
+  syncLabel();
+  amountInput?.addEventListener('input', syncLabel);
+  amountInput?.addEventListener('change', syncLabel);
+  amountRange?.addEventListener('input', syncLabel);
 
   const perform = async (requested) => {
-    const total = available();
+    const total = countSameBinding(view, itemId, bound);
     if (total <= 0) {
       view.toast(root, '该道具已经用完');
       return;
     }
     const amount = Math.max(1, Math.min(total, Math.floor(Number(requested) || 1)));
-    controls.forEach((control) => { control.disabled = true; });
+    useButton.disabled = true;
+    const originalText = useButton.textContent;
     useButton.textContent = `数据库处理中 ${amount} 个…`;
     try {
       const data = await authStore.api.post('/player/inventory/use', {
@@ -164,23 +135,20 @@ function installBatchPanelAuthority(view, root) {
       view.selectedIndex = nextIndex >= 0 ? nextIndex : -1;
       view.refresh(root);
       const used = Math.max(1, Number(data?.used) || amount);
-      view.toast(root, used > 1
-        ? `已从数据库扣除并使用 ${used} 个「${item.name}」`
-        : `已从数据库扣除并使用「${item.name}」`);
+      const detailText = String(data?.message || '').trim();
+      view.toast(root, detailText
+        ? `${detailText}（已从数据库扣除 ${used} 个）`
+        : (used > 1 ? `已从数据库扣除并使用 ${used} 个「${item.name}」` : `已从数据库扣除并使用「${item.name}」`));
     } catch (error) {
-      controls.forEach((control) => { control.disabled = false; });
-      sync();
-      view.toast(root, error?.message || '批量使用失败，数据库未扣除');
+      useButton.disabled = false;
+      useButton.textContent = originalText;
+      syncLabel();
+      view.toast(root, error?.message || '使用失败，数据库未扣除');
     }
   };
 
   useButton.addEventListener('click', () => {
-    void perform(sync());
-  });
-  allNowButton?.addEventListener('click', () => {
-    const total = available();
-    sync(total);
-    void perform(total);
+    void perform(amountOf());
   });
 }
 

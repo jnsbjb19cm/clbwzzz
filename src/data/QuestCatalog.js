@@ -1,4 +1,4 @@
-import { balanceQuestReward, CARD_EGG_IDS, QUEST_ITEM_IDS } from './QuestRewardBalance.js';
+import { balanceQuestReward, levelReward, CARD_EGG_IDS, QUEST_ITEM_IDS } from './QuestRewardBalance.js';
 
 export const MAX_PLAYER_LEVEL = 50;
 
@@ -393,6 +393,22 @@ const MAIN_QUESTS = MAIN_ROWS.map((row, index) => {
 });
 
 // ==================== 支线 ====================
+/**
+ * 2026-10-09（用户要求）：原本在「等级奖励」页的 10 档固定金币，挪到支线当委托。
+ * lv → 金币：2/6/7/8/9/10/13/15/18/21 → 1000/1200/1800/2400/4000/4500/5000/5100/5300/5500。
+ */
+const LEVEL_TIER_GOLD = Object.freeze({
+  2: 1000, 6: 1200, 7: 1800, 8: 2400, 9: 4000, 10: 4500, 13: 5000, 15: 5100, 18: 5300, 21: 5500,
+});
+
+const LEVEL_TIER_GOLD_SIDE_ROWS = Object.entries(LEVEL_TIER_GOLD).map(([lv, gold]) => ([
+  `等级成长补给 · Lv.${lv}`, Number(lv), 'level', {
+    desc: `角色达到 Lv.${lv}。`,
+    story: `达到 Lv.${lv} 后，可以领一份等级成长补给（${gold} 金币）。`,
+    requiresMain: 'mq01', rewardTier: 1, exactReward: true, gold: Number(gold), exp: 0, items: [],
+  },
+]));
+
 const SIDE_ROWS = [
   ['强化不能停 I', 4, 'card_strengthen', {
     desc: '强化 4 次卡牌。', requiresMain: 'mq01', rewardTier: 1,
@@ -448,6 +464,8 @@ const SIDE_ROWS = [
     requiresMain: 'mq49', rewardTier: 5,
     items: [['四级羊皮纸', 1], ['四级保护符', 2], ['四级宝石', 4]],
   }],
+  // 2026-10-09（用户要求）：原来的「等级奖励 10 档金币」从等级页挪到支线，等级页恢复成每级一份成长补给。
+  ...LEVEL_TIER_GOLD_SIDE_ROWS,
 ];
 
 const SIDE_QUESTS = SIDE_ROWS.map(([name, goal, event, extra], index) => {
@@ -549,22 +567,30 @@ const CATEGORIES=[
   {id:'weekly',label:'周常任务',subtitle:'一周慢慢完成'},
   {id:'achievement',label:'成就',subtitle:'长期记录'},
   {id:'challenge',label:'挑战',subtitle:'BOSS和高难条件'},
-  {id:'level',label:'等级奖励',subtitle:'2/6/7/8/9/10/13/15/18/21 级'},
+  {id:'level',label:'等级奖励',subtitle:'每级一份成长补给'},
 ];
 
 /**
- * 2026-10-09：等级奖励改为 10 个固定档位（只给金币、不给经验），与策划确认一致。
- * lv → 金币：2/6/7/8/9/10/13/15/18/21 → 1000/1200/1800/2400/4000/4500/5000/5100/5300/5500。
+ * 2026-10-09（用户要求，第二轮）：
+ *  - 等级奖励**恢复到之前的「每级一份成长补给」**（QuestRewardBalance.levelReward，Lv1~50）。
+ *  - 但**去掉技能书**：用户明确「不要给技能」，所以过滤 skillBook* 类道具（Lv.40 原本发技能书·攻击）。
+ *  - 曾经短暂上线的「10 档固定金币」已改为支线委托（LEVEL_TIER_GOLD_SIDE_ROWS）。
  */
-const LEVEL_REWARD_GOLD=Object.freeze({
-  2:1000, 6:1200, 7:1800, 8:2400, 9:4000, 10:4500, 13:5000, 15:5100, 18:5300, 21:5500,
+const SKILL_ITEM_IDS = new Set([
+  QUEST_ITEM_IDS.skillBookAttack,
+  QUEST_ITEM_IDS.skillBookDefense,
+  QUEST_ITEM_IDS.skillBookSupport,
+].filter((value) => value != null));
+
+const stripSkillRewards = (reward) => ({
+  ...reward,
+  items: (reward.items ?? []).filter((row) => !SKILL_ITEM_IDS.has(Number(row.id))),
 });
 
-const LEVEL_REWARDS=Object.entries(LEVEL_REWARD_GOLD).map(([lv,gold])=>({
-  id:`lv${lv}`, lv:Number(lv), goal:Number(lv), name:`等级 ${lv}`, desc:`角色达到 Lv.${lv}`,
-  story:`达到 Lv.${lv} 后领取 ${gold} 金币。`,
-  gold:Number(gold), gem:0, honor:0, exp:0, cards:[], items:[],
-}));
+const LEVEL_REWARDS = Array.from(
+  { length: MAX_PLAYER_LEVEL },
+  (_, index) => stripSkillRewards(levelReward(index + 1)),
+);
 
 for(const [category,quests] of Object.entries(QUEST_GROUPS)){
   quests.forEach((quest)=>Object.assign(quest,balanceQuestReward(quest,category)));

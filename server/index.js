@@ -22,6 +22,7 @@ import { authRouter } from './routes/auth.js';
 import { playerRouter } from './routes/player.js';
 import { playerSnapshotAuthorityRouter20260908 } from './routes/playerSnapshotAuthority20260908.js';
 import { stageResultAuthorityRouter20260908 } from './routes/stageResultAuthority20260908.js';
+import { itemOpenAuthorityRouter20261009 } from './routes/itemOpenAuthority20261009.js';
 import { batchInventoryUseAuthorityRouter20260908 } from './routes/batchInventoryUseAuthority20260908.js';
 import { playerEconomyAuthorityRouter20260908 } from './routes/playerEconomyAuthority20260908.js';
 import { functionalItemAuthorityRouter20260908 } from './routes/functionalItemAuthority20260908.js';
@@ -113,6 +114,9 @@ app.get('/api/health', (_req, res) => {
 app.use('/api/auth', authRouter);
 app.use('/api/player', playerSnapshotAuthorityRouter20260908);
 app.use('/api/player', stageResultAuthorityRouter20260908);
+// 2026-10-09：新道具（礼包/蛋/情报/体验卡/数值礼盒）的权威使用，必须最先注册；
+// 不认识的道具它 next() 给后面的路由，原有行为不变。
+app.use('/api/player', itemOpenAuthorityRouter20261009);
 // 批量使用必须先拦截 count>1，在单个道具旧路由前完成数据库原子扣除与奖励结算。
 app.use('/api/player', batchInventoryUseAuthorityRouter20260908);
 app.use('/api/player', playerEconomyAuthorityRouter20260908);

@@ -16,56 +16,13 @@
  *   lock           打开不消耗（情报类）
  */
 import giftPools from '../data/giftPools.json';
+import { findGiftPool, rollGiftPool } from '../data/giftPoolRoll.js';
 import { ItemUseSystem } from '../systems/ItemUseSystem.js';
 
-const PATCH_FLAG = Symbol.for('clbwz.giftBoxOpening20261009');
+export { rollGiftPool };
 
-/** 兼容 Node 侧的 JSON 载入（Vite 下是对象/模块） */
+/** 奖励池配置：giftPools.json；掷骰逻辑单一来源 = src/data/giftPoolRoll.js（服务端共用）。 */
 const POOLS = (giftPools && giftPools.default) ? giftPools.default : giftPools;
-
-/**
- * 纯函数：按池配置掷一次奖励（不碰背包/引擎，方便单测）。
- * @returns {{ cards: Array<{cardId:number}|{quality:number}>, items: Array<{itemId:number,count:number}> , extraItems:[] }}
- */
-export function rollGiftPool(pool, rng = Math.random) {
-  const out = { cards: [], items: [], extraItems: [] };
-  if (!pool || pool.kind === 'lock') return out;
-
-  const pushFixed = (list, bucket) => {
-    for (const row of list ?? []) {
-      if (row.card != null) out.cards.push({ cardId: Number(row.card) });
-      else if (row.item != null) bucket.push({ itemId: Number(row.item), count: Math.max(1, Number(row.count) || 1) });
-    }
-  };
-
-  if (pool.kind === 'fixed') {
-    pushFixed(pool.rewards, out.items);
-    if (pool.extra && rng() < Number(pool.extra.chance ?? 0)) out.extraItems.push({ itemId: Number(pool.extra.item), count: Math.max(1, Number(pool.extra.count) || 1) });
-    return out;
-  }
-  if (pool.kind === 'one_of_cards') {
-    if (Array.isArray(pool.cards) && pool.cards.length) {
-      const pick = pool.cards[Math.floor(rng() * pool.cards.length) % pool.cards.length];
-      out.cards.push({ cardId: Number(pick) });
-    } else if (pool.quality != null) {
-      out.cards.push({ quality: Number(pool.quality) });
-    }
-    return out;
-  }
-  if (pool.kind === 'n_of') {
-    const rows = [...(pool.rewards ?? [])];
-    const want = Math.max(1, Math.min(rows.length, Number(pool.pick) || 1));
-    for (let i = 0; i < want; i += 1) {
-      const index = Math.floor(rng() * rows.length) % rows.length;
-      const [row] = rows.splice(index, 1);
-      if (!row) break;
-      if (row.card != null) out.cards.push({ cardId: Number(row.card) });
-      else out.items.push({ itemId: Number(row.item), count: Math.max(1, Number(row.count) || 1) });
-    }
-    return out;
-  }
-  return out;
-}
 
 /** 把一次掷出的奖励落到背包 / 卡牌背包；返回可读文案与是否成功 */
 function grantRoll(view, out, cardDb, rng = Math.random) {
@@ -101,13 +58,13 @@ export function installGiftBoxOpening20261009() {
   // 这里补一条：只要道具在 giftPools 里有池，就视为可使用，具体开启交给下面的 use 包装。
   const previousUsable = ItemUseSystem.prototype.isUsable;
   ItemUseSystem.prototype.isUsable = function isUsableWithGiftPool20261009(item) {
-    if (item && POOLS?.[String(item.id)]) return true;
+    if (findGiftPool(POOLS, item?.id)) return true;
     return previousUsable.call(this, item);
   };
 
   const previousUse = ItemUseSystem.prototype.use;
   ItemUseSystem.prototype.use = function useWithGiftPool20261009(item, index, inventory, cardInventory, player) {
-    const pool = POOLS?.[String(item?.id)];
+    const pool = findGiftPool(POOLS, item?.id);
     if (!pool) return previousUse.call(this, item, index, inventory, cardInventory, player);
 
     const needLevel = Math.max(0, Number(item?.open_level ?? item?.openLevel) || 0);

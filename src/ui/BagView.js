@@ -484,14 +484,17 @@ export class BagView {
       this.renderToolbar(root);
     }
 
-    // 2026-10-09：储藏室页签 —— 主区域直接渲染储藏室，隐藏物品详情栏。
+    // 2026-10-09：储藏室页签 —— 主区域直接渲染储藏室，隐藏物品详情栏，
+    // 并把 bag-body 切成两列，避免详情栏那 240~290px 空着把储藏室挤窄。
     if (this.mode === 'storage') {
+      root.querySelector('.bag-body')?.classList.add('bag-body-storage');
       root.querySelector('#bag-detail')?.classList.add('bag-detail-hidden');
       const storageGrid = root.querySelector('#bag-grid');
       storageGrid.className = 'bag-grid bag-storage-host';
       this.renderStorage(root, storageGrid);
       return;
     }
+    root.querySelector('.bag-body')?.classList.remove('bag-body-storage');
     root.querySelector('#bag-detail')?.classList.remove('bag-detail-hidden');
 
     const store = this.getActiveStore();
