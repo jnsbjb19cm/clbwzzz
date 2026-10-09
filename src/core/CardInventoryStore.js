@@ -51,6 +51,8 @@ function normalizeSlot(slot) {
     awakened: Boolean(slot.awakened),
     attributeRoll: normalizeAttributeRoll(slot.attributeRoll),
     powderSpent: normalizePowderSpent(slot.powderSpent),
+    // 2026-10-09：体验卡到期时间戳（0 = 永久卡）。
+    expiresAt: Math.max(0, Math.floor(Number(slot.expiresAt) || 0)),
   };
 }
 
@@ -160,9 +162,34 @@ export class CardInventoryStore {
       awakened: opts.awakened ?? false,
       attributeRoll: opts.attributeRoll ?? null,
       powderSpent: opts.powderSpent ?? {},
+      expiresAt: Math.max(0, Math.floor(Number(opts.expiresAt) || 0)),
     });
     this.save();
     return { ok: true, index: empty };
+  }
+
+  /** 2026-10-09：体验卡到期判定（expiresAt=0 表示永久卡）。 */
+  isSlotExpired(slot) {
+    const expiresAt = Math.max(0, Number(slot?.expiresAt) || 0);
+    return expiresAt > 0 && expiresAt <= Date.now();
+  }
+
+  /** 清掉已过期的体验卡，返回清掉的张数（读卡牌背包/进战斗前调用）。 */
+  sweepExpired() {
+    let removed = 0;
+    for (let index = 0; index < this.state.slots.length; index += 1) {
+      const slot = this.state.slots[index];
+      if (slot && this.isSlotExpired(slot)) { this.state.slots[index] = null; removed += 1; }
+    }
+    if (removed) this.save();
+    return removed;
+  }
+
+  /** 体验卡剩余天数（永久卡返回 0）。 */
+  trialDaysLeft(slot) {
+    const expiresAt = Math.max(0, Number(slot?.expiresAt) || 0);
+    if (expiresAt <= 0) return 0;
+    return Math.max(0, Math.ceil((expiresAt - Date.now()) / 86400000));
   }
 
   grantAllCollectibleCards() {

@@ -16,6 +16,9 @@ export class Item {
     this.function = raw.function;
     this.effectValue = raw.effect_value ?? 0;
     this.sex = raw.use_sex ?? 0;
+    // 2026-10-09：体验卡（function 64）—— 使用后给指定卡牌一张有期限的副本。
+    this.trialCardId = raw.trial_card_id ?? null;
+    this.trialDays = raw.trial_days ?? null;
   }
 
   get qualityInfo() {

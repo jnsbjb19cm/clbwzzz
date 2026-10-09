@@ -525,6 +525,8 @@ export class BagView {
     if (this.mode === 'item') {
       this.renderItemGrid(root, grid);
     } else {
+      // 2026-10-09：打开卡牌页先清掉已到期的体验卡。
+      this.cardInventory.sweepExpired?.();
       this.renderCardGrid(root, grid);
     }
 
@@ -586,10 +588,14 @@ export class BagView {
         const card = this.cardDb.getById(slot.cardId);
         const cq = resolveCraftQuality(slot.craftQuality);
         const label = formatCraftCardName(slot.craftQuality, card.name, slot.customName);
+        // 2026-10-09：体验卡在格子里标剩余天数。
+        const trialLeft = this.cardInventory.trialDaysLeft?.(slot) ?? 0;
+        const trialBadge = trialLeft > 0 ? `<span class="bag-slot-trial">体验 ${trialLeft}天</span>` : '';
         return `
           <button type="button" class="bag-slot card-bag-slot${this.selectedIndex === index ? ' selected' : ''}"
             data-index="${index}" data-card-grade="${Math.max(1, Number(card.quality) || 1)}" style="--quality:${cq.color}" title="${label}">
             <img src="/sprites/cards/${card.spriteRes}.png" alt="" loading="lazy" />
+            ${trialBadge}
             <span class="bag-slot-card-name" style="color:${cq.color}">${label}</span>
             <span class="reference-card-cost"><img src="/battle/jungle/${usesFoodCost(card) ? 'res_food_original' : 'res_sun_complete'}.png" alt="${usesFoodCost(card) ? '食物' : '阳光'}">${Number(card.cost) || 0}</span>
             ${(slot.strengthLv ?? 0) > 0 ? `<span class="bag-slot-star">+${slot.strengthLv}</span>` : ''}
@@ -800,6 +806,7 @@ export class BagView {
       </dl>
       <p class="bag-detail-desc">${card.desc || '暂无描述'}</p>
       <p class="bag-detail-count">背包内拥有 <b>${owned}</b> 张</p>
+      ${(() => { const left = this.cardInventory.trialDaysLeft?.(slot) ?? 0; return left > 0 ? `<p class="bag-detail-trial">体验卡：剩余 <b>${left}</b> 天，到期后自动失效</p>` : ''; })()}
       <div class="bag-detail-actions">
         ${card.isExperienceCard ? '' : '<button type="button" id="bag-deck-go" class="bag-action primary">编辑卡组</button><button type="button" id="bag-strengthen" class="bag-action">去强化</button><button type="button" id="bag-decompose" class="bag-action">去分解</button>'}
         <button type="button" id="bag-card-drop" class="bag-action danger">移除 1 张</button>

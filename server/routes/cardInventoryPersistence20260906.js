@@ -66,6 +66,8 @@ function normalizeCard(raw, slotCount) {
     learnedSkill: normalizeLearnedSkill(raw?.learnedSkill),
     attributeRoll: normalizeAttributeRoll(raw?.attributeRoll),
     powderSpent: normalizePowderSpent(raw?.powderSpent),
+    // 2026-10-09：体验卡到期时间戳（0 = 永久卡）。
+    expiresAt: Math.max(0, Math.floor(Number(raw?.expiresAt) || 0)),
   };
 }
 
@@ -123,8 +125,9 @@ export async function readCardInventory(userId) {
       attributeRoll: normalizeAttributeRoll(extra.attributeRoll),
       powderSpent: normalizePowderSpent(extra.powderSpent),
       bound: Boolean(extra.bound),
+      expiresAt: Math.max(0, Math.floor(Number(extra.expiresAt) || 0)),
     };
-  });
+  }).filter((card) => !card.expiresAt || card.expiresAt > Date.now()); // 2026-10-09：过期体验卡不再下发
   return { slotCount: snapshot.cardInventory.slotCount, cards };
 }
 
@@ -169,6 +172,8 @@ export async function putCardInventoryHandler(req, res) {
       learnedSkill: normalizeLearnedSkill(server.extra.learnedSkill),
       powderSpent: normalizePowderSpent(server.extra.powderSpent),
       bound: Boolean(server.extra.bound),
+      // 2026-10-09：体验卡到期时间以服务端存的为准（客户端漏传也不会变成永久卡）。
+      expiresAt: Math.max(0, Math.floor(Number(card?.expiresAt ?? server.extra.expiresAt) || 0)),
     };
   });
 
@@ -190,6 +195,8 @@ export async function putCardInventoryHandler(req, res) {
           attributeRoll: card.attributeRoll,
           powderSpent: card.powderSpent,
           bound: card.bound,
+          // 2026-10-09：体验卡到期时间，持久化到实例 state_json。
+          expiresAt: card.expiresAt,
         })],
       );
     }

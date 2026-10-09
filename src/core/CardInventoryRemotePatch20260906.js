@@ -48,6 +48,8 @@ function normalizeRemoteSlot(raw) {
     // Binding is authoritative server state. Keep it when hydrating local stores so
     // strengthen/decompose/craft UIs see the same bound/unbound card as the DB.
     bound: Boolean(raw.bound),
+    // 2026-10-09：体验卡到期时间戳（0/缺省 = 永久卡）。
+    expiresAt: Math.max(0, Math.floor(Number(raw.expiresAt) || 0)),
   };
 }
 
@@ -67,6 +69,7 @@ function buildPayload(store) {
       awakened: slot.awakened,
       attributeRoll: slot.attributeRoll ? { ...slot.attributeRoll } : null,
       powderSpent: { ...slot.powderSpent },
+      expiresAt: slot.expiresAt,
     });
   }
   return {
