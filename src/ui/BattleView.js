@@ -830,6 +830,13 @@ export class BattleView {
         // 旧写法 !this.pvp 把联机冒险的「通关」事件也挡掉了 → 主线关卡任务永远不涨。
         if (shouldReportAdventureComplete({ win, adventure, bossId, pvp: this.pvp })) {
           this.onQuestEvent?.('adventure_complete', questMeta);
+          // 2026-10-09（主线任务21「冒失的铁匠」）：怪物线（route 1）每次通关都给一份「精密铁矿」——
+          // **只计数、不产出道具**（玩家不会在背包里看到它），任务出现后才开始累积；
+          // 具体需要多少份、以及奖励（3级羊皮纸×1 + 2000金币 + 200经验）由 QuestCatalog 的任务定义决定。
+          const adventureRoute = Number(adventure?.route ?? this.stage?.adventure?.route);
+          if (adventureRoute === 1) {
+            this.onQuestEvent?.('monster_line_clear', { ...questMeta, oreGain: 1, route: 1 });
+          }
         }
         this.onQuestEvent?.('battle_complete', questMeta);
         const kills = this.engine.killsThisBattle ?? 0;
