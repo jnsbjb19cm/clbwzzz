@@ -23,7 +23,7 @@ export const ATTACK_PATTERNS = new Map([
   [74, { kind: 'forward', cells: 2 }],
   [75, { kind: 'forward', cells: 2 }],
   [76, { kind: 'forward', cells: 2 }],
-  [82, { kind: 'square', radius: 1 }],
+  // 2026-10-09（用户要求）：幼小玉米是单体抛物线，移除 3x3 溅射（图鉴描述本来就是单体）
   [92, { kind: 'forward', cells: 4 }],
   [95, { kind: 'forward', cells: 2 }],
   [100, { kind: 'forward', cells: 3 }],
