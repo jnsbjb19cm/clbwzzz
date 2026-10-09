@@ -75,7 +75,12 @@ function clampCount(value) {
 }
 
 function isEffectValueGift(def) {
-  return int(def?.function) === 2 && /礼盒/.test(String(def?.show_type ?? ''));
+  // 2026-10-09（用户报「开礼盒显示获得 0 金币 / 0 钻石」）：
+  // 旧礼盒 1 金币礼盒 / 2 红钻礼盒 / 3 荣誉礼盒 也是 fn=2 + show_type=礼盒，但 effect_value=0，
+  // 它们本来由旧路由的 FIXED_GIFTS 发放（5000 金币 / 10 红钻 / 5000 荣誉）。
+  // 之前这里只判断 fn + show_type，把这几个抢了过来 → 算出 0。
+  // 现在只接管 effect_value > 0 的（60020~60023），旧礼盒照旧 next() 交给旧路由。
+  return int(def?.function) === 2 && /礼盒/.test(String(def?.show_type ?? '')) && int(def?.effect_value, 0) > 0;
 }
 
 function isTrialCardItem(def) {

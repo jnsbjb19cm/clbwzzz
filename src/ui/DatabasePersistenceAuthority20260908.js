@@ -183,7 +183,7 @@ function installBagAuthority() {
         applyServerData(this, data);
         this.selectedIndex = -1;
         this.refresh(root);
-        this.toast(root, '已从数据库移除 1 张卡牌');
+        this.toast(root, '已移除 1 张卡牌');
       } catch (error) {
         this.toast(root, error?.message || '移除卡牌失败');
       } finally {
@@ -218,7 +218,7 @@ function installBagAuthority() {
     }).catch((error) => {
       if (root?.isConnected) this.toast(root, error?.message || '功能道具使用失败');
     });
-    return '正在保存到数据库…';
+    return '正在保存…';
   };
 }
 

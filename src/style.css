@@ -3000,17 +3000,24 @@ body.battle-immersive .top-ui {
   text-shadow: 0 0 6px rgba(255, 255, 255, .95), 0 0 2px rgba(255, 255, 255, 1);
   z-index: 999;
   pointer-events: none;
-  /* 2026-10-09（用户要求）：消失时先停留、再**向上飞一段**然后淡出。
-     用过渡而不是 keyframes —— BagView / ShopView / QuestView 三处 toast 都是
-     「去掉 hidden → 2.2 秒后加回 hidden」，这样三处都不用改 JS。 */
-  transition: opacity 0.55s ease-out, transform 0.55s ease-out;
   box-shadow: none;
+}
+
+/* 2026-10-09（用户要求「消失时向上飞一段再消失」）：
+   用 keyframes + JS 重启动画（比 transition 可靠，transition 在某些渲染下不触发）。
+   BagView / ShopView / QuestView 三处 toast 共用 .bag-toast。 */
+@keyframes bag-toast-rise {
+  0%   { opacity: 0; transform: translate(-50%, -50%); }
+  8%   { opacity: 1; transform: translate(-50%, -50%); }
+  62%  { opacity: 1; transform: translate(-50%, -50%); }
+  100% { opacity: 0; transform: translate(-50%, -160px); }
+}
+.bag-toast.bag-toast-rise {
+  animation: bag-toast-rise 2.2s cubic-bezier(.22, .61, .36, 1) forwards;
 }
 
 .bag-toast.hidden {
   opacity: 0;
-  /* 向上飞约一个半身位再消失 */
-  transform: translate(-50%, -190%);
 }
 
 /* 鎴樻枟娴姩鏁板瓧锛堜激瀹?娌荤枟锛夋斁澶с€?*/
@@ -5236,7 +5243,7 @@ html, body { margin:0; padding:0; width:100%; height:100%; overflow:hidden; }
 /* 2026-10-09（用户要求）：进储藏室页签时把左侧「人物 + 装备」整块收起来（它挡住储藏室了），
    储藏室独占整行。 */
 .bag-body.bag-body-storage { grid-template-columns: minmax(0, 1fr); }
-.bag-body.bag-body-storage .bag-profile-panel { display: none; }
+.bag-body.bag-body-storage .bag-profile-panel { display: none !important; }
 .bag-body.bag-body-storage .bag-storage-panel { grid-column: 1 / -1; }
 /* 2026-10-09：体验卡（限时卡牌副本）。 */
 .bag-slot-trial { position: absolute; top: 2px; left: 2px; padding: 0 4px; border-radius: 4px; background: #b8860b; color: #fff; font-size: .6rem; line-height: 1.4; }

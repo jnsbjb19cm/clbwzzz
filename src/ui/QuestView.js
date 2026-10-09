@@ -431,7 +431,7 @@ export class QuestView{
       }
     }finally{QuestView._suppressItemGain=false;QuestView._suppressCardObtain=false;}
   }
-  toast(root,message){const t=root.querySelector('#quest-toast');if(!t)return;t.textContent=message;t.classList.remove('hidden');clearTimeout(this.toastTimer);this.toastTimer=setTimeout(()=>t.classList.add('hidden'),2200);}
+  toast(root,message){const t=root.querySelector('#quest-toast');if(!t)return;t.textContent=message;t.classList.remove('hidden','bag-toast-rise');void t.offsetWidth;t.classList.add('bag-toast-rise');clearTimeout(this.toastTimer);this.toastTimer=setTimeout(()=>t.classList.add('hidden'),2200);}
 }
 
 // 2026-10-09：任务事件入口挂全局 —— 底层系统用 core/QuestEventBus.js 上报，避免 import 成环。

@@ -1072,7 +1072,10 @@ export class BagView {
   toast(root, msg) {
     const el = root.querySelector('#bag-toast');
     el.textContent = msg;
-    el.classList.remove('hidden');
+    // 2026-10-09：重播「向上飞再淡出」动画（去掉 hidden 后强制重排，保证每次都能重播）。
+    el.classList.remove('hidden', 'bag-toast-rise');
+    void el.offsetWidth;
+    el.classList.add('bag-toast-rise');
     clearTimeout(this._toastTimer);
     this._toastTimer = setTimeout(() => el.classList.add('hidden'), 2200);
   }

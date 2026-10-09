@@ -3,6 +3,9 @@ import { BagView } from './BagView.js';
 
 const PATCH_FLAG = Symbol.for('clbwz.batchInventoryDatabaseFix20260908');
 
+/** 需要先选「目标卡牌」的功能道具（洗练石/升阶石/觉醒符/技能书/命名笔…）—— 不能走通用使用接口。 */
+const CARD_TARGET_ITEM_IDS = new Set([80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91]);
+
 function applyProfile(view, profile) {
   if (!view?.player || !profile) return;
   const map = {
@@ -88,6 +91,11 @@ function installBatchPanelAuthority(view, root) {
   // 2026-10-09（用户报「改名卡请在背包中点击使用」）：改名卡(98) 必须走 BagView 自己的改名弹窗，
   // 通用 /inventory/use 会 400 拒绝。
   if (Number(item.id) === 98) return;
+  // 2026-10-09（用户报「洗练石/品质升阶石这些指定目标的又坏了」）：
+  // 这类道具必须**先选目标卡牌**，不能直接 POST /inventory/use（服务端会 400「该道具需要选择目标」）。
+  // 交给 BagView 自己的选卡流程：选中卡牌后由 DatabasePersistenceAuthority 走
+  // /player/cards/use-functional-item（带目标的入库权威接口）。
+  if (CARD_TARGET_ITEM_IDS.has(Number(item.id))) return;
 
   const oldUseButton = root?.querySelector?.('#bag-detail #bag-use');
   if (!oldUseButton || oldUseButton.dataset.databaseBatchAuthority === 'true') return;
@@ -123,7 +131,7 @@ function installBatchPanelAuthority(view, root) {
     const amount = Math.max(1, Math.min(total, Math.floor(Number(requested) || 1)));
     useButton.disabled = true;
     const originalText = useButton.textContent;
-    useButton.textContent = `数据库处理中 ${amount} 个…`;
+    useButton.textContent = `处理中 ${amount} 个…`;
     try {
       const data = await authStore.api.post('/player/inventory/use', {
         itemId,
@@ -136,14 +144,14 @@ function installBatchPanelAuthority(view, root) {
       view.refresh(root);
       const used = Math.max(1, Number(data?.used) || amount);
       const detailText = String(data?.message || '').trim();
+      // 2026-10-09（用户反馈）：不要把「已从数据库扣除」这类实现细节甩给玩家，只说玩家关心的事。
       view.toast(root, detailText
-        ? `${detailText}（已从数据库扣除 ${used} 个）`
-        : (used > 1 ? `已从数据库扣除并使用 ${used} 个「${item.name}」` : `已从数据库扣除并使用「${item.name}」`));
+        || (used > 1 ? `使用了 ${used} 个「${item.name}」` : `使用了「${item.name}」`));
     } catch (error) {
       useButton.disabled = false;
       useButton.textContent = originalText;
       syncLabel();
-      view.toast(root, error?.message || '使用失败，数据库未扣除');
+      view.toast(root, error?.message || '使用失败，物品未扣除');
     }
   };
 
