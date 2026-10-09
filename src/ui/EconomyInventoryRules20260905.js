@@ -223,7 +223,7 @@ function patchCraftBinding() {
       inventory.wouldConsumeBound?.(cfg.parchment, need.parchment)
       || inventory.wouldConsumeBound?.(cfg.gem, need.gem)
       || (opts.useCharm && inventory.wouldConsumeBound?.(cfg.charm, 1))
-      || (opts.useDna && inventory.wouldConsumeBound?.(cfg.dna, 1))
+      || (opts.useDna && inventory.wouldConsumeBound?.(this.resolveDnaItem(targetCardId, inventory, opts), 1))
     ));
 
     const addCard = cardInventory.addCard;

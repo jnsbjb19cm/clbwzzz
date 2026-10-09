@@ -1,4 +1,5 @@
 import { announceSmithyResult } from '../socket/SystemAnnouncementService.js';
+import { dnaCandidates, selectDna } from '../../src/core/CardDna.js';
 import { Router } from 'express';
 import { createRequire } from 'node:module';
 import { db, getPlayerSnapshot, withTransaction, whenDatabaseReady } from '../database.js';
@@ -342,7 +343,10 @@ smithyAuthorityRouter20260907.post('/craft', async (req, res) => {
       if (await itemCount(conn, userId, material.parchment) < int(need.parchment)) throw new Error('羊皮纸不足');
       if (await itemCount(conn, userId, material.gem) < int(need.gem)) throw new Error('宝石不足');
       if (useCharm && await itemCount(conn, userId, material.charm) < 1) throw new Error('保护符不足');
-      if (useDna && await itemCount(conn, userId, material.dna) < 1) throw new Error('DNA不足');
+      const dnaCounts = new Map();
+      if (useDna) for (const id of dnaCandidates(target)) dnaCounts.set(id, await itemCount(conn, userId, id));
+      const dnaItemId = selectDna(target, id => dnaCounts.get(id) || 0, req.body?.dnaItemId);
+      if (useDna && !dnaItemId) throw new Error('需要该卡专属DNA或同等级通用DNA');
       if (useClover && await itemCount(conn, userId, cloverItemId(level)) < 1) throw new Error('幸运四叶草不足');
 
       const state = await readSmithyState(userId, conn);
@@ -375,7 +379,7 @@ smithyAuthorityRouter20260907.post('/craft', async (req, res) => {
         ? await consumeItemTracked(conn, userId, material.charm, 1)
         : { ok: true, usedBound: false };
       const dnaUse = useDna
-        ? await consumeItemTracked(conn, userId, material.dna, 1)
+        ? await consumeItemTracked(conn, userId, dnaItemId, 1)
         : { ok: true, usedBound: false };
       // 2026-10-09：四叶草只在制作成功后消耗（只影响升变档，失败不白扣）。
       const cloverUse = useClover
@@ -393,7 +397,7 @@ smithyAuthorityRouter20260907.post('/craft', async (req, res) => {
         const pool = cardJson.filter((card) => isCollectible(card) && cardQuality(card) === level + 1);
         resultCard = randomPick(pool, targetId) ?? target;
         if (useDna) {
-          await addItem(conn, userId, material.dna, 1, dnaUse.usedBound);
+          await addItem(conn, userId, dnaItemId, 1, dnaUse.usedBound);
           dnaRefunded = true;
         }
       } else if (useDna || roll < rates.ascendRate + rates.targetRate) {

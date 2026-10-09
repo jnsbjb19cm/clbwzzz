@@ -3083,6 +3083,31 @@ body.battle-immersive .top-ui {
   padding: 0;
 }
 
+/* 2026-10-09：首次进游戏的大厅音乐选择弹窗（外壳复用铁匠铺确认弹窗的样式）。
+   两个选项本身就是「试听」按钮：点一下立刻换歌，选中的高亮。 */
+.lobby-music-options { display: flex; gap: 10px; margin: 0 0 16px; }
+.lobby-music-option {
+  flex: 1 1 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 12px 8px;
+  border: 2px solid #7ec8e3;
+  border-radius: 10px;
+  background: rgba(3, 45, 66, .75);
+  color: #eaf8ff;
+  cursor: pointer;
+  font-family: inherit;
+}
+.lobby-music-option b { font-size: 18px; color: #ffe15d; }
+.lobby-music-option span { font-size: 12px; opacity: .85; }
+.lobby-music-option:hover { border-color: #ffe15d; }
+.lobby-music-option.active {
+  border-color: #ffe15d;
+  background: rgba(255, 225, 93, .18);
+  box-shadow: inset 0 0 0 2px rgba(255, 225, 93, .35);
+}
+
 .bag-mode-tabs {
   display: flex;
   gap: 8px;

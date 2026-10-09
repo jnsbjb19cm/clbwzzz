@@ -2,6 +2,8 @@ import { usesFoodCost, HAND_SLOT_COUNT } from '../battle/BattleConfig.js';
 import { calculateCardStats } from '../battle/CardStatFormula.js';
 import { formatCraftCardName, resolveCraftQuality } from '../core/constants.js';
 import { DeckSelectView } from './DeckSelectView.js';
+import { classicCardTooltipMarkup } from './ClassicCardTooltip.js';
+import { gameSettings } from '../core/GameSettingsStore20260910.js';
 
 const PATCH_FLAG = Symbol.for('clbwzzz.battleRoomCardPresentation');
 const ATLAS_URL = '/resources/img/cardParts.png';
@@ -164,6 +166,12 @@ function renderTooltip(view, tooltip, bagIndex) {
   const meta = cardMeta(view, bagIndex);
   if (!meta) return false;
   const card = meta.card;
+  tooltip.classList.toggle('classic-card-tooltip', gameSettings.get('classicCardTooltip'));
+  if (gameSettings.get('classicCardTooltip')) {
+    tooltip.innerHTML = classicCardTooltipMarkup(card, meta.instance);
+    tooltip.hidden = false;
+    return true;
+  }
   tooltip.innerHTML = `
     <header>
       <strong style="color:${meta.quality.color}">${formatCraftCardName(meta.instance.craftQuality, card.name)}</strong>

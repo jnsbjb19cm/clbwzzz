@@ -24,6 +24,7 @@ export function installCraftBindingSafety20260905() {
     const target = this.db.getById(targetCardId);
     const level = target ? Math.min(4, Math.max(1, Number(target.quality) || 1)) : 1;
     const cfg = this.materials.getLevelConfig(level);
+    const dnaItemId = this.resolveDnaItem(targetCardId, inventory, opts);
     const need = this.rules.materialsPerCraft;
 
     // 先按实际“非绑定优先、绑定补足”的消费规则判断本次是否会动到绑定材料。
@@ -32,7 +33,7 @@ export function installCraftBindingSafety20260905() {
       || inventory.wouldConsumeBound?.(cfg.gem, need.gem)
     ));
     const dnaUsesBound = Boolean(
-      cfg && opts.useDna && inventory.wouldConsumeBound?.(cfg.dna, 1),
+      dnaItemId && opts.useDna && inventory.wouldConsumeBound?.(dnaItemId, 1),
     );
 
     const result = originalCraft.call(
@@ -45,9 +46,9 @@ export function installCraftBindingSafety20260905() {
     );
 
     // 升变时原系统会返还 1 个 DNA；若本次消耗的是绑定 DNA，返还也必须仍为绑定。
-    if (result?.ok && result?.dnaRefunded && dnaUsesBound && cfg?.dna) {
-      const converted = inventory.consumeItemDetailed?.(cfg.dna, 1, { bound: false });
-      if (converted?.ok) inventory.addItem(cfg.dna, 1, { bound: true });
+    if (result?.ok && result?.dnaRefunded && dnaUsesBound && dnaItemId) {
+      const converted = inventory.consumeItemDetailed?.(dnaItemId, 1, { bound: false });
+      if (converted?.ok) inventory.addItem(dnaItemId, 1, { bound: true });
     }
 
     // 普通制作失败会补偿低一级宝石。只要核心制作材料中出现绑定，补偿宝石也绑定。

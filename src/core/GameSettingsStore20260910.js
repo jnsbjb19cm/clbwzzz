@@ -11,6 +11,7 @@ export const GAME_SETTINGS_STORAGE_KEY = 'clbwz_game_settings_v1';
 export const GAME_SETTINGS_DEFAULTS = Object.freeze({
   /** 图鉴：未获得的卡是否显示为剪影。默认关 —— 也就是正常显示立绘。 */
   gallerySilhouetteUnowned: false,
+  classicCardTooltip: true,
   /** 全屏技能特效大小（1 = 铺满整个画布）。0.72 与代码默认值一致。 */
   fullscreenFxScale: 0.72,
   /** 画质预设：low / medium / high（选中后批量写入下面这些真实开关）。 */
@@ -33,6 +34,8 @@ export const GAME_SETTINGS_DEFAULTS = Object.freeze({
    * 'B' = 原来的主城音乐 /assets/sound/music/scene.mp3
    */
   lobbyMusic: 'A',
+  /** 2026-10-09：首次进游戏时的「选择大厅音乐」弹窗是否已弹过（弹过不再弹）。 */
+  lobbyMusicIntroSeen: false,
 });
 
 /** 画质预设可选值。 */
@@ -53,7 +56,7 @@ function normalize(key, value) {
     const raw = String(value ?? '');
     return GRAPHICS_QUALITY_LEVELS.includes(raw) ? raw : GAME_SETTINGS_DEFAULTS.graphicsQuality;
   }
-  if (key === 'gallerySilhouetteUnowned') return Boolean(value);
+  if (key === 'gallerySilhouetteUnowned' || key === 'classicCardTooltip') return Boolean(value);
   if (key === 'peanutMouthBullet' || key === 'showDamageNumbers' || key === 'showUnitHp' || key === 'showPerfPanel'
     || key === 'bgmEnabled' || key === 'bgmCity' || key === 'bgmRoom' || key === 'bgmBattle') {
     return value === true;

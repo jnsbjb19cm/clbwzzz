@@ -1,4 +1,5 @@
 import itemsJson from '../data/item.json';
+import { CARD_DNA_ITEMS } from './CardDna.js';
 import functionalItemsJson from '../data/functionalItems.json';
 import expandBagJson from '../data/expandBag.json';
 import { BAG_MAX_STACK, TRIAL_ITEM_SLOT_COUNT } from './constants.js';
@@ -44,7 +45,7 @@ const STARTER_ITEMS = [
 export class ItemDatabase {
   constructor() {
     this.craftRegistry = craftRegistry;
-    const mergedRaw = [...itemsJson];
+    const mergedRaw = [...itemsJson, ...CARD_DNA_ITEMS];
     const existingIds = new Set(mergedRaw.map((raw) => Number(raw.item_id)));
     for (const raw of functionalItemsJson) {
       if (!existingIds.has(Number(raw.item_id))) mergedRaw.push(raw);

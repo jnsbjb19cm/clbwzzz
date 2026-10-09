@@ -450,6 +450,8 @@ export class SmithyView {
       : null;
     const level = target ? Math.min(4, target.quality) : 1;
     const cfg = this.itemDb.craftRegistry.getLevelConfig(level);
+    const dnaChoices = target ? dnaCandidates(target) : [];
+    if (!dnaChoices.includes(Number(this.dnaItemId))) this.dnaItemId = 0;
     const cloverId = this.itemDb.craftRegistry.getCloverItemId(level);
     const cloverOwned = target ? this.inventory.countItem(cloverId) : 0;
     const qualityPreview = this.craftSys.getCraftQualityPreview(this.useCharm);
@@ -492,7 +494,8 @@ export class SmithyView {
               <li>${renderSmithyMaterialArt('gem', level)}<span>宝石 x2：背包 ${cfg ? this.inventory.countItem(cfg.gem) : 0}</span></li>
             </ul>
             <label class="smithy-check">${renderSmithyMaterialArt('charm', Math.min(3, level))}<input type="checkbox" id="use-charm" ${this.useCharm ? 'checked' : ''}/> 使用保护符(失败保留材料)</label>
-            <label class="smithy-check">${renderSmithyMaterialArt('dna', level)}<input type="checkbox" id="use-dna" ${this.useDna ? 'checked' : ''}/> 使用 DNA(成功必出目标，升变时返还)</label>
+            <label class="smithy-check">${renderSmithyMaterialArt('dna', level)}<input type="checkbox" id="use-dna" ${this.useDna ? 'checked' : ''}/> 使用 DNA(成功必出目标，升变时原样返还)</label>
+            <label class="smithy-check">DNA来源<select id="craft-dna-source"><option value="0">自动：优先该卡专属，缺少时用同级通用</option>${dnaChoices.map(id => `<option value="${id}" ${Number(this.dnaItemId) === id ? 'selected' : ''}>${this.itemDb.getById(id)?.name || `${level}级通用DNA`} ×${this.inventory.countItem(id)}</option>`).join('')}</select></label>
             <label class="smithy-check">${renderSmithyMaterialArt('clover', level)}<input type="checkbox" id="use-clover" ${this.useClover ? 'checked' : ''}/> 使用${level}级幸运四叶草(升变+5%，成功才消耗，背包 ${cloverOwned})</label>
             ${preview ? `
               <div class="smithy-preview">
@@ -548,9 +551,11 @@ export class SmithyView {
     };
     bindCheck('#use-charm', 'useCharm');
     bindCheck('#use-dna', 'useDna');
+    body.querySelector('#craft-dna-source')?.addEventListener('change', event => { this.dnaItemId = Number(event.target.value); });
     bindCheck('#use-clover', 'useClover');
     body.querySelector('#do-craft')?.addEventListener('click', () => {
       const res = this.craftSys.craft(this.targetCardId, this.inventory, this.cardInventory, this.craftState, {
+        dnaItemId: this.dnaItemId,
         useCharm: this.useCharm,
         useDna: this.useDna,
         useClover: this.useClover,
@@ -823,3 +828,4 @@ export class SmithyView {
     this._toastTimer = setTimeout(() => el.classList.add('hidden'), 3200);
   }
 }
+import { dnaCandidates } from '../core/CardDna.js';

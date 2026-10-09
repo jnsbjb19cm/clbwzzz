@@ -92,6 +92,7 @@ export class SettingsView {
 
           <div class="gset-block">
             <h3>战斗表现</h3>
+            <label class="gset-row gset-row-check">宋体经典卡牌悬浮说明（关闭恢复旧版）<input id="setting-classic-card-tooltip" type="checkbox" ${gameSettings.get('classicCardTooltip') ? 'checked' : ''} /></label>
             <label class="gset-row gset-row-check">花生神射手口中子弹<input id="setting-peanut-mouth" type="checkbox" ${gameSettings.get('peanutMouthBullet') === true ? 'checked' : ''} /></label>
             <div class="gset-row gset-row-stack">
               <span>画质</span>
@@ -173,6 +174,7 @@ export class SettingsView {
     root.querySelector('#setting-peanut-mouth').addEventListener('change',e=>{
       gameSettings.set('peanutMouthBullet',e.target.checked);
     });
+    root.querySelector('#setting-classic-card-tooltip').addEventListener('change', e => gameSettings.set('classicCardTooltip', e.target.checked));
     root.querySelector('#setting-music').addEventListener('input', (e) => {
       audio.volume = Number(e.target.value) / 100;
       if (audio.bgm) audio.bgm.volume = audio.volume;

@@ -39,6 +39,8 @@ const GEM_LEVEL_BY_ITEM_ID = Object.freeze({
 
 export function getCraftMaterialImage(itemId) {
   const id = Number(itemId);
+  const dna = cardDnaItem(id);
+  if (dna) return SMITHY_MATERIAL_ART.dna[dna.quality - 1];
   if (id >= 50001 && id <= 50004) return SMITHY_MATERIAL_ART.parchment[id - 50001];
   if (id >= 50031 && id <= 50034) return SMITHY_MATERIAL_ART.dna[id - 50031];
   if (id >= 50021 && id <= 50024) return SMITHY_MATERIAL_ART.charm[id - 50021];
@@ -78,3 +80,4 @@ export function getCraftMaterialSpriteStyle(sprite) {
     'background-repeat:no-repeat',
   ].join(';');
 }
+import { cardDnaItem } from '../core/CardDna.js';

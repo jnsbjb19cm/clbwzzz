@@ -1,4 +1,5 @@
 import craftMaterials from '../../src/data/craftMaterials.json' with { type: 'json' };
+import { rollCardDna } from '../../src/core/CardDna.js';
 import { grantPlayerExp } from '../../src/core/PlayerProgression.js';
 import { settlePveStageForPlayer } from './PveStageSettlement20260911.js';
 import { recordAdventureBossClear } from '../domain/AdventureAccess.js';
@@ -90,12 +91,13 @@ export function attachBattleReport(battle, room) {
     const recipients = rows.filter(row => row.team !== owner.team && row.userId > 0 && !row.isBot);
     if (!recipients.length) return null;
     const level = Math.max(1, Math.min(5, Number(unit.quality) || 1));
-    if (this.rng() >= Math.min(0.42, 0.14 + level * 0.055)) return null;
+    const dnaId = rollCardDna(() => this.rng());
+    if (!dnaId && this.rng() >= Math.min(0.42, 0.14 + level * 0.055)) return null;
     const killerId = Number(battle.__reportSkillCaster || unit.__lastDamageOwner);
     const eligible = recipients.filter(row => row.items.reduce((n, item) => n + item.count, 0) < 5);
     const recipient = eligible.find(row => row.userId === killerId) ?? eligible[(this._lootDropSeq || 0) % eligible.length];
     if (!recipient) return null;
-    const itemId = rollUpgradeMaterial(level, () => this.rng());
+    const itemId = dnaId ?? rollUpgradeMaterial(level, () => this.rng());
     const existing = recipient.items.find(item => item.itemId === itemId);
     if (existing) existing.count += 1;
     else recipient.items.push({ itemId, count: 1 });

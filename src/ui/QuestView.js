@@ -74,7 +74,7 @@ function loadState(){
   }catch{}
   return applyBackfillOnce(defaultState());
 }
-function saveState(state){try{localStorage.setItem(STORAGE_KEY,JSON.stringify(normalizeState(state)));}catch{}}
+function saveState(state){try{localStorage.setItem(STORAGE_KEY,JSON.stringify(normalizeState(state)));window.dispatchEvent(new CustomEvent('clbwz:quest-state'));}catch{}}
 function escaped(v){return String(v??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');}
 function brokenText(v){return /[?]/.test(String(v??''));}
 function rewardIcon(k){return'<i class="quest-reward-icon '+k+'" aria-hidden="true"></i>';}
@@ -308,6 +308,16 @@ export class QuestView{
     const raw=QUEST_GROUPS[this.category]||[];
     if(['daily','weekly','achievement','challenge'].includes(this.category))return raw;
     return visibleQuests(this.category,this.state,raw);
+  }
+  static hasClaimableReward(playerLevel = 1) {
+    const state = loadState();
+    syncCumulativeProgress(state, ownedItemCount);
+    for (const [category, quests] of Object.entries(QUEST_GROUPS)) {
+      if (quests.some(q => requirementsMet(state, category, q)
+        && !(state[category + 'Claimed'] || []).includes(q.id)
+        && Number(state[category + 'Progress']?.[q.id] || 0) >= q.goal)) return true;
+    }
+    return LEVEL_REWARDS.some(q => Number(playerLevel) >= q.lv && !state.levelClaimed.includes(q.lv));
   }
   stateFor(entry){
     if(this.category==='level'){

@@ -1,4 +1,5 @@
 import { BattleRenderer } from '../battle/BattleRenderer.js';
+import { cardDnaItem } from '../core/CardDna.js';
 import { cellCenterX, cellCenterY } from '../battle/BattleConfig.js';
 import {
   getCraftMaterialImage,
@@ -11,6 +12,7 @@ const IMAGE_CACHE = new Map();
 
 function isCraftMaterialId(itemId) {
   const id = Number(itemId);
+  if (cardDnaItem(id)) return true;
   return (id >= 50001 && id <= 50004)
     || (id >= 50011 && id <= 50014)
     || (id >= 50021 && id <= 50024)

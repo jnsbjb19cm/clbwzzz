@@ -1,10 +1,13 @@
 import { CardDatabase } from '../core/CardDatabase.js';
+import { installClassicCardTooltip } from './ClassicCardTooltip.js';
 import { ItemDatabase, InventoryStore } from '../core/ItemDatabase.js';
 import { CardInventoryStore } from '../core/CardInventoryStore.js';
 import { HeroSkillStore } from '../core/HeroSkillStore.js';
 import { audio } from '../core/AudioManager.js';
 // 2026-10-09（用户要求）：大厅音乐可在设置里二选一（音乐A / 音乐B）。
 import { lobbyMusicSrc } from '../core/BattleClientFlags20260910.js';
+// 首次进大厅的一次性试听选择弹窗。
+import { maybeShowLobbyMusicIntro } from './LobbyMusicIntro20261009.js';
 import { authStore } from '../core/AuthStore.js';
 import { CardGallery } from './CardGallery.js';
 import { getCraftMaterialImage } from './SmithyMaterialArtwork.js';
@@ -238,6 +241,13 @@ export class App {
   bindGlobalNotices() {
     if (this._noticesBound) return;
     this._noticesBound = true;
+    installClassicCardTooltip(this);
+    const refreshQuestGlow = () => {
+      document.documentElement.dataset.questRewardReady = String(QuestView.hasClaimableReward(this.player?.level));
+    };
+    window.addEventListener('clbwz:quest-state', refreshQuestGlow);
+    window.addEventListener('storage', refreshQuestGlow);
+    refreshQuestGlow();
     this.root.addEventListener('click', (event) => {
       if (event.target.closest('#global-notice-close')) {
         this.dismissGlobalNotice();
@@ -348,6 +358,8 @@ export class App {
     const firstBoot = audio.getBgmKey() == null;
     // 2026-10-09（用户要求）：大厅音乐按设置取地址（音乐A = 新大厅曲，音乐B = 原主城曲）。
     audio.playBgm('city', { fade: fromBattle || firstBoot, src: lobbyMusicSrc() });
+    // 首次进大厅弹一次「选择大厅音乐（可试听）」，选完记在设置里，之后不再弹（设置页仍可改）。
+    maybeShowLobbyMusicIntro();
   }
 
   renderAdventureScene(root) {

@@ -160,6 +160,9 @@ export const perfPanelEnabled = () => gameSettings.get('showPerfPanel') === true
  * 只是换掉实际播放的音频地址。
  */
 export const LOBBY_MUSIC_SRC = Object.freeze({
+  // TODO(2026-10-10，用户自己转码)：等 homehall.mp3 放进 resources/newsound/ 之后，
+  // 把下一行改成 '/resources/newsound/homehall.mp3'（17.7MB wav → 约 1~2MB mp3）。
+  // wav 按用户要求保留当母带，不要删。
   A: '/resources/newsound/homehall.wav',
   B: '/assets/sound/music/scene.mp3',
 });

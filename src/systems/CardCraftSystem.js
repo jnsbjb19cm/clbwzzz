@@ -1,4 +1,5 @@
 import craftRules from '../data/craftRules.json';
+import { selectDna } from '../core/CardDna.js';
 import {
   ASCEND_MAX_QUALITY,
   CRAFTABLE_MAX_QUALITY,
@@ -80,14 +81,18 @@ export class CardCraftSystem {
     };
   }
 
-  hasMaterials(inventory, level, { useCharm, useDna, useClover }) {
+  resolveDnaItem(targetCardId, inventory, opts = {}) {
+    return selectDna(this.db.getById(targetCardId), id => inventory.countItem(id), opts.dnaItemId);
+  }
+
+  hasMaterials(inventory, level, { useCharm, useDna, useClover, targetCardId, dnaItemId }) {
     const cfg = this.materials.getLevelConfig(level);
     if (!cfg) return false;
     const need = this.rules.materialsPerCraft;
     if (inventory.countItem(cfg.parchment) < need.parchment) return false;
     if (inventory.countItem(cfg.gem) < need.gem) return false;
     if (useCharm && inventory.countItem(cfg.charm) < 1) return false;
-    if (useDna && inventory.countItem(cfg.dna) < 1) return false;
+    if (useDna && !(targetCardId ? this.resolveDnaItem(targetCardId, inventory, { dnaItemId }) : inventory.countItem(cfg.dna) > 0)) return false;
     if (useClover && inventory.countItem(this.materials.getCloverItemId(level)) < 1) return false;
     return true;
   }
@@ -101,7 +106,8 @@ export class CardCraftSystem {
 
     const level = Math.min(CRAFTABLE_MAX_QUALITY, target.quality);
     const cfg = this.materials.getLevelConfig(level);
-    if (!this.hasMaterials(inventory, level, { useCharm, useDna, useClover })) {
+    const dnaItemId = this.resolveDnaItem(targetCardId, inventory, opts);
+    if (!this.hasMaterials(inventory, level, { useCharm, useDna, useClover, targetCardId, dnaItemId: opts.dnaItemId })) {
       return { ok: false, error: '材料不足' };
     }
 
@@ -143,7 +149,7 @@ export class CardCraftSystem {
     consumeCore();
     if (useCharm) inventory.consumeItem(cfg.charm, 1);
     const dnaConsumed = useDna;
-    if (dnaConsumed) inventory.consumeItem(cfg.dna, 1);
+    if (dnaConsumed) inventory.consumeItem(dnaItemId, 1);
     // 2026-10-09：四叶草只在制作成功后消耗 —— 它只影响升变档，失败时不该白扣。
     const cloverConsumed = useClover;
     if (cloverConsumed) inventory.consumeItem(this.materials.getCloverItemId(level), 1);
@@ -160,7 +166,7 @@ export class CardCraftSystem {
       outcome = 'ascend';
       resultCardId = this.pickAscendCard(level, target.id);
       if (dnaConsumed) {
-        inventory.addItem(cfg.dna, 1);
+        inventory.addItem(dnaItemId, 1);
         dnaRefunded = true;
       }
     } else if (dnaConsumed || roll < ascendRate + targetRate) {
@@ -177,7 +183,7 @@ export class CardCraftSystem {
       inventory.addItem(cfg.parchment, need.parchment);
       inventory.addItem(cfg.gem, need.gem);
       if (useCharm) inventory.addItem(cfg.charm, 1);
-      if (dnaConsumed && !dnaRefunded) inventory.addItem(cfg.dna, 1);
+      if (dnaConsumed && !dnaRefunded) inventory.addItem(dnaItemId, 1);
       if (cloverConsumed) inventory.addItem(this.materials.getCloverItemId(level), 1);
       return { ok: false, error: addRes.error ?? '卡牌背包已满，材料已退还' };
     }

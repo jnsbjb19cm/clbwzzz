@@ -1,0 +1,26 @@
+.classic-card-tooltip, .room-card-tooltip.classic-card-tooltip {
+  box-sizing: border-box !important; position: fixed; z-index: 2147483000;
+  width: 328px !important; max-width: calc(100vw - 16px) !important;
+  max-height: calc(100vh - 16px); overflow-y: auto;
+  padding: 16px 24px 14px !important; border: 0 !important; border-radius: 3px !important;
+  background: rgba(12, 15, 4, .95) !important; box-shadow: none !important;
+  color: #b8b8ab !important; font: 20px/1.22 SimSun, '宋体', serif !important;
+  letter-spacing: 0 !important; text-shadow: none !important; text-align: left !important;
+  pointer-events: none; overflow-wrap: anywhere;
+}
+.classic-card-tooltip[hidden] { display: none !important; }
+.classic-card-tooltip > div { margin: 0 !important; padding: 0 !important; font: inherit !important; }
+.classic-card-tooltip .classic-tip-name { color: #999b91 !important; margin-bottom: 2px !important; }
+.classic-card-tooltip .classic-tip-stars { display: grid; grid-template-columns: repeat(5, 24px); color: #020300 !important; line-height: 1.15 !important; }
+.classic-tip-stars .earned { color: #ecc536; }
+.classic-card-tooltip .classic-tip-stats { color: #c59813 !important; }
+.classic-card-tooltip .classic-tip-trait { color: #00b9bd !important; margin: 5px 0 !important; }
+.classic-card-tooltip .classic-tip-lore { color: #c0c0b5 !important; white-space: pre-wrap; }
+.classic-card-tooltip .classic-tip-expiry { color: #d1dc0a !important; margin-top: 4px !important; }
+html[data-quest-reward-ready="true"] [data-route="quest"] {
+  filter: drop-shadow(0 0 5px #ffde32) drop-shadow(0 0 10px #ff911e);
+  outline: 2px solid #ffe767; outline-offset: 2px; border-radius: 50%;
+  animation: claimable-quest-glow 1.5s ease-in-out infinite alternate;
+}
+@keyframes claimable-quest-glow { to { filter: drop-shadow(0 0 9px #fff77c) drop-shadow(0 0 16px #ff861a); } }
+@media (prefers-reduced-motion: reduce) { html[data-quest-reward-ready="true"] [data-route="quest"] { animation: none; } }

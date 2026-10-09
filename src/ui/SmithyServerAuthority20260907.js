@@ -90,6 +90,7 @@ function bindServerActions(view, root) {
       targetCardId: view.targetCardId,
       useCharm: Boolean(view.useCharm),
       useDna: Boolean(view.useDna),
+      dnaItemId: Number(view.dnaItemId) || 0,
       useClover: Boolean(view.useClover),
     });
     const failed = data?.result === 'fail' || data?.result === 'fail_protected';

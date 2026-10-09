@@ -2022,10 +2022,11 @@ export class BattleEngine {
     ) return null;
 
     unit._lootRolled = true;
+    const dnaDrop = appendDnaDeathDrop(this, unit);
     const level = Math.max(1, Math.min(5, Math.floor(Number(unit.quality) || 1)));
     const chance = Math.min(0.42, 0.14 + level * 0.055);
     const roll = Number(this.rng());
-    if (!Number.isFinite(roll) || roll >= chance) return null;
+    if (!Number.isFinite(roll) || roll >= chance) return dnaDrop;
 
     const drop = {
       id: ++this._lootDropSeq,
@@ -2691,3 +2692,4 @@ export class BattleEngine {
     this.lastDeployError = '';
   }
 }
+import { appendDnaDeathDrop } from '../core/CardDna.js';
