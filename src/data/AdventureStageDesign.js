@@ -299,6 +299,11 @@ const STAGE_DRIP_CARD = Object.freeze({
   16: [{ cardId: 55, everyWaves: 10 }],
 });
 
+/** 怪物线专用滴灌（2026-10-09）：怪物线 3-4 每 9 波来 1 只幻.飞行忍者(45) */
+const MONSTER_STAGE_DRIP_CARD = Object.freeze({
+  12: [{ cardId: 45, everyWaves: 9 }],
+});
+
 /**
  * 把一波拆成小波（2026-10-09 用户要求：4-2 每小波最多 2 个，且时间再延长）。
  * 返回 { maxPerGroup, gapSec } 或 null（null = 整波同时出）。
@@ -314,8 +319,10 @@ export function adventureSubwavePlan(stage) {
 }
 export function adventureDripSpawn(stage, absoluteWave) {
   const a = stage?.adventure;
-  if (!a || Number(a.route) !== 0) return [];   // 只做植物线
-  const list = STAGE_DRIP_CARD[Number(a.index)];
+  if (!a) return [];
+  const route = Number(a.route);
+  if (route !== 0 && route !== 1) return [];   // 植物线/怪物线各有一张滴灌表
+  const list = (route === 1 ? MONSTER_STAGE_DRIP_CARD : STAGE_DRIP_CARD)[Number(a.index)];
   if (!Array.isArray(list) || !list.length) return [];
   const wave = Number(absoluteWave);
   if (!Number.isFinite(wave) || wave <= 0) return [];

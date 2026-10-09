@@ -2273,7 +2273,11 @@ export class BattleEngine {
     // 2026-10-09（用户要求）：子弹反射**只认直线弹道**（抛物线/曲线一律不弹、也不反伤）；
     //   近战只有带 meleeReflectChance 的卡才反伤 —— 21/27 只有 projectileReflectChance，不再吃近战。
     const vicTraits = getCardTraits(vic.cardId) || {};
-    const straightBullet = ranged && sourceTrajectory === 'straight';
+    // 2026-10-09 修：延迟伤害事件(updatePendingDamageEvents) 与技能直伤调用时**不带弹道标记**，
+    // 上一版"只认 straight"把这些命中全挡掉了 → 战盔巨头怪反弹看起来又坏了。
+    // 现在：没标注弹道的按直线子弹处理；只有明确标了抛物线等弹道的才不弹。
+    const bulletTrajectory = sourceTrajectory ?? 'straight';
+    const straightBullet = ranged && bulletTrajectory === 'straight';
     const reflectChance = straightBullet
       ? (Number(vicTraits.projectileReflectChance) || 0)
       : (ranged ? 0 : (Number(vicTraits.meleeReflectChance) || 0));
