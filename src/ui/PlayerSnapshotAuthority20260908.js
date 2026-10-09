@@ -50,7 +50,7 @@ function applyProfileSnapshot(app, profile) {
 // Only these endpoints return a COMPLETE personal inventory. Warehouse/auction
 // lists and material-refill grants also use `items`, but are not snapshots.
 function isPlayerSnapshotPath(path) {
-  return /^\/player\/(?:snapshot|economy-state|smithy\/(?:state|craft|star-upgrade|decompose|material-combine|restore-escrow)|inventory\/(?:use|sell|drop|expand)|shop\/(?:buy-item|buy-pack|recharge-demo)|cards\/(?:discard|use-functional-item)|quests\/claim-reward|stage-result|migration\/local-snapshot)$/.test(String(path).split('?')[0]);
+  return /^\/player\/(?:snapshot|economy-state|smithy\/(?:state|craft|star-upgrade|decompose|material-combine|restore-escrow)|inventory\/(?:use|sell|drop|expand)|shop\/(?:buy-item|buy-pack|recharge-demo)|cards\/(?:discard|use-functional-item)|quests\/claim-reward|stage-result|migration\/local-snapshot|storage(?:\/(?:deposit|withdraw))?)$/.test(String(path).split('?')[0]);
 }
 
 function isInventoryTransfer(path, method) {

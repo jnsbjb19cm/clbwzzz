@@ -34,6 +34,7 @@ import { questPinPersistenceRouter20260908 } from './routes/questPinPersistence2
 import { materialRefillRouter } from './routes/materialRefill.js';
 import { smithyAuthorityRouter20260907 } from './routes/smithyAuthority20260907.js';
 import { socialSearchFixRouter } from './routes/socialSearchFix20260905.js';
+import { storageAuthorityRouter20261009 } from './routes/storageAuthority20261009.js';
 import { socialFriendFixRouter } from './routes/socialFriendFix20260905.js';
 import { socialRouter } from './routes/social.js';
 import { guildUpgradeAuthorityRouter20260907 } from './routes/guildUpgradeAuthority20260907.js';
@@ -120,6 +121,8 @@ app.use('/api/player', playerStateDocumentRouter20260908);
 app.use('/api/player', questRewardAuthorityRouter20260908);
 app.use('/api/player', luckyWheelAuthorityRouter20261006);
 app.use('/api/player', questPinPersistenceRouter20260908);
+// 2026-10-09：储藏室（容量 2000，背包 ↔ 储藏室互转）。
+app.use('/api/player', storageAuthorityRouter20261009);
 app.use('/api/player/smithy', smithyAuthorityRouter20260907);
 app.use('/api/player', playerRouter);
 app.use('/api/player', materialRefillRouter);

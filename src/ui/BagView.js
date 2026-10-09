@@ -7,6 +7,7 @@ import {
   resolveCraftQuality,
   sanitizeCustomCardName,
 } from '../core/constants.js';
+import { StorageView20261009 } from './StorageView20261009.js';
 
 /** 制作品质名唯一来源：core/constants.js 的 CRAFT_QUALITY（避免各处写死导致 3/4 名写反）。 */
 const craftQualityLabel = (craftQuality) => resolveCraftQuality(craftQuality).name;
@@ -266,6 +267,7 @@ export class BagView {
       <button type="button" id="bag-grant-all" class="bag-deck-btn" title="补齐当前缺少的可战斗卡牌">补全卡</button>
       <button type="button" id="bag-deck" class="bag-deck-btn">编辑卡组</button>
       <button type="button" id="bag-smithy" class="bag-deck-btn">铁匠铺</button>
+      <button type="button" id="bag-storage" class="bag-deck-btn">储藏室</button>
       <button type="button" id="bag-reset" class="bag-reset-btn" title="重置试玩数据">重置</button>
     `;
 
@@ -315,6 +317,16 @@ export class BagView {
     toolbar.querySelector('#bag-smithy')?.addEventListener('click', () => {
       audio.playSfx('click');
       this.onNavigate?.('smithy');
+    });
+    // 2026-10-09：储藏室入口 —— 独立悬浮界面，背包 ↔ 储藏室 互转（服务端容量 2000）。
+    toolbar.querySelector('#bag-storage')?.addEventListener('click', () => {
+      audio.playSfx('click');
+      const view = new StorageView20261009({
+        inventory: this.inventory,
+        itemDb: this.itemDb,
+        onInventorySync: () => { this.onPlayerUpdate?.(); if (root?.isConnected) this.refresh(root); },
+      });
+      view.open(root);
     });
     toolbar.querySelector('#bag-reset').addEventListener('click', () => this.handleReset(root));
   }
