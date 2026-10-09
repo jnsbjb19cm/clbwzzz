@@ -19,6 +19,8 @@ import giftPools from '../data/giftPools.json';
 import { findGiftPool, rollGiftPool } from '../data/giftPoolRoll.js';
 import { ItemUseSystem } from '../systems/ItemUseSystem.js';
 
+const PATCH_FLAG = Symbol.for('clbwz.giftBoxOpening20261009');
+
 export { rollGiftPool };
 
 /** 奖励池配置：giftPools.json；掷骰逻辑单一来源 = src/data/giftPoolRoll.js（服务端共用）。 */
