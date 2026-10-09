@@ -76,7 +76,7 @@ function thinStageCards(index, waves) {
  * 关卡级出怪间隔覆盖（秒）。2026-10-09 用户要求：2-4 / 3-4 波次稍微延后。
  * 只覆盖这两个关卡 index；返回 null 表示用全局 WAVE_INTERVAL(10s)。
  */
-const ADVENTURE_WAVE_INTERVAL_OVERRIDE = Object.freeze({ 8: 12, 12: 12 });
+const ADVENTURE_WAVE_INTERVAL_OVERRIDE = Object.freeze({ 8: 12, 12: 12, 14: 14 });
 
 export function adventureWaveInterval(stage) {
   const index = Number(stage?.adventure?.index);
@@ -244,13 +244,27 @@ export const ADVENTURE_REINFORCE_ALIVE_CAP = Object.freeze({
   [MINE_CARD_ID]: Object.freeze({ 1: 3, 2: 5 }),
 });
 
-/** 返回该卡在当前难度的在场上限；没有上限返回 null */
+/**
+ * 蘑菇仙人（58）及其怪物线镜像（118）：从 4-2(index 14) 起 + 最终关，**场上最多 3 只**
+ * （2026-10-09 用户要求）。超出的一律不出（包括第 18 波那种长周期滴灌）。
+ */
+const MUSHROOM_FIELD_CARD_IDS = Object.freeze([58, 118]);
+export const ADVENTURE_FIELD_ALIVE_CAP_MUSHROOM = 3;
+
+/** 返回该卡在当前关卡的"场上存活上限"；没有上限返回 null */
 export function adventureReinforceAliveCap(stage, cardId) {
-  const table = ADVENTURE_REINFORCE_ALIVE_CAP[Number(cardId)];
-  if (!table) return null;
-  const difficulty = Number(stage?.adventure?.difficulty) || 0;
-  const cap = Number(table[difficulty]);
-  return Number.isFinite(cap) && cap > 0 ? cap : null;
+  const id = Number(cardId);
+  const table = ADVENTURE_REINFORCE_ALIVE_CAP[id];
+  if (table) {
+    const difficulty = Number(stage?.adventure?.difficulty) || 0;
+    const cap = Number(table[difficulty]);
+    return Number.isFinite(cap) && cap > 0 ? cap : null;
+  }
+  const a = stage?.adventure;
+  if (a && MUSHROOM_FIELD_CARD_IDS.includes(id) && (Number(a.index) >= 14 || a.final === true)) {
+    return ADVENTURE_FIELD_ALIVE_CAP_MUSHROOM;
+  }
+  return null;
 }
 
 /**
@@ -261,6 +275,19 @@ const STAGE_DRIP_CARD = Object.freeze({
   14: { cardId: 58, everyWaves: 18 },
 });
 
+/**
+ * 把一波拆成小波（2026-10-09 用户要求：4-2 每小波最多 2 个，且时间再延长）。
+ * 返回 { maxPerGroup, gapSec } 或 null（null = 整波同时出）。
+ */
+const STAGE_SUBWAVE = Object.freeze({
+  14: { maxPerGroup: 2, gapSec: 2.5 },
+});
+
+export function adventureSubwavePlan(stage) {
+  const cfg = STAGE_SUBWAVE[Number(stage?.adventure?.index)];
+  if (!cfg) return null;
+  return { maxPerGroup: cfg.maxPerGroup, gapSec: cfg.gapSec };
+}
 export function adventureDripSpawn(stage, absoluteWave) {
   const a = stage?.adventure;
   if (!a || Number(a.route) !== 0) return null;   // 只做植物线
