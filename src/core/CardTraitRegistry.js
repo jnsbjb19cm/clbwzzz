@@ -38,7 +38,8 @@ export const CARD_TRAITS = new Map([
   [15, { contactThorns: true }],
   [17, { slowSec: 4 }],
   [20, { preferFlying: true, slowSec: 4 }],
-  [21, { meleeReflectChance: 0.35, projectileReflectChance: 0.35, reflectRatio: 0.5 }],
+  // 2026-10-09（用户要求）：巨盾核桃卫兵(21) 只反弹**直线子弹**，不再反弹近战伤害。
+  [21, { projectileReflectChance: 0.35, reflectRatio: 0.5 }],
   [23, { firstHitStunSec: 1.5 }],
   [27, { projectileReflectChance: 0.35, reflectRatio: 1 }],
   [34, { swallowLowQualitySec: 10 }],

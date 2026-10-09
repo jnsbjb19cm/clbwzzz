@@ -275,9 +275,16 @@ function refresh(panel) {
   if (tasks) tasks.outerHTML = tasksMarkup();
 }
 
+// 2026-10-09：抽奖进行中锁 —— 一次点击只允许发一次 /spin（服务端每次请求就 +1 次机会）
+let spinning = false;
+
 async function spin(panel, random = Math.random) {
   if (!panel) return null;
+  if (spinning) return null;
   if (spinsLeft() <= 0) { refresh(panel); return null; }
+  spinning = true;
+  const spinButton = panel.querySelector('[data-lucky-spin]');
+  if (spinButton) spinButton.disabled = true;
 
   let sector = null;
   let label = '';
@@ -301,6 +308,7 @@ async function spin(panel, random = Math.random) {
       const failed = panel.querySelector('[data-lucky-result]');
       if (failed) failed.textContent = `抽奖失败：${error?.message || '服务端拒绝了这次抽奖'}`;
       refresh(panel);
+      spinning = false;
       return null;
     }
     // 断网：退回本地抽，并如实说明，不假装成功
@@ -324,7 +332,9 @@ async function spin(panel, random = Math.random) {
   }
   const result = panel.querySelector('[data-lucky-result]');
   if (result) result.textContent = `${tier === 'rare' ? '★ 顶奖 ★ ' : ''}${label} —— ${message}`;
-  if (typeof setTimeout === 'function') setTimeout(() => refresh(panel), 6200);
+  // 动画（6s）结束后才解锁并刷新 —— 期间按钮保持禁用，避免连点重复扣次数
+  if (typeof setTimeout === 'function') setTimeout(() => { spinning = false; refresh(panel); }, 6200);
+  else spinning = false;
   return sector;
 }
 
@@ -389,11 +399,18 @@ function injectLuckyWheel(view, root) {
     panel.hidden = false;
     refresh(panel);
   });
-  panel.querySelector('[data-lucky-close]')?.addEventListener('click', () => { panel.hidden = true; });
-  panel.querySelector('[data-lucky-mask]')?.addEventListener('click', () => { panel.hidden = true; });
-  panel.addEventListener('click', (event) => { if (event.target === panel) panel.hidden = true; });
-  panel.querySelector('[data-lucky-spin]')?.addEventListener('click', () => spin(panel));
-  panel.querySelector('[data-lucky-log]')?.addEventListener('click', () => { openUpdateLog(); });
+  // 2026-10-09（用户报"一次抽奖消耗多次抽奖机会"）：
+  // 面板挂在 body 上只建一次，而主城每次重渲染都会重新走到这里 —— 原来会给**同一个抽奖按钮**
+  // 反复 addEventListener('click')，点一次就发 N 次 /spin，服务端每次 +1 → 一次点击扣 N 次机会。
+  // 这里改成只绑一次（面板上的监听器生命周期跟随面板本身）。
+  if (panel.dataset.bound !== '1') {
+    panel.dataset.bound = '1';
+    panel.querySelector('[data-lucky-close]')?.addEventListener('click', () => { panel.hidden = true; });
+    panel.querySelector('[data-lucky-mask]')?.addEventListener('click', () => { panel.hidden = true; });
+    panel.addEventListener('click', (event) => { if (event.target === panel) panel.hidden = true; });
+    panel.querySelector('[data-lucky-spin]')?.addEventListener('click', () => spin(panel));
+    panel.querySelector('[data-lucky-log]')?.addEventListener('click', () => { openUpdateLog(); });
+  }
   refresh(panel);
 }
 

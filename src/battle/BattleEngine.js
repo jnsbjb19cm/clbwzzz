@@ -52,6 +52,7 @@ import { WaveManager } from './WaveManager.js';
 import { attackColdBrew, COLD_BREW_CARD_ID } from './ColdBrewMachine.js';
 import { calculateCardStats } from './CardStatFormula.js';
 import { adventurePlacementCells, adventureQuality, ADVENTURE_ENEMY_HP_SCALE, adventureBaseHp } from '../data/AdventureCampaign.js';
+import { adventureReinforceAliveCap } from '../data/AdventureStageDesign.js';
 import { getCardTraits, getAttackPattern, isSuicideCard } from '../core/CardTraitRegistry.js';
 import { collectSelfCenteredTargets } from './SelfCenteredTargeting.js';
 import { TALENT_NODE_MAP } from '../core/TalentRegistry.js';
@@ -667,6 +668,13 @@ export class BattleEngine {
     for (let i = 0; i < count; i++) {
       const lane = wave.lane != null && count === 1 ? wave.lane : Math.floor(Math.random() * 5);
       if (this.stage.adventure) {
+        // 2026-10-09（用户要求）：冒险补怪按"场上存活数"卡上限
+        // （黑铁土豆雷：普通 ≤3、困难 ≤5）。波次是无限循环的，不卡上限会越堆越多。
+        const aliveCap = adventureReinforceAliveCap(this.stage, card.id);
+        if (aliveCap != null) {
+          const aliveCount = this.units.filter((u) => u.alive && u.team === 'enemy' && Number(u.cardId) === Number(card.id)).length;
+          if (aliveCount >= aliveCap) continue;
+        }
         const ordinal = this.adventureSpawnOrdinal || 0;
         this.adventureSpawnOrdinal = ordinal + 1;
         const cell = adventurePlacementCells(lane + 1, (wave.col ?? 9) - 6).find(({ lane: row, col }) =>
@@ -2261,18 +2269,22 @@ export class BattleEngine {
       this.whiteSlashStrike(attacker, dealt);
     }
 
-    // 受害者反射：荆棘战士/巨盾核桃卫兵(近战)、战盔巨头怪(远程子弹)
+    // 受害者反射：荆棘战士(87，近战反伤)；巨盾核桃卫兵(21)/战盔巨头怪(27) 只反弹直线子弹
+    // 2026-10-09（用户要求）：子弹反射**只认直线弹道**（抛物线/曲线一律不弹、也不反伤）；
+    //   近战只有带 meleeReflectChance 的卡才反伤 —— 21/27 只有 projectileReflectChance，不再吃近战。
     const vicTraits = getCardTraits(vic.cardId) || {};
-    const reflectChance = ranged ? vicTraits.projectileReflectChance : vicTraits.meleeReflectChance;
+    const straightBullet = ranged && sourceTrajectory === 'straight';
+    const reflectChance = straightBullet
+      ? (Number(vicTraits.projectileReflectChance) || 0)
+      : (ranged ? 0 : (Number(vicTraits.meleeReflectChance) || 0));
     if (!reflected && attacker.alive && reflectChance && Math.random() < reflectChance) {
       const reflectDmg = roundBattleAmount(Math.max(1, dealt * (vicTraits.reflectRatio ?? 0.5)));
       // 2026-09-13（用户要求）：
-      //   ① **只反弹直线子弹** —— 抛物线/曲线等弹道不打回去（退回即时反伤）；
+      //   ① **只反弹直线子弹**；
       //   ② **反弹为本行** —— 弹回去的子弹只走反射者自己这一行，
       //      不跟着原射手跑（原来 hitLane 取的是目标行，射手在别的行就会飞过去）；
       //      因此也不锁定原射手，而是打回本行路径上的第一个敌人（通常是原射手本人）。
       //   ③ 反弹弹固定单目标直线（不再继承源弹的溅射形状，避免溅射跨行）。
-      const straightBullet = ranged && sourceTrajectory === 'straight';
       if (straightBullet && vic.alive) {
         this.fireProjectile(vic, attacker, reflectDmg, {
           trajectory: 'straight',

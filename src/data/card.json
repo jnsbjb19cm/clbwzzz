@@ -498,7 +498,7 @@
     "cost_a": 8,
     "atk_style": 1,
     "card_quality": 3,
-    "desc": "抵挡敌方单位伤害,并有几率反弹近战单位伤害",
+    "desc": "抵挡敌方单位伤害，并有几率把直线飞行的子弹原样反弹回去",
     "card_category": 0,
     "card_type": 2,
     "born_line": 0,

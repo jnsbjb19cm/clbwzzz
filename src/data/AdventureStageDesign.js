@@ -175,6 +175,24 @@ export function applyAdventureDifficulty(stage, waves) {
   return out;
 }
 
+/**
+ * 补怪在**场上**的数量上限（2026-10-09 用户要求）：
+ *   黑铁土豆雷 普通 ≤ 3、困难 ≤ 5（简单本来就不补怪）。
+ * 波次是无限循环的，光靠"每波补 N 只"会越堆越多，所以在出怪时按场上存活数卡上限。
+ */
+export const ADVENTURE_REINFORCE_ALIVE_CAP = Object.freeze({
+  [MINE_CARD_ID]: Object.freeze({ 1: 3, 2: 5 }),
+});
+
+/** 返回该卡在当前难度的在场上限；没有上限返回 null */
+export function adventureReinforceAliveCap(stage, cardId) {
+  const table = ADVENTURE_REINFORCE_ALIVE_CAP[Number(cardId)];
+  if (!table) return null;
+  const difficulty = Number(stage?.adventure?.difficulty) || 0;
+  const cap = Number(table[difficulty]);
+  return Number.isFinite(cap) && cap > 0 ? cap : null;
+}
+
 export function adventureDesignSummary(route,index) {
   const p=PLANT_STAGE_DESIGNS[index-1];
   if(!p)return {name:'双线会合',tip:'植物与怪物混编的最终难关，无独立 BOSS。'};
