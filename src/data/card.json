@@ -1274,7 +1274,7 @@
     "card_atk": 8,
     "card_hp": 45,
     "move_speed": 0,
-    "atk_speed": 6,
+    "atk_speed": 5,
     "cost_a": 31,
     "atk_style": 2,
     "card_quality": 6,
