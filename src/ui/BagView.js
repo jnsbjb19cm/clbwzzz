@@ -621,6 +621,16 @@ export class BagView {
       <p class="bag-detail-desc">${item.desc || '暂无描述'}</p>
       <p class="bag-detail-count">数量：<b>${slot.count}</b> / 堆叠上限 ${item.maxStack}</p>
       <p class="bag-detail-sell">出售价格：${item.sellPrice} 金币</p>
+      <div class="bag-batch-trade" data-batch-trade>
+        <div class="bag-batch-trade-row">
+          <span>数量</span>
+          <input type="range" min="1" max="${slot.count}" value="1" data-trade-range aria-label="出售或丢弃数量" />
+          <input type="number" min="1" max="${slot.count}" value="1" data-trade-count aria-label="出售或丢弃数量输入" />
+          <button type="button" class="bag-action" data-trade-all="sell">出售全部</button>
+          <button type="button" class="bag-action danger" data-trade-all="drop">丢弃全部</button>
+        </div>
+        <p class="bag-batch-trade-meta">本次操作数量：<b data-trade-value>1</b>（最多 ${slot.count}）</p>
+      </div>
       <div class="bag-detail-actions">
         <button type="button" id="bag-use" class="bag-action primary" ${canUse ? '' : 'disabled'}>${canUse ? '打开/使用' : '不可使用'}</button>
         <button type="button" id="bag-sell" class="bag-action">出售</button>
@@ -648,21 +658,48 @@ export class BagView {
       this.toast(root, res.message ?? res.error ?? '完成');
     });
 
-    detail.querySelector('#bag-sell').addEventListener('click', () => {
-      const gain = item.sellPrice;
-      this.inventory.removeAt(this.selectedIndex, 1);
+    // 2026-10-09：出售/丢弃支持"滑块 + 输入框 + 一键全部"（数量 1~当前堆叠）
+    const sellBtn = detail.querySelector('#bag-sell');
+    const dropBtn = detail.querySelector('#bag-drop');
+    const tradeRange = detail.querySelector('[data-trade-range]');
+    const tradeCount = detail.querySelector('[data-trade-count]');
+    const tradeValue = detail.querySelector('[data-trade-value]');
+    const ownedCount = () => Math.max(1, Math.floor(Number(slot.count) || 1));
+    const syncTrade = (preferred) => {
+      const max = ownedCount();
+      const raw = preferred == null ? Number(tradeCount?.value) : Number(preferred);
+      const amount = Math.max(1, Math.min(max, Math.floor(raw) || 1));
+      if (tradeRange) { tradeRange.max = String(max); tradeRange.value = String(amount); }
+      if (tradeCount) { tradeCount.max = String(max); tradeCount.value = String(amount); }
+      if (tradeValue) tradeValue.textContent = String(amount);
+      if (sellBtn) sellBtn.textContent = amount > 1 ? `出售 ×${amount}` : '出售';
+      if (dropBtn) dropBtn.textContent = amount > 1 ? `丢弃 ×${amount}` : '丢弃 1 个';
+      return amount;
+    };
+    syncTrade(1);
+    tradeRange?.addEventListener('input', () => syncTrade(tradeRange.value));
+    tradeCount?.addEventListener('input', () => syncTrade());
+    tradeCount?.addEventListener('change', () => syncTrade());
+    detail.querySelector('[data-trade-all="sell"]')?.addEventListener('click', () => { syncTrade(ownedCount()); sellBtn?.click(); });
+    detail.querySelector('[data-trade-all="drop"]')?.addEventListener('click', () => { syncTrade(ownedCount()); dropBtn?.click(); });
+
+    sellBtn.addEventListener('click', () => {
+      const amount = syncTrade();
+      const gain = item.sellPrice * amount;
+      this.inventory.removeAt(this.selectedIndex, amount);
       this.player.gold += gain;
       this.onPlayerUpdate?.();
       if (!this.inventory.getSlots()[this.selectedIndex]) this.selectedIndex = -1;
       this.refresh(root);
-      this.toast(root, `出售获得 ${gain} 金币`);
+      this.toast(root, amount > 1 ? `出售 ${amount} 个，获得 ${gain} 金币` : `出售获得 ${gain} 金币`);
     });
 
-    detail.querySelector('#bag-drop').addEventListener('click', () => {
-      this.inventory.removeAt(this.selectedIndex, 1);
+    dropBtn.addEventListener('click', () => {
+      const amount = syncTrade();
+      this.inventory.removeAt(this.selectedIndex, amount);
       if (!this.inventory.getSlots()[this.selectedIndex]) this.selectedIndex = -1;
       this.refresh(root);
-      this.toast(root, '已丢弃 1 个');
+      this.toast(root, amount > 1 ? `已丢弃 ${amount} 个` : '已丢弃 1 个');
     });
   }
 

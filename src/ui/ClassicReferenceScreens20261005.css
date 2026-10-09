@@ -297,3 +297,11 @@ body .reference-guild-screen .warehouse-load-error,body .reference-guild-screen 
   body .classic-shop-screen .classic-shop-header h1 {font-size:24px;margin-right:5px}
   .reference-guild-layout {grid-template-columns:minmax(0,1fr)}
 }
+
+/* 2026-10-09：背包出售/丢弃的数量选择（滑块 + 输入框 + 一键全部） */
+body .classic-bag-screen .bag-batch-trade { margin:6px 0 8px; padding:6px 8px; border:1px solid rgba(114,134,36,.45); border-radius:6px; background:rgba(0,0,0,.18) }
+body .classic-bag-screen .bag-batch-trade-row { display:flex; align-items:center; gap:8px; flex-wrap:wrap }
+body .classic-bag-screen .bag-batch-trade-row > span { font-size:12px; opacity:.85 }
+body .classic-bag-screen .bag-batch-trade-row input[type="range"] { flex:1 1 120px; min-width:120px; accent-color:#c8960c }
+body .classic-bag-screen .bag-batch-trade-row input[type="number"] { width:64px; padding:2px 4px; text-align:center }
+body .classic-bag-screen .bag-batch-trade-meta { margin:4px 0 0; font-size:12px; opacity:.85 }
