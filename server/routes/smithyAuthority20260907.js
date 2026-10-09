@@ -661,7 +661,8 @@ smithyAuthorityRouter20260907.post('/decompose', async (req, res) => {
         const { index, slot, card } = entry;
         const quality = cardQuality(card);
         const base = craftRules.decomposeBase[String(quality)] ?? craftRules.decomposeBase['1'];
-        const craftBonus = Number(slot.craftQuality ?? 1) >= 3 ? 1 : 0;
+        // 2026-10-09（用户要求）：制作品质 ≥3 的额外 +1 宝石改为 50% 概率
+        const craftBonus = Number(slot.craftQuality ?? 1) >= 3 && Math.random() < 0.5 ? 1 : 0;
         const materialLevel = Math.min(4, Math.max(1, quality));
         const material = LEVEL_CONFIG.get(materialLevel);
         const piece = PIECE_BY_CARD.get(slot.cardId);

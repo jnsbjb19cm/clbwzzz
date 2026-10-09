@@ -63,6 +63,8 @@ function resolveReleasedAttack(engine, action) {
       engine.applyCardHit(unit, vic, action.damage, {
         ranged: true,
         ignoreCombatLayers: true,
+        // 全屏弹幕/技能直伤：不参与反弹（只有直线子弹才弹）
+        sourceTrajectory: 'screen',
       });
       engine.spawnImpactFx(vic.lane, vic.col, action.damage, unit.res);
     }
@@ -74,7 +76,7 @@ function resolveReleasedAttack(engine, action) {
     const enemies = engine.getEnemiesInLane(unit, unit.lane);
     if (enemies.length) {
       const far = [...enemies].sort((a, b) => b.dist - a.dist)[0].unit;
-      engine.applyCardHit(unit, far, action.damage, { ranged: true });
+      engine.applyCardHit(unit, far, action.damage, { ranged: true, sourceTrajectory: 'skill' });
       engine.spawnImpactFx(far.lane, far.col, action.damage, unit.res);
       engine.pushLog(`【${unit.name}】雷电击中 ${far.name}`);
     }

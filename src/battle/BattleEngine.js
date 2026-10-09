@@ -1548,6 +1548,8 @@ export class BattleEngine {
         this.spawnImpactFx(target.lane, target.col, event.damage, attacker.res);
         this.applyCardHit(attacker, target, event.damage, {
           ranged: true,
+          // 事件自身的弹道；没标的一律当技能伤害（不参与反弹）
+          sourceTrajectory: event.trajectory ?? 'skill',
           ignoreCombatLayers: true,
         });
       }
@@ -2273,11 +2275,10 @@ export class BattleEngine {
     // 2026-10-09（用户要求）：子弹反射**只认直线弹道**（抛物线/曲线一律不弹、也不反伤）；
     //   近战只有带 meleeReflectChance 的卡才反伤 —— 21/27 只有 projectileReflectChance，不再吃近战。
     const vicTraits = getCardTraits(vic.cardId) || {};
-    // 2026-10-09 修：延迟伤害事件(updatePendingDamageEvents) 与技能直伤调用时**不带弹道标记**，
-    // 上一版"只认 straight"把这些命中全挡掉了 → 战盔巨头怪反弹看起来又坏了。
-    // 现在：没标注弹道的按直线子弹处理；只有明确标了抛物线等弹道的才不弹。
-    const bulletTrajectory = sourceTrajectory ?? 'straight';
-    const straightBullet = ranged && bulletTrajectory === 'straight';
+    // 2026-10-09（用户要求）：**只有明确标记为直线子弹的才反弹** ——
+    // 抛物线、全屏弹幕、技能直伤一律不弹。因此各条伤害路径必须带上真实的 sourceTrajectory，
+    // 不再用"未标注就当直线"的兜底（那会把全屏/技能伤害也弹回去）。
+    const straightBullet = ranged && sourceTrajectory === 'straight';
     const reflectChance = straightBullet
       ? (Number(vicTraits.projectileReflectChance) || 0)
       : (ranged ? 0 : (Number(vicTraits.meleeReflectChance) || 0));
