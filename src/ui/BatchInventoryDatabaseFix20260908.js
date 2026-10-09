@@ -83,6 +83,10 @@ function installBatchPanelAuthority(view, root) {
   if (!selectedSlot) return;
   const item = view.itemDb?.getById?.(selectedSlot.itemId);
   if (!item) return;
+  // 2026-10-09（用户报"改名卡请在背包中点击使用"）：
+  // 改名卡(98) 必须走 BagView 自己的改名弹窗 —— 通用 /inventory/use 会被服务端 400 拒绝
+  // （防止改名卡被通用接口白扣），原来这里把「使用」按钮劫持到了那个接口，点一次报一次。
+  if (Number(item.id) === 98) return;
 
   const panel = root?.querySelector?.('#bag-detail .bag-batch-use');
   const oldUseButton = root?.querySelector?.('#bag-detail #bag-use');

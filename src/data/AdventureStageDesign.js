@@ -47,9 +47,25 @@ const STAGE_CARD_THINNING = Object.freeze({
   14: { cardId: 58, maxPerWave: 1, maxPerCycle: 3, compensateCardId: 54, compensateMaxPerCycle: 2 },
 });
 
+/**
+ * 全局削数量规则（2026-10-09 用户要求：所有关卡的玉米炮手都要削出怪）。
+ * 玉米炮手(70) 出现在 3-4 / 4-1 / 4-2 / 4-3 / 4-4，统一按"每波最多 1 个、整循环最多 3 个"。
+ */
+const GLOBAL_CARD_THINNING = Object.freeze([
+  { cardId: 70, maxPerWave: 1, maxPerCycle: 3 },
+]);
 function thinStageCards(index, waves) {
-  const cfg = STAGE_CARD_THINNING[Number(index)];
-  if (!cfg) return waves;
+  const rules = [];
+  const stageRule = STAGE_CARD_THINNING[Number(index)];
+  if (stageRule) rules.push(stageRule);
+  for (const rule of GLOBAL_CARD_THINNING) {
+    if (!rules.some((r) => Number(r.cardId) === Number(rule.cardId))) rules.push(rule);
+  }
+  if (!rules.length) return waves;
+  return rules.reduce((acc, rule) => applyThinRule(acc, rule), waves);
+}
+
+function applyThinRule(waves, cfg) {
   let keptTotal = 0;
   let compensated = 0;
   return waves.map((wave) => {
@@ -76,7 +92,7 @@ function thinStageCards(index, waves) {
  * 关卡级出怪间隔覆盖（秒）。2026-10-09 用户要求：2-4 / 3-4 波次稍微延后。
  * 只覆盖这两个关卡 index；返回 null 表示用全局 WAVE_INTERVAL(10s)。
  */
-const ADVENTURE_WAVE_INTERVAL_OVERRIDE = Object.freeze({ 8: 12, 12: 12, 14: 14 });
+const ADVENTURE_WAVE_INTERVAL_OVERRIDE = Object.freeze({ 8: 12, 12: 12, 13: 12, 14: 14, 15: 12, 16: 12 });
 
 export function adventureWaveInterval(stage) {
   const index = Number(stage?.adventure?.index);
