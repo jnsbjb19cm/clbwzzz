@@ -133,7 +133,7 @@ export class SmithyView {
     this._starCharmId = null;
     this.useCharm = false;
     this.useDna = false;
-    this.highTier = false;
+    this.useClover = false;
     this.matType = 'gem';
     this.matFromLevel = 1;
     // 一键分解开关：默认关闭，避免误触批量分解。
@@ -441,12 +441,14 @@ export class SmithyView {
       ? this.craftSys.getPreview(target.id, {
           useCharm: this.useCharm,
           useDna: this.useDna,
-          highTier: this.highTier,
+          useClover: this.useClover,
           craftState: this.craftState,
         })
       : null;
     const level = target ? Math.min(4, target.quality) : 1;
     const cfg = this.itemDb.craftRegistry.getLevelConfig(level);
+    const cloverId = this.itemDb.craftRegistry.getCloverItemId(level);
+    const cloverOwned = target ? this.inventory.countItem(cloverId) : 0;
     const qualityPreview = this.craftSys.getCraftQualityPreview(this.useCharm);
     const last = this.lastCraftResult;
     const cardBagFull = this.cardInventory.getFreeSlots() < 1;
@@ -488,7 +490,7 @@ export class SmithyView {
             </ul>
             <label class="smithy-check">${renderSmithyMaterialArt('charm', Math.min(3, level))}<input type="checkbox" id="use-charm" ${this.useCharm ? 'checked' : ''}/> 使用保护符(失败保留材料)</label>
             <label class="smithy-check">${renderSmithyMaterialArt('dna', level)}<input type="checkbox" id="use-dna" ${this.useDna ? 'checked' : ''}/> 使用 DNA(成功必出目标，升变时返还)</label>
-            <label class="smithy-check">${renderSmithyMaterialArt('clover', level)}<input type="checkbox" id="high-tier" ${this.highTier ? 'checked' : ''}/> 使用幸运草进行高阶合成(升变+5%，从「歪」概率扣除)</label>
+            <label class="smithy-check">${renderSmithyMaterialArt('clover', level)}<input type="checkbox" id="use-clover" ${this.useClover ? 'checked' : ''}/> 使用${level}级幸运四叶草(升变+5%，成功才消耗，背包 ${cloverOwned})</label>
             ${preview ? `
               <div class="smithy-preview">
                 <p>制作成功率 <b>${(preview.successRate * 100).toFixed(0)}%</b>${this.craftState.hasPity(target.id) ? '(保底)' : ''}</p>
@@ -543,12 +545,12 @@ export class SmithyView {
     };
     bindCheck('#use-charm', 'useCharm');
     bindCheck('#use-dna', 'useDna');
-    bindCheck('#high-tier', 'highTier');
+    bindCheck('#use-clover', 'useClover');
     body.querySelector('#do-craft')?.addEventListener('click', () => {
       const res = this.craftSys.craft(this.targetCardId, this.inventory, this.cardInventory, this.craftState, {
         useCharm: this.useCharm,
         useDna: this.useDna,
-        highTier: this.highTier,
+        useClover: this.useClover,
       });
       if (res.ok && res.displayName) {
         this.lastCraftResult = res;

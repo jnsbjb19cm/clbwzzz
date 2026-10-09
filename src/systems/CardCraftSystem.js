@@ -29,14 +29,16 @@ export class CardCraftSystem {
     return this.rules.tierRules[String(q)];
   }
 
-  /** 成功后目标/升变/歪 三档概率，保证合计 100% */
-  getOutcomeRates(tier, highTier = false) {
+  /** 成功后目标/升变/歪 三档概率，保证合计 100%。useClover：消耗四叶草换 +5% 绝对升变。 */
+  getOutcomeRates(tier, useClover = false) {
     let targetRate = tier.targetRate;
     let ascendRate = tier.ascendRate;
     let wrongRate = tier.wrongRate;
 
-    if (highTier) {
-      const bonus = this.rules.highTierBonus.ascendRate;
+    if (useClover) {
+      const bonus = typeof this.materials?.getCloverBonus === 'function'
+        ? this.materials.getCloverBonus()
+        : (Number(this.rules.cloverBonus?.ascendRate) || 0);
       ascendRate += bonus;
       if (wrongRate >= bonus) {
         wrongRate -= bonus;
@@ -57,7 +59,7 @@ export class CardCraftSystem {
     return { targetRate, ascendRate, wrongRate };
   }
 
-  getPreview(targetCardId, { useCharm, useDna, highTier, craftState }) {
+  getPreview(targetCardId, { useCharm, useDna, useClover, craftState }) {
     const card = this.db.getById(targetCardId);
     if (!this.isSmithyCraftable(card)) return null;
     const level = Math.min(CRAFTABLE_MAX_QUALITY, card.quality);
@@ -67,7 +69,7 @@ export class CardCraftSystem {
     if (useCharm) successRate = Math.min(1, successRate + this.rules.charmBonus.successRate);
     const outcomes = card.isExperienceCard
       ? { targetRate: 1, ascendRate: 0, wrongRate: 0 }
-      : this.getOutcomeRates(tier, highTier);
+      : this.getOutcomeRates(tier, useClover);
     return {
       successRate,
       ...outcomes,
@@ -78,7 +80,7 @@ export class CardCraftSystem {
     };
   }
 
-  hasMaterials(inventory, level, { useCharm, useDna }) {
+  hasMaterials(inventory, level, { useCharm, useDna, useClover }) {
     const cfg = this.materials.getLevelConfig(level);
     if (!cfg) return false;
     const need = this.rules.materialsPerCraft;
@@ -86,11 +88,12 @@ export class CardCraftSystem {
     if (inventory.countItem(cfg.gem) < need.gem) return false;
     if (useCharm && inventory.countItem(cfg.charm) < 1) return false;
     if (useDna && inventory.countItem(cfg.dna) < 1) return false;
+    if (useClover && inventory.countItem(this.materials.getCloverItemId(level)) < 1) return false;
     return true;
   }
 
   craft(targetCardId, inventory, cardInventory, craftState, opts = {}) {
-    const { useCharm = false, useDna = false, highTier = false } = opts;
+    const { useCharm = false, useDna = false, useClover = false } = opts;
     const target = this.db.getById(targetCardId);
     if (!this.isSmithyCraftable(target)) {
       return { ok: false, error: '金卡/红卡及更高品质不可制作' };
@@ -98,7 +101,7 @@ export class CardCraftSystem {
 
     const level = Math.min(CRAFTABLE_MAX_QUALITY, target.quality);
     const cfg = this.materials.getLevelConfig(level);
-    if (!this.hasMaterials(inventory, level, { useCharm, useDna })) {
+    if (!this.hasMaterials(inventory, level, { useCharm, useDna, useClover })) {
       return { ok: false, error: '材料不足' };
     }
 
@@ -141,10 +144,13 @@ export class CardCraftSystem {
     if (useCharm) inventory.consumeItem(cfg.charm, 1);
     const dnaConsumed = useDna;
     if (dnaConsumed) inventory.consumeItem(cfg.dna, 1);
+    // 2026-10-09：四叶草只在制作成功后消耗 —— 它只影响升变档，失败时不该白扣。
+    const cloverConsumed = useClover;
+    if (cloverConsumed) inventory.consumeItem(this.materials.getCloverItemId(level), 1);
 
     const { targetRate, ascendRate, wrongRate } = target.isExperienceCard
       ? { targetRate: 1, ascendRate: 0, wrongRate: 0 }
-      : this.getOutcomeRates(tier, highTier);
+      : this.getOutcomeRates(tier, useClover);
     const roll = Math.random();
     let outcome = 'target';
     let resultCardId = target.id;
@@ -172,6 +178,7 @@ export class CardCraftSystem {
       inventory.addItem(cfg.gem, need.gem);
       if (useCharm) inventory.addItem(cfg.charm, 1);
       if (dnaConsumed && !dnaRefunded) inventory.addItem(cfg.dna, 1);
+      if (cloverConsumed) inventory.addItem(this.materials.getCloverItemId(level), 1);
       return { ok: false, error: addRes.error ?? '卡牌背包已满，材料已退还' };
     }
 

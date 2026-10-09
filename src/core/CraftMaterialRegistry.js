@@ -1,4 +1,5 @@
 import craftMaterialsJson from '../data/craftMaterials.json';
+import craftRules from '../data/craftRules.json';
 import { Item } from './Item.js';
 
 export class CraftMaterialRegistry {
@@ -31,6 +32,21 @@ export class CraftMaterialRegistry {
 
   getCombineRatio() {
     return this.config.combineRatio ?? 10;
+  }
+
+  /**
+   * 2026-10-09：幸运四叶草 —— 制作卡牌时勾选消耗，本次升变概率 +5% 绝对（从「歪」扣除）。
+   * 数值与道具基准 id 都在 craftRules.json 的 cloverBonus 里，调参不用改代码。
+   */
+  getCloverBonus() {
+    return Number(craftRules.cloverBonus?.ascendRate) || 0;
+  }
+
+  /** 四叶草按卡牌等级匹配：1~4 级 → 60110~60113（itemBaseId 60109 + 等级）。 */
+  getCloverItemId(level) {
+    const base = Number(craftRules.cloverBonus?.itemBaseId) || 60109;
+    const lv = Math.max(1, Math.min(4, Math.floor(Number(level) || 1)));
+    return base + lv;
   }
 
   /**

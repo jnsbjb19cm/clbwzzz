@@ -249,12 +249,19 @@ function randomPick(list, excludeId = null) {
   return pool.length ? pool[Math.floor(Math.random() * pool.length)] : null;
 }
 
-function craftOutcomeRates(tier, highTier) {
+function cloverItemId(level) {
+  const base = Number(craftRules.cloverBonus?.itemBaseId) || 60109;
+  const lv = Math.max(1, Math.min(4, int(level, 1)));
+  return base + lv;
+}
+
+function craftOutcomeRates(tier, useClover) {
   let targetRate = Number(tier.targetRate) || 0;
   let ascendRate = Number(tier.ascendRate) || 0;
   let wrongRate = Number(tier.wrongRate) || 0;
-  if (highTier) {
-    const bonus = Number(craftRules.highTierBonus?.ascendRate) || 0;
+  if (useClover) {
+    // 2026-10-09：幸运四叶草 —— 升变概率 +5% 绝对（数值见 craftRules.cloverBonus），从「歪」扣除。
+    const bonus = Number(craftRules.cloverBonus?.ascendRate) || 0;
     ascendRate += bonus;
     if (wrongRate >= bonus) wrongRate -= bonus;
     else {
@@ -323,7 +330,7 @@ smithyAuthorityRouter20260907.post('/craft', async (req, res) => {
       const targetId = int(req.body?.targetCardId);
       const useCharm = Boolean(req.body?.useCharm);
       const useDna = Boolean(req.body?.useDna);
-      const highTier = Boolean(req.body?.highTier);
+      const useClover = Boolean(req.body?.useClover);
       const target = CARD_BY_ID.get(targetId);
       if (!target || !isCraftable(target)) throw new Error('该卡牌不可制造');
       if (await nextCardSlot(conn, userId) < 0) throw new Error('卡牌背包已满');
@@ -336,6 +343,7 @@ smithyAuthorityRouter20260907.post('/craft', async (req, res) => {
       if (await itemCount(conn, userId, material.gem) < int(need.gem)) throw new Error('宝石不足');
       if (useCharm && await itemCount(conn, userId, material.charm) < 1) throw new Error('保护符不足');
       if (useDna && await itemCount(conn, userId, material.dna) < 1) throw new Error('DNA不足');
+      if (useClover && await itemCount(conn, userId, cloverItemId(level)) < 1) throw new Error('幸运四叶草不足');
 
       const state = await readSmithyState(userId, conn);
       const tier = craftRules.tierRules[String(level)];
@@ -369,9 +377,13 @@ smithyAuthorityRouter20260907.post('/craft', async (req, res) => {
       const dnaUse = useDna
         ? await consumeItemTracked(conn, userId, material.dna, 1)
         : { ok: true, usedBound: false };
-      const outputBound = inheritSmithyBinding20260907(parchmentUse, gemUse, charmUse, dnaUse);
+      // 2026-10-09：四叶草只在制作成功后消耗（只影响升变档，失败不白扣）。
+      const cloverUse = useClover
+        ? await consumeItemTracked(conn, userId, cloverItemId(level), 1)
+        : { ok: true, usedBound: false };
+      const outputBound = inheritSmithyBinding20260907(parchmentUse, gemUse, charmUse, dnaUse, cloverUse);
 
-      const rates = craftOutcomeRates(tier, highTier);
+      const rates = craftOutcomeRates(tier, useClover);
       const roll = Math.random();
       let outcome = 'target';
       let resultCard = target;

@@ -7,7 +7,7 @@
   },
   "materialsPerCraft": {"parchment": 1, "gem": 3},
   "charmBonus": {"successRate": 0.1, "qualityWeight": 0.35},
-  "highTierBonus": {"ascendRate": 0.08},
+  "cloverBonus": {"ascendRate": 0.05, "itemBaseId": 60109},
   "failureCompensate": 1,
   "craftQualityWeights": [
     {"id":0,"name":"劣质","weight":30,"color":"#757575"},

@@ -90,7 +90,7 @@ function bindServerActions(view, root) {
       targetCardId: view.targetCardId,
       useCharm: Boolean(view.useCharm),
       useDna: Boolean(view.useDna),
-      highTier: Boolean(view.highTier),
+      useClover: Boolean(view.useClover),
     });
     const failed = data?.result === 'fail' || data?.result === 'fail_protected';
     audio.playSmithResult(Boolean(data?.ok && !failed));
