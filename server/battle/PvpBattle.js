@@ -310,7 +310,7 @@ export class PvpBattle {
     this.engine.initUnitSpawnFade(unit);
     this.engine.units.push(unit);
     this.engine.pushDeployEffect?.(lane, col, unit.craftQuality);
-    this.engine.pushLog(`【${card.name}】部署 → 第${lane + 1}路 ${col}列(${team})`);
+    this.engine.pushLog(`[${card.name}]部署 → 第${lane + 1}路 ${col}列(${team})`);
 
     return {
       unit: this.publicUnit(unit),
@@ -341,7 +341,7 @@ export class PvpBattle {
     state.cooldowns[skillId] = getSkillCooldownSec(card);
     const applyAt = this.engine.time + getSkillResolutionDelay(skillId, 0.9);
     state.pending.push({ userId: Number(userId), skillId, card, effect, target, team, applyAt });
-    this.engine.pushLog(`技能【${card.name}】已释放(${team})`);
+    this.engine.pushLog(`技能[${card.name}]已释放(${team})`);
 
     return {
       userId: Number(userId),

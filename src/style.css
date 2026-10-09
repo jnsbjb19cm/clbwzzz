@@ -2998,6 +2998,8 @@ body.battle-immersive .top-ui {
   letter-spacing: .02em;
   color: #000;
   text-align: center;
+  /* 一行显示完（用户要求），不换行 */
+  white-space: nowrap;
   text-shadow: 0 0 6px rgba(255, 255, 255, .95), 0 0 2px rgba(255, 255, 255, 1);
   z-index: 999;
   pointer-events: none;
@@ -3030,6 +3032,49 @@ body.battle-immersive .top-ui {
 
 .bag-toast.hidden {
   opacity: 0;
+}
+
+/* 2026-10-09（用户要求「其他所有的这种文字都要这样」）：
+   全站所有浮动提示统一成同一套 —— 宋体黑色大字、无边框、**一行显示完**、
+   从右侧淡入到屏幕中心 → 停留约 1.7s → 向上飞 270px 淡出。
+   触发方式说明（无需改各处的 JS）：
+   - .room-toast / .lobby-toast / .room-ready-toast：显示时会 add('show')，
+     class 变化会自动重播动画；
+   - .gset-toast：用 hidden 属性控制，所以挂在 :not([hidden]) 上；
+   - .storage-toast：每次操作都会重新渲染出这个 <p>，元素新建即自动播一次。 */
+.room-toast,
+.lobby-toast,
+.room-ready-toast,
+.gset-toast,
+.storage-toast {
+  position: fixed;
+  left: 50%;
+  top: 44%;
+  transform: translate(-50%, -50%);
+  margin: 0;
+  padding: 0;
+  background: none;
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
+  font-family: 'SimSun', '宋体', 'Songti SC', serif;
+  font-size: 2.9rem;
+  font-weight: 900;
+  color: #000;
+  /* 一行显示完（用户要求），不换行 */
+  white-space: nowrap;
+  text-align: center;
+  text-shadow: 0 0 6px rgba(255, 255, 255, .95), 0 0 2px rgba(255, 255, 255, 1);
+  pointer-events: none;
+  z-index: 999;
+}
+
+.room-toast.show,
+.lobby-toast.show,
+.room-ready-toast.show,
+.gset-toast:not([hidden]),
+.storage-toast {
+  animation: bag-toast-rise 3.2s cubic-bezier(.22, .61, .36, 1) forwards;
 }
 
 /* 鎴樻枟娴姩鏁板瓧锛堜激瀹?娌荤枟锛夋斁澶с€?*/

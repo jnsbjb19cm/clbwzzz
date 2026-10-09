@@ -217,7 +217,7 @@ export class WorldMapView {
               </div>
               <div style="flex:1;">
                 <div style="display:flex;justify-content:space-between;align-items:center;">
-                  <span style="color:${cleared?'#6a6':locked?'#555':'#f96'};font-weight:700;font-size:16px;">【${b.order}】${b.name}</span>
+                  <span style="color:${cleared?'#6a6':locked?'#555':'#f96'};font-weight:700;font-size:16px;">[${b.order}]${b.name}</span>
                   ${cleared?'<span style="color:#6a6;font-size:11px;">已击败</span>':locked?'<span style="color:#555;font-size:11px;">未解锁</span>':''}
                 </div>
                 <div style="color:#aaa;font-size:11px;margin:3px 0;">${b.img} — ${b.skills}</div>

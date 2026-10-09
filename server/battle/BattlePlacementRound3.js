@@ -150,13 +150,13 @@ function resolveAlienSentinels(battle) {
       )
       .sort((a, b) => Number(a.uid) - Number(b.uid))[0];
     if (!victim) {
-      engine.pushLog?.('【外星哨兵】5秒吸取结束，但原格已无敌方不可移动单位');
+      engine.pushLog?.('[外星哨兵]5秒吸取结束，但原格已无敌方不可移动单位');
     } else {
       const hpBefore = Number(victim.hp) || 0;
       victim.takeDamage(Math.max(ALIEN_SENTINEL_DAMAGE, hpBefore), engine.time);
       const dealt = Math.max(0, hpBefore - (Number(victim.hp) || 0));
       if (dealt > 0) engine.spawnFloat?.(victim.lane, victim.col, -dealt);
-      engine.pushLog?.(`【外星哨兵】吸走 ${victim.name}`);
+      engine.pushLog?.(`[外星哨兵]吸走 ${victim.name}`);
       if (!victim.alive) engine.onUnitDeath?.(victim);
     }
 

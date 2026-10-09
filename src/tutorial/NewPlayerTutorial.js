@@ -603,7 +603,7 @@ class NewPlayerTutorialController {
     unit.atk = Math.min(Math.max(1, finite(unit.atk, 4)), 4);
     unit.baseAtk = unit.atk;
     this.runnerUids.add(unit.uid);
-    this.engine.pushLog?.('蒙斯特族【跑鞋怪】从第三路出现！');
+    this.engine.pushLog?.('蒙斯特族[跑鞋怪]从第三路出现！');
     return unit;
   }
 

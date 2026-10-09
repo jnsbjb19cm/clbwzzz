@@ -206,7 +206,7 @@ export class CardCraftSystem {
       message: resultCard?.isExperienceCard
         ? `制作成功：${displayName}`
         : outcome === 'target'
-          ? `恭喜您，制作成功出【${cqInfo.name}】的${resultCard?.name ?? displayName}${dnaNote}`
+          ? `恭喜您，制作成功出[${cqInfo.name}]的${resultCard?.name ?? displayName}${dnaNote}`
           : `${outcomeLabel}：${displayName}(${cqInfo.baseLabel}底座)${dnaNote}`,
     };
   }

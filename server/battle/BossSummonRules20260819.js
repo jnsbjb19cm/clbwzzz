@@ -255,7 +255,7 @@ function spawnUnit(battle, card, lane, col, wave, { sentinel = false, forceSpeci
   battle.engine.units.push(unit);
   battle.engine.initUnitSpawnFade?.(unit);
   battle.engine.pushDeployEffect?.(lane, col, Math.max(1, Number(unit.craftQuality) || 1));
-  battle.engine.pushLog?.(`【${battle.bossInfo.name}】召唤 ${card.name}`);
+  battle.engine.pushLog?.(`[${battle.bossInfo.name}]召唤 ${card.name}`);
   battle.bossMinionCount += 1;
   battle.pushVisualEvent?.({
     kind: 'boss-summon',
@@ -408,7 +408,7 @@ export function installBossSummonRules20260819() {
     const spawned = spawnFormation(this, wave, Math.ceil(budget / 2));
     spawned.push(...spawnMainBatch(this, wave, budget - spawned.length));
     spawned.push(...spawnWaveSpecific(this, wave));
-    this.engine.pushLog?.('【' + this.bossInfo.name + '】第' + wave + '批：补充' + spawned.length + '个单位（卡池' + fullPoolOf(this).length + '种）');
+    this.engine.pushLog?.('[' + this.bossInfo.name + ']第' + wave + '批：补充' + spawned.length + '个单位（卡池' + fullPoolOf(this).length + '种）');
     return spawned;
   };
 

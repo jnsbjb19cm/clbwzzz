@@ -195,7 +195,7 @@ function announceSkill(view, event) {
   bubble.title = nickname + '施放：' + name;
   bubble.innerHTML = escapeText(name);
   view.viewRoot?.dispatchEvent(new CustomEvent('clbwz:skill-announced', { detail: {
-    id: 'skill-' + eventKey(event), userId: event.userId, nickname, text: '施放【' + name + '】',
+    id: 'skill-' + eventKey(event), userId: event.userId, nickname, text: '施放[' + name + ']',
   } }));
   bubble.style.left = `${anchor.x}px`;
   bubble.style.top = `${anchor.y}px`;

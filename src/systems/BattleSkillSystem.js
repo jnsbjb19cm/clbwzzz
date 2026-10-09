@@ -626,7 +626,7 @@ export class BattleSkillSystem {
           const highestHp = [...enemies].sort((a, b) => b.hp - a.hp)[0];
           if (highestHp?.alive && (f.total || 0) > 0) {
             this.hitUnit(highestHp, roundBattleAmount(f.total));
-            this.engine.pushLog?.('【雷霆风暴】对最高血量单位追加记录伤害');
+            this.engine.pushLog?.('[雷霆风暴]对最高血量单位追加记录伤害');
           }
           return false;
         }

@@ -984,7 +984,7 @@ export class RoomView {
     const tip = this.root.querySelector('#deploy-tip');
     if (!tip) return;
     tip.textContent = this.pendingCard
-      ? `放置【${this.pendingCard.name}】→ 点击己方半场网格部署`
+      ? `放置[${this.pendingCard.name}]→ 点击己方半场网格部署`
       : '';
     tip.classList.toggle('visible', Boolean(this.pendingCard));
   }

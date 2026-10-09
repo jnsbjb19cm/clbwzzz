@@ -14,7 +14,7 @@ else Promise.resolve().then(() => installNewPlayerTutorial());
 /**
  * 训练营（前端页面）
  * - 「新手教程」：临时教学卡组 + 真实胜负教学，必须亲手击破敌方基地。
- * - 「卡牌教学」：卡一览分页展示，点卡看【功能/作用/用法】+ 开始教学（进训练战斗带该卡）。
+ * - 「卡牌教学」：卡一览分页展示，点卡看[功能/作用/用法]+ 开始教学（进训练战斗带该卡）。
  * - 「自由练习」：当前卡组进训练战斗。
  * - 资源无限/正常 开关；训练战斗可换背景。
  */
@@ -50,7 +50,7 @@ export class TrainingView {
     return '近战/防御';
   }
 
-  /** 教学：根据机制生成【用法】提示 */
+  /** 教学：根据机制生成[用法]提示 */
   getUsage(card) {
     const mech = this.getMechanicOf(card);
     const m = {
@@ -111,7 +111,7 @@ export class TrainingView {
 
           <div class="training-card">
             <h2>卡牌教学</h2>
-            <p>点下方任意卡牌查看【功能 / 作用 / 用法】，再点「开始教学」进入训练战斗使用它。</p>
+            <p>点下方任意卡牌查看[功能 / 作用 / 用法]，再点「开始教学」进入训练战斗使用它。</p>
           </div>
         </section>
 

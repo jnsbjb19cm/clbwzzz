@@ -32,7 +32,7 @@ function spawnAlly(view, payload, card) {
   engine.initUnitSpawnFade?.(unit);
   engine.units.push(unit);
   engine.pushDeployEffect?.(lane, col, 1);
-  engine.pushLog?.(`队友【${card.name}】→ 第${lane + 1}路 ${col}列`);
+  engine.pushLog?.(`队友[${card.name}]→ 第${lane + 1}路 ${col}列`);
 }
 
 function applyRemoteDeploy(view, payload) {

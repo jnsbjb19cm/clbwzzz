@@ -54,7 +54,7 @@ export function installBattleLootVariety20260908() {
       createdAt: Number(this.time) || 0,
     };
     this.lootDrops.push(drop);
-    this.pushLog(`【${unit.name}】掉落 ${drop.level}级${type.label}`);
+    this.pushLog(`[${unit.name}]掉落 ${drop.level}级${type.label}`);
     return drop;
   }
 

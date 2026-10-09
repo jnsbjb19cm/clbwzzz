@@ -68,7 +68,7 @@ function resolveReleasedAttack(engine, action) {
       });
       engine.spawnImpactFx(vic.lane, vic.col, action.damage, unit.res);
     }
-    engine.pushLog(`【${unit.name}】召唤小蘑菇，全屏造成 ${action.damage} 伤害`);
+    engine.pushLog(`[${unit.name}]召唤小蘑菇，全屏造成 ${action.damage} 伤害`);
     return;
   }
   if (action.directStrike === 'farthest') {
@@ -78,7 +78,7 @@ function resolveReleasedAttack(engine, action) {
       const far = [...enemies].sort((a, b) => b.dist - a.dist)[0].unit;
       engine.applyCardHit(unit, far, action.damage, { ranged: true, sourceTrajectory: 'skill' });
       engine.spawnImpactFx(far.lane, far.col, action.damage, unit.res);
-      engine.pushLog(`【${unit.name}】雷电击中 ${far.name}`);
+      engine.pushLog(`[${unit.name}]雷电击中 ${far.name}`);
     }
     return;
   }

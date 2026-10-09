@@ -107,7 +107,7 @@ function spawnBarrierSpirit(engine, barrier) {
   spirit.__pvpBarrierSummon = true;
   spirit.pvpOwnerUserId = barrier.__pvpLastHitOwnerUserId ?? null;
   normalizeSpirit(spirit);
-  engine.pushLog(`【${barrier.name}】被击碎，${team === 'player' ? '蓝方' : '红方'}召唤【${spirit.name}】`);
+  engine.pushLog(`[${barrier.name}]被击碎，${team === 'player' ? '蓝方' : '红方'}召唤[${spirit.name}]`);
   return spirit;
 }
 

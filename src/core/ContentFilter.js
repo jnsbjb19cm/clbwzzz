@@ -86,7 +86,7 @@ export function normalizeForFilter(text) {
     .replace(/[8]/g, 'b');
   // 去掉所有空白、标点、零宽字符
   s = s.replace(/[\s\u0000-\u001f\u007f\u200b-\u200f\u202a-\u202e\ufeff]/g, '');
-  s = s.replace(/[.,!?;:'"`~^&*_\-+=/\\()[\]{}<>，。！？；：、“”‘’《》【】（）…—·|]/g, '');
+  s = s.replace(/[.,!?;:'"`~^&*_\-+=/\\()[\]{}<>，。！？；：、“”‘’《》[]（）…—·|]/g, '');
   return s;
 }
 

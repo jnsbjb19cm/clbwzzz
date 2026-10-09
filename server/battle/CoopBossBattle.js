@@ -277,7 +277,7 @@ export class CoopBossBattle {
           // 伤害数字只显示实际扣掉的血量（BOSS 残血时不再显示溢出的天文数字）
           const shown = round2(Math.max(0, Number(boss.lastDamageDealt) > 0 ? boss.lastDamageDealt : dealt));
           if (shown > 0) this.engine.spawnFloat?.(boss.lane, boss.col, -shown);
-          this.engine.pushLog?.(`【${boss.name}】-${shown} HP`);
+          this.engine.pushLog?.(`[${boss.name}]-${shown} HP`);
         }
         if (!boss.alive && !boss._deathUntil) this.engine.onUnitDeath(boss);
         this.syncBossHud();
@@ -320,7 +320,7 @@ export class CoopBossBattle {
     this.engine.units.push(unit);
     this.engine.initUnitSpawnFade?.(unit);
     this.engine.pushDeployEffect?.(lane, col, Math.max(1, Number(unit.craftQuality) || 1));
-    this.engine.pushLog?.(`【${this.bossInfo.name}】召唤 ${card.name}`);
+    this.engine.pushLog?.(`[${this.bossInfo.name}]召唤 ${card.name}`);
     this.bossMinionCount += 1;
     this.pushVisualEvent({
       kind: 'boss-summon',

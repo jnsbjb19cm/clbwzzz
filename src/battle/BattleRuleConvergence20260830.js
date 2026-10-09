@@ -60,12 +60,12 @@ export function installAlienSentinelGroundRule20260830() {
     unit._abductVictimUids = victims.map((victim) => victim.uid);
     for (const victim of victims) {
       if (this.isDebuffImmune?.(victim)) {
-        this.pushLog?.(`【${unit.name}】吸走失败：${victim.name} 免疫负面效果`);
+        this.pushLog?.(`[${unit.name}]吸走失败：${victim.name} 免疫负面效果`);
         continue;
       }
       // 2026-09-12（用户要求）：外星哨兵**没有冰冻** —— 吸走期间目标照常行动，
       // 吸收满 5 秒后一起结算。原来这里给目标挂了 5 秒 frozenUntil。
-      this.pushLog?.(`【${unit.name}】吸走 ${victim.name}，吸收中…`);
+      this.pushLog?.(`[${unit.name}]吸走 ${victim.name}，吸收中…`);
     }
     return true;
   };
@@ -137,7 +137,7 @@ function phaseOutEnemies(skillSystem, effect) {
   for (const unit of engine.units ?? []) {
     if (removedUids.has(Number(unit.lockedTargetUid))) unit.lockedTargetUid = null;
   }
-  engine.pushLog?.(`【幻之境】${selected.length} 张敌方卡牌暂时消失 ${duration} 秒`);
+  engine.pushLog?.(`[幻之境]${selected.length} 张敌方卡牌暂时消失 ${duration} 秒`);
   return selected.length;
 }
 
@@ -184,7 +184,7 @@ function installSkillSemanticRules() {
         finite(this.engine.__baseInvulnUntil20260830[side]),
         finite(this.engine.time) + Math.max(0.1, finite(effect?.duration, 10)),
       );
-      this.engine.pushLog?.('【铁壳功】己方基地进入无敌状态');
+      this.engine.pushLog?.('[铁壳功]己方基地进入无敌状态');
       return;
     }
     if (id === 550 || effect?.kind === 'phase_out_enemies') {

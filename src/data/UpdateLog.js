@@ -64,5 +64,5 @@ export const UPDATE_LOG = Object.freeze([
 ]);
 
 export function formatUpdateLog() {
-  return UPDATE_LOG.map((entry) => `【${entry.date}】${entry.title}\n${entry.items.map((line) => `· ${line}`).join('\n')}`).join('\n\n');
+  return UPDATE_LOG.map((entry) => `[${entry.date}]${entry.title}\n${entry.items.map((line) => `· ${line}`).join('\n')}`).join('\n\n');
 }

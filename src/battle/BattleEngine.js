@@ -646,7 +646,7 @@ export class BattleEngine {
     const label = instance
       ? formatCraftCardName(instance.craftQuality, card.name, instance.customName)
       : card.name;
-    this.pushLog(`部署【${label}】→ 第${lane + 1}路 ${col}列`);
+    this.pushLog(`部署[${label}]→ 第${lane + 1}路 ${col}列`);
     audio.playSummon(card.id);
     return true;
   }
@@ -764,7 +764,7 @@ export class BattleEngine {
     const card = this.db.getById(543);
     if (!card) return null;
     if (this.getUnitsAt(lane, col).length > 0) return null;
-    // 传送门是【己方】召唤物（player team）：不被己方攻击，被敌方攻击摧毁
+    // 传送门是[己方]召唤物（player team）：不被己方攻击，被敌方攻击摧毁
     const unit = new BattleUnit({ card, lane, col, team: 'player' });
     unit._isPortal = true;
     unit._portalLife = life;
@@ -789,7 +789,7 @@ export class BattleEngine {
         this.initUnitSpawnFade(unit);
         this.units.push(unit);
         this.pushDeployEffect(lane, c, 1);
-        this.pushLog(`${isBoss ? 'BOSS ' : ''}【${card.name}】→ 第${lane + 1}路 ${c}列`);
+        this.pushLog(`${isBoss ? 'BOSS ' : ''}[${card.name}]→ 第${lane + 1}路 ${c}列`);
         audio.playSummon(card.id);
         return true;
       };
@@ -807,7 +807,7 @@ export class BattleEngine {
       this.initUnitSpawnFade(unit);
       this.units.push(unit);
       this.pushDeployEffect(lane, c, 1);
-      this.pushLog(`${isBoss ? 'BOSS ' : ''}【${card.name}】→ 第${lane + 1}路`);
+      this.pushLog(`${isBoss ? 'BOSS ' : ''}[${card.name}]→ 第${lane + 1}路`);
       audio.playSummon(card.id);
       return true;
     }
@@ -876,7 +876,7 @@ export class BattleEngine {
         const gates = this.units.filter((u) => u.alive && u._isPortal);
         if (!gates.length) break;
         const gate = gates[Math.floor(Math.random() * gates.length)];
-        // 海之门：传送门出的是【己方】单位，在敌方场地出生后向右攻打敌方基地
+        // 海之门：传送门出的是[己方]单位，在敌方场地出生后向右攻打敌方基地
         const small = this.db.getById(45) ?? this.db.getById(3);
         if (small) {
           const c = Math.min(COLS - 2, gate.col + 1);
@@ -1203,9 +1203,9 @@ export class BattleEngine {
     for (const v of victims) {
       if (!this.isDebuffImmune(v)) {
         v.stunnedUntil = Math.max(v.stunnedUntil ?? 0, this.time + 2.5);
-        this.pushLog(`【${unit.name}】碰到 ${v.name}，立刻击晕 2.5 秒并造成 ${dmg} 伤害`);
+        this.pushLog(`[${unit.name}]碰到 ${v.name}，立刻击晕 2.5 秒并造成 ${dmg} 伤害`);
       } else {
-        this.pushLog(`【${unit.name}】碰到 ${v.name}，但对方免疫负面效果`);
+        this.pushLog(`[${unit.name}]碰到 ${v.name}，但对方免疫负面效果`);
       }
       this.resolveMeleeImpact(unit, v, dmg);
     }
@@ -1226,7 +1226,7 @@ export class BattleEngine {
     let digested = 0;
     for (const v of victims) {
       if (this.isDebuffImmune(v)) {
-        this.pushLog(`【${unit.name}】吸入失败：${v.name} 免疫负面效果`);
+        this.pushLog(`[${unit.name}]吸入失败：${v.name} 免疫负面效果`);
         continue;
       }
       // 2026-09-12（用户要求）：像大嘴花一样 —— 吸进去就是秒杀，不再让它在场上被慢慢扣血
@@ -1237,13 +1237,13 @@ export class BattleEngine {
       v.alive = false;
       v._deathUntil = this.time;        // 直接消失（在肚子里）
       digested += 1;
-      this.pushLog(`【${unit.name}】吸入并吞下 ${v.name}`);
+      this.pushLog(`[${unit.name}]吸入并吞下 ${v.name}`);
     }
     if (!digested) return false;
     // 消化时间（秒）：期间无法攻击、无法再吞
     unit._digestingUntil = this.time + SWALLOW_DIGEST_SECONDS;
     this.startSwallowDigestAnimation(unit);
-    this.pushLog(`【${unit.name}】开始消化（${SWALLOW_DIGEST_SECONDS}秒不能攻击）`);
+    this.pushLog(`[${unit.name}]开始消化（${SWALLOW_DIGEST_SECONDS}秒不能攻击）`);
     return true;
   }
 
@@ -1288,7 +1288,7 @@ export class BattleEngine {
     if (!Number(unit._digestingUntil)) return;
     if (this.time < Number(unit._digestingUntil)) return;
     this.finishSwallowDigestAnimation(unit);
-    this.pushLog(`【${unit.name}】消化完毕`);
+    this.pushLog(`[${unit.name}]消化完毕`);
   }
 
   /** 外星哨兵：吸走低品质敌方地面单位，吸收过程5秒 */
@@ -1303,12 +1303,12 @@ export class BattleEngine {
     unit._abductVictimUids = victims.map((victim) => victim.uid);
     for (const v of victims) {
       if (this.isDebuffImmune(v)) {
-        this.pushLog(`【${unit.name}】吸走失败：${v.name} 免疫负面效果`);
+        this.pushLog(`[${unit.name}]吸走失败：${v.name} 免疫负面效果`);
         continue;
       }
       // 2026-09-12（用户要求）：外星哨兵**没有冰冻** —— 吸走期间不再冻结目标，
       // 目标照常行动，吸收满 5 秒后一起结算。
-      this.pushLog(`【${unit.name}】吸走 ${v.name}，吸收中…`);
+      this.pushLog(`[${unit.name}]吸走 ${v.name}，吸收中…`);
     }
     return true;
   }
@@ -1337,12 +1337,12 @@ export class BattleEngine {
     audio.playSfx('sound/effect/fire/c53.mp3', { tier: 'subtle' });
     for (const v of victims) {
       if (this.isDebuffImmune(v)) {
-        this.pushLog(`【${unit.name}】魅惑失败：${v.name} 免疫负面效果`);
+        this.pushLog(`[${unit.name}]魅惑失败：${v.name} 免疫负面效果`);
         continue;
       }
       v.team = unit.team;
       v._charmed = true;
-      this.pushLog(`【${unit.name}】魅惑 ${v.name} → 加入我方`);
+      this.pushLog(`[${unit.name}]魅惑 ${v.name} → 加入我方`);
     }
     return true;
   }
@@ -1355,12 +1355,12 @@ export class BattleEngine {
     unit._iceShieldCdUntil = this.time + 2;
     for (const v of victims) {
       if (this.isDebuffImmune(v)) {
-        this.pushLog(`【${unit.name}】冰冻失败：${v.name} 免疫负面效果`);
+        this.pushLog(`[${unit.name}]冰冻失败：${v.name} 免疫负面效果`);
         continue;
       }
       v.frozenUntil = Math.max(v.frozenUntil ?? 0, this.time + 1.5);
       v.slowedUntil = Math.max(v.slowedUntil ?? 0, this.time + 4);
-      this.pushLog(`【${unit.name}】冰冻 ${v.name}`);
+      this.pushLog(`[${unit.name}]冰冻 ${v.name}`);
     }
     return true;
   }
@@ -1466,7 +1466,7 @@ export class BattleEngine {
         unitAnimPlayer.triggerState(unit, this, 'secondAttackStatus', dur);
         if (target.alive) {
           target.stunnedUntil = Math.max(target.stunnedUntil ?? 0, this.time + 1.5);
-          this.pushLog(`【${unit.name}】首次攻击击晕 ${target.name}`);
+          this.pushLog(`[${unit.name}]首次攻击击晕 ${target.name}`);
         }
       }
       // 统一近战结算(包含溅射、特性处理)
@@ -1873,7 +1873,7 @@ export class BattleEngine {
         unit.col = PLAYER_GRID_EDGE_FRAC;
         unit.attackingBase = true;
         this.requestAerialLanding(unit, { atBase: true });
-        this.pushLog(`【${unit.name}】开始攻击基地`);
+        this.pushLog(`[${unit.name}]开始攻击基地`);
         unit.renderX = unit.col;
         unit.renderY = unit.lane;
         continue;
@@ -1881,7 +1881,7 @@ export class BattleEngine {
         unit.col = ENEMY_GRID_EDGE_FRAC;
         unit.attackingBase = true;
         this.requestAerialLanding(unit, { atBase: true });
-        this.pushLog(`【${unit.name}】开始攻击基地`);
+        this.pushLog(`[${unit.name}]开始攻击基地`);
         unit.renderX = unit.col;
         unit.renderY = unit.lane;
         continue;
@@ -1955,7 +1955,7 @@ export class BattleEngine {
     unit._burrowRefunded = refunded;
     unit.hp = 0;
     unit.alive = false;
-    this.pushLog(`【${unit.name}】成功返回己方基地${refunded ? '，返还部署资源' : ''}`);
+    this.pushLog(`[${unit.name}]成功返回己方基地${refunded ? '，返还部署资源' : ''}`);
   }
 
   /** 钻地移动：无视沿途阻挡直达敌方后排，爬出后返向己方基地。 */
@@ -1984,7 +1984,7 @@ export class BattleEngine {
       const emergeDuration = unitAnimPlayer.animDurationOf(unit.res, 'toGround', 0.8);
       unit._burrowEmergeUntil = this.time + emergeDuration;
       unitAnimPlayer.triggerState(unit, this, 'toGround', emergeDuration);
-      this.pushLog(`【${unit.name}】在敌方后排爬出，开始返回己方基地`);
+      this.pushLog(`[${unit.name}]在敌方后排爬出，开始返回己方基地`);
     } else {
       unit.col = nextCol;
       // 与循环的 underMoving 动画同步，按一个动画周期补播原版钻地移动音。
@@ -2038,7 +2038,7 @@ export class BattleEngine {
       createdAt: Number(this.time) || 0,
     };
     this.lootDrops.push(drop);
-    this.pushLog(`【${unit.name}】掉落 ${level}级强化粉`);
+    this.pushLog(`[${unit.name}]掉落 ${level}级强化粉`);
     return drop;
   }
 
@@ -2078,7 +2078,7 @@ export class BattleEngine {
       unit.alive = true;
       unit.hp = unit.maxHp;
       unit._deathUntil = undefined;
-      this.pushLog(`【${unit.name}】满血复活！`);
+      this.pushLog(`[${unit.name}]满血复活！`);
       return;
     }
 
@@ -2088,7 +2088,7 @@ export class BattleEngine {
       unit.alive = true;
       unit.hp = unit.maxHp;
       unit._deathUntil = undefined;
-      this.pushLog(`【${unit.name}】满血复活(${unit._reviveCount}/2)`);
+      this.pushLog(`[${unit.name}]满血复活(${unit._reviveCount}/2)`);
       return;
     }
 
@@ -2152,7 +2152,7 @@ export class BattleEngine {
     this.initUnitSpawnFade(unit, { preload });
     this.units.push(unit);
     if (deployEffect) this.pushDeployEffect(lane, placeCol, unit.craftQuality);
-    if (log) this.pushLog(`【${card.name}】被召唤 → 第${lane + 1}路 ${placeCol}列`);
+    if (log) this.pushLog(`[${card.name}]被召唤 → 第${lane + 1}路 ${placeCol}列`);
     return unit;
   }
 
@@ -2178,7 +2178,7 @@ export class BattleEngine {
         }
       }
     }
-    if (radius >= 1) this.pushLog(`【${unit.name}】死亡爆炸 ${2 * radius + 1}x${2 * radius + 1}`);
+    if (radius >= 1) this.pushLog(`[${unit.name}]死亡爆炸 ${2 * radius + 1}x${2 * radius + 1}`);
   }
 
   /** 死亡眩晕：周围 (2r+1)x(2r+1) 敌方单位眩晕 */
@@ -2196,7 +2196,7 @@ export class BattleEngine {
         }
       }
     }
-    this.pushLog(`【${unit.name}】死亡眩晕 ${2 * radius + 1}x${2 * radius + 1}`);
+    this.pushLog(`[${unit.name}]死亡眩晕 ${2 * radius + 1}x${2 * radius + 1}`);
   }
 
   /** 技能释放特效(由 BattleSkillSystem.showEffect 调用，渲染器用 skillAnimPlayer 绘制) */
@@ -2364,7 +2364,7 @@ export class BattleEngine {
           sourceRes: sourceRes ?? vic.res,
           reflected: true,
         });
-        this.pushLog(`【${vic.name}】把 ${attacker.name} 的子弹沿本行弹了回去`);
+        this.pushLog(`[${vic.name}]把 ${attacker.name} 的子弹沿本行弹了回去`);
       } else {
         attacker.takeDamage(reflectDmg, t);
         if (!attacker.alive) this.onUnitDeath(attacker);

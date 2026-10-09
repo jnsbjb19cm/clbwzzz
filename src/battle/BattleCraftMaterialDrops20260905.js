@@ -63,7 +63,7 @@ export function installBattleCraftMaterialDrops20260905() {
       kind: 'craft-material',
     };
     this.lootDrops.push(drop);
-    this.pushLog?.(`【${unit.name}】额外掉落 ${material.label}`);
+    this.pushLog?.(`[${unit.name}]额外掉落 ${material.label}`);
     return primary ?? drop;
   };
 }

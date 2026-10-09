@@ -447,7 +447,7 @@ smithyAuthorityRouter20260907.post('/craft', async (req, res) => {
       const resultName = String(resultCard.card_name || resultCard.card_id);
       const qualityName = craftQualityName(craftQuality);
       const message = outcome === 'target'
-        ? `恭喜您，制作成功出【${qualityName}】的${resultName}${dnaRefunded ? '，DNA已返还' : ''}`
+        ? `恭喜您，制作成功出[${qualityName}]的${resultName}${dnaRefunded ? '，DNA已返还' : ''}`
         : `${label}：${resultName}${dnaRefunded ? '，DNA已返还' : ''}`;
       return {
         result: outcome,
