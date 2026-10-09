@@ -34,6 +34,45 @@ export function monsterMirrorWaves(plantWaves) {
   }));
 }
 
+/**
+ * 关卡级"某张卡刷得太快太多"瘦身（2026-10-09 用户要求）。
+ *   2-4 花生神射手(18)、3-4 玉米炮手(70) 原来 5 波里出现 6 次、而且有时同一波同时 2 只
+ *   → 现在：同一波最多 1 只、整个循环最多 3 只（保留最先出现的 3 次）。
+ * 只在植物线模板上做，怪物线是它的镜像，所以两条线一起生效。
+ */
+const STAGE_CARD_THINNING = Object.freeze({
+  8: { cardId: 18, maxPerWave: 1, maxPerCycle: 3 },
+  12: { cardId: 70, maxPerWave: 1, maxPerCycle: 3 },
+});
+
+function thinStageCards(index, waves) {
+  const cfg = STAGE_CARD_THINNING[Number(index)];
+  if (!cfg) return waves;
+  let keptTotal = 0;
+  return waves.map((wave) => {
+    let seenInWave = 0;
+    return wave.filter(([id]) => {
+      if (Number(id) !== cfg.cardId) return true;
+      seenInWave += 1;
+      if (seenInWave > cfg.maxPerWave) return false;
+      keptTotal += 1;
+      return keptTotal <= cfg.maxPerCycle;
+    });
+  });
+}
+
+/**
+ * 关卡级出怪间隔覆盖（秒）。2026-10-09 用户要求：2-4 / 3-4 波次稍微延后。
+ * 只覆盖这两个关卡 index；返回 null 表示用全局 WAVE_INTERVAL(10s)。
+ */
+const ADVENTURE_WAVE_INTERVAL_OVERRIDE = Object.freeze({ 8: 12, 12: 12 });
+
+export function adventureWaveInterval(stage) {
+  const index = Number(stage?.adventure?.index);
+  const value = Number(ADVENTURE_WAVE_INTERVAL_OVERRIDE[index]);
+  return Number.isFinite(value) && value > 0 ? value : null;
+}
+
 export function designedPlantWaves(index) {
   const p=PLANT_STAGE_DESIGNS[index-1];
   if (!p?.front) return null; // first five are authored verbatim in AdventureCampaign.js
@@ -49,7 +88,7 @@ export function designedPlantWaves(index) {
   if(index>=9)waves[1].push([p.ranged,3,4]);
   if(index>=13)waves[3].push([p.raider,opposite,4]);
   if(index%4===0) { waves[2].push([p.special,4,5]); waves[4].push([p.raider,opposite,4]); }
-  return waves;
+  return thinStageCards(index, waves);
 }
 
 export function finalAdventureWaves() {

@@ -1,6 +1,7 @@
 import { WAVE_FIRST_DELAY, WAVE_INTERVAL, getAttackCooldown } from './BattleConfig.js';
 import { buildEnemyStageRoster } from './EnemyStageRoster.js';
 import { adventureWaveTemplate } from '../data/AdventureCampaign.js';
+import { adventureWaveInterval } from '../data/AdventureStageDesign.js';
 
 export class WaveManager {
   constructor(stage, db, { trainingMode = false, randomMode = false } = {}) {
@@ -156,6 +157,8 @@ export class WaveManager {
   }
 
   appendAdventureCycle() {
+    // 2026-10-09：2-4 / 3-4 波次稍微延后（关卡级覆盖，其它关仍是 WAVE_INTERVAL）
+    const interval = adventureWaveInterval(this.stage) ?? WAVE_INTERVAL;
     for (const [index, entries] of this.adventureTemplate.entries()) {
       const dps = (id) => { const c = this.db.getById(id); return (c?.atk || 0) / getAttackCooldown(c?.atkSpeed || 0); };
       const referenceDps = entries.reduce((sum, [id,,, reference]) => sum + dps(reference ?? id), 0);
@@ -164,7 +167,7 @@ export class WaveManager {
       entries.forEach(([cardId, row, column, referenceCardId], entryIndex) => {
         const card = this.db.getById(cardId);
         if (!card) throw new Error(`Missing adventure card ${cardId}`);
-        this.queue.push({ time: this.nextBuildTime + index * WAVE_INTERVAL, card,
+        this.queue.push({ time: this.nextBuildTime + index * interval, card,
           count: 1, lane: row - 1, col: column + 6, isBoss: false,
           referenceCardId, adventureAttackScale: referenceCardId ? attackScale : 1,
           isWaveStart: entryIndex === 0, waveIndex: this.adventureCycle * 5 + index + 1 });
@@ -172,7 +175,7 @@ export class WaveManager {
     }
     this.adventureCycle++;
     this.waveCount = this.adventureCycle * 5;
-    this.nextBuildTime += 5 * WAVE_INTERVAL;
+    this.nextBuildTime += 5 * interval;
   }
 
   tick(dt, onSpawn) {
