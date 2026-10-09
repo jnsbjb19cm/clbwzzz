@@ -22,6 +22,15 @@ for (const [path, url] of Object.entries(SOURCES)) {
 const ALIASES = Object.freeze({
   树妖的精元: '树妖的核心',
   树妖的核心: '树妖的精元',
+  // 2026-10-09：铁匠铺 1~4 级保护（符）材料 → 用户提供的 PTL1~4.png
+  一级保护: 'PTL1',
+  二级保护: 'PTL2',
+  三级保护: 'PTL3',
+  四级保护: 'PTL4',
+  一级符: 'PTL1',
+  二级符: 'PTL2',
+  三级符: 'PTL3',
+  四级符: 'PTL4',
 });
 
 export function namedItemIconByName(name) {
