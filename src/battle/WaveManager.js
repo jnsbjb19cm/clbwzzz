@@ -1,7 +1,7 @@
 import { WAVE_FIRST_DELAY, WAVE_INTERVAL, getAttackCooldown } from './BattleConfig.js';
 import { buildEnemyStageRoster } from './EnemyStageRoster.js';
 import { adventureWaveTemplate } from '../data/AdventureCampaign.js';
-import { adventureWaveInterval } from '../data/AdventureStageDesign.js';
+import { adventureWaveInterval, adventureDripSpawn } from '../data/AdventureStageDesign.js';
 
 export class WaveManager {
   constructor(stage, db, { trainingMode = false, randomMode = false } = {}) {
@@ -172,6 +172,17 @@ export class WaveManager {
           referenceCardId, adventureAttackScale: referenceCardId ? attackScale : 1,
           isWaveStart: entryIndex === 0, waveIndex: this.adventureCycle * 5 + index + 1 });
       });
+      // 2026-10-09：长周期滴灌（4-2 蘑菇仙人：累计 3 个后每 18 波补 1 个）
+      const absoluteWave = this.adventureCycle * 5 + index + 1;
+      const dripCardId = adventureDripSpawn(this.stage, absoluteWave);
+      if (dripCardId != null) {
+        const dripCard = this.db.getById(dripCardId);
+        if (dripCard) {
+          this.queue.push({ time: this.nextBuildTime + index * interval, card: dripCard,
+            count: 1, lane: 2, col: 11, isBoss: false, isWaveStart: false,
+            waveIndex: absoluteWave });
+        }
+      }
     }
     this.adventureCycle++;
     this.waveCount = this.adventureCycle * 5;

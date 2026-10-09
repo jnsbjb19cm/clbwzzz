@@ -43,21 +43,32 @@ export function monsterMirrorWaves(plantWaves) {
 const STAGE_CARD_THINNING = Object.freeze({
   8: { cardId: 18, maxPerWave: 1, maxPerCycle: 3 },
   12: { cardId: 70, maxPerWave: 1, maxPerCycle: 3 },
+  // 4-2 蘑菇回廊：蘑菇仙人最多 3 个，削掉的位置补偿极寒冰椰子（每循环最多 2 个）
+  14: { cardId: 58, maxPerWave: 1, maxPerCycle: 3, compensateCardId: 54, compensateMaxPerCycle: 2 },
 });
 
 function thinStageCards(index, waves) {
   const cfg = STAGE_CARD_THINNING[Number(index)];
   if (!cfg) return waves;
   let keptTotal = 0;
+  let compensated = 0;
   return waves.map((wave) => {
     let seenInWave = 0;
-    return wave.filter(([id]) => {
-      if (Number(id) !== cfg.cardId) return true;
+    return wave.reduce((out, entry) => {
+      const [id] = entry;
+      if (Number(id) !== cfg.cardId) { out.push(entry); return out; }
       seenInWave += 1;
-      if (seenInWave > cfg.maxPerWave) return false;
-      keptTotal += 1;
-      return keptTotal <= cfg.maxPerCycle;
-    });
+      const overWaveCap = seenInWave > cfg.maxPerWave;
+      // 注意：keptTotal 只统计"真正保留"的数量，被砍掉的不占名额
+      const overCycleCap = keptTotal + 1 > cfg.maxPerCycle;
+      if (!overWaveCap && !overCycleCap) { keptTotal += 1; out.push(entry); return out; }
+      // 超出的部分：能补偿就把这一格换成补偿卡（位置不变），否则直接删掉
+      if (cfg.compensateCardId && compensated < (cfg.compensateMaxPerCycle ?? 0)) {
+        compensated += 1;
+        out.push([cfg.compensateCardId, entry[1], entry[2], ...entry.slice(3)]);
+      }
+      return out;
+    }, []);
   });
 }
 
@@ -242,6 +253,23 @@ export function adventureReinforceAliveCap(stage, cardId) {
   return Number.isFinite(cap) && cap > 0 ? cap : null;
 }
 
+/**
+ * 长周期补偿：4-2 植物线蘑菇仙人(58) 累计 3 个之后，每 18 波补 1 个（2026-10-09 用户要求）。
+ * 返回 { cardId, everyWaves } 或 null。
+ */
+const STAGE_DRIP_CARD = Object.freeze({
+  14: { cardId: 58, everyWaves: 18 },
+});
+
+export function adventureDripSpawn(stage, absoluteWave) {
+  const a = stage?.adventure;
+  if (!a || Number(a.route) !== 0) return null;   // 只做植物线
+  const cfg = STAGE_DRIP_CARD[Number(a.index)];
+  if (!cfg) return null;
+  const wave = Number(absoluteWave);
+  if (!Number.isFinite(wave) || wave <= 0) return null;
+  return wave % cfg.everyWaves === 0 ? cfg.cardId : null;
+}
 export function adventureDesignSummary(route,index) {
   const p=PLANT_STAGE_DESIGNS[index-1];
   if(!p)return {name:'双线会合',tip:'植物与怪物混编的最终难关，无独立 BOSS。'};
