@@ -260,13 +260,20 @@ function drawAuthorityStars(renderer, ctx, unit, cx, footY, circleSize) {
     remainingLevel -= row;
   }
 
-  const starSize = clamp(circleSize * 0.135, 9, 12);
-  const firstY = footY + STAR_PEDESTAL_OFFSET;
+  // 2026-10-10（用户反馈「星星的那个没修改」）：PVP/BOSS 走的是**这一份**实现，
+  // 所以只改 BattleRenderer.drawStrengthStars 对 BOSS 战不生效。
+  // 这里同步用户要求：星星排在血条**上方**、尺寸小一点。
+  // 血条顶边 = cellBottom - 8，而本函数的 footY 就是 cellBottom（见 layout 的 barY 定义）。
+  const starSize = clamp(circleSize * 0.105, 7, 10);
+  const gap = 1;
+  const totalH = rows.length * starSize + (rows.length - 1) * gap;
+  const barTopY = footY - 8;
+  const firstY = barTopY - totalH - 2;
 
   rows.forEach((rowStars, rowIndex) => {
     let remaining = rowStars;
     let x = cx - rowStars * starSize / 2;
-    const y = firstY + rowIndex * (starSize + 1);
+    const y = firstY + rowIndex * (starSize + gap);
     while (remaining > 0) {
       const chunk = Math.min(6, remaining);
       const image = renderer.partsCache.get(`single_star_${chunk}`);

@@ -298,21 +298,22 @@ function installFinalRenderer() {
   const originalSkillFx = BattleRenderer.prototype.drawSkillFx;
 
   //明确要求移除品质绿圈：不再绘制任何常驻品质光圈/qualityLightCircle。
-  BattleRenderer.prototype.drawUnitHalo = function drawNoPersistentQualityHalo(ctx, unit, layout) {
+  // 2026-10-10（用户反馈「阴影没在品质图层上面」）：阴影**不能**在这里画 ——
+  // 品质底座/光圈是 BattleUnitHaloFinal 在 drawUnitHalo 阶段画的，比这里晚，
+  // 所以画在这里会被品质图层压住。改到 drawUnitSprite 的开头（下面），
+  // 顺序就变成：品质图层 → 阴影 → 立绘 = 阴影在品质图层上面。
+  BattleRenderer.prototype.drawUnitHalo = function drawNoPersistentQualityHalo() {
     this._runtimeStabilityHaloSuppressed = true;
-    // 2026-10-10（用户反馈「我并没有看到阴影」）：
-    // 品质绿圈按要求仍然不画，但这里改成画**脚下的黑色软阴影**。
-    // 原因：drawUnitHalo 是唯一被所有单位绘制路径都会调用的钩子
-    // （BattlefieldAlignmentAuditFinal / SceneV3Final 都调 this.drawUnitHalo），
-    // 而原来的阴影挂在 drawUnitHalo 的实现里 —— 这份实现早就被本补丁替换成空函数了，
-    // 所以那段阴影代码永远不会执行，玩家自然看不到。
-    try {
-      drawUnitGroundShadow(ctx, layout?.cx, layout?.footY, layout?.circleSize, layout?.flying);
-    } catch { /* 阴影绘制失败不影响战斗 */ }
   };
 
   // 状态着色只经过一次单位 sprite draw，不再二次重画动画到 offscreen canvas。
   BattleRenderer.prototype.drawUnitSprite = function drawUnitSpriteWithStatusTint(ctx, engine, unit, layout, options) {
+    // 2026-10-10（用户反馈「阴影没在品质图层上面」）：
+    // 阴影在这里画 = 品质底座/光圈（drawUnitHalo 阶段）之后、立绘之前，
+    // 所以它一定压在品质图层上面，同时still在角色脚底（不被立绘盖住脚）。
+    try {
+      drawUnitGroundShadow(ctx, layout?.cx, layout?.footY, layout?.circleSize, layout?.flying);
+    } catch { /* 阴影绘制失败不影响战斗 */ }
     const kind = statusVisual(unit, engine);
     if (!kind || !('filter' in ctx)) {
       return originalUnitSprite.call(this, ctx, engine, unit, layout, options);
