@@ -273,3 +273,32 @@ if (typeof window !== 'undefined') {
     return { res: Number(res), value: applied ?? RES_DRAW_SCALE[Number(res)] };
   };
 }
+/**
+ * 2026-10-10（用户要求）：「星星位于品质底盘的 2/3 圆圈处，血条要在品质圆盘切线的位置」。
+ *
+ * 品质底盘由 BattleUnitHaloFinal 绘制，几何是：
+ *   width  = max(34, circleSize * (0.98 + quality * 0.025))
+ *   height = width * 0.34
+ *   中心   = (cx, footY - circleSize * 0.105)，椭圆半径 = (width*0.49, height*0.48)
+ * 这里把同一套几何算出来，供血条（切线）与星星（2/3 高度）对齐用 ——
+ * 两边必须用同一份公式，否则底盘一改、血条/星星就又错位了。
+ */
+export function qualityPedestalGeometry(cx, footY, circleSize, craftQuality = 0) {
+  const q = Math.max(0, Math.min(4, Math.floor(Number(craftQuality) || 0)));
+  const size = Math.max(34, Number(circleSize) || 0);
+  const width = Math.max(34, size * (0.98 + q * 0.025));
+  const height = width * 0.34;
+  const centerY = footY - size * 0.105;
+  const rx = width * 0.49;
+  const ry = height * 0.48;
+  return {
+    cx,
+    centerY,
+    rx,
+    ry,
+    /** 圆盘底部切线：血条就放这里 */
+    tangentY: centerY + ry,
+    /** 圆盘高度的 2/3 处（自下往上）：星星底边就对齐这里 */
+    twoThirdsY: centerY + ry / 3,
+  };
+}

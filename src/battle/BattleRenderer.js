@@ -50,6 +50,7 @@ import {
   isDeferredTopLayerUnit,
   isPlayerAttacking,
   RES_DRAW_SCALE,
+  qualityPedestalGeometry,
   drawOffsetXForUnit,
   resNum,
   shouldDrawCardFaceOverlay,
@@ -688,19 +689,19 @@ export class BattleRenderer {
 
   /**
    * 2026-10-10（用户要求）：「强化的星星在上，血条在下，而且星星要稍微小一点」。
-   * 入参从「脚底 y」改成「血条顶边 y」：星星从血条**上方**往上排 ——
+   * 入参从「脚底 y」改成「星星底边 y」：星星底边对齐品质圆盘的 2/3 高度处 ——
    * 原来 firstY = footY + circleSize*0.08 会压在血条上、还溢出格子。
    * 尺寸从 0.135 收到 0.105（上下限也压小），确实是"稍微小一点"。
    */
-  drawStrengthStars(ctx, unit, cx, barTopY, circleSize) {
+  drawStrengthStars(ctx, unit, cx, starsBottomY, circleSize) {
     const level = Math.max(0, Math.floor(Number(unit.strengthLv) || 0));
     if (level <= 0) return;
     const rows = level > 7 ? [7, level - 7] : [level];
     const starSize = Math.max(7, Math.min(10, circleSize * 0.105));
     const gap = 1;
     const totalH = rows.length * starSize + (rows.length - 1) * gap;
-    const baseY = Number.isFinite(barTopY) ? barTopY : 0;
-    const firstY = baseY - totalH - 2;   // 排在血条上方
+    const baseY = Number.isFinite(starsBottomY) ? starsBottomY : 0;
+    const firstY = baseY - totalH;   // 底边对齐「品质圆盘 2/3 高度」
 
     rows.forEach((rowStars, rowIndex) => {
       let remaining = rowStars;
@@ -778,7 +779,9 @@ export class BattleRenderer {
       flying,
       barW: CELL_W - 6,
       barX: cx - (CELL_W - 6) / 2,
-      barY: cellBottom - 8,
+      // 2026-10-10（用户要求）：「血条要在品质圆盘切线的位置」——
+      // 用与品质底盘同一份几何算出底部切线，血条从切线往下画。
+      barY: qualityPedestalGeometry(cx, footY, circleSize, unit.craftQuality).tangentY,
     };
   }
 
@@ -858,7 +861,11 @@ export class BattleRenderer {
     // 名字始终跟随设置显示；低画质时只省略星级等文字，不省略名称。
     this.drawUnitName(ctx, portraitX, cellTop + 2, portraitW, unit.customName || unit.name, unit.team);
     // 2026-10-10：星星排在血条**上方**（原来是 footY 往下，压在血条上）→ 传血条顶边 barY。
-    if (!this._lowQuality) this.drawStrengthStars(ctx, unit, cx, barY, circleSize);
+    // 2026-10-10：星星底边 = 品质圆盘高度的 2/3 处（用户要求）。
+    if (!this._lowQuality) {
+      const pedestal = qualityPedestalGeometry(cx, footY, circleSize, unit.craftQuality);
+      this.drawStrengthStars(ctx, unit, cx, pedestal.twoThirdsY, circleSize);
+    }
     // 2026-09-11：血条可由设置页开关（默认开）。
     if (shouldDrawUnitHpBar()) {
       const hpPct = unit.hp / unit.maxHp;

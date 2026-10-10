@@ -4,6 +4,7 @@ import { BattleView } from './BattleView.js';
 import { CELL_W } from '../battle/BattleConfig.js';
 import { normalizeCraftQuality, resolveCraftQuality } from '../core/constants.js';
 import { SpriteAtlas } from '../core/SpriteAtlas.js';
+import { qualityPedestalGeometry } from '../battle/unitDisplayTuning.js';
 
 const PATCH_FLAG = Symbol.for('clbwzzz.battleUnitPresentation20260906');
 const PRESENTATION_FLAG = '__pvpBossUnitPresentation20260906';
@@ -260,15 +261,14 @@ function drawAuthorityStars(renderer, ctx, unit, cx, footY, circleSize) {
     remainingLevel -= row;
   }
 
-  // 2026-10-10（用户反馈「星星的那个没修改」）：PVP/BOSS 走的是**这一份**实现，
-  // 所以只改 BattleRenderer.drawStrengthStars 对 BOSS 战不生效。
-  // 这里同步用户要求：星星排在血条**上方**、尺寸小一点。
-  // 血条顶边 = cellBottom - 8，而本函数的 footY 就是 cellBottom（见 layout 的 barY 定义）。
+  // 2026-10-10（用户要求）：「星星位于品质底盘的 2/3 圆圈处，血条要在品质圆盘切线的位置」。
+  // PVP/BOSS 走的就是这一份实现 —— 用与品质底盘（BattleUnitHaloFinal）**同一份几何**，
+  // 把星星底边对齐圆盘高度的 2/3 处；尺寸同时收到 0.105（用户要小一点）。
   const starSize = clamp(circleSize * 0.105, 7, 10);
   const gap = 1;
   const totalH = rows.length * starSize + (rows.length - 1) * gap;
-  const barTopY = footY - 8;
-  const firstY = barTopY - totalH - 2;
+  const pedestal = qualityPedestalGeometry(cx, footY, circleSize, unit.craftQuality);
+  const firstY = pedestal.twoThirdsY - totalH;
 
   rows.forEach((rowStars, rowIndex) => {
     let remaining = rowStars;
