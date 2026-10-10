@@ -8,6 +8,7 @@ import { BattleRenderer } from '../battle/BattleRenderer.js';
 import { BattleView } from './BattleView.js';
 import { SpriteAtlas } from '../core/SpriteAtlas.js';
 import { skillAnimPlayer } from '../battle/SkillAnimPlayer.js';
+import { qualityPedestalGeometry } from '../battle/unitDisplayTuning.js';
 
 const PATCH_FLAG = Symbol.for('clbwzzz.battlefieldCoordinateAuthorityFinal');
 const TOMATO_SKILL_ID = 500;
@@ -417,7 +418,10 @@ export function installBattlefieldCoordinateAuthorityFinal() {
       circleSize: base.circleSize * sizeScale,
       barW,
       barX: center.x - barW / 2,
-      barY: bounds.bottom - 8 * sy,
+      // 2026-10-10（用户要求）：血条放在品质圆盘的**切线**位置。
+      // 注意：这里原来写死 bounds.bottom - 8*sy，会**覆盖** BattleRenderer 里算好的 barY，
+      // 所以只改 BattleRenderer 那一处，玩家是看不到血条移动的（这就是"看不到"的原因）。
+      barY: qualityPedestalGeometry(center.x, footY, base.circleSize * sizeScale, unit.craftQuality).tangentY,
     };
   };
 

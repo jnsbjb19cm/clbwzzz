@@ -39,15 +39,16 @@ export function drawCraftQualityPedestal(ctx, unit, layout) {
   ctx.beginPath();
   ctx.ellipse(x, y + height * 0.08, width * 0.53, height * 0.55, 0, 0, Math.PI * 2);
   ctx.globalAlpha = 0.72;
-  ctx.fillStyle = 'rgb(10,16,21)';
+  ctx.fillStyle = 'rgb(18,26,32)';
   ctx.fill();
 
   ctx.beginPath();
   ctx.ellipse(x, y, width * 0.49, height * 0.48, 0, 0, Math.PI * 2);
-  ctx.globalAlpha = 0.24 + quality * 0.035;
-  ctx.fillStyle = `rgb(${Math.round(r * 0.42)},${Math.round(g * 0.42)},${Math.round(b * 0.42)})`;
+  // 2026-10-10（用户反馈「品质图片还是没有」）：原来 0.24 太淡，几乎看不见 → 提到 0.44。
+  ctx.globalAlpha = 0.44 + quality * 0.045;
+  ctx.fillStyle = `rgb(${Math.round(r * 0.62)},${Math.round(g * 0.62)},${Math.round(b * 0.62)})`;
   ctx.fill();
-  ctx.globalAlpha = 0.82;
+  ctx.globalAlpha = 0.95;
   ctx.strokeStyle = `rgb(${r},${g},${b})`;
   ctx.lineWidth = quality >= 5 ? 2.5 : quality >= 4 ? 2.1 : 1.6;
   ctx.stroke();
