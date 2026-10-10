@@ -31,21 +31,31 @@ export function specificDnaIdFor(card) {
 export const DNA_DROP_CHANCE = 0.02;
 const eligible = cards.filter(c => Number(c.show_card) === 1 && Number(c.card_id) < 500
   && ![122, 123, 124].includes(Number(c.card_id)) && c.card_quality >= 1 && c.card_quality <= 4);
-export const CARD_DNA_ITEMS = eligible.map((c) => {
-  const dbRow = DB_DNA_BY_CARD_NAME.get(String(c.card_name).trim());
-  const useDb = Boolean(dbRow && Number(dbRow.item_id) > 0);
-  return {
-    item_id: useDb ? Number(dbRow.item_id) : resetDnaId(c.card_id),
-    item_name: useDb ? String(dbRow.item_name) : `${c.card_name} DNA`,
-    quality: Number(c.card_quality),
-    cardId: Number(c.card_id), item_type: 2,
-    // 数据库有就用它自己的图（如 30057）；数据库没有的卡只能用同级通用 DNA 图。
-    item_img: useDb ? Number(dbRow.item_img) : 50030 + Number(c.card_quality), sell_price: 0,
-    fromDatabase: useDb,
-    // 2026-10-10（用户给的原文案）：专属 DNA 的描述是「…必定为<卡名>」（句尾不加句号）。
-    desc: `合成卡牌时使用，在合成添加后如果合成成功必定为${c.card_name}` ,
-  };
-});
+/**
+ * 2026-10-10（用户：「数据库里确实没有 DNA 条目的卡…你看带刀侍卫DNA，我要的是那个的」）：
+ * 查证结果 —— 图集 src/data/atlas/preload_items.json 里 30001~30058 就是**每张卡自己的 DNA 图标**，
+ * 数据库 item.json 也正好为其中 49 张卡定义了 DNA（另 9 条是碎片）。
+ * 而 50030+品质 这种"通用 DNA 图"在图集里**根本不存在** → 画出来必然是空白。
+ * 所以这里只认数据库里真实存在的 DNA 条目：不再凭空生成 71000+ 的"额外 DNA"，
+ * 每条都带自己的 item_id / item_name / item_img。
+ */
+export const CARD_DNA_ITEMS = eligible
+  .map((c) => {
+    const dbRow = DB_DNA_BY_CARD_NAME.get(String(c.card_name).trim());
+    if (!dbRow) return null;        // 数据库没有这条 DNA → 代码不再另外造一个
+    return {
+      item_id: Number(dbRow.item_id),
+      item_name: String(dbRow.item_name),
+      quality: Number(c.card_quality),
+      cardId: Number(c.card_id), item_type: 2,
+      item_img: Number(dbRow.item_img),   // 每张卡自己的图标（如 带刀侍卫DNA = 30015）
+      sell_price: 0,
+      fromDatabase: true,
+      // 2026-10-10（用户给的原文案）：专属 DNA 描述结尾是卡名、**不带**句号。
+      desc: `合成卡牌时使用，在合成添加后如果合成成功必定为${c.card_name}`,
+    };
+  })
+  .filter(Boolean);
 const byId = new Map(CARD_DNA_ITEMS.map(item => [item.item_id, item]));
 export const cardDnaItem = id => byId.get(Number(id));
 export function dnaCandidates(card) {
