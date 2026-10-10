@@ -12,6 +12,7 @@ import {
   resolveCraftQuality,
 } from '../core/constants.js';
 import { audio } from '../core/AudioManager.js';
+import { cardStarRows } from './CardStarRows.js';
 import { DeckSelectView } from './DeckSelectView.js';
 import {
   readRememberedDeckGroup20260911,
@@ -365,10 +366,9 @@ function selectedNames(view) {
 }
 
 function cardMarkup(meta, { compact = false, selected = false, duplicate = false } = {}) {
-  const stars = meta.stars > 0 ? '★'.repeat(Math.min(6, meta.stars)) : '☆☆☆☆☆☆';
   return `
     <span class="v3-card-quality" aria-hidden="true"></span>
-    <span class="v3-card-stars">${stars}</span>
+    ${cardStarRows(meta.stars, 'v3-card-stars')}
     <img class="v3-card-art" src="/sprites/cards/${meta.card.spriteRes}.png" alt="" draggable="false" />
     ${compact ? '' : `<span class="v3-card-name">${escapeHtml(formatCraftCardName(meta.instance.craftQuality, meta.card.name))}</span>`}
     <span class="v3-card-footer">

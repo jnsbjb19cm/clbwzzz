@@ -5,6 +5,12 @@ import { unitAnimPlayer } from './UnitAnimPlayer.js';
 const PATCH_FLAG = Symbol.for('clbwzzz.battleMushroomProjectileFinal');
 const MUSHROOM_RES = 58;
 
+/**
+ * 2026-10-10（玩家反馈「蘑菇仙人的毒泡泡还是掉帧」）：
+ * 毒泡泡「当帧还没结束」的快照数组 —— 复用同一个，避免原来每帧 filter 新建数组 + 闭包。
+ */
+const VISUAL_FLIGHT_SCRATCH = [];
+
 function isValidMushroomTarget(engine, source, target) {
   if (!target?.alive || target.team === source.team || target.isLowTarget?.()) return false;
   return typeof engine.isValidEnemyTarget === 'function'
@@ -53,13 +59,23 @@ export function installBattleMushroomProjectileFinal() {
   };
   const previousUpdateProjectiles = BattleEngine.prototype.updateProjectiles;
   BattleEngine.prototype.updateProjectiles = function updateProjectilesWithVisualImpact(dt) {
-    const visualFlights = (this.projectiles ?? []).filter(
-      (projectile) => projectile.visualOnly && !projectile.done,
-    );
+    // 2026-10-10（玩家反馈「蘑菇仙人的毒泡泡还是掉帧」）：
+    // 原来是 this.projectiles.filter(...) —— updateProjectiles 每帧都跑，于是每帧都新建一个数组
+    // 和一个闭包（毒泡泡越多数值越大）。改成复用同一个数组的 for 循环：行为完全一致、零分配。
+    const flights = VISUAL_FLIGHT_SCRATCH;
+    flights.length = 0;
+    const all = this.projectiles;
+    if (Array.isArray(all)) {
+      for (let i = 0; i < all.length; i += 1) {
+        const projectile = all[i];
+        if (projectile?.visualOnly && !projectile.done) flights.push(projectile);
+      }
+    }
 
     const result = previousUpdateProjectiles.call(this, dt);
 
-    for (const projectile of visualFlights) {
+    for (let i = 0; i < flights.length; i += 1) {
+      const projectile = flights[i];
       if (!projectile.done || projectile._visualImpactDone) continue;
       projectile._visualImpactDone = true;
       this.spawnImpactFx?.(
@@ -69,6 +85,7 @@ export function installBattleMushroomProjectileFinal() {
         projectile.sourceRes,
       );
     }
+    flights.length = 0;
     return result;
   };
 }

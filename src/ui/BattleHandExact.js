@@ -1,4 +1,5 @@
 import { BattleView } from './BattleView.js';
+import { cardStarRows } from './CardStarRows.js';
 import {
   CARD_CATEGORY,
   HAND_SLOT_COUNT,
@@ -8,7 +9,6 @@ import {
 } from '../battle/BattleConfig.js';
 import {
   formatCraftCardName,
-  getStrengthStarPart,
   resolveCraftQuality,
 } from '../core/constants.js';
 
@@ -99,7 +99,6 @@ function renderCardSlot(view, entry, handIndex) {
   const craftQuality = resolveCraftQuality(craftQualityId);
   const label = formatCraftCardName(craftQualityId, card.name);
   const cardGrade = Math.min(6, Math.max(1, Number(card.quality) || 1));
-  const starPart = getStrengthStarPart(stars);
   const costIcon = usesFoodCost(card) ? JUNGLE_ASSETS.resFood : JUNGLE_ASSETS.resSun;
   const functionMeta = resolveFunctionPart(card);
 
@@ -113,7 +112,7 @@ function renderCardSlot(view, entry, handIndex) {
       <span class="slot-face">
         <span class="slot-bg" aria-hidden="true"></span>
         <img class="slot-portrait" src="/sprites/cards/${card.spriteRes}.png" alt="${escapeAttr(label)}" draggable="false" />
-        ${stars > 0 ? `<img class="slot-stars" src="/sprites/parts/${starPart}.png" alt="强化${stars}星" draggable="false" />` : ''}
+        ${cardStarRows(stars, 'slot-stars')}
         ${canDrag ? '<span class="slot-flicker" aria-hidden="true"></span>' : ''}
       </span>
       <span class="slot-meta">

@@ -5,6 +5,10 @@ import {
 } from '../core/constants.js';
 import { CraftStateStore } from '../core/CraftStateStore.js';
 import { CardCraftSystem } from '../systems/CardCraftSystem.js';
+// 2026-10-10：造卡材料数量直接读配置（原来界面写死「宝石 x2」，而 craftRules 里其实是 3，两边对不上）。
+import craftRules from '../data/craftRules.json';
+
+const CRAFT_NEED = craftRules.materialsPerCraft;
 import { CardStrengthenSystem } from '../systems/CardStrengthenSystem.js';
 import { REVERSE_CARD_ID, StarUpgradeSystem } from '../systems/StarUpgradeSystem.js';
 import { CardDecomposeSystem, LEVEL5_POWDER_ITEM_ID } from '../systems/CardDecomposeSystem.js';
@@ -490,8 +494,8 @@ export class SmithyView {
             <p class="smithy-meta">${cardBagHint}</p>
             ${cardBagFull ? '<p class="smithy-warn">卡牌背包已满，无法制作。请先到背包扩容或分解/移除卡牌。</p>' : ''}
             <ul class="smithy-mat-list">
-              <li>${renderSmithyMaterialArt('parchment', level)}<span>羊皮纸 x1：背包 ${cfg ? this.inventory.countItem(cfg.parchment) : 0}</span></li>
-              <li>${renderSmithyMaterialArt('gem', level)}<span>宝石 x2：背包 ${cfg ? this.inventory.countItem(cfg.gem) : 0}</span></li>
+              <li>${renderSmithyMaterialArt('parchment', level)}<span>羊皮纸 x${CRAFT_NEED.parchment}：背包 ${cfg ? this.inventory.countItem(cfg.parchment) : 0}</span></li>
+              <li>${renderSmithyMaterialArt('gem', level)}<span>宝石 x${CRAFT_NEED.gem}：背包 ${cfg ? this.inventory.countItem(cfg.gem) : 0}</span></li>
             </ul>
             <label class="smithy-check">${renderSmithyMaterialArt('charm', Math.min(3, level))}<input type="checkbox" id="use-charm" ${this.useCharm ? 'checked' : ''}/> 使用保护符(失败保留材料)</label>
             <label class="smithy-check">${renderSmithyMaterialArt('dna', level)}<input type="checkbox" id="use-dna" ${this.useDna ? 'checked' : ''}/> 使用 DNA(成功必出目标，升变时原样返还)</label>

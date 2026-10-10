@@ -244,6 +244,7 @@ const app = new App(document.getElementById('app'));
 import './ui/UnifiedChat20261003.css';
 import './ui/BattleHandReference20261005.css';
 import './ui/ClassicReferenceScreens20261005.css';
+import './ui/GlassBattleCards20261010.css';
 // 2026-09-11：暴露应用实例，供联机排障/自动化与旧补丁(PvpDropNotice)使用。
 globalThis.__clbwzAppInstance = app;
 const roomUtilityOverlay = new RoomUtilityOverlay(app);

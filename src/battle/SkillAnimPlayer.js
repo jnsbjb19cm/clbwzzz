@@ -12,6 +12,13 @@ import {
 const SKILL_ANIM_CACHE_BUST = '20260801-animation-sync';
 // 技能骨骼需要看清完整过程；仅改变播放速度，不改变技能结算数值。
 const SKILL_PLAYBACK_RATE = 0.72;
+/**
+ * 2026-10-10（玩家反馈「蘑菇仙人的毒泡泡还是掉帧」）：
+ * 全屏特效「预缩放帧」缓存（coverFrames）的容量上限。
+ * 原来写死 8 张，工作集一超就每帧淘汰 + 重新栅格化整屏大图 —— 详见 drawCover 里的注释。
+ */
+const MAX_COVER_ENTRIES = 24;
+const MAX_COVER_BYTES = 64 * 1024 * 1024;
 
 /**
  * 伪插帧：把浮点帧位置换算成「底层画面 + 上层画面 + 淡入权重」。
@@ -132,6 +139,8 @@ class SkillAnimPlayer {
     this.packs = new Map();
     this.loading = new Map();
     this.coverFrames = new Map();
+    // 2026-10-10：coverFrames 的字节用量（用于按内存预算淘汰，见 drawCover）
+    this.coverBytes = 0;
   }
 
   request(skillId) {
@@ -270,10 +279,28 @@ class SkillAnimPlayer {
     let cached = this.coverFrames.get(cacheKey);
     if (typeof OffscreenCanvas !== 'undefined') {
       if (!cached) {
-        if (this.coverFrames.size >= 8) {
+        // 2026-10-10（玩家反馈「蘑菇仙人的毒泡泡还是掉帧」）：
+        // 原来这里写死上限 8 张。可是：插值一次要 2 帧(A/B)、毒泡泡/多段伤害又会同时叠几套特效，
+        // 工作集一超过 8 就变成**每帧淘汰 + 重新栅格化整屏大图**（正是上面注释说的 A/B/A/B forever），
+        // 越到后期单位越多越明显。现在按「条目上限 24 + 总字节预算 64MB」控制，
+        // 正常战斗规模内不再抖动；只有真的堆到几十个全屏特效才会开始淘汰。
+        const needBytes = cacheWidth * cacheHeight * 4;
+        let recycled = null;
+        while (
+          this.coverFrames.size > 0
+          && (
+            this.coverFrames.size >= MAX_COVER_ENTRIES
+            || (this.coverBytes + needBytes > MAX_COVER_BYTES && this.coverFrames.size > 4)
+          )
+        ) {
           const oldest = this.coverFrames.keys().next().value;
-          cached = this.coverFrames.get(oldest);
+          const victim = this.coverFrames.get(oldest);
           this.coverFrames.delete(oldest);
+          this.coverBytes -= (victim.canvas.width * victim.canvas.height * 4) || 0;
+          recycled = victim;   // 保留最后一个被淘汰的缓冲来复用，避免频繁新建 OffscreenCanvas
+        }
+        if (recycled) {
+          cached = recycled;
           if (cached.canvas.width !== cacheWidth) cached.canvas.width = cacheWidth;
           if (cached.canvas.height !== cacheHeight) cached.canvas.height = cacheHeight;
           // A recycled buffer may belong to another skill with the same frame number.
@@ -282,6 +309,7 @@ class SkillAnimPlayer {
           const canvas = new OffscreenCanvas(cacheWidth, cacheHeight);
           cached = { canvas, context: canvas.getContext('2d'), frameIndex: -1 };
         }
+        this.coverBytes += needBytes;
         this.coverFrames.set(cacheKey, cached);
       } else {
         // LRU: retain active frame pairs; evict older animation frames first.

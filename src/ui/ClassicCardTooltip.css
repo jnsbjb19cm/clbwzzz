@@ -19,10 +19,11 @@
 .classic-card-tooltip .classic-tip-expiry { color: #efbd32 !important; margin-top: 4px !important; }
 .classic-tip-bitmap { display: block; image-rendering: pixelated; max-width: 100%; }
 .classic-tip-accessible { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: pre; }
+html[data-quest-reward-ready="true"] .bottom-nav-btn[data-route="quest"]::before,
 html[data-quest-reward-ready="true"] [data-route="quest"] > .bottom-nav-icon {
   filter: drop-shadow(0 0 2px #ffe59a) drop-shadow(0 0 3px #dca52b);
   animation: claimable-quest-glow 1.8s ease-in-out infinite alternate;
 }
 html[data-quest-reward-ready="true"] .classic-city-stage > [data-shiny-route="quest"] { opacity: .35; }
 @keyframes claimable-quest-glow { to { filter: drop-shadow(0 0 3px #fff0ab) drop-shadow(0 0 4px #dca52b); } }
-@media (prefers-reduced-motion: reduce) { html[data-quest-reward-ready="true"] [data-route="quest"] > .bottom-nav-icon { animation: none; } }
+@media (prefers-reduced-motion: reduce) { html[data-quest-reward-ready="true"] .bottom-nav-btn[data-route="quest"]::before, html[data-quest-reward-ready="true"] [data-route="quest"] > .bottom-nav-icon { animation: none; } }
