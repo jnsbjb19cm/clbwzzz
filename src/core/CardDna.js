@@ -42,7 +42,8 @@ export const CARD_DNA_ITEMS = eligible.map((c) => {
     // 数据库有就用它自己的图（如 30057）；数据库没有的卡只能用同级通用 DNA 图。
     item_img: useDb ? Number(dbRow.item_img) : 50030 + Number(c.card_quality), sell_price: 0,
     fromDatabase: useDb,
-    desc: `${c.card_quality}级专属DNA，仅用于合成${c.card_name}；可替代同等级通用DNA，升变时原样返还。`,
+    // 2026-10-10（用户给的原文案）：专属 DNA 的描述是「…必定为<卡名>」（句尾不加句号）。
+    desc: `合成卡牌时使用，在合成添加后如果合成成功必定为${c.card_name}` ,
   };
 });
 const byId = new Map(CARD_DNA_ITEMS.map(item => [item.item_id, item]));
@@ -74,4 +75,13 @@ export function appendDnaDeathDrop(engine, unit) {
   engine.lootDrops.push(drop);
   engine.pushLog?.(`[${unit.name}]掉落 ${cardDnaItem(itemId)?.item_name ?? `${itemId - 50030}级通用DNA`}`);
   return drop;
+}
+
+/**
+ * 2026-10-10（用户给的原文案）：通用（X 级）DNA 的描述是
+ * 「合成卡牌时使用，在合成添加后如果合成成功必定为选择的卡牌。」（句尾有句号）。
+ * 由 ItemDatabase 合并进道具表时使用；专属 DNA 用另一句（见 CARD_DNA_ITEMS）。
+ */
+export function genericDnaDesc() {
+  return '合成卡牌时使用，在合成添加后如果合成成功必定为选择的卡牌。';
 }
