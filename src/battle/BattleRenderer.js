@@ -50,6 +50,7 @@ import {
   isDeferredTopLayerUnit,
   isPlayerAttacking,
   RES_DRAW_SCALE,
+  drawOffsetXForUnit,
   resNum,
   shouldDrawCardFaceOverlay,
 } from './unitDisplayTuning.js';
@@ -702,7 +703,8 @@ export class BattleRenderer {
     const portraitH = (CELL_H - 24) * drawScale * flyBoost;
     const colShift = frontColPortraitShiftX(unit, portraitW)
       + backColPortraitShiftX(unit, portraitW);
-    const portraitX = cx - portraitW / 2 + colShift;
+    // 2026-10-10：加上「向后（自家基地方向）」的水平微调（蘑菇仙人/极·寒冰椰子，见 unitDisplayTuning）。
+    const portraitX = cx - portraitW / 2 + colShift + drawOffsetXForUnit(unit, portraitW);
     const res = resNum(unit);
     // 脚底贴格底(原 -12 使单位偏上；AS 单位脚底在格子底部)
     const laneFootY = cellBottom;

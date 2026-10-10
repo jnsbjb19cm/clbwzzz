@@ -25,7 +25,7 @@ export const RES_DRAW_SCALE = {
   4: 0.88,
   5: 0.94,
   6: 0.62,
-  7: 1.85,
+  7: 1.65,
   9: 0.94,
   12: 1.0,
   15: 0.82,
@@ -41,7 +41,7 @@ export const RES_DRAW_SCALE = {
   26: 0.9,
   27: 1.22,
   28: 0.7,
-  30: 1.85,
+  30: 1.65,
   32: 1.40,
   35: 1.35,
   36: 1.25,
@@ -63,6 +63,24 @@ export const RES_DRAW_SCALE = {
   // PVP 中间两列中立冰山：一块完整落在一个格子内，避免覆盖相邻行列。
   1000: 0.62,
 };
+
+/**
+ * 2026-10-10（用户反馈）：「蘑菇仙人的坐标向后（也就是自家基地左一些），极寒冰椰子也是」。
+ * 单位是「向后 = 朝自家基地」：玩家单位向左、敌方单位向右（见 drawOffsetXForUnit）。
+ * 数值是**框宽的比例**（0.08 ≈ 往后挪半个格子的 16%），只动视觉，不动逻辑坐标。
+ */
+export const RES_DRAW_OFFSET_X = {
+  58: 0.10,  // 蘑菇仙人
+  54: 0.10,  // 极·寒冰椰子
+};
+
+/** 把「向后」换算成带方向的水平像素偏移（玩家向左、敌方向右）。 */
+export function drawOffsetXForUnit(unit, boxW) {
+  const frac = RES_DRAW_OFFSET_X[resNum(unit)] ?? 0;
+  if (!frac) return 0;
+  const dir = unit?.team === 'player' ? -1 : 1;
+  return dir * boxW * frac;
+}
 
 export const RES_DRAW_OFFSET_Y = {
   7: 0.1,
