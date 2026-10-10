@@ -278,6 +278,33 @@ function getHaloSprite(cqQuality) {
 }
 
 /** 单色径向渐变椭圆(静态 qualityLightCircle，不叠星芒/溅射) */
+/**
+ * 2026-10-10：单位脚下的「一小块」软阴影（三层同心椭圆做层次）。
+ * bodySize 用 layout.circleSize（它已按脚下不透明宽度算过），所以大单位阴影自然更大。
+ */
+function drawUnitGroundShadow(ctx, cx, footY, bodySize, flying) {
+  if (!Number.isFinite(cx) || !Number.isFinite(footY)) return;
+  if (flying) return;   // 飞行单位离地，不画脚影
+  const w = Math.max(12, Number(bodySize) || 0);
+  const rx = w * 0.34;
+  const ry = Math.max(2.5, rx * 0.34);
+  const cy = footY - ry * 0.12;
+  ctx.save();
+  ctx.fillStyle = '#06140d';
+  const layers = [
+    { k: 1, a: 0.10 },
+    { k: 0.7, a: 0.13 },
+    { k: 0.44, a: 0.18 },
+  ];
+  for (const { k, a } of layers) {
+    ctx.globalAlpha = a;
+    ctx.beginPath();
+    ctx.ellipse(cx, cy, rx * k, ry * k, 0, 0, Math.PI * 2);
+    ctx.fill();
+  }
+  ctx.restore();
+}
+
 function drawCraftQualityHalo(ctx, cx, footY, size, craftQuality) {
   const cq = normalizeCraftQuality(craftQuality);
   const color = getHaloColor(cq);
@@ -747,6 +774,10 @@ export class BattleRenderer {
 
   drawUnitHalo(ctx, unit, layout) {
     if (layout.isDying) return;
+    // 2026-10-10（用户要求）：「给所有卡的脚下加有层次感的阴影」+「按对应体积一小块就行」。
+    // 三层同心椭圆（外淡内深）做出软阴影的层次；尺寸直接取单位脚下的体积（circleSize 由
+    // 脚下不透明宽度算出），飞行单位不画（离地）。成本 3 次椭圆填充，无渐变无离屏。
+    drawUnitGroundShadow(ctx, layout.cx, layout.footY, layout.circleSize, layout.flying);
     drawCraftQualityHalo(ctx, layout.cx, layout.footY, layout.circleSize, unit.craftQuality);
     // 原版品质光环(qualityLightCircle 8帧闪烁，增强手绘椭圆为光束表现)
     const now = performance.now() / 1000;
