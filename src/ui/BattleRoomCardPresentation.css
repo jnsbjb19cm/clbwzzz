@@ -110,7 +110,7 @@
   filter: saturate(.5) brightness(.72) !important;
 }
 .game-room.room-rebuild .drawer-card strong,
-.game-room.room-rebuild .drawer-card > span:not(.room-card-level-bg):not(.room-card-stars-wrap):not(.room-card-cost):not(.room-card-type):not(.room-card-level-label),
+.game-room.room-rebuild .drawer-card:not(.v3-drawer-card) > span:not(.room-card-level-bg):not(.room-card-stars-wrap):not(.room-card-cost):not(.room-card-type):not(.room-card-level-label),
 .game-room.room-rebuild .drawer-card em,
 .game-room.room-rebuild .slot-card-name,
 .game-room.room-rebuild .slot-card-stats {

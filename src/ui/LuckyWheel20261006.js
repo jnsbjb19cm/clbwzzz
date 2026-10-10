@@ -402,7 +402,7 @@ function injectLuckyWheel(view, root) {
     panel.hidden = false;
     refresh(panel);
   });
-  // 2026-10-09（用户报"一次抽奖消耗多次抽奖机会"）：
+  // 2026-10-09
   // 面板挂在 body 上只建一次，而主城每次重渲染都会重新走到这里 —— 原来会给**同一个抽奖按钮**
   // 反复 addEventListener('click')，点一次就发 N 次 /spin，服务端每次 +1 → 一次点击扣 N 次机会。
   // 这里改成只绑一次（面板上的监听器生命周期跟随面板本身）。

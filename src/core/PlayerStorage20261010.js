@@ -23,18 +23,45 @@
 
 /** 需要按账号隔离的键（基础名，不带后缀）。 */
 export const PLAYER_SCOPED_BASES = Object.freeze([
-  'clbwz_player_v1',                            // App 的玩家数据
+  'clbwz_player_v1',                            // App 的玩家数据（金币/等级/经验…）
   'clbwz_card_inventory_v1',                    // 卡牌背包
   'clbwz_inventory_v1',                         // 道具背包
   'clbwz_quest_v12',                            // 任务进度
   'clbwz_craft_state_v1',                       // 制作状态
   'clbwz_worldmap_v1',                          // 世界地图进度
-  'clbwz_room_decks_v4',                        // 房间卡组
+  'clbwz_room_decks_v4',                        // 房间卡组（当前版本）
+  'clbwz_room_decks_v3',                        // 房间卡组（旧版本）
+  'clbwz_room_deck_bank_v1',                    // 房间卡组库
+  'clbwz_room_deck_tabs_v2',                    // 房间卡组分页状态
+  'clbwz_deck_group_v1',                        // 当前选中的卡组分组
   'clbwz_room_chat_history_20260906',           // 房间聊天记录（也是玩家级）
   'clbwz_new_player_tutorial_completed_v1',     // 新手教程已完成标记
+  // 2026-10-10 复查补漏：下面这几个原来漏了，换号时会串 ——
+  'clbwz_hero_skills_v1',                       // 英雄技能/装备栏（玩家数据！）
+  'clbwz_boss_progress_v1',                     // BOSS 挑战进度（玩家数据！）
+  'clbwz_lucky_wheel_v1',                       // 转盘次数/奖励（每日，玩家数据！）
+  'clbwz_star_upgrade_v2',                      // 卡牌升星记录（玩家数据！）
   'battle_deck_ids',                            // 战斗卡组
   'battle_deck_v2',
 ]);
+
+/**
+ * 明确**故意不隔离**的键（设备级偏好 / 登录态 / 本来就带 userId 的键）。
+ * 新增存储键时必须二选一：进 PLAYER_SCOPED_BASES，或者进这张表并写清理由 ——
+ * verify 第⑲段会强制审计，防止再出现「换号串数据」。
+ */
+export const DEVICE_LEVEL_STORAGE_KEYS = Object.freeze({
+  clbwz_auth_token_v1: '登录 token（sessionStorage，当前标签页会话）',
+  clbwz_game_settings_v1: '音量/画质/大厅音乐等设备偏好',
+  clbwz_bag_auto_organize: '背包自动整理（设备偏好）',
+  clbwz_bag_qty_mode: '数量控件 滑块/数字（设备偏好）',
+  clbwz_low_quality: '低画质开关（设备偏好）',
+  clbwz_show_unit_names: '显示单位名字（设备偏好）',
+  clbwz_battle_chat_minimized: '战斗聊天是否收起（设备偏好）',
+  clbwz_new_player_tutorial_prompt_v1: '新号首登是否弹过教程询问（sessionStorage）',
+  clbwz_room_settings_v1: '房间界面设置（音量等设备级）',
+  clbwz_card_remote_migrated_v1_: '本地卡牌迁移标记：使用时自己拼了 userId（本来就按账号分开）',
+});
 
 const SEP = '#u';
 

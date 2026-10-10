@@ -1,4 +1,5 @@
 /* 两处卡面共用银灰玻璃边和左上角金星。只覆盖外观，不改变尺寸/拖放/冷却。 */
+body .pvp-room-card:not(.empty),
 body .game-room.room-deck-ui-v3 .v3-card-grade-atlas,
 body #hand.reference-battle-hand.video-battle-hand .deck-slot.battle-hand-card.filled {
   border: 1px solid rgba(236, 240, 235, .92) !important;
@@ -9,13 +10,24 @@ body #hand.reference-battle-hand.video-battle-hand .deck-slot.battle-hand-card.f
   box-shadow: inset 1px 1px 1px rgba(255,255,255,.8), inset -1px -1px 2px rgba(26,36,43,.48) !important;
 }
 body .game-room.room-deck-ui-v3 .v3-card-quality.v3-atlas-card-bg {
-  opacity: .72 !important;
+  background: linear-gradient(110deg, rgba(255,255,255,.18), transparent 47%, rgba(15,25,35,.24)), var(--quality) !important;
+  opacity: .86 !important;
+}
+body .pvp-room-card.quality-1 { --card-tone: #929582; }
+body .pvp-room-card.quality-2 { --card-tone: #53a23b; }
+body .pvp-room-card.quality-3 { --card-tone: #318db3; }
+body .pvp-room-card.quality-4 { --card-tone: #9244ab; }
+body .pvp-room-card.quality-5 { --card-tone: #dbb438; }
+body .pvp-room-card .pvp-room-card-bg {
+  background: linear-gradient(110deg, rgba(255,255,255,.18), transparent 47%, rgba(15,25,35,.24)), var(--card-tone) !important;
+  opacity: .86 !important;
 }
 body #hand.reference-battle-hand.video-battle-hand .slot-bg {
   background: linear-gradient(110deg, rgba(255,255,255,.24), transparent 47%, rgba(15,25,35,.24)), var(--card-tone) !important;
   opacity: .72 !important;
 }
 /* 右上到下方的窄反光，覆盖卡图但不拦截点击、不使用逐卡模糊。 */
+body .pvp-room-card:not(.empty)::after,
 body .game-room.room-deck-ui-v3 .v3-card-grade-atlas::after,
 body #hand.reference-battle-hand.video-battle-hand .slot-face::after {
   content: '';
@@ -26,11 +38,14 @@ body #hand.reference-battle-hand.video-battle-hand .slot-face::after {
   background: linear-gradient(100deg, rgba(255,255,255,.06) 0 58%, rgba(255,255,255,.33) 80%, rgba(239,249,255,.55) 100%);
   box-shadow: inset 0 1px rgba(255,255,255,.55);
 }
+body .pvp-room-card .pvp-room-card-stars.glass-card-stars,
 body #hand.reference-battle-hand.video-battle-hand .slot-stars.glass-card-stars,
 body .game-room.room-deck-ui-v3 .v3-card-stars.glass-card-stars {
   position: absolute !important;
   left: 4% !important;
   top: 3% !important;
+  right: auto !important;
+  bottom: auto !important;
   width: 84% !important;
   height: auto !important;
   min-height: 0 !important;
@@ -45,6 +60,7 @@ body .game-room.room-deck-ui-v3 .v3-card-stars.glass-card-stars {
   overflow: visible !important;
   filter: none !important;
 }
+body .pvp-room-card .glass-card-stars > img,
 body #hand.reference-battle-hand .glass-card-stars > img,
 body .game-room.room-deck-ui-v3 .glass-card-stars > img {
   position: static !important;
@@ -61,13 +77,30 @@ body .game-room.room-deck-ui-v3 .glass-card-stars > img {
 }
 body #hand.reference-battle-hand .glass-card-stars:empty { display: none !important; }
 body .game-room.room-deck-ui-v3 .v3-card-name { display: none !important; }
+body .pvp-room-card .pvp-room-card-name,
+body .pvp-room-card .pvp-room-card-craft,
+body .pvp-room-card .pvp-room-card-function em { display: none !important; }
+body .pvp-room-card .pvp-room-card-meta {
+  left: 2% !important; right: 2% !important; bottom: 0 !important;
+  height: 21% !important; border: 0 !important; border-radius: 0 !important;
+  grid-template-columns: 1fr 25% !important;
+  background: linear-gradient(0deg, rgba(17,22,26,.72), rgba(17,22,26,.1)) !important;
+  z-index: 8;
+}
+body .pvp-room-card .pvp-room-card-resource { justify-content: flex-start; }
+body .pvp-room-card .pvp-room-card-resource img { width: 20px; height: 20px; }
+body .pvp-room-card .pvp-room-card-function i { width: 16px; height: 16px; }
+body .game-room.room-deck-ui-v3 .v3-drawer-card,
+body .game-room.room-deck-ui-v3 #deck-slots-row .v3-deck-slot,
+body .pvp-room-card { height: auto !important; aspect-ratio: 1 !important; align-self: center; }
+body .pvp-room-card .pvp-room-card-art,
 body .game-room.room-deck-ui-v3 .v3-card-art,
 body .battle-game-wrap #hand.reference-battle-hand.video-battle-hand .slot-portrait {
-  left: 3% !important;
+  left: -10% !important;
   right: auto !important;
-  top: 11% !important;
-  width: 94% !important;
-  height: 82% !important;
+  top: -8% !important;
+  width: 120% !important;
+  height: 112% !important;
   object-fit: contain !important;
   object-position: center bottom !important;
 }
@@ -82,6 +115,13 @@ body .game-room.room-deck-ui-v3 .v3-card-footer {
 }
 body .game-room.room-deck-ui-v3 .v3-card-resource,
 body .game-room.room-deck-ui-v3 .v3-card-cost { border: 0 !important; }
+body .game-room.room-deck-ui-v3 .v3-card-cost { font-size: clamp(11px, 1.05vw, 18px) !important; }
+body .game-room.room-deck-ui-v3 .v3-card-resource img { width: 85% !important; height: 95% !important; }
+body .game-room.room-deck-ui-v3 .v3-card-function .v3-atlas-function-icon { width: 15px !important; height: 15px !important; }
+body .game-room.room-deck-ui-v3 .v3-card-mark {
+  top: auto !important; bottom: 22% !important; height: auto !important;
+  font-size: 10px !important; line-height: 1.1 !important; padding: 2px !important;
+}
 body .game-room.room-deck-ui-v3 .v3-card-function em { display: none !important; }
 body #hand.reference-battle-hand.video-battle-hand .slot-function {
   display: flex !important;

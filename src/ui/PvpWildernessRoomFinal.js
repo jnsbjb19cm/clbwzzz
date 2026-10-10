@@ -10,6 +10,7 @@ import {
 import cardPartsAtlas from '../data/atlas/preload_cardParts.json' with { type: 'json' };
 import { DeckSelectView } from './DeckSelectView.js';
 import { RoomView } from './RoomView.js';
+import { cardStarRows } from './CardStarRows.js';
 import { BattleView } from './BattleView.js';
 import { roomDeckGroup20260912, selectedBattleDeck20260912 } from './DeckGroupPreference20260911.js';
 
@@ -176,7 +177,7 @@ function renderDeckCard(view, bagIndex, slotIndex) {
   return `
     <div class="pvp-room-card quality-${quality}" data-slot="${slotIndex}" title="${escapeHtml(title)}">
       <span class="pvp-room-card-bg" style="${atlasStyle(`card_bg_${quality}`)}"></span>
-      <span class="pvp-room-card-stars">${stars > 0 ? '★'.repeat(Math.min(6, stars)) : '·'}</span>
+      ${cardStarRows(stars, 'pvp-room-card-stars')}
       <img class="pvp-room-card-art" src="/sprites/cards/${escapeHtml(card.spriteRes)}.png" alt="" draggable="false" />
       <span class="pvp-room-card-name">${escapeHtml(card.name)}</span>
       <span class="pvp-room-card-meta">
