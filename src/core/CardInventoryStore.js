@@ -192,6 +192,25 @@ export class CardInventoryStore {
     return Math.max(0, Math.ceil((expiresAt - Date.now()) / 86400000));
   }
 
+  /**
+   * 2026-10-10（用户要求）：新号试玩只给「花生射手 + 核桃卫兵」两张卡。
+   * 原来空背包时会直接发**全部可收集卡**（还带 5 品质 / 2 强化），现在改走本方法。
+   */
+  grantStarterCards() {
+    const STARTER_CARD_IDS = [1, 2]; // 1 = 花生射手，2 = 核桃卫兵
+    let added = 0;
+    const owned = new Set(this.getOwnedCardIds());
+    for (const cardId of STARTER_CARD_IDS) {
+      if (owned.has(cardId)) continue;
+      const res = this.addCard(cardId, 0, { craftQuality: 1 });
+      if (res?.ok) {
+        added += 1;
+        owned.add(cardId);
+      }
+    }
+    return { ok: true, added, total: this.getUsedCount() };
+  }
+
   grantAllCollectibleCards() {
     const owned = new Set(this.getOwnedCardIds());
     let added = 0;

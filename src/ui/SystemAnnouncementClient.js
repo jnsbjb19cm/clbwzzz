@@ -3,8 +3,10 @@ import { authStore, NEW_PLAYER_TUTORIAL_PROMPT_KEY } from '../core/AuthStore.js'
 import { SocketClient } from '../network/SocketClient.js';
 import {
   NEW_PLAYER_TUTORIAL_MARKER,
+  NEW_PLAYER_TUTORIAL_STORAGE_KEY,
   getTutorialDeckSlots,
 } from '../tutorial/TutorialConfig.js';
+import { emitQuestEvent } from '../core/QuestEventBus.js';
 import { App } from './App.js';
 import { installAnnouncementPlainText20260905 } from './AnnouncementPlainText20260905.js';
 import { installSmithyCharmAndChatPolish20260908 } from './SmithyCharmAndChatPolish20260908.js';
@@ -197,7 +199,14 @@ function showNewPlayerTutorialPrompt(app) {
   overlay.append(style);
 
   const close = () => overlay.remove();
-  overlay.querySelector('[data-action="skip"]')?.addEventListener('click', close);
+  // 2026-10-10（玩家反馈）：「跳过」也要算完成新手教程 ——
+  // 主线1「完成新手教程（跳过也算）」以前只有点完教程最后一步才上报，
+  // 直接跳过的人永远完不成这个任务（而且这个弹窗问过就不再弹，等于卡死）。
+  overlay.querySelector('[data-action="skip"]')?.addEventListener('click', () => {
+    try { localStorage.setItem(NEW_PLAYER_TUTORIAL_STORAGE_KEY, '1'); } catch {}
+    emitQuestEvent('tutorial_complete', { count: 1 });
+    close();
+  });
   overlay.querySelector('[data-action="start"]')?.addEventListener('click', () => {
     close();
     app.navigate('battle', {

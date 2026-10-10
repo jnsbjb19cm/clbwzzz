@@ -32,15 +32,13 @@ export const STRENGTHEN_POWDER_STARTER = [
 /** 仅制作材料(补发按钮优先发这些) */
 export const CRAFT_MATERIAL_STARTER = craftRegistry.getStarterItems();
 
-/** 试玩用初始物品 */
-const STARTER_ITEMS = [
-  { itemId: 1, count: 20 },
-  { itemId: 2, count: 10 },
-  { itemId: 3, count: 100 },
-  ...STRENGTHEN_POWDER_STARTER,
-  { itemId: 30055, count: 300 },
-  ...CRAFT_MATERIAL_STARTER,
-];
+/**
+ * 2026-10-10（用户要求）：新号**道具一件都不给**。
+ * 原来新号（以及旧存档）会自动补一整套试玩材料（20 金币礼盒 + 10 红钻礼盒 + 几百个强化粉/DNA…）。
+ * 现在这里清空 → createDefault() 出来的背包是空的、ensureStarterPack() 也不再补。
+ * 玩家/运营仍可用「补发材料 / 补发强化粉」按钮走 grantStarterMaterials / grantStrengthenPowders。
+ */
+const STARTER_ITEMS = [];
 
 export class ItemDatabase {
   constructor() {

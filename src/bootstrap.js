@@ -1,5 +1,6 @@
 import { installTrainingBaseThreatFix20260905 } from './battle/TrainingBaseThreatFix20260905.js';
 import { installBattleLootVariety20260908 } from './battle/BattleLootVariety20260908.js';
+import { installPlayerStorageScope } from './core/PlayerStorage20261010.js';
 import { installEconomyInventoryRules20260905 } from './ui/EconomyInventoryRules20260905.js';
 import { installEconomyInventoryPersistence20260905 } from './ui/EconomyInventoryPersistence20260905.js';
 import { installCraftBindingSafety20260905 } from './ui/CraftBindingSafety20260905.js';
@@ -83,6 +84,11 @@ function installSafely(label, install) {
     return false;
   }
 }
+
+// 2026-10-10：玩家数据按账号隔离（修玩家反馈的「换号串数据」）。
+// 必须最早装 —— 它包的是 Storage.prototype，要在任何模块读玩家存档之前生效；
+// 具体切到哪个账号由 AuthStore 在登录/登出时决定。
+installSafely('installPlayerStorageScope', () => installPlayerStorageScope());
 
 installSafely('installTrainingBaseThreatFix20260905', () => installTrainingBaseThreatFix20260905());
 installSafely('installEconomyInventoryRules20260905', () => installEconomyInventoryRules20260905());

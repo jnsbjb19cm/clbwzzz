@@ -2,7 +2,8 @@ import './ClassicCardTooltip.css';
 import { gameSettings } from '../core/GameSettingsStore20260910.js';
 import { calculateCardStats } from '../battle/CardStatFormula.js';
 import { formatBattleAmount } from '../battle/BattleConfig.js';
-import { formatCraftCardName } from '../core/constants.js';
+import { formatCraftCardName, resolveCraftQuality } from '../core/constants.js';
+import { paintTooltipBitmapText, wrapTooltipText } from './TooltipBitmapText.js';
 const esc = value => String(value ?? '').replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
 
 export function classicCardTooltipMarkup(card, instance = {}) {
@@ -10,14 +11,21 @@ export function classicCardTooltipMarkup(card, instance = {}) {
   const stats = calculateCardStats(card, instance.craftQuality ?? 1, stars, instance.attributeRoll);
   const starCount = Math.max(10, Math.ceil(stars / 5) * 5);
   const title = instance.customName || formatCraftCardName(instance.craftQuality ?? 1, card.name);
+  const nameColor = resolveCraftQuality(instance.craftQuality ?? 1).color;
+  const lines = value => wrapTooltipText(value).map(esc).join('<br>');
   const expires = instance.expiresAt ?? instance.expires_at;
   const expiry = expires ? `有效至：${new Date(expires).toLocaleDateString('zh-CN')}` : '永久有效';
-  return `<div class="classic-tip-name">${esc(title)}[${esc(card.quality)}级卡]</div>
+  return `<div class="classic-tip-name" data-bitmap-text style="--tip-name-color:${nameColor}">${lines(`${title}[${card.quality}级卡]`)}</div>
     <div class="classic-tip-stars" aria-label="${stars}星">${Array.from({length:starCount}, (_, i) => `<span class="${i < stars ? 'earned' : ''}">★</span>`).join('')}</div>
-    <div class="classic-tip-stats">攻击:${esc(formatBattleAmount(stats.atk))}<br>生命:${esc(formatBattleAmount(stats.hp))}<br>冷却时间:${esc(formatBattleAmount(stats.cd))}秒</div>
-    <div class="classic-tip-trait">特技:${esc(card.trait || card.desc || '暂无')}</div>
-    <div class="classic-tip-lore">描述:<br>${esc(card.intro || card.flavor || '暂无描述')}</div>
-    <div class="classic-tip-expiry">${esc(expiry)}</div>`;
+    <div class="classic-tip-stats" data-bitmap-text>攻击:${esc(formatBattleAmount(stats.atk))}<br>生命:${esc(formatBattleAmount(stats.hp))}<br>冷却时间:${esc(formatBattleAmount(stats.cd))}秒</div>
+    <div class="classic-tip-trait" data-bitmap-text>${lines(`特技:${card.trait || card.desc || '暂无'}`)}</div>
+    <div class="classic-tip-lore" data-bitmap-text>描述:<br>${lines(card.intro || card.flavor || '暂无描述')}</div>
+    <div class="classic-tip-expiry" data-bitmap-text>${lines(expiry)}</div>`;
+}
+
+export function renderClassicCardTooltip(tooltip, card, instance = {}) {
+  tooltip.innerHTML = classicCardTooltipMarkup(card, instance);
+  paintTooltipBitmapText(tooltip);
 }
 
 export function installClassicCardTooltip(app) {
@@ -51,7 +59,7 @@ export function installClassicCardTooltip(app) {
     if (!card) return;
     active = cell; nativeTitle = cell.getAttribute('title'); cell.removeAttribute('title');
     cell.setAttribute('aria-describedby', tip.id);
-    tip.innerHTML = classicCardTooltipMarkup(card, instance); tip.hidden = false; position(event);
+    renderClassicCardTooltip(tip, card, instance); tip.hidden = false; position(event);
   });
   document.addEventListener('pointermove', event => { if (active) position(event); });
   document.addEventListener('pointerout', event => { if (active && !active.contains(event.relatedTarget)) hide(); });

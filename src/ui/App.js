@@ -83,14 +83,28 @@ export class App {
     this.root = root;
     this.db = new CardDatabase();
     this.itemDb = new ItemDatabase();
+    this.route = 'main';
+    this.stats = this.db.getStats();
+    this.resetPlayerState();
+  }
+
+  /**
+   * 2026-10-10：重建「属于某个账号」的运行时对象。
+   *
+   * 修玩家反馈的「换号串数据」：App 实例是复用的（登出只做了 authStore.logout() + mount()），
+   * 原来构造函数里建的 inventory / cardInventory / heroSkills / player 一直留着上一个号的数据，
+   * 换号登录后看到的还是旧对象 —— 光隔离 localStorage 不够，内存里这份也必须重建。
+   * 登录成功后、登出后各调一次。
+   */
+  resetPlayerState() {
     this.inventory = new InventoryStore(this.itemDb);
     this.cardInventory = new CardInventoryStore(this.db);
-    if (this.cardInventory.getUsedCount() === 0) this.cardInventory.grantAllCollectibleCards();
+    // 2026-10-10（用户要求）：新号只给「花生射手 + 核桃卫兵」两张卡。
+    // 原来是 grantAllCollectibleCards()：空背包直接发全部可收集卡（带 5 品质 / 2 强化）。
+    if (this.cardInventory.getUsedCount() === 0) this.cardInventory.grantStarterCards();
     this.heroSkills = new HeroSkillStore(this.db);
-    this.route = 'main';
-    this.views = {};
-    this.stats = this.db.getStats();
     this.player = this.loadPlayer();
+    this.views = {};
   }
 
   mount() {
@@ -100,6 +114,8 @@ export class App {
       const login = new LoginView({
         onSuccess: () => {
           this.root.innerHTML = '';
+          // 2026-10-10：换号后必须重建玩家运行时对象，否则看到的还是上一个号的背包/卡牌/任务。
+          this.resetPlayerState();
           this.bootstrap();
         },
       });
@@ -183,7 +199,8 @@ export class App {
         audio.playSfx('click');
         if (btn.dataset.route === '__logout') {
           authStore.logout();
-          this.views = {};
+          // 2026-10-10：登出也重建（authStore.logout 已把存储命名空间切回未登录态）。
+          this.resetPlayerState();
           this.mount();
           return;
         }

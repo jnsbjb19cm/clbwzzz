@@ -862,8 +862,14 @@ try {
   console.error('[clbwzdb] 服务仍会启动：数据接口会返回错误信息（不再是 502），数据库恢复后会自动重试初始化');
 }
 
-const STARTER_DECK = [1, 2, 4, 15, 19, 25, 22, 17, 11, 3];
-const STARTER_EXTRA = [5, 6, 8, 12, 13, 20, 21, 23, 24, 26, 27, 28, 30, 31, 32, 33, 35, 36, 37, 38];
+/**
+ * 2026-10-10（用户要求）：新号试玩只给「花生射手 + 核桃卫兵」两张卡，道具一件不给。
+ * 原来是 10 张 + 20 张 = 30 张，而且客户端空背包时还会再发全卡
+ * （见 App 构造里的 grantAllCollectibleCards），那处也一起收掉了。
+ * 1 = 花生射手，2 = 核桃卫兵 —— 正好是新手教程要用的那两张。
+ */
+const STARTER_DECK = [1, 2];
+const STARTER_EXTRA = [];
 
 export async function createPlayerData(userId, nickname) {
   await withTransaction(async (conn) => {
