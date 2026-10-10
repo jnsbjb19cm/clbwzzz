@@ -1953,8 +1953,21 @@ export class BattleEngine {
     unit._burrowRefundPending = true;
     const refunded = this.onBurrowReturn?.(unit) === true;
     unit._burrowRefunded = refunded;
-    unit.hp = 0;
+    // 2026-10-10（用户要求）：地道工兵 / 钻地大蒜回到自家基地时不再 unit.hp = 0「掉血死掉」，
+    // 而是**直接从战场移除**（与自爆单位同一套：不播死亡动画、不走掉血、不计击杀/不掉落）。
+    // 判定来自服务端 AES-256-GCM 加密下发的规则（这里只读同步缓存），
+    // 同时异步向服务端要一份加密结算指令确认（以服务端为准，客户端无法自己编返还）。
+    const action = burrowReturnAction();
     unit.alive = false;
+    unit._burrowRemoved = true;
+    unit._deathUntil = this.time;
+    if (action === 'remove') {
+      void requestBurrowReturnInstruction(unit.cardId).then((instruction) => {
+        if (instruction?.refund === true) {
+          this.pushLog(`[${unit.name}]服务端确认：返回基地可返还部署资源`);
+        }
+      }).catch(() => {});
+    }
     this.pushLog(`[${unit.name}]成功返回己方基地${refunded ? '，返还部署资源' : ''}`);
   }
 
@@ -2698,3 +2711,7 @@ export class BattleEngine {
   }
 }
 import { appendDnaDeathDrop } from '../core/CardDna.js';
+// 规则（同步缓存，服务端加密下发后解密）与结算指令（异步问服务端）来自两个模块：
+// 规则放 store（纯数据、Node 安全），指令走 cipher（浏览器侧）。
+import { burrowReturnAction } from './BurrowRulesStore20261010.js';
+import { requestBurrowReturnInstruction } from './BurrowCipher20261010.js';

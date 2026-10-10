@@ -12,6 +12,7 @@ import {
 import { sanitizeCustomCardName } from '../core/constants.js';
 import { COLD_BREW_CARD_ID, COLD_BREW_ATTACK_INTERVAL } from './ColdBrewMachine.js';
 import { getAttackPattern, isSuicideCard } from '../core/CardTraitRegistry.js';
+import { isBurrowUnitCard } from './BurrowRulesStore20261010.js';
 
 let uid = 0;
 const FORCED_TARGETABLE_CARD_IDS = new Set([34, 53, 62]);
@@ -82,7 +83,11 @@ export class BattleUnit {
   }
 
   isTunnelUnit() {
-    return this.viewType === 7 || this.atkStyle === 6;
+    // 2026-10-10（用户要求「这个方法要进行强加密」）：
+    // 原来这里写死 viewType===7 || atkStyle===6（等于 41 地道工兵 / 43 钻地大蒜）。
+    // 现在改成读**服务端 AES-256-GCM 加密下发**的规则（BurrowRulesStore 里是解密后的缓存，
+    // 同步读取不阻塞战斗循环）；加密流程不可用时自动退回同一份兜底值，行为不变。
+    return isBurrowUnitCard(this.cardId);
   }
 
   isTunnelProtected() {
