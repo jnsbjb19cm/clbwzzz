@@ -279,22 +279,23 @@ function getHaloSprite(cqQuality) {
 
 /** 单色径向渐变椭圆(静态 qualityLightCircle，不叠星芒/溅射) */
 /**
- * 2026-10-10：单位脚下的「一小块」软阴影（三层同心椭圆做层次）。
- * bodySize 用 layout.circleSize（它已按脚下不透明宽度算过），所以大单位阴影自然更大。
+ * 2026-10-10（用户要求）：「给所有卡的脚下加有层次感的阴影」+「阴影是黑色的」+「按体积一小块」。
+ * 纯黑三层同心椭圆，外淡内深做出层次；尺寸按单位体积（circleSize 由脚下不透明宽度算出）。
+ * 必须 export：drawUnitHalo 的替代实现（BattlefieldRuntimeStability）要调它 —— 见那边注释。
  */
-function drawUnitGroundShadow(ctx, cx, footY, bodySize, flying) {
+export function drawUnitGroundShadow(ctx, cx, footY, bodySize, flying) {
   if (!Number.isFinite(cx) || !Number.isFinite(footY)) return;
   if (flying) return;   // 飞行单位离地，不画脚影
   const w = Math.max(12, Number(bodySize) || 0);
-  const rx = w * 0.34;
-  const ry = Math.max(2.5, rx * 0.34);
-  const cy = footY - ry * 0.12;
+  const rx = w * 0.40;
+  const ry = Math.max(3, rx * 0.32);
+  const cy = footY - ry * 0.10;
   ctx.save();
-  ctx.fillStyle = '#06140d';
+  ctx.fillStyle = '#000000';   // 用户明确要黑色（原来偏墨绿 + 太淡，几乎看不见）
   const layers = [
-    { k: 1, a: 0.10 },
-    { k: 0.7, a: 0.13 },
-    { k: 0.44, a: 0.18 },
+    { k: 1, a: 0.26 },
+    { k: 0.68, a: 0.30 },
+    { k: 0.42, a: 0.34 },
   ];
   for (const { k, a } of layers) {
     ctx.globalAlpha = a;
@@ -685,17 +686,26 @@ export class BattleRenderer {
     ctx.fillText(label, x + w / 2, y + 8);
   }
 
-  drawStrengthStars(ctx, unit, cx, footY, circleSize) {
+  /**
+   * 2026-10-10（用户要求）：「强化的星星在上，血条在下，而且星星要稍微小一点」。
+   * 入参从「脚底 y」改成「血条顶边 y」：星星从血条**上方**往上排 ——
+   * 原来 firstY = footY + circleSize*0.08 会压在血条上、还溢出格子。
+   * 尺寸从 0.135 收到 0.105（上下限也压小），确实是"稍微小一点"。
+   */
+  drawStrengthStars(ctx, unit, cx, barTopY, circleSize) {
     const level = Math.max(0, Math.floor(Number(unit.strengthLv) || 0));
     if (level <= 0) return;
     const rows = level > 7 ? [7, level - 7] : [level];
-    const starSize = Math.max(9, Math.min(12, circleSize * 0.135));
-    const firstY = footY + circleSize * 0.08;
+    const starSize = Math.max(7, Math.min(10, circleSize * 0.105));
+    const gap = 1;
+    const totalH = rows.length * starSize + (rows.length - 1) * gap;
+    const baseY = Number.isFinite(barTopY) ? barTopY : 0;
+    const firstY = baseY - totalH - 2;   // 排在血条上方
 
     rows.forEach((rowStars, rowIndex) => {
       let remaining = rowStars;
       let x = cx - rowStars * starSize / 2;
-      const y = firstY + rowIndex * (starSize + 1);
+      const y = firstY + rowIndex * (starSize + gap);
       while (remaining > 0) {
         const chunk = Math.min(6, remaining);
         const image = this.partsCache.get(`single_star_${chunk}`);
@@ -847,7 +857,8 @@ export class BattleRenderer {
     } = layout;
     // 名字始终跟随设置显示；低画质时只省略星级等文字，不省略名称。
     this.drawUnitName(ctx, portraitX, cellTop + 2, portraitW, unit.customName || unit.name, unit.team);
-    if (!this._lowQuality) this.drawStrengthStars(ctx, unit, cx, footY, circleSize);
+    // 2026-10-10：星星排在血条**上方**（原来是 footY 往下，压在血条上）→ 传血条顶边 barY。
+    if (!this._lowQuality) this.drawStrengthStars(ctx, unit, cx, barY, circleSize);
     // 2026-09-11：血条可由设置页开关（默认开）。
     if (shouldDrawUnitHpBar()) {
       const hpPct = unit.hp / unit.maxHp;

@@ -1,5 +1,7 @@
 import { BattleEngine } from '../battle/BattleEngine.js';
 import { BattleRenderer } from '../battle/BattleRenderer.js';
+// 2026-10-10：脚下阴影（drawUnitHalo 里要调，见 install 内注释）。
+import { drawUnitGroundShadow } from '../battle/BattleRenderer.js';
 import { getProjectileArcHeight } from '../battle/Projectile.js';
 import { projectileVisualSize } from '../battle/ProjectileVisualSize.js';
 import { SpriteAtlas } from '../core/SpriteAtlas.js';
@@ -296,8 +298,17 @@ function installFinalRenderer() {
   const originalSkillFx = BattleRenderer.prototype.drawSkillFx;
 
   //明确要求移除品质绿圈：不再绘制任何常驻品质光圈/qualityLightCircle。
-  BattleRenderer.prototype.drawUnitHalo = function drawNoPersistentQualityHalo() {
+  BattleRenderer.prototype.drawUnitHalo = function drawNoPersistentQualityHalo(ctx, unit, layout) {
     this._runtimeStabilityHaloSuppressed = true;
+    // 2026-10-10（用户反馈「我并没有看到阴影」）：
+    // 品质绿圈按要求仍然不画，但这里改成画**脚下的黑色软阴影**。
+    // 原因：drawUnitHalo 是唯一被所有单位绘制路径都会调用的钩子
+    // （BattlefieldAlignmentAuditFinal / SceneV3Final 都调 this.drawUnitHalo），
+    // 而原来的阴影挂在 drawUnitHalo 的实现里 —— 这份实现早就被本补丁替换成空函数了，
+    // 所以那段阴影代码永远不会执行，玩家自然看不到。
+    try {
+      drawUnitGroundShadow(ctx, layout?.cx, layout?.footY, layout?.circleSize, layout?.flying);
+    } catch { /* 阴影绘制失败不影响战斗 */ }
   };
 
   // 状态着色只经过一次单位 sprite draw，不再二次重画动画到 offscreen canvas。
