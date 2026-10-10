@@ -1,4 +1,5 @@
 import { App } from './App.js';
+import { RoomView } from './RoomView.js';
 import { authStore } from '../core/AuthStore.js';
 import {
   ANIM_GROUPS,
@@ -118,11 +119,19 @@ export function installAssetPreloadUi20261010() {
     return result;
   };
 
-  // 进房间：动画重资源走专门的加载界面（不阻塞进房，界面浮在上面）
+  // 战斗房间：真正该开始的时刻是 RoomView.enterRoom()（已经进房 = 游戏已开局，但还没进战场），
+  // 而不是 App.navigate('room') —— 那个路由其实是大厅列表，光看列表就开始下 189MB 太早。
+  const previousEnterRoom = RoomView.prototype.enterRoom;
+  RoomView.prototype.enterRoom = function enterRoomWithAnimLoading(...args) {
+    try { ensureRoomAnimLoading(); } catch { /* 加载界面出错不影响进房 */ }
+    return previousEnterRoom.apply(this, args);
+  };
+
+  // 不经过房间直接进战场（新手教程等）：只**静默**预加载，不盖加载界面 —— 否则会盖住战斗开场。
   const previousNavigate = App.prototype.navigate;
-  App.prototype.navigate = function navigateWithAnimLoading(route, opts) {
-    if (route === 'room') {
-      try { ensureRoomAnimLoading(); } catch { /* 加载界面出错不影响进房 */ }
+  App.prototype.navigate = function navigateWithSilentPreload(route, opts) {
+    if (route === 'battle' && !ANIM_GROUPS.every(isGroupPreloaded)) {
+      try { preloadAssetGroups(ANIM_GROUPS, { concurrency: 8 }); } catch { /* 预加载失败不影响战斗 */ }
     }
     return previousNavigate.call(this, route, opts);
   };
