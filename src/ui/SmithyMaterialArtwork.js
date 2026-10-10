@@ -13,13 +13,12 @@ export const SMITHY_MATERIAL_ART = Object.freeze({
     new URL('../../resources/img/parchment4.png', import.meta.url).href,
   ],
   dna: [
-    new URL('../../resources/img/DNA1.webp', import.meta.url).href,
-    new URL('../../resources/img/DNA2.webp', import.meta.url).href,
-    // 2026-10-10（用户反馈）：「3/4 级的占位还是反的」——
-    // 美术文件名与等级顺序不一致（DNA4.webp 画的是 3 级、DNA3.webp 画的是 4 级），
-    // 所以按等级把这两项互换。以后艺术若重新出图，只需把这两行换回来。
-    new URL('../../resources/img/DNA4.webp', import.meta.url).href,   // 3 级
-    new URL('../../resources/img/DNA3.webp', import.meta.url).href,   // 4 级
+    // 2026-10-10（用户澄清）：**原来的顺序就是对的**（DNA1/2/3/4 = 1/2/3/4 级）。
+    // 上一版是我误以为 3/4 级反了，自己把它们换掉了 —— 现在改回原样，以后别再动这四行。
+    new URL('../../resources/img/DNA1.webp', import.meta.url).href,   // 1 级
+    new URL('../../resources/img/DNA2.webp', import.meta.url).href,   // 2 级
+    new URL('../../resources/img/DNA3.webp', import.meta.url).href,   // 3 级
+    new URL('../../resources/img/DNA4.webp', import.meta.url).href,   // 4 级
   ],
   charm: [
     new URL('../../resources/img/PTL1.png', import.meta.url).href,
