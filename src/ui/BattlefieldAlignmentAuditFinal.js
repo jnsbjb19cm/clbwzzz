@@ -62,8 +62,14 @@ for (const row of skillPosData ?? []) {
 }
 
 function normalizeName(value) {
+  // 2026-10-10（用户反馈「西瓜太郎和真西瓜太郎应该是一样大的」「极寒冰椰子还是小」）：
+  // 原来只去掉了中点「·」，可卡名里用的是**半角点**：真.西瓜太郎 / 极.寒冰椰子 / 幻.飞行忍者。
+  // 于是这些卡归一化后是「真.西瓜太郎」，匹配不到名单里的「真西瓜太郎」→ 落到 normal(1.78)，
+  // 而它们的本体（西瓜太郎 / 寒冰椰子）是 small(2.22) → 同一张素材却小了 25%。
   return String(value ?? '')
     .replaceAll('·', '')
+    .replaceAll('．', '')
+    .replaceAll('.', '')
     .replaceAll(' ', '')
     .trim();
 }

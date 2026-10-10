@@ -352,15 +352,6 @@ export function shouldLoopUnitAnimation(state, anim) {
   return Boolean(anim?.loop || state === 'underMoving');
 }
 
-export function shouldHoldMushroomIdleFrame(unit, engine, state) {
-  if (Number(unit?.cardId) !== 58 || state !== 'default' || !unit?.alive) return false;
-  const units = Array.isArray(engine?.units) ? engine.units : [];
-  const canTarget = typeof engine?.isValidEnemyTarget === 'function'
-    ? (target) => engine.isValidEnemyTarget(unit, target)
-    : (target) => target?.alive && target.team !== unit.team;
-  return !units.some((target) => target !== unit && canTarget(target));
-}
-
 export function resolveStableAttackFrameX({
   stableLeft,
   scaleBounds,
@@ -907,7 +898,11 @@ export class UnitAnimPlayer {
     let fi = shouldLoopUnitAnimation(state, anim)
       ? (Math.floor(clock / frameDur) % effFrames)
       : Math.min(effFrames - 1, Math.max(0, Math.floor(clock / frameDur)));
-    if (shouldHoldMushroomIdleFrame(unit, engine, state)) fi = 0;
+    // 2026-10-10（玩家反馈「以前好久版本前蘑菇仙人下面的小蘑菇还会不灵不灵地动」）：
+    // 这里原来有一句 `if (shouldHoldMushroomIdleFrame(unit, engine, state)) fi = 0;` ——
+    // 蘑菇仙人(58)在「场上没有可攻击目标」时会被**冻在 idle 第 0 帧**，于是它脚边那窝小蘑菇
+    // 就不再一闪一闪了。按要求恢复：idle 一直播（该素材 default 本来就有 50 帧 / 10.8fps）。
+    // 顺带把那个已经没人用的判定函数删掉了（性能影响可忽略：一个单位 10.8fps）。
     // 2026-09-12：**停在指定帧**（怪物吸尘器 34 消化中要保持"吃撑鼓起来"的姿态）。
     // 只对该状态生效，其它状态不受影响。
     if (unit._animHoldFrameState === state && Number.isFinite(Number(unit._animHoldFrame))) {
