@@ -74,12 +74,34 @@ function normalizeName(value) {
     .trim();
 }
 
+/**
+ * 2026-10-10（用户反馈「西瓜太郎和真西瓜太郎还是不一样大」）：
+ * 分组原来**只按名字**匹配，而卡名里的点有中点/半角两种写法（真西瓜太郎 / 真.西瓜太郎），
+ * 归一化稍微漏一种就会让同一套素材掉到不同档，差 25%。
+ * 现在改成「先按 res 锁定分组」—— res 是精灵资源号，稳定且唯一，不可能对不上；
+ * 名字匹配保留作为兜底（给没登记的卡用）。
+ */
+const RES_SCALE_GROUP = Object.freeze({
+  7: 'small',   // 西瓜太郎
+  30: 'small',  // 真·西瓜太郎 —— 与 7 必须同档（同素材）
+  19: 'small',  // 稻草人
+  32: 'small',  // 嗜血稻草人
+  36: 'small',  // 蒲公英精灵
+  17: 'small',  // 寒冰椰子
+  54: 'small',  // 极·寒冰椰子
+  40: 'small',  // 飞行水蜜桃
+});
+
 function scaleGroupForUnit(unit) {
+  const res = Number(unit?.res);
+  if (Number.isFinite(res) && RES_SCALE_GROUP[res]) return RES_SCALE_GROUP[res];
   const name = normalizeName(unit?.name);
   if (OVERSIZED_NAMES.has(name) || name.startsWith('黑铁土豆')) return 'large';
   if (UNDERSIZED_NAMES.has(name)) return 'small';
   return 'normal';
 }
+
+export { RES_SCALE_GROUP };
 
 function unitScale(unit, layout) {
   const group = scaleGroupForUnit(unit);
