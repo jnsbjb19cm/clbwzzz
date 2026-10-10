@@ -10,7 +10,7 @@ import { lobbyMusicSrc } from '../core/BattleClientFlags20260910.js';
 import { maybeShowLobbyMusicIntro } from './LobbyMusicIntro20261009.js';
 import { authStore } from '../core/AuthStore.js';
 import { CardGallery } from './CardGallery.js';
-import { getCraftMaterialImage } from './SmithyMaterialArtwork.js';
+import { getCraftMaterialImage, getCraftMaterialAtlasSprite } from './SmithyMaterialArtwork.js';
 import { BattleView } from './BattleView.js';
 import { MainCityView } from './MainCityView.js';
 import { bindClassicChat, classicChatMarkup } from './ClassicCityChrome.js';
@@ -323,7 +323,14 @@ export class App {
     for (const [itemId, count] of dropTotals) {
       const item = this.itemDb.getById(itemId);
       const img = getCraftMaterialImage(itemId);
-      const iconHtml = img ? `<img src="${img}" alt="" style="width:34px;height:34px;vertical-align:middle;margin-right:6px;border-radius:6px;background:#243b24;">` : '';
+      // 2026-10-10：专属 DNA 的通用图返回 null（那是"通用 DNA 图"，用户指出用错了），
+      // 这里改用图集里它**自己**的那一格（如 带刀侍卫DNA → 30015）。
+      const dnaSprite = img ? null : getCraftMaterialAtlasSprite(itemId);
+      const iconHtml = img
+        ? `<img src="${img}" alt="" style="width:34px;height:34px;vertical-align:middle;margin-right:6px;border-radius:6px;background:#243b24;">`
+        : dnaSprite
+          ? `<span style="display:inline-block;width:34px;height:34px;vertical-align:middle;margin-right:6px;border-radius:6px;background:#243b24 url('${dnaSprite.image}') -${dnaSprite.x}px -${dnaSprite.y}px no-repeat;transform:scale(${Math.min(1, 34 / Math.max(dnaSprite.width, dnaSprite.height)).toFixed(3)});"></span>`
+          : '';
       if (this.inventory.addItem(itemId, count)) {
         specialText.push(`<div style="text-align:left;margin:4px 0;">${iconHtml}战斗掉落：${item.name} ×${count}</div>`);
       } else {
