@@ -1,6 +1,7 @@
 import { installTrainingBaseThreatFix20260905 } from './battle/TrainingBaseThreatFix20260905.js';
 import { installBattleLootVariety20260908 } from './battle/BattleLootVariety20260908.js';
 import { installPlayerStorageScope } from './core/PlayerStorage20261010.js';
+import { installAssetPreloadUi20261010 } from './ui/AssetPreloadUi20261010.js';
 import { installEconomyInventoryRules20260905 } from './ui/EconomyInventoryRules20260905.js';
 import { installEconomyInventoryPersistence20260905 } from './ui/EconomyInventoryPersistence20260905.js';
 import { installCraftBindingSafety20260905 } from './ui/CraftBindingSafety20260905.js';
@@ -89,6 +90,8 @@ function installSafely(label, install) {
 // 必须最早装 —— 它包的是 Storage.prototype，要在任何模块读玩家存档之前生效；
 // 具体切到哪个账号由 AuthStore 在登录/登出时决定。
 installSafely('installPlayerStorageScope', () => installPlayerStorageScope());
+// 2026-10-10：资源预加载（登录页预热轻量资源 + 进房间的精灵动画加载界面）。
+installSafely('installAssetPreloadUi20261010', () => installAssetPreloadUi20261010());
 
 installSafely('installTrainingBaseThreatFix20260905', () => installTrainingBaseThreatFix20260905());
 installSafely('installEconomyInventoryRules20260905', () => installEconomyInventoryRules20260905());

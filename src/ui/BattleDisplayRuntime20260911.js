@@ -91,13 +91,26 @@ function installDamageNumbers() {
     // 2026-09-11：显示实际扣掉的血量（致死后不再是溢出的 -500），
     // 不影响扣血结果与 takeDamage/applyCardHit 的返回值。
     const recorded = Number(this.lastDamageDealt);
-    const shown = Number.isFinite(recorded) && recorded > 0 ? recorded : dealt;
+    const shown = this.lastDamageDealt != null && Number.isFinite(recorded) ? recorded : dealt;
     if (shown > 0 && shouldShowDamageNumbers()) {
       const pops = this[POP_FIELD] ?? (this[POP_FIELD] = []);
-      pops.push({ amount: shown, at: nowMs() });
+      const time = nowMs();
+      const recent = pops.at(-1);
+      if (recent && recent.battleAt === now && time - recent.at <= 120) recent.amount += shown;
+      else pops.push({ amount: shown, at: time, battleAt: now });
       if (pops.length > POP_LIMIT) pops.splice(0, pops.length - POP_LIMIT);
     }
     return dealt;
+  };
+
+  // 引擎已记录的伤害不再由单位头顶重复绘制，单位记录只作未接线伤害的兜底。
+  const previousSpawnDamageFloat = BattleEngine.prototype.spawnDamageFloat;
+  BattleEngine.prototype.spawnDamageFloat = function spawnSingleDamageFloat(target, ...args) {
+    const result = previousSpawnDamageFloat.call(this, target, ...args);
+    if (target?.[POP_FIELD] && this.floats?.some(f => f.targetUid === target.uid && f.amount < 0)) {
+      target[POP_FIELD] = target[POP_FIELD].filter(pop => pop.battleAt !== this.time);
+    }
+    return result;
   };
 
   // 死亡结算时立刻把数字搬走（此时单位还在 units 里，之后才会被过滤掉）。
@@ -143,9 +156,10 @@ function installDamageNumbers() {
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     for (const pop of orphans) {
-      const cx = fracColToCenterX(pop.col);
-      const topY = cellCenterY(pop.lane) - CELL_H / 2;
-      if (drawDamagePop(ctx, pop, cx, topY, CELL_W, time)) alive.push(pop);
+      const g = this.battleVisualGrid;
+      const cx = g ? g.x0 + g.stepX * pop.col : fracColToCenterX(pop.col);
+      const topY = g ? g.y0 + g.stepY * pop.lane - g.cellH / 2 : cellCenterY(pop.lane) - CELL_H / 2;
+      if (drawDamagePop(ctx, pop, cx, topY, g?.cellW ?? CELL_W, time)) alive.push(pop);
     }
     ctx.restore();
     if (alive.length) engine[ORPHAN_FIELD] = alive;

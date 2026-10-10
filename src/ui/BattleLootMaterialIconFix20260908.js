@@ -86,7 +86,7 @@ function preloadSpecialLoot() {
   for (let level = 1; level <= 5; level += 1) materialArt(10000 + level); // strengthen powder
 }
 
-function drawDropLabel(ctx, cx, cy, size, alpha) {
+function drawDropLabel(ctx, cx, cy, size, alpha, itemId) {
   ctx.save();
   ctx.globalAlpha = alpha;
   ctx.fillStyle = '#fff6bd';
@@ -94,8 +94,10 @@ function drawDropLabel(ctx, cx, cy, size, alpha) {
   ctx.lineWidth = 3;
   ctx.font = 'bold 12px sans-serif';
   ctx.textAlign = 'center';
-  ctx.strokeText('掉落', cx, cy + size * 0.68);
-  ctx.fillText('掉落', cx, cy + size * 0.68);
+  const dna = cardDnaItem(itemId);
+  const label = dna ? `${dna.quality}级${dna.item_name}` : (itemId >= 50031 && itemId <= 50034 ? `${itemId - 50030}级通用DNA` : '掉落');
+  ctx.strokeText(label, cx, cy + size * 0.68);
+  ctx.fillText(label, cx, cy + size * 0.68);
   ctx.restore();
 }
 
@@ -138,7 +140,7 @@ function drawArtwork(ctx, art, cx, cy, size) {
   return true;
 }
 
-function drawSpecialLootIcon(ctx, drop, now) {
+function drawSpecialLootIcon(ctx, drop, now, grid) {
   if (drop.collected) return true;
   const art = materialArt(drop?.itemId);
   if (!art) return false;
@@ -150,8 +152,8 @@ function drawSpecialLootIcon(ctx, drop, now) {
   const alpha = appear * fade;
   if (alpha <= 0) return true;
 
-  const cx = cellCenterX(drop.col);
-  const cy = cellCenterY(drop.lane) - 18 - Math.sin(age * 5.5) * 5 - Math.min(13, age * 5);
+  const cx = grid ? grid.x0 + grid.stepX * drop.col : cellCenterX(drop.col);
+  const cy = (grid ? grid.y0 + grid.stepY * drop.lane : cellCenterY(drop.lane)) - 18 - Math.sin(age * 5.5) * 5 - Math.min(13, age * 5);
   const size = 48 + Math.sin(age * 6) * 2;
 
   // Never paint a fallback square for these IDs. If the image is still decoding,
@@ -174,7 +176,7 @@ function drawSpecialLootIcon(ctx, drop, now) {
   }
   ctx.restore();
 
-  drawDropLabel(ctx, cx, cy, size, alpha);
+  drawDropLabel(ctx, cx, cy, size, alpha, drop.itemId);
   return true;
 }
 
@@ -200,7 +202,7 @@ export function installBattleLootMaterialIconFix20260908() {
     const result = base.call(this, ctx, baseEngine);
 
     const now = Number(engine?.time) || 0;
-    for (const drop of specialDrops) drawSpecialLootIcon(ctx, drop, now);
+    for (const drop of specialDrops) drawSpecialLootIcon(ctx, drop, now, this.battleVisualGrid);
     return result;
   }
   drawLootDropsWithCraftMaterialIcons20260908.__craftMaterialIcons20260908 = true;

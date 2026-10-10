@@ -365,6 +365,16 @@ function drawBumpDeployVfx(ctx, fx) {
   // 召唤瞬间的透明法阵细线已移除；保留品质底座/椭圆扩散/中心闪白。
 }
 
+/**
+ * 2026-10-10（玩家反馈「蘑菇仙人的全屏泡泡子弹」）：法阵 fallback 的配色字符串预先算好。
+ * 原来是每帧 parseHexColor() + 拼 3 个 rgba 模板字符串（全屏特效期间每帧都在分配）。
+ * 数值与原来一致（#8ef0a8 = 142,240,168；#c9a35f = 201,163,95），观感完全不变。
+ */
+const FALLBACK_FX_PALETTE = {
+  mushroom: { stroke95: 'rgba(142,240,168,0.95)', stroke70: 'rgba(142,240,168,0.7)', stroke50: 'rgba(142,240,168,0.5)' },
+  default: { stroke95: 'rgba(201,163,95,0.95)', stroke70: 'rgba(201,163,95,0.7)', stroke50: 'rgba(201,163,95,0.5)' },
+};
+
 export class BattleRenderer {
   constructor(canvas) {
     this.canvas = canvas;
@@ -1214,10 +1224,11 @@ export class BattleRenderer {
       const f = list[i];
       const alpha = Math.min(1, f.life);
       // 基地伤害/回复也用同一套数字精灵(与卡牌相同字体)；位置 clamp 到画布内
-      const cx = this.isBaseFloat(f.col)
+      const g = this.battleVisualGrid;
+      const cx = g && !this.isBaseFloat(f.col) ? g.x0 + g.stepX * f.col : this.isBaseFloat(f.col)
         ? Math.min(fracColToCenterX(f.col), FIELD_W - 22)
         : fracColToCenterX(f.col);
-      const cy = cellCenterY(f.lane) + f.y * 20;
+      const cy = (g ? g.y0 + g.stepY * f.lane : cellCenterY(f.lane)) + 14 + (f.y || 0) * 12;
 
       // 伤害/治疗数字精灵：红=扣血(-)，绿=回血(+)
       if (atlasImg) {
@@ -1394,23 +1405,24 @@ export class BattleRenderer {
             const grow = Math.min(1, fx.t / 0.3);
             const total = Math.max(0.8, Number(fx.duration) || 1.5);
             const fade = Math.max(0, 1 - fx.t / total);
-            const color = fx.kind === 'mushroom_bubble' ? '#8ef0a8' : '#c9a35f';
-            const { r, g, b } = parseHexColor(color);
+            // 2026-10-10：配色与 rgba 字符串预先算好（原来每帧 parseHexColor + 拼 3 个字符串），
+            // 数值与原来完全一致 → 观感不变，只是不再每帧计算/分配。
+            const pal = fx.kind === 'mushroom_bubble' ? FALLBACK_FX_PALETTE.mushroom : FALLBACK_FX_PALETTE.default;
             const a = Math.max(0, Math.min(1, alpha)) * (0.3 + fade * 0.7) * Math.min(1, fx.t / 0.12);
             ctx.save();
             ctx.globalAlpha = a;
             ctx.lineWidth = 3.5;
-            ctx.strokeStyle = `rgba(${r},${g},${b},0.95)`;
+            ctx.strokeStyle = pal.stroke95;
             ctx.beginPath();
             ctx.arc(cx, cy, R * grow, 0, Math.PI * 2);
             ctx.stroke();
             ctx.lineWidth = 2;
-            ctx.strokeStyle = `rgba(${r},${g},${b},0.7)`;
+            ctx.strokeStyle = pal.stroke70;
             ctx.beginPath();
             ctx.arc(cx, cy, R * 0.62 * grow, rot, rot + Math.PI * 2);
             ctx.stroke();
             ctx.lineWidth = 1.6;
-            ctx.strokeStyle = `rgba(${r},${g},${b},0.5)`;
+            ctx.strokeStyle = pal.stroke50;
             ctx.beginPath();
             for (let i = 0; i < 4; i++) {
               const ang = rot + i * Math.PI / 2;

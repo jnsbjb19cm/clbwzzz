@@ -127,10 +127,48 @@ function drawStunFallback(ctx, cx, cellTop, circleSize, phase) {
   ctx.restore();
 }
 
-function activeDotKinds(unit, now) {
-  return (Array.isArray(unit?.dots) ? unit.dots : [])
-    .filter((dot) => finite(dot?.until, -Infinity) > now)
-    .map((dot) => String(dot?.kind ?? ''));
+/**
+ * 2026-10-10（玩家反馈「致命诅咒这类 DOT 一加载就急速掉帧」）：
+ * 原来 activeDotKinds() 用 filter()+map() —— 每个单位每帧新建 2 个数组；
+ * 再加上下面每帧 new 一个审计对象（内部还有 [...dotKinds] 第 3 个数组）。
+ * 20~30 个单位 × 60fps 就是每秒上千次分配，GC 一抖就是肉眼可见的掉帧。
+ * 现在改成「一次遍历 + 复用同一个数组/审计对象」，**表现完全不变**（poisoned/burning 判定一致）。
+ */
+const DOT_KIND_SCRATCH = [];
+
+/** 复用同一个审计对象（不再每帧每单位 new）。字段与原来完全一致，诊断接口照旧可读。 */
+const STATUS_FX_AUDIT = {
+  frozen: false,
+  stunned: false,
+  slowed: false,
+  poisoned: false,
+  burning: false,
+  dotKinds: DOT_KIND_SCRATCH,
+  palette: STATUS_PALETTE,
+  freezeUsesSkeletonFx: false,
+  singleSpritePass: true,
+  offscreenUnitRedraw: false,
+  maskAlignedToPrimarySprite: true,
+};
+
+/** 一次遍历算出 dot 名单 + poisoned/burning，写回复用对象，零分配。 */
+function fillDotFlags(unit, now) {
+  DOT_KIND_SCRATCH.length = 0;
+  let poisoned = false;
+  let burning = false;
+  const dots = unit?.dots;
+  if (Array.isArray(dots)) {
+    for (let i = 0; i < dots.length; i += 1) {
+      const dot = dots[i];
+      if (!(finite(dot?.until, -Infinity) > now)) continue;
+      const kind = String(dot?.kind ?? '');
+      DOT_KIND_SCRATCH.push(kind);
+      if (POISON_DOT_KINDS.has(kind)) poisoned = true;
+      else if (kind === 'burn') burning = true;
+    }
+  }
+  STATUS_FX_AUDIT.poisoned = poisoned;
+  STATUS_FX_AUDIT.burning = burning;
 }
 
 function drawStatusEffectsCached(ctx, unit, engine, layout) {
@@ -139,27 +177,21 @@ function drawStatusEffectsCached(ctx, unit, engine, layout) {
   const frozen = Boolean(unit.frozenUntil && now < unit.frozenUntil);
   const stunned = Boolean(unit.stunnedUntil && now < unit.stunnedUntil);
   const slowed = Boolean(unit.slowedUntil && now < unit.slowedUntil);
-  const dotKinds = activeDotKinds(unit, now);
-  // 旧实现把 swallow / abduct / burn 等所有 DOT 都当成“中毒”画成荧光绿，这是错误的。
-  const poisoned = dotKinds.some((kind) => POISON_DOT_KINDS.has(kind));
-  const burning = dotKinds.includes('burn');
+  // dot 名单 + poisoned/burning 一次遍历算完（零分配）；旧实现把 swallow / abduct / burn
+  // 等所有 DOT 都当成“中毒”画成荧光绿，这里仍按 kind 区分。
+  fillDotFlags(unit, now);
+  const poisoned = STATUS_FX_AUDIT.poisoned;
+  const burning = STATUS_FX_AUDIT.burning;
 
-  this._statusFxAudit = {
-    frozen,
-    stunned,
-    slowed,
-    poisoned,
-    burning,
-    dotKinds: [...dotKinds],
-    palette: STATUS_PALETTE,
-    freezeUsesSkeletonFx: false,
-    singleSpritePass: true,
-    offscreenUnitRedraw: false,
-    maskAlignedToPrimarySprite: true,
-  };
+  // 审计对象就地更新（以前每帧每单位 new 一个 + 复制一份 dotKinds 数组）。
+  STATUS_FX_AUDIT.frozen = frozen;
+  STATUS_FX_AUDIT.stunned = stunned;
+  STATUS_FX_AUDIT.slowed = slowed;
+  STATUS_FX_AUDIT.freezeUsesSkeletonFx = false;
+  this._statusFxAudit = STATUS_FX_AUDIT;
   // 保持 RuntimeStability 的公开审计缝指向最终渲染器，避免后装补丁
   // 实际已生效但诊断仍读取旧对象。
-  this._runtimeStabilityStatusAudit = this._statusFxAudit;
+  this._runtimeStabilityStatusAudit = STATUS_FX_AUDIT;
 
   if (frozen) {
     // 身体蓝化已在主精灵绘制中一次完成；这里只恢复原版 freeze 冰棱动画。

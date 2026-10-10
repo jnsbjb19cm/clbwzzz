@@ -86,7 +86,7 @@ export function installBattleSkillInteractionFinal() {
    */
   const previousShowEffect = BattleSkillSystem.prototype.showEffect;
   BattleSkillSystem.prototype.showEffect = function showOneShotCastEffect(skillId, effect, target) {
-    if (effect?.kind === 'damage_all_enemies') {
+    if (effect?.kind === 'damage_all_enemies' || effect?.kind === 'fire_wall') {
       return previousShowEffect.call(this, skillId, effect, target);
     }
 

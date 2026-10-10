@@ -240,16 +240,17 @@ function rememberVisualEvent(view, event) {
   return true;
 }
 
-function tagLatestSkillFx(view, payload) {
+function tagLatestSkillFx(view, payload, batch = null) {
   const skillId = Number(payload?.skillId);
   const effects = view.engine?.skillFx ?? view.engine?.skillEffects ?? [];
-  const fx = [...effects].reverse().find((entry) => Number(entry.skillId) === skillId && !entry.__pvpDirectionTagged);
-  if (!fx) return;
+  const candidates = batch ?? [...effects].reverse().filter((entry) => Number(entry.skillId) === skillId && !entry.__pvpDirectionTagged);
+  for (const fx of candidates) {
   fx.__pvpDirectionTagged = true;
   fx.pvpDirection = localCasterDirection(view, payload.team);
   fx.pvpCasterTeam = payload.team;
   fx.pvpCasterUserId = payload.userId;
   fx.pvpEventId = visualEventId(payload);
+  }
 }
 
 function playVisualSkillEvent(view, event) {
@@ -263,11 +264,12 @@ function playVisualSkillEvent(view, event) {
   const target = event.target
     ? { lane: finite(event.target.lane), col: localCol(view, event.target.col) }
     : null;
+  const before = new Set(view.engine.skillFx ?? view.engine.skillEffects ?? []);
   view.engine.skills.showEffect(skillId, effect, target);
-  tagLatestSkillFx(view, event);
   const effects = view.engine.skillFx ?? view.engine.skillEffects ?? [];
-  const latest = effects.at(-1);
-  if (latest && Number(latest.skillId) === skillId) {
+  const batch = effects.filter(fx => !before.has(fx) && Number(fx.skillId) === skillId);
+  tagLatestSkillFx(view, event, batch);
+  for (const latest of batch) {
     latest.t = Math.max(finite(latest.t), age);
     // 重复播放类技能（陨石雨=2 遍）把遍数带到特效上，渲染端据此在同一段时间里切段播放。
     latest.repeatCount = Math.max(

@@ -2204,7 +2204,12 @@ export class BattleEngine {
   pushSkillEffect(kind, target, radius, skillId, duration, loop = false) {
     const fullScreen = !target || target.lane == null || target.col == null;
     // 性能：同屏技能特效上限（超限丢弃最旧，避免全屏动画叠加掉帧）
-    if (this.skillFx.length >= 10) this.skillFx.splice(0, this.skillFx.length - 9);
+    // 火墙的五个分段不能被其他技能挤掉；仅裁剪短暂施法动画。
+    let excess = this.skillFx.filter(fx => fx.kind !== 'fire_wall').length - (kind === 'fire_wall' ? 10 : 9);
+    for (let i = 0; i < this.skillFx.length && excess > 0;) {
+      if (this.skillFx[i].kind === 'fire_wall') { i++; continue; }
+      this.skillFx.splice(i, 1); excess--;
+    }
     this.skillFx.push({
       kind,
       lane: fullScreen ? Math.floor(LANES / 2) : target.lane,

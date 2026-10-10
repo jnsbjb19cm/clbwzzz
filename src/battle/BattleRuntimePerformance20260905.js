@@ -33,6 +33,15 @@ function trimOldest(array, max) {
   array.splice(0, array.length - max);
 }
 
+function trimTransientSkills(array, max) {
+  if (!Array.isArray(array)) return;
+  let excess = array.filter(fx => fx.kind !== 'fire_wall').length - max;
+  for (let i = 0; i < array.length && excess > 0;) {
+    if (array[i].kind === 'fire_wall') { i++; continue; }
+    array.splice(i, 1); excess--;
+  }
+}
+
 function installFloatBudget() {
   const previous = BattleEngine.prototype.spawnFloat;
   BattleEngine.prototype.spawnFloat = function spawnFloatPerformance20260905(lane, col, amount) {
@@ -101,7 +110,7 @@ function installSmallFxBudgets() {
   const previousSkill = BattleEngine.prototype.pushSkillEffect;
   BattleEngine.prototype.pushSkillEffect = function pushSkillEffectPerformance20260905(...args) {
     const result = previousSkill.apply(this, args);
-    trimOldest(this.skillFx, limitsFor(this).skills);
+    trimTransientSkills(this.skillFx, limitsFor(this).skills);
     this.skillEffects = this.skillFx;
     return result;
   };
@@ -114,7 +123,7 @@ function installPeriodicCleanup() {
     const limits = limitsFor(this);
     trimOldest(this.impactFx, limits.impacts);
     trimOldest(this.bumpFx, limits.bumps);
-    trimOldest(this.skillFx, limits.skills);
+    trimTransientSkills(this.skillFx, limits.skills);
     trimOldest(this.deployEffects, limits.deploys);
     trimOldest(this.floats, limits.floats);
     this.skillEffects = this.skillFx;

@@ -302,8 +302,9 @@ function drawAuthorityFloats(renderer, ctx, engine) {
     const progress = Math.max(0, Math.min(1, age / FLOAT_DURATION));
     const eased = 1 - (1 - progress) * (1 - progress);
     const alpha = progress < 0.68 ? 1 : Math.max(0, (1 - progress) / 0.32);
-    const x = fracColToCenterX(finite(item.col));
-    const y = cellCenterY(finite(item.lane, 2)) + 14 - eased * FLOAT_RISE_PX;
+    const g = renderer.battleVisualGrid;
+    const x = g ? g.x0 + g.stepX * finite(item.col) : fracColToCenterX(finite(item.col));
+    const y = (g ? g.y0 + g.stepY * finite(item.lane, 2) : cellCenterY(finite(item.lane, 2))) + 14 - eased * FLOAT_RISE_PX;
     const text = formatBattleDelta(finite(item.amount));
     ctx.globalAlpha = alpha;
     ctx.strokeStyle = 'rgba(24, 20, 17, 0.86)';

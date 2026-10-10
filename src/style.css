@@ -3083,6 +3083,94 @@ body.battle-immersive .top-ui {
   padding: 0;
 }
 
+/* 2026-10-10：资源预加载 UI —— 登录页右下角进度徽标 + 进房间的动画加载界面。 */
+.asset-preload-badge {
+  position: fixed;
+  right: 14px;
+  bottom: 14px;
+  z-index: 400;
+  margin: 0;
+  padding: 6px 12px;
+  border-radius: 8px;
+  background: rgba(6, 30, 20, .78);
+  color: #d8f0c8;
+  font-size: 13px;
+  font-weight: 700;
+  pointer-events: none;
+}
+
+.asset-anim-loading {
+  position: fixed;
+  inset: 0;
+  z-index: 26000;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: rgba(4, 20, 14, .78);
+  backdrop-filter: blur(3px);
+}
+
+.asset-anim-loading__card {
+  width: min(440px, 92vw);
+  padding: 24px 26px 20px;
+  border: 3px solid #d7a631;
+  border-radius: 16px;
+  background: linear-gradient(160deg, #0a7050, #00493a 62%, #00362a);
+  box-shadow: inset 0 0 0 2px #5efac1, 0 16px 40px rgba(0, 0, 0, .5);
+  color: #eaf8ee;
+  text-align: center;
+}
+
+.asset-anim-loading__card h3 {
+  margin: 0 0 8px;
+  color: #ffe15d;
+  font-size: 20px;
+}
+
+.asset-anim-loading__hint {
+  margin: 0 0 14px;
+  font-size: 13px;
+  line-height: 1.6;
+  color: #cfe8d2;
+}
+
+.asset-anim-loading__bar {
+  height: 12px;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, .35);
+  overflow: hidden;
+}
+
+.asset-anim-loading__bar i {
+  display: block;
+  width: 0;
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #7ef0a8, #ffe15d);
+  transition: width .2s ease-out;
+}
+
+.asset-anim-loading__percent {
+  margin: 8px 0 14px;
+  font-size: 15px;
+  font-weight: 800;
+  color: #ffe15d;
+}
+
+.asset-anim-loading__skip {
+  padding: 8px 16px;
+  border: 1px solid #7ec8a3;
+  border-radius: 9px;
+  background: #25513f;
+  color: #eaf8ee;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.asset-anim-loading__skip:hover { filter: brightness(1.1); }
+
+.asset-anim-loading__card.done { opacity: .2; transition: opacity .3s ease-in; }
+
 /* 2026-10-09：首次进游戏的大厅音乐选择弹窗（外壳复用铁匠铺确认弹窗的样式）。
    两个选项本身就是「试听」按钮：点一下立刻换歌，选中的高亮。 */
 .lobby-music-options { display: flex; gap: 10px; margin: 0 0 16px; }
