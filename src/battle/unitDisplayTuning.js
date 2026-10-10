@@ -274,31 +274,33 @@ if (typeof window !== 'undefined') {
   };
 }
 /**
- * 2026-10-10（用户要求）：「星星位于品质底盘的 2/3 圆圈处，血条要在品质圆盘切线的位置」。
+ * 2026-10-10（用户指定）：「品质圆盘就是 resources/img/quality-common.png 这类 quality_xxx 图片」，
+ * 并且「星星位于品质底盘的 2/3 圆圈处，血条要在品质圆盘切线的位置」—— 按**真图**对齐。
  *
- * 品质底盘由 BattleUnitHaloFinal 绘制，几何是：
- *   width  = max(34, circleSize * (0.98 + quality * 0.025))
- *   height = width * 0.34
- *   中心   = (cx, footY - circleSize * 0.105)，椭圆半径 = (width*0.49, height*0.48)
- * 这里把同一套几何算出来，供血条（切线）与星星（2/3 高度）对齐用 ——
- * 两边必须用同一份公式，否则底盘一改、血条/星星就又错位了。
+ * 真图由 BattleQualityHaloFix20260908 的 paintQualityDisc() 绘制：
+ *   · quality-{poor,common,fine,excellent,perfect}.png 实测都是 1448x1086（比例 0.75）
+ *   · DISPLAY_WIDTH = 112 → 画出来是 112 x 84
+ *   · 绘制方式：以 (cx, footY + 1) 为**中心**居中绘制
+ * 于是：图片底边切线 = footY + 1 + 42；图片高度 2/3 处（自下往上）= 中心 - 42 + 28。
+ *
+ * 说明：这里**不再**用 circleSize 去近似（那是我早期按几何猜的，跟真图对不上），
+ * 保留后面两个参数只是为了兼容既有调用点。
  */
-export function qualityPedestalGeometry(cx, footY, circleSize, craftQuality = 0) {
-  const q = Math.max(0, Math.min(4, Math.floor(Number(craftQuality) || 0)));
-  const size = Math.max(34, Number(circleSize) || 0);
-  const width = Math.max(34, size * (0.98 + q * 0.025));
-  const height = width * 0.34;
-  const centerY = footY - size * 0.105;
-  const rx = width * 0.49;
-  const ry = height * 0.48;
+export const QUALITY_DISC_WIDTH = 112;      // 与 BattleQualityHaloFix20260908.DISPLAY_WIDTH 一致
+export const QUALITY_DISC_ASPECT = 0.75;    // 五张 quality-*.png 实测 1448x1086
+
+export function qualityPedestalGeometry(cx, footY, _circleSize, _craftQuality = 1) {
+  const width = QUALITY_DISC_WIDTH;
+  const height = width * QUALITY_DISC_ASPECT;      // 84
+  const centerY = (Number(footY) || 0) + 1;        // paintQualityDisc: cy = footY + 1
   return {
     cx,
     centerY,
-    rx,
-    ry,
-    /** 圆盘底部切线：血条就放这里 */
-    tangentY: centerY + ry,
-    /** 圆盘高度的 2/3 处（自下往上）：星星底边就对齐这里 */
-    twoThirdsY: centerY + ry / 3,
+    rx: width / 2,
+    ry: height / 2,
+    /** 圆盘底边切线：血条放这里 */
+    tangentY: centerY + height / 2,
+    /** 圆盘高度 2/3 处（自下往上）：星星底边对齐这里 */
+    twoThirdsY: centerY - height / 2 + height / 3,
   };
 }

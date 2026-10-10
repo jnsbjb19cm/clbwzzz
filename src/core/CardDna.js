@@ -11,17 +11,20 @@ import { resetDnaId } from '../data/ResetEconomy.js';
  *
  * 现在改成：优先复用数据库里的 DNA 道具；数据库里没有对应条目时才回退到生成 id。
  */
+// 2026-10-10（用户补充）：「卡牌DNA人家都有对应的图片，你现在用了个通用图片可不行，
+// 图片索引都要正确的引用」—— 所以这里存的不是 id，而是**整条数据库定义**，
+// 复用时要连 item_img（每张 DNA 自己的图，如 30057）和 item_name 一起拿来。
 const DB_DNA_BY_CARD_NAME = new Map();
 for (const entry of items) {
   const matched = /^(.+?)DNA$/.exec(String(entry.item_name ?? '').trim());
-  if (matched) DB_DNA_BY_CARD_NAME.set(matched[1].trim(), Number(entry.item_id));
+  if (matched) DB_DNA_BY_CARD_NAME.set(matched[1].trim(), entry);
 }
 
 /** 这张卡对应的「专属DNA」道具 id：数据库优先，其次才是生成 id。 */
 export function specificDnaIdFor(card) {
   const name = String(card?.card_name ?? card?.name ?? '').trim();
   const fromDb = DB_DNA_BY_CARD_NAME.get(name);
-  if (Number.isFinite(fromDb) && fromDb > 0) return fromDb;
+  if (fromDb && Number(fromDb.item_id) > 0) return Number(fromDb.item_id);
   return resetDnaId(card?.id ?? card?.card_id);
 }
 
@@ -29,13 +32,15 @@ export const DNA_DROP_CHANCE = 0.02;
 const eligible = cards.filter(c => Number(c.show_card) === 1 && Number(c.card_id) < 500
   && ![122, 123, 124].includes(Number(c.card_id)) && c.card_quality >= 1 && c.card_quality <= 4);
 export const CARD_DNA_ITEMS = eligible.map((c) => {
-  const dbId = DB_DNA_BY_CARD_NAME.get(String(c.card_name).trim());
-  const useDb = Number.isFinite(dbId) && dbId > 0;
+  const dbRow = DB_DNA_BY_CARD_NAME.get(String(c.card_name).trim());
+  const useDb = Boolean(dbRow && Number(dbRow.item_id) > 0);
   return {
-    item_id: useDb ? dbId : resetDnaId(c.card_id),
-    item_name: useDb ? `${c.card_name}DNA` : `${c.card_name} DNA`,
+    item_id: useDb ? Number(dbRow.item_id) : resetDnaId(c.card_id),
+    item_name: useDb ? String(dbRow.item_name) : `${c.card_name} DNA`,
     quality: Number(c.card_quality),
-    cardId: Number(c.card_id), item_type: 2, item_img: 50030 + Number(c.card_quality), sell_price: 0,
+    cardId: Number(c.card_id), item_type: 2,
+    // 数据库有就用它自己的图（如 30057）；数据库没有的卡只能用同级通用 DNA 图。
+    item_img: useDb ? Number(dbRow.item_img) : 50030 + Number(c.card_quality), sell_price: 0,
     fromDatabase: useDb,
     desc: `${c.card_quality}级专属DNA，仅用于合成${c.card_name}；可替代同等级通用DNA，升变时原样返还。`,
   };

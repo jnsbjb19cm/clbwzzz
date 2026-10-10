@@ -7,6 +7,7 @@ import { scheduleBattleFxAssetBudgetFinal } from './BattleFxAssetBudgetFinal.js'
 import { scheduleBattleAttackTimingCalibrationFinal } from './BattleAttackTimingCalibrationFinal.js';
 import { scheduleProjectileLaunchOwnershipFinal } from './ProjectileLaunchOwnershipFinal.js';
 import { reassertBattleStatusFxPerformanceFinal } from './BattleStatusFxPerformanceFinal.js';
+import { paintQualityDisc } from './BattleQualityHaloFix20260908.js';
 
 const PATCH_FLAG = Symbol.for('clbwzzz.battleUnitHaloFinal');
 
@@ -25,6 +26,13 @@ function parseHexColor(hex) {
  */
 export function drawCraftQualityPedestal(ctx, unit, layout) {
   if (!layout || layout.isDying) return;
+  // 2026-10-10（用户反馈「品质图片还是没有」）：本补丁在 main.js 里最后安装，
+  // 会把 bootstrap 阶段 installBattleQualityHaloFix20260908 设的 drawUnitHalo（那个才是
+  // 画**真图** resources/img/quality-*.png 的实现）覆盖掉 —— 所以玩家一直看不到品质圆盘图。
+  // 现在在这里先把真图画上（居中于 (cx, footY+1)，尺寸 112x84），下面的几何图形退化为底层光晕。
+  try {
+    paintQualityDisc(ctx, Number(layout.cx) || 0, (Number(layout.footY) || 0) + 1, unit?.craftQuality ?? 1);
+  } catch { /* 真图还没加载好：下面的几何底座先顶上 */ }
   const quality = normalizeCraftQuality(unit?.craftQuality);
   const color = resolveCraftQuality(quality).color;
   const { r, g, b } = parseHexColor(color);
