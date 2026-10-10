@@ -51,4 +51,29 @@ export function burrowReturnAction() {
   return rules.onReturn;
 }
 
+/* --------------------------- 服务端结算指令（注入式） --------------------------- */
+/**
+ * 2026-10-10 修：战斗内核（BattleEngine）**服务端也会 import**（PVP/合作权威模拟），
+ * 所以内核绝不能直接依赖浏览器侧的 BurrowCipher（它 import 了 ApiClient，用 import.meta.env，
+ * 在 Node 里会直接崩）。改成注入：浏览器侧安装后把自己的实现塞进来，
+ * 内核只问这个 provider；没有 provider（服务端/Node）时就返回本地规则，绝不崩。
+ */
+let instructionProvider = null;
+
+export function setBurrowInstructionProvider(provider) {
+  instructionProvider = typeof provider === 'function' ? provider : null;
+  return Boolean(instructionProvider);
+}
+
+export function requestBurrowInstruction(cardId) {
+  if (!instructionProvider) {
+    return Promise.resolve({ action: rules.onReturn, refund: false, source: 'local' });
+  }
+  return instructionProvider(cardId).catch(() => ({
+    action: rules.onReturn,
+    refund: false,
+    source: 'fallback',
+  }));
+}
+
 export { FALLBACK_RULES };

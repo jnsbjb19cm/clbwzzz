@@ -1,10 +1,15 @@
 // 2026-09-11 跨机：开发模式下用「当前主机名」而不是写死 localhost，
 // 这样别人用 http://<你的局域网IP>:5173 访问时，API 会自动指向 http://<同一IP>:3001/api。
+// 2026-10-10：`import.meta.env` 是 **Vite 专有**的，Node 里是 undefined。
+// 服务端为了 PVP 权威模拟会 import 到 src/ 下的战斗模块，万一链路把这里拖进 Node，
+// 原来会直接 `Cannot read properties of undefined (reading 'VITE_API_BASE_URL')` 把服务端整个崩掉。
+// 现在用可选链兜底：非浏览器环境拿到的只是一个用不到的默认地址，绝不会崩。
+const VITE_ENV = import.meta.env ?? {};
 const DEV_HOST = (() => {
   try { return globalThis.location?.hostname || 'localhost'; } catch { return 'localhost'; }
 })();
-const DEFAULT_BASE_URL = import.meta.env.VITE_API_BASE_URL
-  || (import.meta.env.DEV ? `http://${DEV_HOST}:3001/api` : '/api');
+const DEFAULT_BASE_URL = VITE_ENV.VITE_API_BASE_URL
+  || (VITE_ENV.DEV ? `http://${DEV_HOST}:3001/api` : '/api');
 
 export class ApiError extends Error {
   constructor(message, status = 0, data = null) {

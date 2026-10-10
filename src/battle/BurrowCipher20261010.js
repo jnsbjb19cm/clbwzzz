@@ -4,6 +4,7 @@ import {
   FALLBACK_RULES,
   burrowRules as storedBurrowRules,
   burrowRulesSource,
+  setBurrowInstructionProvider,
   setBurrowRules,
 } from './BurrowRulesStore20261010.js';
 
@@ -132,6 +133,8 @@ export async function requestBurrowReturnInstruction(cardId) {
 
 /** 登录后调用（拿 token 之后再握手，否则 401）。 */
 export function installBurrowCipher20261010() {
+  // 把自己的结算实现注入给战斗内核（内核只认 store，不认这个模块）。
+  setBurrowInstructionProvider(requestBurrowReturnInstruction);
   // 不阻塞启动：后台握手即可，战斗里读不到就用兜底规则。
   Promise.resolve().then(() => unlockBurrowRules()).catch(() => {});
   if (typeof window !== 'undefined') {

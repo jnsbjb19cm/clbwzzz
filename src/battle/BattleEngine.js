@@ -1962,7 +1962,7 @@ export class BattleEngine {
     unit._burrowRemoved = true;
     unit._deathUntil = this.time;
     if (action === 'remove') {
-      void requestBurrowReturnInstruction(unit.cardId).then((instruction) => {
+      void requestBurrowInstruction(unit.cardId).then((instruction) => {
         if (instruction?.refund === true) {
           this.pushLog(`[${unit.name}]服务端确认：返回基地可返还部署资源`);
         }
@@ -2711,7 +2711,7 @@ export class BattleEngine {
   }
 }
 import { appendDnaDeathDrop } from '../core/CardDna.js';
-// 规则（同步缓存，服务端加密下发后解密）与结算指令（异步问服务端）来自两个模块：
-// 规则放 store（纯数据、Node 安全），指令走 cipher（浏览器侧）。
-import { burrowReturnAction } from './BurrowRulesStore20261010.js';
-import { requestBurrowReturnInstruction } from './BurrowCipher20261010.js';
+// 2026-10-10 修：战斗内核服务端也会 import（PVP 权威模拟），所以这里**只能**依赖纯数据 store。
+// 结算指令改成注入式（浏览器侧 BurrowCipher 安装时把自己的实现塞进 store），
+// 内核不直接 import 任何浏览器/网络模块 —— 否则 Node 里 import.meta.env 会直接崩。
+import { burrowReturnAction, requestBurrowInstruction } from './BurrowRulesStore20261010.js';
