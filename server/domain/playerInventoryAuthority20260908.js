@@ -4,21 +4,19 @@ import { db, getPlayerSnapshot, withTransaction } from '../database.js';
 const require = createRequire(import.meta.url);
 const craftMaterials = require('../../src/data/craftMaterials.json');
 
-const STARTER_ITEMS = Object.freeze([
-  { itemId: 1, count: 20 },
-  { itemId: 2, count: 10 },
-  { itemId: 3, count: 100 },
-  { itemId: 10001, count: 200 },
-  { itemId: 10002, count: 150 },
-  { itemId: 10003, count: 100 },
-  { itemId: 10004, count: 80 },
-  { itemId: 10005, count: 50 },
-  { itemId: 30055, count: 300 },
-  ...Object.entries(craftMaterials.starterCounts ?? {}).map(([itemId, count]) => ({
-    itemId: Number(itemId),
-    count: Number(count),
-  })),
-].filter((entry) => Number.isInteger(entry.itemId) && entry.itemId > 0 && Number.isFinite(entry.count) && entry.count > 0));
+/**
+ * 2026-10-10（用户要求）：新号**道具一件都不给**。
+ *
+ * 这里原来发的是整套试玩材料（20 金币礼盒 + 10 红钻礼盒 + 100 荣誉礼盒 +
+ * 几百个强化粉/DNA + craftMaterials 里的 starterCounts ），总量约 1.7 万个。
+ * 而且它是**服务端**发的：getAuthoritativePlayerSnapshot20260908() 在登录拉快照时调用
+ * ensurePlayerInventoryBootstrap20260908() —— 所以只清客户端是没用的
+ * （实测：今天新建的 372 号卡牌只有 2 张，但道具 26 种共 17060 个）。
+ *
+ * 现在清空：ensurePlayerInventoryBootstrap20260908() 只写一条「已初始化」标记，
+ * 不再发任何道具；旧账号里已经发出去的那份用 scripts/clear-trial-data-20261010.mjs 清。
+ */
+const STARTER_ITEMS = Object.freeze([]);
 
 let bootstrapTableReady = null;
 
