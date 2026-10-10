@@ -69,21 +69,29 @@ export const RES_DRAW_SCALE = {
  * 单位是「向后 = 朝自家基地」：玩家单位向左、敌方单位向右（见 drawOffsetXForUnit）。
  * 数值是**框宽的比例**（0.08 ≈ 往后挪半个格子的 16%），只动视觉，不动逻辑坐标。
  */
+/**
+ * 2026-10-10（用户反馈）：「蘑菇仙人的坐标向后（自家基地左一些），极寒冰椰子也是」+
+ *   「嗜血稻草人和稻草人的位置也要向左位移，尽量到达中间」。
+ * 数值是**框宽的比例**，负 = 屏幕向左（用户描述的都是「向左」），正 = 向右。
+ * 只改绘制位置，不动逻辑坐标，不影响命中/攻击距离。
+ */
 export const RES_DRAW_OFFSET_X = {
-  58: 0.10,  // 蘑菇仙人
-  54: 0.10,  // 极·寒冰椰子
+  58: -0.10,  // 蘑菇仙人：向后（自家基地方向）
+  54: -0.10,  // 极·寒冰椰子：同上
+  19: -0.10,  // 稻草人：向左靠中间
+  32: -0.10,  // 嗜血稻草人：向左靠中间
 };
 
 /** 把「向后」换算成带方向的水平像素偏移（玩家向左、敌方向右）。 */
+/** 取该单位的水平微调像素值（表里已是屏幕方向：负 = 向左）。 */
 export function drawOffsetXForUnit(unit, boxW) {
   const frac = RES_DRAW_OFFSET_X[resNum(unit)] ?? 0;
   if (!frac) return 0;
-  const dir = unit?.team === 'player' ? -1 : 1;
-  return dir * boxW * frac;
+  return frac * boxW;
 }
 
 export const RES_DRAW_OFFSET_Y = {
-  7: 0.1,
+  7: -0.06,
   35: 0,
   55: 0.02,
   57: -0.03,
@@ -240,4 +248,28 @@ export function drawCardFaceOverlay(ctx, cardImg, unit, boxX, boxY, boxW, boxH, 
   if (cfg.mouth) {
     drawOverlayRegion(ctx, cardImg, boxX, boxY, boxW, boxH, cfg.mouth, { flipX });
   }
+}
+
+
+/**
+ * 2026-10-10（用户反馈「你倍率一样大，基础大小不一样大」）：
+ * 两张卡的**精灵基础尺寸/内容比例**不同，倍率相同也会看起来不一样大，
+ * 这种只能按观感调。控制台里直接调，不用改代码重发：
+ *   __unitScale20261010()          // 打印当前所有倍率
+ *   __unitScale20261010(30, 1.9)  // 把真·西瓜太郎(30) 调到 1.9
+ */
+export function setResDrawScale(res, value) {
+  const n = Number(res);
+  const v = Number(value);
+  if (!Number.isFinite(n) || !Number.isFinite(v) || v <= 0) return null;
+  RES_DRAW_SCALE[n] = v;
+  return v;
+}
+
+if (typeof window !== 'undefined') {
+  window.__unitScale20261010 = (res, value) => {
+    if (res === undefined) return { ...RES_DRAW_SCALE };
+    const applied = setResDrawScale(res, value);
+    return { res: Number(res), value: applied ?? RES_DRAW_SCALE[Number(res)] };
+  };
 }
