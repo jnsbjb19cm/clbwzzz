@@ -230,3 +230,15 @@ body.battle-immersive #hand .deck-slot.locked {
   transform: scale(1.14);          /* 卡图放大一点 */
   transform-origin: center center;
 }
+
+/* 2026-10-11 用户补充：卡槽高度变高生效了，但"宽变短"没看到 → 再收窄，做成明显的竖长方形 */
+#hand { --hand-slot-w: 50px; }
+#hand .deck-slot,
+#hand.video-battle-hand .deck-slot,
+#hand.opaque-battle-hand .deck-slot {
+  width: 50px;
+  min-width: 50px;
+  max-width: 50px;
+  flex: 0 0 50px;
+  min-height: 100px;   /* 更高一点，比例更像长方形 */
+}

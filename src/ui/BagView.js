@@ -101,7 +101,7 @@ export class BagView {
         <div class="bag-body">
           <aside class="bag-profile-panel classic-bag-profile" aria-label="角色资料">
             <div class="bag-profile-title"><span id="bag-profile-name">${this.player?.nickname ?? this.player?.name ?? '森林守卫'}</span><b id="bag-profile-level"></b></div>
-            <div class="bag-profile-lines"><span>公会：${this.player?.guildName ?? '无'}</span><span>排名 <b>${Number(this.player?.rank) > 0 ? Number(this.player.rank) : '暂无'}</b></span></div>
+            <div class="bag-profile-lines"><span>公会：${this.player?.guildName ?? '无'}</span><span>排名 <b>${honorRankText20261011(this.player)}</b></span></div>
             <div class="bag-role-frame">
               ${referenceCharacterMarkup(this.player)}
               <button type="button" class="bag-equip-slot bag-equip-hat">帽子</button>
@@ -143,9 +143,11 @@ export class BagView {
     `;
 
     root.querySelector('#bag-profile-level').textContent = `Lv.${Math.max(1, Number(this.player?.level) || 1)}`;
-    root.querySelector('#bag-profile-hp').textContent = Math.max(1, Number(this.player?.hp) || 1000);
+    // 2026-10-11 用户：血量显示真实血量（原来 hp 缺失时硬编码 1000 是假的）
+    root.querySelector('#bag-profile-hp').textContent = realStatText20261011(this.player?.hp);
     root.querySelector('#bag-profile-honor').textContent = Math.max(0, Number(this.player?.honor) || 0);
-    root.querySelector('#bag-profile-arena').textContent = Math.max(0, Number(this.player?.arena) || 0);
+    // 2026-10-11 用户：竞技积分就是荣誉 → 直接显示荣誉值（不再用 player.arena 这个假字段）
+    root.querySelector('#bag-profile-arena').textContent = Math.max(0, Number(this.player?.honor) || 0);
     root.querySelector('#bag-profile-gold').textContent = Math.max(0, Number(this.player?.gold) || 0);
 
     this.bindModeEvents(root);
