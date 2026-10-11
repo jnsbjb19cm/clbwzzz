@@ -5,14 +5,17 @@ const PATCH_FLAG = Symbol.for('clbwzzz.battleRoomDeckAtlasV3');
 // 交给 Vite 管理这张图集：生产构建时会自动复制到 dist/assets 并生成正确 URL，
 // 不再依赖 Nginx 单独映射 /resources/img/cardParts.png。
 const ATLAS_URL = cardPartsUrl;
+import { CARD_FUNCTION_FRAME_BY_LABEL } from '../data/cardFunctionIcon.js';
+
 const ATLAS_SIZE = 1024;
 let atlasPreloadPromise = null;
 
 const FRAME_BY_LABEL = Object.freeze({
+  ...CARD_FUNCTION_FRAME_BY_LABEL,   // 2026-10-11：新标签（远程攻击/近战攻击/防御/辅助/特殊效果）
   攻击: 'cardType_1',
   远程: 'cardType_1',
-  防御: 'cardType_2',
-  辅助: 'cardType_3',
+  防御: 'cardType_3',   // 防御改用盾形（原来占着刀 cardType_2，已让给近战）
+  辅助: 'cardType_4',   // 辅助改用鼓（原来占着三角 cardType_3，已让给防御）
   陷阱: 'cardType_4',
   突击: 'cardType_5',
   主动: 'cardType_7',

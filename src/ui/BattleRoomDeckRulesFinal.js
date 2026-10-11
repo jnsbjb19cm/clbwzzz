@@ -12,6 +12,7 @@ import {
   resolveCraftQuality,
 } from '../core/constants.js';
 import { audio } from '../core/AudioManager.js';
+import { cardFunctionIcon } from '../data/cardFunctionIcon.js';
 import { DeckSelectView } from './DeckSelectView.js';
 
 const PATCH_FLAG = Symbol.for('clbwzzz.battleRoomDeckRulesFinal');
@@ -56,6 +57,9 @@ function atlasStyle(view, name) {
 }
 
 function functionMeta(card) {
+  // 2026-10-11：与战斗手牌共用同一份映射（远程=弓箭/近战=刀/防御=盾/辅助=鼓/特殊=火焰）
+  const shared = cardFunctionIcon(card);
+  if (shared) return { frame: shared.frame, label: shared.label };
   const attackStyle = Number(card?.atkStyle ?? card?.atk_style ?? 0);
   const type = Number(card?.type ?? card?.card_type ?? 1);
   const moving = Number(card?.moveSpeed ?? card?.move_speed ?? 0) > 0;

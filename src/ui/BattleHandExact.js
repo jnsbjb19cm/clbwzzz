@@ -1,4 +1,5 @@
 import { BattleView } from './BattleView.js';
+import { cardFunctionIcon } from '../data/cardFunctionIcon.js';
 import { cardStarRows } from './CardStarRows.js';
 import { bindBattleHandTooltip } from './BattleHandTooltip.js';
 import {
@@ -65,6 +66,11 @@ function escapeAttr(value) {
 }
 
 function resolveFunctionPart(card) {
+  // 2026-10-11：功能图标统一由 src/data/cardFunctionIcon.js 决定
+  //（远程=弓箭/近战=刀/防御=盾/辅助=鼓/特殊=火焰）。
+  // 该模块返回 null 的卡（技能卡/精灵/法师…）继续走下面原有逻辑，保持原样。
+  const shared = cardFunctionIcon(card);
+  if (shared) return { part: shared.frame, label: shared.label };
   const attackStyle = Number(card?.atkStyle ?? card?.atk_style ?? 0);
   const type = Number(card?.type ?? card?.card_type ?? 1);
   if (attackStyle === 1) return { part: 'cardType_2', label: '防御' };
