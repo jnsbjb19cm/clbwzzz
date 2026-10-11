@@ -251,6 +251,6 @@ import { installBattleHandSlotShape20261011 } from './ui/BattleHandSlotShape2026
 globalThis.__clbwzAppInstance = app;
 const roomUtilityOverlay = new RoomUtilityOverlay(app);
 roomUtilityOverlay.install();
-// 战斗内手牌卡槽形状（竖长方形）：JS 写内联尺寸，唯一压得住 CSS 权重的层级
-installBattleHandSlotShape20261011();
+// 2026-10-11 用户：「算了现改为回去」→ 手牌卡槽恢复原始布局（模块保留但不再安装）
+// installBattleHandSlotShape20261011();
 app.mount();

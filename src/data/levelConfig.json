@@ -5,239 +5,239 @@
   },
   {
     "hero_level": 2,
-    "lvup_exp": 97
+    "lvup_exp": 300
   },
   {
     "hero_level": 3,
-    "lvup_exp": 98
+    "lvup_exp": 620
   },
   {
     "hero_level": 4,
-    "lvup_exp": 149
+    "lvup_exp": 1020
   },
   {
     "hero_level": 5,
-    "lvup_exp": 280
+    "lvup_exp": 1500
   },
   {
     "hero_level": 6,
-    "lvup_exp": 312
+    "lvup_exp": 2070
   },
   {
     "hero_level": 7,
-    "lvup_exp": 450
+    "lvup_exp": 2710
   },
   {
     "hero_level": 8,
-    "lvup_exp": 505
+    "lvup_exp": 3420
   },
   {
     "hero_level": 9,
-    "lvup_exp": 580
+    "lvup_exp": 4210
   },
   {
     "hero_level": 10,
-    "lvup_exp": 736
+    "lvup_exp": 5060
   },
   {
     "hero_level": 11,
-    "lvup_exp": 885
+    "lvup_exp": 5980
   },
   {
     "hero_level": 12,
-    "lvup_exp": 928
+    "lvup_exp": 6960
   },
   {
     "hero_level": 13,
-    "lvup_exp": 1200
+    "lvup_exp": 8010
   },
   {
     "hero_level": 14,
-    "lvup_exp": 1386
+    "lvup_exp": 9120
   },
   {
     "hero_level": 15,
-    "lvup_exp": 1648
+    "lvup_exp": 10290
   },
   {
     "hero_level": 16,
-    "lvup_exp": 2316
+    "lvup_exp": 11520
   },
   {
     "hero_level": 17,
-    "lvup_exp": 2940
+    "lvup_exp": 12810
   },
   {
     "hero_level": 18,
-    "lvup_exp": 3288
+    "lvup_exp": 14160
   },
   {
     "hero_level": 19,
-    "lvup_exp": 4114
+    "lvup_exp": 15560
   },
   {
     "hero_level": 20,
-    "lvup_exp": 4600
+    "lvup_exp": 17020
   },
   {
     "hero_level": 21,
-    "lvup_exp": 4932
+    "lvup_exp": 18540
   },
   {
     "hero_level": 22,
-    "lvup_exp": 5628
+    "lvup_exp": 20110
   },
   {
     "hero_level": 23,
-    "lvup_exp": 6560
+    "lvup_exp": 21740
   },
   {
     "hero_level": 24,
-    "lvup_exp": 7523
+    "lvup_exp": 23420
   },
   {
     "hero_level": 25,
-    "lvup_exp": 8518
+    "lvup_exp": 25160
   },
   {
     "hero_level": 26,
-    "lvup_exp": 22169
+    "lvup_exp": 26940
   },
   {
     "hero_level": 27,
-    "lvup_exp": 28018
+    "lvup_exp": 28780
   },
   {
     "hero_level": 28,
-    "lvup_exp": 32184
+    "lvup_exp": 30670
   },
   {
     "hero_level": 29,
-    "lvup_exp": 36746
+    "lvup_exp": 32620
   },
   {
     "hero_level": 30,
-    "lvup_exp": 41722
+    "lvup_exp": 34610
   },
   {
     "hero_level": 31,
-    "lvup_exp": 47130
+    "lvup_exp": 36650
   },
   {
     "hero_level": 32,
-    "lvup_exp": 53092
+    "lvup_exp": 38750
   },
   {
     "hero_level": 33,
-    "lvup_exp": 59422
+    "lvup_exp": 40890
   },
   {
     "hero_level": 34,
-    "lvup_exp": 66238
+    "lvup_exp": 43090
   },
   {
     "hero_level": 35,
-    "lvup_exp": 93558
+    "lvup_exp": 45330
   },
   {
     "hero_level": 36,
-    "lvup_exp": 101400
+    "lvup_exp": 47620
   },
   {
     "hero_level": 37,
-    "lvup_exp": 139387
+    "lvup_exp": 49960
   },
   {
     "hero_level": 38,
-    "lvup_exp": 151298
+    "lvup_exp": 52340
   },
   {
     "hero_level": 39,
-    "lvup_exp": 163977
+    "lvup_exp": 54780
   },
   {
     "hero_level": 40,
-    "lvup_exp": 177448
+    "lvup_exp": 57260
   },
   {
     "hero_level": 41,
-    "lvup_exp": 221735
+    "lvup_exp": 59790
   },
   {
     "hero_level": 42,
-    "lvup_exp": 237114
+    "lvup_exp": 62360
   },
   {
     "hero_level": 43,
-    "lvup_exp": 253112
+    "lvup_exp": 64980
   },
   {
     "hero_level": 44,
-    "lvup_exp": 269998
+    "lvup_exp": 67650
   },
   {
     "hero_level": 45,
-    "lvup_exp": 387796
+    "lvup_exp": 70370
   },
   {
     "hero_level": 46,
-    "lvup_exp": 476530
+    "lvup_exp": 73130
   },
   {
     "hero_level": 47,
-    "lvup_exp": 515555
+    "lvup_exp": 75930
   },
   {
     "hero_level": 48,
-    "lvup_exp": 541410
+    "lvup_exp": 78780
   },
   {
     "hero_level": 49,
-    "lvup_exp": 568525
+    "lvup_exp": 81670
   },
   {
     "hero_level": 50,
-    "lvup_exp": 696930
+    "lvup_exp": 84610
   },
   {
     "hero_level": 51,
-    "lvup_exp": 736655
+    "lvup_exp": 87600
   },
   {
     "hero_level": 52,
-    "lvup_exp": 977074
+    "lvup_exp": 90630
   },
   {
     "hero_level": 53,
-    "lvup_exp": 1105477
+    "lvup_exp": 93700
   },
   {
     "hero_level": 54,
-    "lvup_exp": 1166418
+    "lvup_exp": 96810
   },
   {
     "hero_level": 55,
-    "lvup_exp": 1269951
+    "lvup_exp": 99970
   },
   {
     "hero_level": 56,
-    "lvup_exp": 1626130
+    "lvup_exp": 103170
   },
   {
     "hero_level": 57,
-    "lvup_exp": 1795009
+    "lvup_exp": 106420
   },
   {
     "hero_level": 58,
-    "lvup_exp": 1866642
+    "lvup_exp": 109710
   },
   {
     "hero_level": 59,
-    "lvup_exp": 1941083
+    "lvup_exp": 113040
   },
   {
     "hero_level": 60,
-    "lvup_exp": 2018386
+    "lvup_exp": 116410
   },
   {
     "hero_level": 61,
