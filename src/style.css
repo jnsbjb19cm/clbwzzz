@@ -5424,12 +5424,13 @@ html, body { margin:0; padding:0; width:100%; height:100%; overflow:hidden; }
    注意：src/ui/BattleHandCooldownFinal.css 并没有被 index.html 加载（只有 /src/style.css 生效），
    所以规则必须写在**这个文件**里才会生效。用 !important 压过下面已有的 #hand .deck-slot 规则。
    ========================================================================== */
+/* 2026-10-11 用户追加：再拉高、宽再低 */
 #hand .deck-slot {
-  width: 50px !important;
-  min-width: 50px !important;
-  max-width: 50px !important;
-  flex: 0 0 50px !important;
-  min-height: 100px !important;
+  width: 44px !important;
+  min-width: 44px !important;
+  max-width: 44px !important;
+  flex: 0 0 44px !important;
+  min-height: 124px !important;
   overflow: hidden !important;
 }
 #hand .deck-slot img,
@@ -5445,5 +5446,6 @@ html, body { margin:0; padding:0; width:100%; height:100%; overflow:hidden; }
 
 /* 战团（卡组编辑）页的卡槽：同样拉长一点，和战斗内保持一致的"竖长方形"手感 */
 #deck-slots-row .deck-slot-item {
-  min-height: 96px !important;
+  min-height: 112px !important;
+  width: 84px !important;   /* 战团页：同样再拉高一点、宽收一点 */
 }
