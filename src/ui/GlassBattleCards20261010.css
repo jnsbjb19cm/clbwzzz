@@ -253,3 +253,33 @@ html body #hand .deck-slot {
   max-width: 52px !important;
   /* 高度一律不动（用户要求），容器也不动 */
 }
+
+/* ==========================================================================
+   2026-10-11 用户实测 slot 仍是 81x81 → 说明"跟 flex 硬顶"这条路不灵。
+   换思路：卡槽之所以是 81px，是因为 #hand 宽 819px 被 10 格**平分**（819/10 ≈ 81.9）。
+   那就**直接把 #hand 变窄** —— 卡槽自然变细，而且**高度完全不变** ✔
+   10 格 × 52px + 9 个间隔 ≈ 570px（原来 819）。
+   ========================================================================== */
+html body.battle-immersive .battle-fullscreen-final #hand,
+html body.battle-immersive #hand.battle-hand-large,
+html body.battle-immersive #hand.video-battle-hand,
+html body.battle-immersive #hand,
+html body #hand.card-slots,
+html body #hand {
+  width: 572px !important;
+  max-width: 572px !important;
+  min-width: 0 !important;
+  justify-content: center !important;
+  /* 只改宽度：高度/位置交给原来的布局 */
+}
+
+/* 卡槽仍固定 52px（双保险：即使容器没变窄也不至于更宽） */
+html body.battle-immersive .battle-fullscreen-final #hand .deck-slot,
+html body.battle-immersive #hand.battle-hand-large .deck-slot,
+html body.battle-immersive #hand .deck-slot,
+html body #hand .deck-slot {
+  flex: 0 0 52px !important;
+  width: 52px !important;
+  min-width: 52px !important;
+  max-width: 52px !important;
+}
