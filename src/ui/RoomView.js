@@ -660,7 +660,11 @@ export class RoomView {
     this.myTeam = this.room.members?.find((m) => String(m.userId) === String(this.currentUserId()))?.team ?? this.myTeam;
     // 房主随机地图广播（room.mapId）→ 全员同步场景（2=草地、4=冰川、7=黄沙）
     if (this.room.mode === 'pvp' && typeof window !== 'undefined') {
-      const sceneByMap = { '2': 'grass', '4': 'ice', '7': 'rock' };
+      // 2026-10-11 用户：柱子还在随机 -> 这张表只有老 3 张地图 ✗，新地图查不到导致场景飘 ✗
+      const sceneByMap = {
+        '2': 'grass', '4': 'ice', '7': 'rock',
+        '8': 'forest', '9': 'fire', '10': 'beach', '11': 'temple',
+      };
       const synced = sceneByMap[String(this.room.mapId)];
       if (synced) window.__pvpMapScene = synced;
     }
@@ -672,9 +676,16 @@ export class RoomView {
     if (!panel || !this.room) return;
     // PVP 房间显示房主随机的地图（全员同步 room.mapId → 地图名）
     if (this.room.mode === 'pvp' && typeof window !== 'undefined') {
-      const sceneByMap = { '2': '草地', '4': '冰川', '7': '黄沙' };
+      const sceneByMap = {
+        '2': '草地', '4': '冰川', '7': '黄沙',
+        '8': '古老密林', '9': '火焰', '10': '沙滩', '11': '海底神殿',
+      };
+      const sceneKeyById = {
+        '2': 'grass', '4': 'ice', '7': 'rock',
+        '8': 'forest', '9': 'fire', '10': 'beach', '11': 'temple',
+      };
       const synced = sceneByMap[String(this.room.mapId)];
-      if (synced) window.__pvpMapScene = { 草地: 'grass', 冰川: 'ice', 黄沙: 'rock' }[synced];
+      if (synced) window.__pvpMapScene = sceneKeyById[String(this.room.mapId)] ?? null;
     }
     const members = this.room.members ?? [];
     const meId = this.currentUserId();
@@ -729,7 +740,11 @@ export class RoomView {
 
     // 渲染后按房间地图(room.mapId)更新随机地图按钮显示（房主/其他玩家都可见）
     if (this.room.mode === 'pvp') {
-      const sceneByMap = { '2': { icon: '🌿', label: '草地' }, '4': { icon: '❄️', label: '冰川' }, '7': { icon: '🏜️', label: '黄沙' } };
+      const sceneByMap = {
+        '2': { icon: '🌿', label: '草地' }, '4': { icon: '❄️', label: '冰川' }, '7': { icon: '🏜️', label: '黄沙' },
+        '8': { icon: '🌳', label: '古老密林' }, '9': { icon: '🔥', label: '火焰' },
+        '10': { icon: '🏖️', label: '沙滩' }, '11': { icon: '🔱', label: '海底神殿' },
+      };
       const info = sceneByMap[String(this.room.mapId)];
       if (info) {
         const labelEl = panel.querySelector('.dice-label');
