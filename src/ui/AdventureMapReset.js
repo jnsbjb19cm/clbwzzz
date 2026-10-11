@@ -1,4 +1,4 @@
-import { ADVENTURE_DIFFICULTIES, FOREST_BOSS_IDS, TEMPLE_BOSS_IDS, isAdventureStageUnlocked, isForestUnlocked, isNightmareUnlocked, BOSS_REGION_PREREQUISITES_ENABLED } from '../data/AdventureCampaign.js';
+import { ADVENTURE_DIFFICULTIES, NIGHTMARE_DIFFICULTY, FOREST_BOSS_IDS, TEMPLE_BOSS_IDS, isAdventureStageUnlocked, isForestUnlocked, isNightmareUnlocked, BOSS_REGION_PREREQUISITES_ENABLED } from '../data/AdventureCampaign.js';
 import { getBossById } from '../data/bossList.js';
 import { isBossCleared, isBossUnlocked } from '../core/BossProgress.js';
 import './AdventureMapReset.css';
@@ -47,10 +47,26 @@ export function renderAdventureMap(view, root) {
   }).join('');
   // 噩梦模式：需通关全部「困难」关卡才解锁；目前模式本身尚未开放，点击只提示。
   const nightmareUnlocked = isNightmareUnlocked(clears(view));
+  // 2026-10-11 用户要求「噩梦模式还要提醒」：解锁后首次进地图给一次提示（按账号记，只提醒一次）
+  if (nightmareUnlocked) {
+    try {
+      if (!globalThis.localStorage?.getItem('clbwz_nightmare_notice_v1')) {
+        globalThis.localStorage?.setItem('clbwz_nightmare_notice_v1', '1');
+        setTimeout(() => view.toast?.(root, '噩梦模式已解锁！点关卡后选「噩梦模式」挑战（奖励更丰厚）'), 400);
+      }
+    } catch { /* 忽略 */ }
+  }
   const content = setup(root, `<section class="reset-campaign"><header><button data-back>← 目的地</button><strong>冒险大陆</strong><small>左键点击关卡选择难度</small></header><div class="reset-map-frame"><div class="reset-map-canvas">${buttons}<span class="reset-route-label reset-plant-label">植物线</span><span class="reset-route-label reset-monster-label">怪物线</span></div></div>${difficultyMenuMarkup({ nightmareUnlocked })}</section>`);
   content.querySelector('[data-back]').onclick = () => { view.selectedMap = null; renderAdventureDestinations(view, root); };
   // 噩梦模式放在"选难度"弹层里（点击关卡后弹出）；现在点它只提示暂未开放。
-  content.querySelector('.reset-boss-difficulty [data-nightmare]')?.addEventListener('click', () => view.toast?.(root, '噩梦模式暂未开放'));
+  // 2026-10-11 开放噩梦模式：点「噩梦模式」= 用 difficulty=3 的同一关卡变体进战斗
+  content.querySelector('.reset-boss-difficulty [data-nightmare]')?.addEventListener('click', () => {
+    if (!nightmareUnlocked) { view.toast?.(root, '通关全部「困难」关卡后解锁噩梦模式'); return; }
+    const nightmareStage = selectedVariants.find(s => Number(s.adventure?.difficulty) === NIGHTMARE_DIFFICULTY);
+    if (!nightmareStage) { view.toast?.(root, '该关卡暂无噩梦模式'); return; }
+    menu.hidePopover?.();
+    view.onNavigate?.('room', { stageId: nightmareStage.id, mapId: nightmareStage.map_id, stageName: nightmareStage.stage_name, enemyRandomMode: false, autoCreate: true });
+  });
   const menu = content.querySelector('.reset-boss-difficulty');
   let selectedVariants = [];
   content.querySelectorAll('[data-stage]').forEach(button => button.onclick = event => {

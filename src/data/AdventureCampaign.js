@@ -1,6 +1,12 @@
 import { designedPlantWaves, monsterMirrorWaves, finalAdventureWaves, adventureDesignSummary, applyAdventureDifficulty, dedupeWaveCells } from './AdventureStageDesign.js';
 // Reset specification: independent stage IDs preserve all legacy saves and rewards.
 export const ADVENTURE_DIFFICULTIES = ['简单', '普通', '困难'];
+// 2026-10-11 用户要求开放噩梦模式：
+//   · difficulty 0/1/2 = 简单/普通/困难（界面那三个难度按钮）
+//   · difficulty 3      = **噩梦**（由弹层里的「噩梦模式」入口进入，解锁条件＝困难全通）
+//   · 只有「冒险大陆」（含 1-1 到最终关）有噩梦；悲伤密林/海底神殿是另一套，不涉及
+export const NIGHTMARE_DIFFICULTY = 3;
+export const ADVENTURE_DIFFICULTY_LABELS = [...ADVENTURE_DIFFICULTIES, '噩梦'];
 // Current release: forest and ocean are always open; prerequisites are future work.
 export const BOSS_REGION_PREREQUISITES_ENABLED = false;
 export const FOREST_BOSS_IDS = ['boss_dot', 'boss_gravo', 'boss_ice', 'boss_forest'];
@@ -10,7 +16,8 @@ export const campaignFinalId = (difficulty = 0) => 10099 + difficulty * 100;
 
 export function createAdventureStages(legacy) {
   const result = [];
-  for (let difficulty = 0; difficulty < 3; difficulty++) {
+  // 2026-10-11：difficulty 0..3（3 = 噩梦），噩梦只属于冒险大陆（1-1 到最终关）
+  for (let difficulty = 0; difficulty <= NIGHTMARE_DIFFICULTY; difficulty++) {
     for (let route = 0; route < 2; route++) {
       for (let index = 1; index <= 16; index++) {
         const act = Math.ceil(index / 4), node = (index - 1) % 4 + 1;
@@ -19,7 +26,7 @@ export function createAdventureStages(legacy) {
         const pairedBaseline = legacy.find(s => Number(s.map_id) === act && Number(s.stage_num) === node) || legacy[0];
         const id = campaignStageId(route, index, difficulty);
         result.push({ ...original, hp: pairedBaseline.hp, id, stage_id: id, stage_num: node,
-          stage_name: `${route ? '怪物' : '植物'}线 ${act}-${node} · ${ADVENTURE_DIFFICULTIES[difficulty]}`,
+          stage_name: `${route ? '怪物' : '植物'}线 ${act}-${node} · ${ADVENTURE_DIFFICULTY_LABELS[difficulty]}`,
           adventure: { route, index, act, node, difficulty, challenge: node === 4, final: false },
           encounter: adventureDesignSummary(route, index),
           prerequisites: index === 1 ? [] : [campaignStageId(route, index - 1, difficulty)] });
@@ -27,7 +34,7 @@ export function createAdventureStages(legacy) {
     }
     const original = legacy.find(s => Number(s.map_id) === 9 && Number(s.stage_num) === 5) || legacy.at(-1);
     const id = campaignFinalId(difficulty);
-    result.push({ ...original, id, stage_id: id, stage_name: `大陆最终关 · ${ADVENTURE_DIFFICULTIES[difficulty]}`,
+    result.push({ ...original, id, stage_id: id, stage_name: `大陆最终关 · ${ADVENTURE_DIFFICULTY_LABELS[difficulty]}`,
       adventure: { route: 2, index: 17, act: 5, node: 4, difficulty, challenge: true, final: true },
       encounter: adventureDesignSummary(2, 17),
       prerequisites: [campaignStageId(0, 16, difficulty), campaignStageId(1, 16, difficulty)] });

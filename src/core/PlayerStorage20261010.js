@@ -40,7 +40,8 @@ export const PLAYER_SCOPED_BASES = Object.freeze([
   'clbwz_hero_skills_v1',                       // 英雄技能/装备栏（玩家数据！）
   'clbwz_boss_progress_v1',                     // BOSS 挑战进度（玩家数据！）
   'clbwz_lucky_wheel_v1',
-  'clbwz_discount_quota_v1',   // 打折专区每日限购额度（按账号隔离，2026-10-11）                       // 转盘次数/奖励（每日，玩家数据！）
+  'clbwz_discount_quota_v1',
+  'clbwz_nightmare_notice_v1',  // 噩梦解锁提醒是否已弹过（按账号，2026-10-11）   // 打折专区每日限购额度（按账号隔离，2026-10-11）                       // 转盘次数/奖励（每日，玩家数据！）
   'clbwz_star_upgrade_v2',                      // 卡牌升星记录（玩家数据！）
   'battle_deck_ids',                            // 战斗卡组
   'battle_deck_v2',
