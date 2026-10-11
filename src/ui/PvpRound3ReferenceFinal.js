@@ -26,6 +26,43 @@ const SCENES = Object.freeze({
     leftWidth: '42.4vh',
     rightWidth: '42.4vh',
   },
+  // 2026-10-11 用户：新增 4 张地图（素材已复制到 assets/battle/background）
+  forest: {
+    key: 'forest',
+    base: '/battle/background/backforest.png',
+    map: '/battle/background/backforest.png',
+    left: '/battle/background/leftforest.png',
+    right: '/battle/background/rightforest.png',
+    leftWidth: '42.4vh',
+    rightWidth: '42.4vh',
+  },
+  fire: {
+    key: 'fire',
+    base: '/battle/background/backfire.png',
+    map: '/battle/background/backfire.png',
+    left: '/battle/background/leftfire.png',
+    right: '/battle/background/rightfire.png',
+    leftWidth: '42.4vh',
+    rightWidth: '42.4vh',
+  },
+  beach: {
+    key: 'beach',
+    base: '/battle/background/backbeach.png',
+    map: '/battle/background/backbeach.png',
+    left: '/battle/background/leftbeach.png',
+    right: '/battle/background/rightbeach.png',
+    leftWidth: '42.4vh',
+    rightWidth: '42.4vh',
+  },
+  temple: {
+    key: 'temple',
+    base: '/battle/background/backtemple.png',
+    map: '/battle/background/backtemple.png',
+    left: '/battle/background/lefttemple.png',
+    right: '/battle/background/righttemple.png',
+    leftWidth: '42.4vh',
+    rightWidth: '42.4vh',
+  },
   ice: {
     key: 'ice',
     base: '/battle/background/backice.png',
@@ -87,15 +124,22 @@ function resolveScene(view, snapshot = null) {
   const bossName = String(snapshot?.boss?.name || view?.pvp?.room?.name || '');
   // BOSS 场景（按 BOSS 定义：多特=草地、沃里尔=黄沙、安娜=冰川、火焰=火山(未做→草地)、树妖=黄沙）
   if (bossId === 'boss_dot' || bossName.includes('痴情的多特')) return SCENES.bossDot;
-  if (bossId === 'boss_gravo' || bossName.includes('愤怒的格拉沃') || bossName.includes('愤怒的沃里尔')) return SCENES.bossGravo;
+  if (bossId === 'boss_gravo' || bossName.includes('愤怒的格拉沃') || bossName.includes('愤怒的沃里尔')) return SCENES.fire;   // 2026-10-11 用户：沃里尔改火焰
   if (bossId === 'boss_ice' || bossName.includes('疯狂的安娜') || bossName.includes('愤怒的安娜')) return SCENES.ice;
   if (bossId === 'boss_forest' || bossName.includes('树妖洛丽塔')) return SCENES.bossGravo;
-  if (bossId === 'boss_fire' || bossName.includes('火焰的复仇')) return SCENES.bossDot;
+  if (bossId === 'boss_fire' || bossName.includes('火焰的复仇')) return SCENES.fire;   // 火焰素材已就位
+
+  // 2026-10-11 用户：海洋神殿组（狂暴的刀牙=沙滩，其余=海底神殿）
+  if (bossId === 'boss_shark' || bossName.includes('狂暴的刀牙')) return SCENES.beach;
+  if (bossId === 'boss_lobster' || bossName.includes('龙虾战士')) return SCENES.temple;
+  if (bossId === 'boss_bluebaby' || bossName.includes('蓝贝贝')) return SCENES.temple;
+  if (bossId === 'boss_turtle' || bossName.includes('龟老师')) return SCENES.temple;
+  if (bossId === 'boss_princess' || bossName.includes('人鱼公主')) return SCENES.temple;
 
   // 房间 dice「随机地图」选择（进战斗时一次性消费到 pvp.mapScene）
   const chosen = view?.pvp?.mapScene
-    ?? ({ '2': 'grass', '4': 'ice', '7': 'rock' }[String(view?.pvp?.mapId ?? '')]);
-  if (chosen === 'rock' || chosen === 'ice' || chosen === 'grass') {
+    ?? ({ '2': 'grass', '4': 'ice', '7': 'rock', '8': 'forest', '9': 'fire', '10': 'beach', '11': 'temple' }[String(view?.pvp?.mapId ?? '')]);
+  if (chosen && SCENES[chosen] && chosen !== 'default') {
     return SCENES[chosen] ?? SCENES.default;
   }
   // 默认黄沙场景（PVP 轮换核心 = 黄沙）；dice 可随机其它场景
@@ -122,7 +166,7 @@ function applyScene(view, snapshot = null, { force = false } = {}) {
   wrap.dataset.round3Scene = scene.key;
   game.dataset.round3Scene = scene.key;
   // 同步顶部地图名标签（与实际场景一致）
-  const labelMap = { default: '草地', ice: '冰川', rock: '黄沙', 'boss-dot': '草地', 'boss-gravo': '黄沙' };
+  const labelMap = { default: '草地', ice: '冰川', rock: '黄沙', forest: '古老密林', fire: '火焰', beach: '沙滩', temple: '海底神殿', 'boss-dot': '草地', 'boss-gravo': '黄沙' };
   const label = wrap.querySelector('.battle-map-label');
   if (label) label.textContent = `🗺️ ${labelMap[scene.key] ?? '草地'}地图`;
   for (const root of [wrap, game]) {
