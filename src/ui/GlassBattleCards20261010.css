@@ -256,3 +256,46 @@ body .battle-hand-tooltip .classic-tip-bitmap { display: inline-block; vertical-
   min-height: 152px !important;
   overflow: visible !important;
 }
+
+/* ==========================================================================
+   2026-10-11 最终修复（依据用户控制台实测数据）：
+     slot 渲染 81x81、hand 819x88 overflow:hidden
+     命中顺序里有一条： body.battle-immersive .battle-fullscreen-final #hand .deck-slot
+                        { width: auto !important; ... }
+     它的权重（3 class + 1 id）高于 #hand .deck-slot（1 class + 1 id），且同样 !important
+     → 我之前写的 38px 被压掉，宽度变 auto 被 flex 拉成 81px ✗
+   所以这里用**更高权重 + !important + 放在最后加载的本文件**来压过它，
+   并把外层容器抬到 152px（否则 overflow:hidden 会把高卡槽裁掉）。
+   ========================================================================== */
+html body #hand .deck-slot,
+html body.battle-immersive #hand .deck-slot,
+html body.battle-immersive #hand.video-battle-hand .deck-slot,
+html body.battle-immersive .battle-fullscreen-final #hand .deck-slot,
+html body #hand.reference-battle-hand.video-battle-hand .deck-slot {
+  width: 38px !important;
+  min-width: 38px !important;
+  max-width: 38px !important;
+  flex: 0 0 38px !important;
+  height: 152px !important;
+  min-height: 152px !important;
+  max-height: 152px !important;
+  overflow: hidden !important;
+}
+
+/* 外层容器：原来 88px 高 + overflow:hidden 会把 152px 的卡槽裁掉 */
+html body .top-ui .slots-container,
+html body.battle-immersive .top-ui .slots-container,
+html body #hand.card-slots,
+html body.battle-immersive #hand.card-slots {
+  min-height: 152px !important;
+  height: auto !important;
+  overflow: visible !important;
+  align-items: flex-end !important;
+}
+
+/* 卡图放大一点（配合 overflow:hidden 不会溢出） */
+html body #hand .deck-slot .slot-portrait,
+html body #hand .deck-slot img {
+  transform: scale(1.1);
+  transform-origin: center center;
+}
