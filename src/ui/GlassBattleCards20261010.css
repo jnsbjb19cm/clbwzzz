@@ -228,28 +228,3 @@ body .battle-hand-tooltip .hand-tip-trait { color: #08bcbc; }
 body .battle-hand-tooltip .hand-tip-status.ready { color: #65c748; }
 body .battle-hand-tooltip .hand-tip-status.blocked { color: #f03b24; }
 body .battle-hand-tooltip .classic-tip-bitmap { display: inline-block; vertical-align: top; max-width: 100%; image-rendering: pixelated; }
-
-/* ==========================================================================
-   2026-10-11 用户：「那这个条其实宽度调细一些试试？」
-   思路修正：**只调细宽度**，高度与容器一律不动 —— 这样就不会影响战场高度、
-   也不会被 .slots-container(88px, overflow:hidden) 裁掉。只靠"变窄"得到细长条。
-   为什么必须用这么长的选择器：实测命中顺序里有
-     body.battle-immersive .battle-fullscreen-final #hand .deck-slot { width: auto !important; }
-   它的权重是 3 class + 1 id，我原来的 #hand .deck-slot（1 class + 1 id）压不过它。
-   本文件是 main.js 里最后加载的 CSS，配合下面这些高权重选择器才能生效。
-   ========================================================================== */
-html body.battle-immersive .battle-fullscreen-final #hand .deck-slot,
-html body.battle-immersive #hand.video-battle-hand .deck-slot,
-html body.battle-immersive #hand .deck-slot,
-html body #hand.reference-battle-hand.video-battle-hand .deck-slot,
-html body #hand .deck-slot {
-  width: 40px !important;
-  min-width: 40px !important;
-  max-width: 40px !important;
-  flex: 0 0 40px !important;
-}
-/* 立绘跟着收窄一点，别在细卡里显得挤 */
-html body #hand .deck-slot .slot-portrait {
-  left: 4% !important;
-  width: 92% !important;
-}

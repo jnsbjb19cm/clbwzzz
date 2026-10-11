@@ -230,7 +230,10 @@ export const RES_FOOD_NUM = {
 export const HAND_SLOT_COUNT = 10;
 export const HAND_SLOTS_LEFT = 113;
 export const HAND_SLOTS_TOP = 33;
-export const HAND_SLOT_W = 74;
+// 2026-10-11 用户：「这个条宽度调细一些」——
+// 这是手牌卡槽宽度的**唯一真源头**：BattleView 会把它写成 #hand 的内联样式
+// (--hand-slot-w:74px)，内联样式**任何 CSS 都压不过**，所以只能改这里。
+export const HAND_SLOT_W = 46;
 export const HAND_SLOT_GAP = 0;
 export const HAND_SLOTS_WIDTH = HAND_SLOT_COUNT * HAND_SLOT_W;
 export const HAND_SLOTS_HEIGHT = 48;
