@@ -2,6 +2,8 @@ import { getSocketUser, db } from '../database.js';
 import { assertAdventureAccess } from '../domain/AdventureAccess.js';
 import { verifyToken } from '../middleware/auth.js';
 import { roomManager } from '../rooms/RoomManager.js';
+// 2026-10-11: 暴露给战斗模块，让它能取到**活房间**（避免用建战斗时的旧副本 mapId ✗）
+globalThis.__clbwzRoomManager = roomManager;
 import { registerSocket, unregisterSocket, socketsForUser } from '../online.js';
 import { stopAuthorityBattleByRoom } from './registerPvpAuthorityHandlers.js';
 import { containsBlockedWord } from '../../src/core/ContentFilter.js';
