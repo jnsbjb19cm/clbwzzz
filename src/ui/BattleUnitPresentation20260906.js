@@ -274,8 +274,8 @@ export function installBattleUnitPresentation20260906() {
       pedestalRendering: 'pre-rendered offscreen cache by quality/size bucket',
       animatedQualityPackPerUnit: false,
       hpBar: {
-        visibleDiscWidthRatio: .5,
-        height: 5,
+        visibleDiscWidthRatio: .54,
+        height: 7,
         anchor: 'visible disc lower tangent',
       },
       starSize: '7~10px; max 7 per row; constrained inside visible disc',

@@ -39,7 +39,8 @@ export const PLAYER_SCOPED_BASES = Object.freeze([
   // 2026-10-10 复查补漏：下面这几个原来漏了，换号时会串 ——
   'clbwz_hero_skills_v1',                       // 英雄技能/装备栏（玩家数据！）
   'clbwz_boss_progress_v1',                     // BOSS 挑战进度（玩家数据！）
-  'clbwz_lucky_wheel_v1',                       // 转盘次数/奖励（每日，玩家数据！）
+  'clbwz_lucky_wheel_v1',
+  'clbwz_discount_quota_v1',   // 打折专区每日限购额度（按账号隔离，2026-10-11）                       // 转盘次数/奖励（每日，玩家数据！）
   'clbwz_star_upgrade_v2',                      // 卡牌升星记录（玩家数据！）
   'battle_deck_ids',                            // 战斗卡组
   'battle_deck_v2',

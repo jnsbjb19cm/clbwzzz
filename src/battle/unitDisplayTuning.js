@@ -82,12 +82,12 @@ export const RES_DRAW_OFFSET_X = {
   32: -0.05,  // 嗜血稻草人：向左靠中间
 };
 
-/** 把「向后」换算成带方向的水平像素偏移（玩家向左、敌方向右）。 */
-/** 取该单位的水平微调像素值（表里已是屏幕方向：负 = 向左）。 */
+/** 原图坐标的水平微调；镜像时一起反转，保持脚点落在底座上。 */
 export function drawOffsetXForUnit(unit, boxW) {
   const frac = RES_DRAW_OFFSET_X[resNum(unit)] ?? 0;
   if (!frac) return 0;
-  return frac * boxW;
+  const mirrored = (unit.team === 'enemy') !== Boolean(unit._burrowFacingReversed);
+  return (mirrored ? -frac : frac) * boxW;
 }
 
 export const RES_DRAW_OFFSET_Y = {

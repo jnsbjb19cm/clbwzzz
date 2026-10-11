@@ -22,6 +22,8 @@ const TABS = [
 
 const QUALITY_NAMES = { 1: '普通', 2: '优秀', 3: '精良', 4: '史诗', 5: '传说', 6: '逆天' };
 
+import { buildDiscountSlots, discountProductFor, installDiscountGuard } from './DiscountZone20261011.js';
+
 const CLASSIC_SHOP_CATEGORIES = [
   { id: 'fitting', label: '试衣间' },
   { id: 'cart', label: '购物车' },
@@ -30,6 +32,7 @@ const CLASSIC_SHOP_CATEGORIES = [
   { id: 'fashion', label: '服饰' },
   { id: 'beauty', label: '美容' },
   { id: 'coupon', label: '金币礼券区' },
+  { id: 'discount', label: '打折专区' },
 ];
 
 const CLASSIC_SHOP_SUBCATEGORIES = Object.freeze({
@@ -287,6 +290,11 @@ export class ShopView {
     const products = this.getClassicProducts();
     if (this.classicCategory === 'cart') return [...this.cart.values()].map((entry) => entry.product);
     if (this.classicCategory === 'recommend') return [...products.filter((product) => product.kind === 'pack').slice(0, 4), ...products.filter((product) => product.kind === 'item').slice(0, 8)];
+    // 2026-10-11 打折专区：限购 + 等级越高折扣越大（数据见 src/data/discountZone.json）
+    if (this.classicCategory === 'discount') {
+      installDiscountGuard();
+      return buildDiscountSlots(SHOP_ITEMS).map((slot, index) => discountProductFor(slot, index, getCraftMaterialSprite));
+    }
     if (this.classicCategory === 'fitting') return products.filter((product) => product.category === 'fashion').slice(0, 12);
     let visible = products.filter((product) => product.category === this.classicCategory);
     if (this.classicCategory === 'item' && this.classicSubcategory && this.classicSubcategory !== '全部') {
@@ -579,7 +587,7 @@ export class ShopView {
       h+=`<div class="shop-category-block"><h3 class="shop-cat-head">${this._catIcon(cat)}${cat}</h3><div class="shop-grid">`;
       for(let j=0;j<items.length;j++){
         const it=items[j]; const id=Object.keys(map).find(k=>map[k]===it);
-        h+=`<div class="shop-card"><div class="shop-card-icon">${it.icon}</div><div class="shop-card-body"><h3>${it.name}</h3><p>${it.desc}</p></div><div class="shop-card-footer"><span class="shop-price">💰${it.price}</span><button type="button" class="shop-buy-btn" data-type="item" data-idx="${id}" data-price="${it.price}">购买</button></div></div>`;
+        h+=`<div class="shop-card"><div class="shop-card-icon">${it.icon}</div><div class="shop-card-body"><h3>${it.name}</h3><p>${it.desc}</p></div><div class="shop-card-footer"><span class="shop-price">💰${it.price}</span><button type="button" class="shop-buy-btn" data-type="item" data-idx="${id}" data-price="${it.price}"${it.discountQuotaKey ? ` data-discount-quota-key="${it.discountQuotaKey}" data-discount-limit="${it.discountLimit}"` : ''}>购买</button></div></div>`;
       }
       h+='</div></div>';
     }

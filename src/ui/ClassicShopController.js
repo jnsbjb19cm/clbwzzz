@@ -2,6 +2,7 @@ import './ClassicShopController.css';
 import { audio } from '../core/AudioManager.js';
 import itemAtlasData from '../data/atlas/preload_items.json';
 import { ShopView } from './ShopView.js';
+import { openShopDirectPurchase } from './ShopDirectPurchase.js';
 import {
   getLegacyShopExtensionSprite,
   ITEM_EXTENSION_URL,
@@ -83,15 +84,16 @@ function adjustQuantity(view, root, product, delta) {
 }
 
 function renderProductAction(view, product) {
+  const direct = product.kind === 'recharge' ? '' : `<button type="button" class="shop-buy-btn" data-shop-direct-buy="${product.key}">直接购买</button>`;
   const quantity = getQuantity(view, product);
   if (quantity <= 0) {
-    return `<button type="button" class="shop-buy-btn" data-classic-cart-plus="${product.key}" aria-label="加入购物车：${product.name}">加入购物车</button>`;
+    return `<div class="classic-shop-product-actions"><button type="button" class="shop-buy-btn" data-classic-cart-plus="${product.key}" aria-label="加入购物车：${product.name}">加入购物车</button>${direct}</div>`;
   }
-  return `<div class="classic-shop-product-action" data-classic-cart-control="${product.key}">
+  return `<div class="classic-shop-product-actions"><div class="classic-shop-product-action" data-classic-cart-control="${product.key}">
     <button type="button" data-classic-cart-minus="${product.key}" aria-label="减少 ${product.name}">−</button>
     <b aria-label="${product.name} 数量">${quantity}</b>
     <button type="button" data-classic-cart-plus="${product.key}" aria-label="增加 ${product.name}">＋</button>
-  </div>`;
+  </div>${direct}</div>`;
 }
 
 function bindProductActions(view, root) {
@@ -116,6 +118,12 @@ function bindProductActions(view, root) {
     button.addEventListener('click', () => {
       const product = resolveProduct(view, button.dataset.classicCartMinus);
       if (product) adjustQuantity(view, root, product, -1);
+    });
+  });
+  catalog.querySelectorAll('[data-shop-direct-buy]').forEach((button) => {
+    button.addEventListener('click', () => {
+      const product = resolveProduct(view, button.dataset.shopDirectBuy);
+      if (product) openShopDirectPurchase(view, root, product, button);
     });
   });
 }

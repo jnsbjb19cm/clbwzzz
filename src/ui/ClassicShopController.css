@@ -1,4 +1,32 @@
 /* Scoped classic shop controls. Nothing here is allowed to restyle other views. */
+body .classic-shop-screen .classic-shop-product-actions {
+  grid-column: 2; grid-row: 2; display: flex; gap: 5px; min-width: 0;
+}
+body .classic-shop-screen .classic-shop-product-actions > .shop-buy-btn,
+body .classic-shop-screen .classic-shop-product-actions > .classic-shop-product-action {
+  position: static; flex: 1; width: auto; min-width: 0; height: 30px; min-height: 0; margin: 0;
+  font-size: 14px; padding: 0 3px;
+}
+body .classic-shop-screen .classic-shop-product-actions [data-shop-direct-buy] {
+  background: linear-gradient(#ffde80, #ed9b20); color: #623707;
+}
+.shop-direct-dialog {
+  width: min(390px, 85vw); box-sizing: border-box; padding: 22px;
+  color: #354414; background: linear-gradient(#f3f8ce, #c8dd82);
+  border: 3px solid #647c28; border-radius: 12px; box-shadow: inset 0 0 0 2px #f9ffdc, 0 10px 35px #0007;
+  font: 16px/1.5 'Microsoft YaHei', sans-serif;
+}
+.shop-direct-dialog::backdrop { background: #10200888; }
+.shop-direct-dialog h2 { margin: 0 0 10px; color: #715215; font-size: 22px; }
+.shop-direct-dialog h3 { margin: 8px 0 18px; font-size: 18px; }
+.shop-direct-dialog label { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.shop-direct-stepper { display: flex; align-items: center; gap: 4px; }
+.shop-direct-dialog input { width: 58px; height: 32px; text-align: center; font: inherit; color: #23320e; background: #fffde8; border: 1px solid #83984b; }
+.shop-direct-dialog button { cursor: pointer; font: inherit; font-weight: bold; border: 1px solid #bc811e; border-radius: 6px; padding: 5px 12px; background: linear-gradient(#fff098, #f8b83c); color: #64420c; }
+.shop-direct-dialog button:disabled { opacity: .55; cursor: default; }
+.shop-direct-dialog [data-buy-total] { font-weight: bold; color: #7d500a; }
+.shop-direct-dialog [data-buy-error] { min-height: 24px; color: #ac2820; font-size: 14px; }
+.shop-direct-dialog footer { display: flex; justify-content: flex-end; gap: 12px; margin-top: 16px; }
 .classic-shop-screen .classic-shop-product-action,
 .classic-shop-screen .classic-shop-cart-quantity {
   display: inline-flex;

@@ -251,9 +251,41 @@ async function buyClassicProduct(view, product) {
 }
 
 function installShopAuthority() {
+  ShopView.prototype.purchaseClassicDirect = async function purchaseClassicDirect(root, product, quantity) {
+    if (this._shopPurchasePending) return { purchased: 0, message: '请等待当前购买完成' };
+    if (!Number.isInteger(quantity) || quantity < 1 || quantity > 99 || product?.kind === 'recharge') {
+      return { purchased: 0, message: '购买数量或商品无效' };
+    }
+    this._shopPurchasePending = true;
+    let purchased = 0, message = '';
+    try {
+      const cost = this.resolveClassicCartCost([{ product, quantity }]);
+      if ((Number(this.player.gold) || 0) < cost.gold || (Number(this.player.gem) || 0) < cost.gem) {
+        return { purchased: 0, message: '余额不足，未购买' };
+      }
+      for (let index = 0; index < quantity; index += 1) {
+        try {
+          const data = await buyClassicProduct(this, product);
+          purchased += 1;
+          applyServerData(this, data);
+        } catch (error) {
+          message = error?.message || '购买失败，请查看背包后再试';
+          break;
+        }
+      }
+      if (root?.isConnected) this.renderClassicCatalog(root);
+      return { purchased, message };
+    } finally {
+      this._shopPurchasePending = false;
+    }
+  };
+
   ShopView.prototype.checkoutClassicCart = async function checkoutClassicCartDatabaseAuthority20260908(root) {
+    if (this._shopPurchasePending) return;
     const entries = [...this.cart.values()];
     if (!entries.length) return;
+    this._shopPurchasePending = true;
+    try {
     const remaining = new Map(this.cart);
     let purchased = 0;
     let stopMessage = '';
@@ -278,6 +310,9 @@ function installShopAuthority() {
     this.renderClassicCatalog(root);
     // 2026-10-06：不再播报"已购买 N 件/成功购买"这类调试信息；有失败才提示原因（那才是有用的）。
     if (stopMessage) this.toast(root, purchased ? `已购买 ${purchased} 件；其余未购买：${stopMessage}` : stopMessage);
+    } finally {
+      this._shopPurchasePending = false;
+    }
   };
 
   const originalRenderRecharge = ShopView.prototype.renderRecharge;

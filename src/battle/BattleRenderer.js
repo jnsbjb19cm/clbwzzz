@@ -291,13 +291,13 @@ export function drawUnitGroundShadow(ctx, cx, footY, bodySize, flying) {
   const w = Math.max(12, Number(bodySize) || 0);
   const rx = w * 0.40;
   const ry = Math.max(3, rx * 0.32);
-  const cy = footY - ry * 0.10;
+  const cy = footY + 1;
   ctx.save();
   ctx.fillStyle = '#000000';   // 用户明确要黑色（原来偏墨绿 + 太淡，几乎看不见）
   const layers = [
-    { k: 1, a: 0.26 },
-    { k: 0.68, a: 0.30 },
-    { k: 0.42, a: 0.34 },
+    { k: 1, a: 0.40 },
+    { k: 0.68, a: 0.56 },
+    { k: 0.42, a: 0.78 },
   ];
   for (const { k, a } of layers) {
     ctx.globalAlpha = a;
