@@ -51,8 +51,23 @@ function ensureNeutralIce(battle) {
   if (battle.__pvpNeutralIceReady) return;
   // 中立障碍按房间场景（mapId）：2=草地木桩(1002)、4=冰川冰山(1000)、7=黄沙沙丘(1004)；默认冰山
   const roomMapId = String(battle?.mapId ?? battle?.room?.mapId ?? '');
-  const NEUTRAL_BY_MAP = { '2': 1002, '4': 1000, '7': 1004 };
-  const barrierId = NEUTRAL_BY_MAP[roomMapId] || 1000;
+  // 障碍 → 精灵：1000=冰山(冰精灵1005) 1001=火(火精灵1006) 1002=木桩(木精灵1007)
+  //                  1003=石(石精灵1008) 1004=沙丘(沙精灵1009)
+  const NEUTRAL_BY_MAP = {
+    '2': 1002, '4': 1000, '7': 1004,
+    // 2026-10-11 用户要求的新地图配精灵：
+    //   古老密林 = 木精灵(1007) → 木桩 1002（用户：'古老密林人家是木精灵的那个柱子'）
+    //   火焰     = 火精灵(1006) → 1001
+    //   沙滩     = 石精灵(1008) → 1003
+    '8': 1002,
+    '9': 1001,
+    '10': 1003,
+  };
+  // 海底神殿(11)：从五种精灵里**随机**挑一个（用户：'海底神殿的是随机小精灵'）
+  const TEMPLE_SPIRIT_BARRIERS = [1000, 1001, 1002, 1003, 1004];
+  const barrierId = roomMapId === '11'
+    ? TEMPLE_SPIRIT_BARRIERS[Math.floor(Math.random() * TEMPLE_SPIRIT_BARRIERS.length)]
+    : (NEUTRAL_BY_MAP[roomMapId] || 1000);
   const card = battle.db?.getById?.(barrierId);
   if (!card) throw new Error('PVP中立障碍卡牌' + barrierId + '不存在');
 
