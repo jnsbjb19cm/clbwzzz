@@ -144,7 +144,13 @@ function resolveScene(view, snapshot = null) {
   //   → 两边各 roll 一次，背景与精灵就不属于同一张地图 ✗
   // 修：**以服务端 mapId 为唯一权威**（背景跟随它），mapScene 仅作兜底
   const sceneById = { '2': 'grass', '4': 'ice', '7': 'rock', '8': 'forest', '9': 'fire', '10': 'beach', '11': 'temple' };
-  const chosen = sceneById[String(view?.pvp?.mapId ?? '')] ?? view?.pvp?.mapScene;
+  // 2026-10-11 用户反馈：roll 草地却是黄沙背景 / roll 黄沙却是海洋背景
+  // 根因：客户端自己还留了一份 roll 结果（window.__pvpMapScene -> pvp.mapScene），
+  // 与服务端 mapId 各说各话，任一份过期就会错配 ✗
+  // → 现在**只认服务端 mapId**，客户端那份仅当服务端没给 id 时兜底（且必须能查到）
+  const byId = sceneById[String(view?.pvp?.mapId ?? '')];
+  const fallbackScene = String(view?.pvp?.mapScene ?? '');
+  const chosen = byId ?? (sceneById[Object.keys(sceneById).find((k) => sceneById[k] === fallbackScene)] ? fallbackScene : null);
   if (chosen && SCENES[chosen] && chosen !== 'default') {
     return SCENES[chosen] ?? SCENES.default;
   }
