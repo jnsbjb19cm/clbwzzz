@@ -90,8 +90,10 @@ export function drawOffsetXForUnit(unit, boxW) {
   return (mirrored ? -frac : frac) * boxW;
 }
 
+// 2026-10-11 用户：西瓜太郎浮空了，向下挪一点（dy = stableTop + offsetY，正值向下）
 export const RES_DRAW_OFFSET_Y = {
-  7: -0.02,
+  7: 0.06,   // 原来 -0.02：西瓜太郎浮空 → 下移 0.08×boxH（约 8~12px）
+  30: 0.06,  // 真·西瓜太郎同素材，必须与 7 一致
   35: 0,
   55: 0.02,
   57: -0.03,

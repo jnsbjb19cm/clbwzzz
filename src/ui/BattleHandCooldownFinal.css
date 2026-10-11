@@ -211,3 +211,22 @@ body.battle-immersive #hand .deck-slot.locked {
   opacity: 1 !important;
   filter: drop-shadow(0 1px 1px rgba(0,0,0,.55)) !important;
 }
+
+/* 2026-10-11 用户：战斗内单个卡的卡槽要拉长点（长方形），卡图放大但不许超出槽 */
+#hand .deck-slot,
+#hand.video-battle-hand .deck-slot,
+#hand.opaque-battle-hand .deck-slot {
+  height: auto;            /* 原来是 100%：改成由 min-height 撑出长方形 */
+  min-height: 92px;        /* 拉长（原约 72px 上下） */
+  overflow: hidden;        /* 出槽的部分一律裁掉（用户：出屏幕的不要保留） */
+}
+#hand .deck-slot .slot-card-img,
+#hand .deck-slot .slot-face,
+#hand .deck-slot .slot-face img,
+#hand .deck-slot .slot-card-img img {
+  overflow: hidden;
+}
+#hand .deck-slot img {
+  transform: scale(1.14);          /* 卡图放大一点 */
+  transform-origin: center center;
+}
