@@ -137,8 +137,14 @@ function resolveScene(view, snapshot = null) {
   if (bossId === 'boss_princess' || bossName.includes('人鱼公主')) return SCENES.temple;
 
   // 房间 dice「随机地图」选择（进战斗时一次性消费到 pvp.mapScene）
-  const chosen = view?.pvp?.mapScene
-    ?? ({ '2': 'grass', '4': 'ice', '7': 'rock', '8': 'forest', '9': 'fire', '10': 'beach', '11': 'temple' }[String(view?.pvp?.mapId ?? '')]);
+  // 2026-10-11 用户指出：roll 到黄沙却出随机地图 / 黄沙出木桩 / 古老密林出沙丘
+  // 根因：地图有**两个互相独立的来源** ✗
+  //   a) 客户端 dice 写的 window.__pvpMapScene（只影响背景）
+  //   b) 服务端 roll / 房间 mapId（battle.mapId，只影响精灵与障碍）
+  //   → 两边各 roll 一次，背景与精灵就不属于同一张地图 ✗
+  // 修：**以服务端 mapId 为唯一权威**（背景跟随它），mapScene 仅作兜底
+  const sceneById = { '2': 'grass', '4': 'ice', '7': 'rock', '8': 'forest', '9': 'fire', '10': 'beach', '11': 'temple' };
+  const chosen = sceneById[String(view?.pvp?.mapId ?? '')] ?? view?.pvp?.mapScene;
   if (chosen && SCENES[chosen] && chosen !== 'default') {
     return SCENES[chosen] ?? SCENES.default;
   }
