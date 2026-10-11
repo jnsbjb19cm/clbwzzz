@@ -386,9 +386,12 @@ export class RoomManager {
   markStarted(userId) {
     const room = this.canStart(userId);
     this.fillRandomBots(room);
-    // 2026-10-11：pvp 开战时原本无条件重新 roll，会把房间 roll 的结果丢掉 ✗
-    // 现在只有玩家没手动选过地图时才自动随机（保留每局随机的老行为 ✔）
-    if (room.mode === 'pvp' && room._hasStarted && !room.mapChosen) room.mapId = rollPvpMap(room.mapId);
+    // 2026-10-11 用户实测：房间选「黄沙(7)」，战场却是「海底神殿(11)」→ 证明这次**开战重新 roll** 就是元凶 ✗
+    // 处理：**彻底取消开战时的重新 roll**。
+    //   · 每局的随机性已经由 createRoom 的 rollPvpMap() 提供 ✔
+    //   · 玩家在房间 roll 过的地图必须被尊重 ✔
+    //   · 这样即使客户端/服务端版本不一致，也不会再出现「选了一张、进战场是另一张」✗
+    // if (room.mode === 'pvp' && room._hasStarted && !room.mapChosen) room.mapId = rollPvpMap(room.mapId);
     room._hasStarted = true;
     room.status = 'starting';
     return cloneRoom(room);
