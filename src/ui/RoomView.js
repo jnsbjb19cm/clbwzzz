@@ -917,12 +917,25 @@ export class RoomView {
 
   renderBattle() {
     if (!this.snap || !this.renderer) return;
+    // 2026-10-11 用户：房间人机局的中间立柱永远不对（出沙丘/木桩混乱）
+    // 原因：这里直接把快照的 cardId/res 拿来建单位与取图 ✗，没有任何"当前地图"判断 ✗
+    // 修：中立柱（team==neutral）按【当前场景应有的柱子】纠正 ✔（与快照同步无关，不会闪）
+    const wantPillar = (() => {
+      try { return globalThis.__clbwzPillarForScene?.() ?? null; } catch { return null; }
+    })();
+    const pillarSet = Number.isInteger(wantPillar) && wantPillar > 0;
+    const correctedUnits = (this.snap.units ?? []).map((u) => {
+      const isNeutral = u.team === 'neutral' || u.neutral === true;
+      if (!isNeutral || !pillarSet) return u;
+      return { ...u, cardId: wantPillar, res: wantPillar };
+    });
     const fakeEngine = {
       time: this.snap.t ?? 0,
       status: this.snap.status ?? 'playing',
-      units: (this.snap.units ?? []).map((u) => {
+      units: correctedUnits.map((u) => {
         const card = this.db.getById(u.cardId);
         const unit = new BattleUnit({ card, lane: u.lane, col: u.col, team: u.team });
+        if (u.res != null) unit.res = u.res;
         unit.uid = u.uid;
         unit.hp = u.hp;
         unit.maxHp = u.maxHp;
@@ -931,7 +944,7 @@ export class RoomView {
         return unit;
       }),
       getBattleSpriteRes: () => new Set(
-        (this.snap.units ?? []).map((u) => String(u.res ?? u.cardId ?? '')),
+        correctedUnits.map((u) => String(u.res ?? u.cardId ?? '')),
       ),
       projectiles: [], floats: [], deployEffects: [], impactFx: [], bumpFx: [], logs: [],
       heroHp: this.snap.heroHp?.blue ?? 0,
