@@ -96,8 +96,11 @@ export const RES_DRAW_OFFSET_Y = {
   // 我上次把 7/30 的 offsetY 从 -0.02 改到 0.06（为了让它别浮空），
   // 但攻击姿态用的是同一个 dy = stableTop + offsetY → 攻击时也被推下去一大块 ✗
   // 所以**还原**为 -0.02（7/30 同素材，保持一致）。
-  7: -0.02,
-  30: -0.02,
+  // 2026-10-11 用户：「西瓜太郎/真·西瓜太郎仍然浮空，位置还要向下」
+  // 上一次我把它从 -0.02 直接改到 0.06，结果**攻击姿态也被推下去**（攻击基地时错位 ✗）。
+  // 这次拆开：待机用下面的值（向下），攻击姿态用 RES_DRAW_OFFSET_Y_ATTACK（不额外位移）。
+  7: 0.06,
+  30: 0.06,
   35: 0,
   55: 0.02,
   57: -0.03,
@@ -181,9 +184,23 @@ const HOVER_LIFT_BY_RES = Object.freeze({
   38: 0.20,   // 外星哨兵      → 总偏移 -0.18
 });
 
-export function drawOffsetYForUnit(unit, boxH, { footAnchored = false, flying = false } = {}) {
+/**
+ * 攻击姿态的专用偏移（默认 0 = 不额外位移）。
+ * 2026-10-11 用户：「西瓜太郎/真·西瓜太郎仍然浮空，位置还要向下」——
+ * 而上次直接改 RES_DRAW_OFFSET_Y 会把"贴地修正"也带进攻击动作（攻击基地时错位 ✗）。
+ * 所以拆成两张表：待机用 RES_DRAW_OFFSET_Y（向下贴地），攻击用本表（不动）。
+ */
+export const RES_DRAW_OFFSET_Y_ATTACK = Object.freeze({
+  7: 0,
+  30: 0,
+});
+
+export function drawOffsetYForUnit(unit, boxH, { footAnchored = false, flying = false, attacking = false } = {}) {
   const res = resNum(unit);
-  const resOff = RES_DRAW_OFFSET_Y[res] ?? 0;
+  // 攻击姿态走专用表（默认 0）：避免把"待机贴地修正"带进攻击动作 ✗
+  const resOff = attacking
+    ? (RES_DRAW_OFFSET_Y_ATTACK[res] ?? 0)
+    : (RES_DRAW_OFFSET_Y[res] ?? 0);
   let base;
   if (footAnchored || FOOT_ANCHOR_RES.has(res)) {
     base = resOff;

@@ -965,7 +965,8 @@ export class UnitAnimPlayer {
       dx = stableLeft + (drawBounds.left - scaleBounds.left) * scale;
     }
     const footAnchored = FOOT_ANCHOR_RES.has(resNum(unit));
-    const offsetY = drawOffsetYForUnit(unit, boxH, { footAnchored, flying });
+    // 2026-10-11：把是否攻击姿态传下去 —— 待机与攻击用不同偏移（西瓜太郎浮空 vs 攻击错位）
+    const offsetY = drawOffsetYForUnit(unit, boxH, { footAnchored, flying, attacking: Boolean(attackAnchor) });
     const footPad = pack.meta.footOpaqueInset ?? 0;
     // 攻击状态 y 也锚定：动作帧上下起伏不再让底座整体位移(花生/小麦等底座弹回)
     let dy;
