@@ -88,6 +88,9 @@ function ensureNeutralIce(battle) {
       const unit = new BattleUnit({ card, lane, col, team: 'neutral' });
       unit.uid = ++battle.uidSeq;
       unit.pvpNeutral = true;
+      // 2026-10-11 用户：柱子规则没表现 → 快照里写死了冰山(1000) ✗
+      // 这里把**实际按地图选出的**障碍 id 记下来，供快照使用 ✔
+      battle.__pvpBarrierId = barrierId;
       unit.pvpOwnerUserId = null;
       unit.atk = 0;
       unit.moveSpeed = 0;
@@ -176,7 +179,13 @@ function decorateSnapshot(battle, snapshot) {
     nickname: member.nickname || '玩家',
     team: member.team,
   }));
-  snapshot.neutralIce = { cardId: NEUTRAL_ICE_CARD_ID, columns: [5, 6], lanes: LANES };
+  // 2026-10-11：原来写死 NEUTRAL_ICE_CARD_ID(1000 冰山) ✗ → 客户端无论哪张地图都显示冰山
+  // 现在用本局**实际按地图选出的**障碍 id ✔（取不到才回退常量）
+  snapshot.neutralIce = {
+    cardId: Number(battle.__pvpBarrierId) || NEUTRAL_ICE_CARD_ID,
+    columns: [5, 6],
+    lanes: LANES,
+  };
   snapshot.visualEvents = battle.__pvpVisualEvents.filter(
     (event) => now - Number(event.startedAt || 0) <= Math.max(0.25, Number(event.duration || 0) + 0.25),
   );
