@@ -50,7 +50,11 @@ function activeAnimUntil(battle, unit, state) {
 function ensureNeutralIce(battle) {
   if (battle.__pvpNeutralIceReady) return;
   // 中立障碍按房间场景（mapId）：2=草地木桩(1002)、4=冰川冰山(1000)、7=黄沙沙丘(1004)；默认冰山
-  const roomMapId = String(battle?.mapId ?? battle?.room?.mapId ?? '');
+  // 2026-10-11 用户实测: 房间 roll 后一切显示 8(古老密林)，中间柱却是 1004(沙滩=10) ✗
+  // 根因: battle.mapId 是**建战斗那一刻**的快照（建房时随机值）✗，
+  //       房间后来 roll 成 8 它不会更新 -> 柱子按旧的 10 造 ✗
+  // 修: **优先用房间当前的地图**（battle.room.mapId 是活的），battle.mapId 只作兜底 ✔
+  const roomMapId = String(battle?.room?.mapId ?? battle?.mapId ?? '');
   // 障碍 → 精灵：1000=冰山(冰精灵1005) 1001=火(火精灵1006) 1002=木桩(木精灵1007)
   //                  1003=石(石精灵1008) 1004=沙丘(沙精灵1009)
   const NEUTRAL_BY_MAP = {
