@@ -67,16 +67,12 @@ function readDeckGroup(cardInventory, db, group) {
 }
 
 function writeDeckGroup(selected, cardInventory, group) {
-  if (!cardInventory || typeof localStorage === 'undefined') return;
-  const normalized = groupForInventory(cardInventory, group);
-  const slots = cardInventory.getSlots?.() ?? [];
-  const payload = (selected ?? [])
-    .map((index) => fingerprintDeckSlot(index, slots[index]))
-    .filter(Boolean);
-  try {
-    localStorage.setItem(storageKeyForDeckGroup20260906(normalized), JSON.stringify(payload));
-    if (normalized === 'default') localStorage.removeItem('battle_deck_ids');
-  } catch {}
+  // 2026-10-11（卡槽问题彻查）：这里原先是**直接 localStorage.setItem 写牌组键** ——
+  // 它是唯一一个绕过 DeckSelectView.saveDeck「写入守卫」的写入口，
+  // 打完/退出后把玩家选的实例改回去就是从这条路径来的。
+  // 现在一律转发给 saveDeck（组键 + 守卫 + trusted 都在那一处统一处理）。
+  if (!cardInventory) return;
+  return DeckSelectView.saveDeck(selected, cardInventory, groupForInventory(cardInventory, group));
 }
 
 function resolveRoomDeckGroup(roomState) {
@@ -107,13 +103,16 @@ function installDeckGroupRuntime() {
     return null;
   };
 
-  DeckSelectView.saveDeck = function saveDeckByGroup(selected, cardInventory, group) {
+  DeckSelectView.saveDeck = function saveDeckByGroup(selected, cardInventory, group, opts) {
     const normalized = groupForInventory(cardInventory, group);
-    if (normalized === 'default') {
-      originalSaveDeck(selected, cardInventory);
-      return;
-    }
-    writeDeckGroup(selected, cardInventory, normalized);
+    // 2026-10-11（卡槽问题彻查）—— 这里以前是：
+    //   · 默认组 → originalSaveDeck(selected, cardInventory)      ← 把 group / opts 参数**丢掉**
+    //   · 其它组 → writeDeckGroup(...) 直接 localStorage.setItem   ← **绕过 DeckSelectView.saveDeck 的写入守卫**
+    // 于是"自动回写不许改动玩家选的实例"这道守卫对这条路径完全无效 ——
+    // 打完/退出后旧实例又被写回牌组键，就是从这里来的。
+    // 现在两条分支都走**唯一入口** originalSaveDeck（组键 + 写入守卫 + trusted 全带上），
+    // 直接写 localStorage 的做法彻底去掉。
+    return originalSaveDeck(selected, cardInventory, normalized, opts ?? {});
   };
 
   const originalRenderRoomInside = RoomView.prototype.renderRoomInside;
