@@ -509,7 +509,24 @@ function enterPvpBattle(view) {
       deckSlots,
       // 组名必须跟着卡组一起走：保存时按它写回同一组，不再靠"当前选中组"猜。
       deckGroup,
-      mapId: view.room.mapId || '4',
+      // 2026-10-11 用户实测：房间选黄沙(7)，战场却是沙滩(10) → 「选 A 出 B」
+
+      // 根因：这里的 view.room 是**roll 之前的旧快照** ✗，房间真正的地图 id 在别处：
+
+      //   · view._roomState.mapId（实时房间状态）
+
+      //   · 房间按钮的 dataset.mapId（dice 处理器 syncMapType 会更新它）
+
+      //   · window.__pvpMapScene（场景 key，反查 id）
+
+      // → 按这个顺序取，最后才回退旧快照 / '4' ✔
+      mapId: (() => {
+        const sceneToId = { grass: '2', ice: '4', rock: '7', forest: '8', fire: '9', beach: '10', temple: '11' };
+        const fromState = view._roomState?.mapId ?? view.roomState?.mapId ?? null;
+        const fromButton = document?.querySelector?.(".dice-btn")?.dataset?.mapId ?? null;
+        const fromScene = sceneToId[String(mapScene || window?.__pvpMapScene || "")] ?? null;
+        return String(fromState ?? fromButton ?? fromScene ?? view.room.mapId ?? '4');
+      })(),
       mapScene,
     },
     onNavigate: view.onNavigate,
