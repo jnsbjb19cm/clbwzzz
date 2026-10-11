@@ -1,0 +1,20 @@
+.gallery-chrome-v2 .card-radar { margin: 12px 0; padding: 10px; border: 1px solid #8d9d56; border-radius: 8px; background: linear-gradient(#f9fbe9, #e1e9bb); color: #344525; }
+.card-radar header { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.card-radar h3 { margin: 0; font-size: 17px; }
+.card-radar header span { font-size: 11px; color: #64734b; }
+.card-radar-picker { display: grid; gap: 5px; margin-top: 10px; font-size: 12px; }
+.card-radar-picker select { width: 100%; min-width: 0; height: 32px; color: #344525; background: #ffffed; border: 1px solid #93a560; border-radius: 5px; }
+.card-radar-legend { display: flex; flex-wrap: wrap; gap: 8px; font-size: 12px; margin-top: 10px; font-weight: bold; }
+.card-radar svg { display: block; width: 100%; max-height: 275px; overflow: visible; }
+.card-radar svg text { font: 12px 'Microsoft YaHei',sans-serif; fill: #354828; }
+.card-radar .radar-grid { fill: none; stroke: #99ac6e; stroke-width: .8; }
+.card-radar .radar-axis { stroke: #b4c18d; stroke-width: .8; }
+.card-radar .series-0 { color: #127376; }
+.card-radar .series-1 { color: #a45097; }
+.card-radar .radar-series { stroke-width: 2; fill: #16858933; stroke: #127376; }
+.card-radar .radar-series.series-1 { stroke: #a45097; fill: #b556a633; stroke-dasharray: 5 3; }
+.card-radar table { width: 100%; border-collapse: collapse; font-size: 12px; font-variant-numeric: tabular-nums; }
+.card-radar caption { text-align: left; font-weight: bold; margin-bottom: 6px; }
+.card-radar td,.card-radar th { padding: 5px 3px; border-bottom: 1px solid #becb96; text-align: right; }
+.card-radar th:first-child { text-align: left; }
+.card-radar .card-radar-note { margin: 10px 0 0; font-size: 11px; line-height: 1.6; color: #61704a; }

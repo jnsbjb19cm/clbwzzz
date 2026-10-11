@@ -111,7 +111,8 @@ const SHOP_ITEMS = [
   { cat:'特殊', name:'装备礼盒',    desc:'打开获得随机装备',     price:7000,  icon:'🎁', effect:{type:'inventory',realId:10,count:1} },
   { cat:'特殊', name:'随机技能书',  desc:'打开后获得随机技能书一本', price:9000, icon:'📖', effect:{type:'inventory',realId:60015,count:1} },
   { cat:'特殊', name:'幸运符',      desc:'提高制作卡牌时的高品质概率', price:12000, icon:'🍀', effect:{type:'inventory',realId:60016,count:1} },
-  { cat:'特殊', name:'远古召唤卷',  desc:'使用后获得随机2~4级卡牌，品质随机', price:40000, icon:'📯', effect:{type:'inventory',realId:60017,count:1} },
+  // 2026-10-11 用户指定：远古召唤卷 40000 → 100000 金（随机 2~4 级卡，价值更高）
+  { cat:'特殊', name:'远古召唤卷',  desc:'使用后获得随机2~4级卡牌，品质随机', price:100000, icon:'📯', effect:{type:'inventory',realId:60017,count:1} },
 ];
 
 export class ShopView {

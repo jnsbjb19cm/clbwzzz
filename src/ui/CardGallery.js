@@ -2,6 +2,7 @@ import { audio } from '../core/AudioManager.js';
 import { CARD_QUALITY, CARD_TYPE } from '../core/constants.js';
 import { formatBattleAmount } from '../battle/BattleConfig.js';
 import { gameSettings } from '../core/GameSettingsStore20260910.js';
+import { renderCardRadar } from './CardRadar.js';
 
 const PAGE_SIZE = 24;
 /**
@@ -261,6 +262,7 @@ export class CardGallery {
   }
 
   renderDetail(root, card) {
+    this.selectedCard = card;
     const panel = root.querySelector('#detail');
     if (!card) {
       panel.classList.add('empty');
@@ -299,11 +301,18 @@ export class CardGallery {
           <p class="gallery-detail-owned">${ownedCount === null ? '—' : (ownedCount > 0 ? `已拥有 ×${ownedCount}` : '未获得')}</p>
         </div>
       </div>
+      ${renderCardRadar(card, this.compareCardId === card.id ? null : this.db.getById(this.compareCardId), this.baseCards())}
       <dl class="gallery-detail-stats">
         ${stats.map(([label, value]) => `<div><dt>${label}</dt><dd>${escapeHtml(value)}</dd></div>`).join('')}
       </dl>
       <p class="gallery-detail-desc">${escapeHtml(card.desc || '暂无描述')}</p>
       ${card.intro ? `<section class="gallery-detail-lore"><h3>卡牌故事</h3><p>${escapeHtml(card.intro)}</p></section>` : ''}`;
+    panel.querySelector('[data-radar-compare]').addEventListener('change', event => {
+      const scrollTop = panel.scrollTop;
+      this.compareCardId = Number(event.target.value) || null;
+      this.renderDetail(root, card);
+      panel.scrollTop = scrollTop;
+    });
     panel.scrollTop = 0;
   }
 
