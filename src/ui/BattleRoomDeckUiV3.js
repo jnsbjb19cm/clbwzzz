@@ -885,6 +885,13 @@ export function installBattleRoomDeckUiV3() {
   // 现在统一按"本次请求的组"读写：组参数照传下层，聚合里只动自己那一组。
   DeckSelectView.loadSavedDeck = function loadConfirmedV4Deck(cardInventory, db, group) {
     const normalized = resolveDeckGroup20260911(cardInventory, group);
+    // 2026-10-11（用户实测数据：牌组键里明明是「完美花生射手 @20 q5」，进战斗却拿到 slot0 的 q2）：
+    // 本函数以前**先读聚合草稿 clbwz_room_decks_v4**，聚合里若还留着旧条目就直接返回，
+    // 取到的就是旧实例 —— 也就是玩家看到的「选 a 进 b」。
+    // 本文件 2026-09-12 的注释早就写明「按组存档（battle_deck_v2[_teamN]）比聚合草稿更可信」，
+    // 这里补上：**按组存档优先**（它带品质/星级指纹，就是玩家真正选的那一套），聚合只当兜底。
+    const keyed = readGroupKeyedDeck({ _cardInventory: cardInventory }, normalized);
+    if (Array.isArray(keyed) && keyed.length) return keyed;
     const parsed = readRawStoredState();
     const saved = reconcileInventory(cardInventory, db, parsed?.decks?.[normalized]);
     if (saved.length) return saved;
