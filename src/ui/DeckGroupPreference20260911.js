@@ -178,6 +178,18 @@ function describeDeckResolve20261011(cardInventory, db, normalized, explicitGrou
       team3: readKey('battle_deck_v2_team3'),
       legacyIds: readKey('battle_deck_ids'),
     },
+    // 2026-10-11：把背包槽位的**真实字段**和"按组存档能否比对成功"一起打出来，
+    // 用于判断是"字段缺失/改名导致比对失败"还是"存档本身就被写坏了"。
+    bagSlotSample: slots.slice(0, 30).map((s, i) => (s ? `${i}:${Object.keys(s).join("/")}#${s.cardId}q${s.craftQuality ?? "-"}s${s.strengthLv ?? "-"}` : null)).filter(Boolean).slice(0, 6),
+    keyedReconcile: (() => {
+      try {
+        const raw = globalThis.localStorage?.getItem(normalized === 'default' ? 'battle_deck_v2' : `battle_deck_v2_${normalized}`);
+        if (!raw) return "no-key";
+        const parsed = JSON.parse(raw);
+        const rec = DeckSelectView.reconcileFingerprints(parsed, cardInventory) ?? [];
+        return `key=${parsed.length}条 → 比对成功 ${rec.length} 条`;
+      } catch (error) { return "error: " + error.message; }
+    })(),
     resolvedCards: (DeckSelectView.loadSavedDeck(cardInventory, db, normalized) ?? []).map((i) => {
       const s = slots[i];
       return s ? `slot${i}:#${s.cardId}q${s.craftQuality ?? 1}s${s.strengthLv ?? 0}` : `slot${i}:空`;

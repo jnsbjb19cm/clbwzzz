@@ -51,11 +51,37 @@ export class DeckSelectView {
   static reconcileFingerprints(saved, ci) {
     if (!ci || !Array.isArray(saved) || !saved.length) return [];
     const bs = ci.getSlots(); const u = new Set(); const r = [];
+    /**
+     * 2026-10-11（用户实测：牌组键里是 @28/@20（好的那张），取回却永远是 slot22/slot0）：
+     * 说明"按组存档"在**指纹比对**这步被判为匹配不上，于是整体退化到聚合草稿的旧条目。
+     * 原因：背包槽位经过服务端快照重建后，品质/星级字段可能缺失或改名（craftQuality vs
+     * craft_quality…），严格全字段相等就必然失败。这里改成**宽松但安全**的判定：
+     *   ① cardId 用数值比较（不要求两边都是 number）；
+     *   ② 槽位缺品质/星级信息时，只要 cardId 对上就认（宁可认这张卡的这一格，
+     *      也不要整体失配、退回别人的旧条目）；
+     *   ③ 槽位有信息时，品质/星级必须相等（不一致说明真的不是同一张实例）。
+     */
+    const slotMatches = (slot, fp) => {
+      if (!slot || !fp) return false;
+      if (Number(slot.cardId) !== Number(fp.cardId)) return false;
+      const slotHasQuality = slot.craftQuality != null || slot.craft_quality != null;
+      const slotHasStar = slot.strengthLv != null || slot.strength_lv != null || slot.star != null;
+      if (!slotHasQuality && !slotHasStar) return true;          // ② 槽位没有实例信息 → 认卡片
+      const slotQuality = Number(slot.craftQuality ?? slot.craft_quality ?? 1);
+      const slotStar = Number(slot.strengthLv ?? slot.strength_lv ?? slot.star ?? 0);
+      const fpQuality = Number(fp.craftQuality ?? fp.craft_quality ?? 1);
+      const fpStar = Number(fp.strengthLv ?? fp.strength_lv ?? fp.star ?? 0);
+      return slotQuality === fpQuality && slotStar === fpStar;    // ③ 有信息 → 必须相等
+    };
     for (const fp of saved) {
-      if (!fp || typeof fp.cardId !== 'number') continue;
+      if (!fp || fp.cardId == null || Number.isNaN(Number(fp.cardId))) continue;
       let p = -1;
-      if (typeof fp.index === 'number' && bs[fp.index] && matchesFingerprint(bs[fp.index], fp) && !u.has(fp.index)) p = fp.index;
-      else p = bs.findIndex((s, i) => s && !u.has(i) && matchesFingerprint(s, fp));
+      // 先认记录里的 index（只要那一格确实是同一张卡）——这是"玩家当初选的那一格"，最可信。
+      if (Number.isInteger(fp.index) && fp.index >= 0 && !u.has(fp.index) && slotMatches(bs[fp.index], fp)) {
+        p = fp.index;
+      } else {
+        p = bs.findIndex((s, i) => s && !u.has(i) && slotMatches(s, fp));
+      }
       if (p >= 0 && isBattleSlot(ci.cardDb, bs[p])) { u.add(p); r.push(p); }
     }
     return r;
