@@ -455,7 +455,7 @@ function openDeckEditor(view) {
     onConfirm: (slots) => {
       view._pvpDeckSlots = normalizeDeck(slots);
       // 保存带上当前战团：不带组会按"当前选中组"猜（2026-09-12 串组根因）。
-      DeckSelectView.saveDeck(view._pvpDeckSlots, view.cardInventory, view._pvpDeckTab);
+      DeckSelectView.saveDeck(view._pvpDeckSlots, view.cardInventory, view._pvpDeckTab, { trusted: true });
       writeDeckState(view, view._pvpDeckTab, view._pvpDeckSlots);
       view._pvpDeckEditorOpen = false;
       view._pvpDeckEditor = null;

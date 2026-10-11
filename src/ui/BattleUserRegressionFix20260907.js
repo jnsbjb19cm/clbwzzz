@@ -261,7 +261,7 @@ function installDeckGroupRuntime() {
       if (!outgoing.length && Array.isArray(storedForGroup) && storedForGroup.length) {
         console.warn(`[deck] 跳过空草稿覆盖 ${previousGroup}（存储里有 ${storedForGroup.length} 张）`);
       } else {
-        DeckSelectView.saveDeck(this._selected, this._cardInventory, previousGroup);
+        DeckSelectView.saveDeck(this._selected, this._cardInventory, previousGroup, { trusted: true });
       }
       this._deckTab = nextGroup;
       // 2026-09-12：记住"玩家亲手点过的战团"，后续房间渲染不许再把他拖走
@@ -295,7 +295,7 @@ function installDeckGroupRuntime() {
       drawer.addEventListener('click', (event) => {
         if (!event.target?.closest?.('.drawer-card')) return;
         queueMicrotask(() => {
-          DeckSelectView.saveDeck(this._selected, this._cardInventory, this._deckTab);
+          DeckSelectView.saveDeck(this._selected, this._cardInventory, this._deckTab, { trusted: true });
         });
       });
     }

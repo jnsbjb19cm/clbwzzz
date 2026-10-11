@@ -130,7 +130,7 @@ export class DeckSelectView {
           const p = JSON.parse(r);
           if (Array.isArray(p) && p.length) {
             const rec = DeckSelectView.reconcileFingerprints(p, ci);
-            if (rec.length) { DeckSelectView.saveDeck(rec, ci, group); return rec; }
+            if (rec.length) { DeckSelectView.saveDeck(rec, ci, group, { trusted: true }); return rec; }
           }
         }
       } catch {}
@@ -138,11 +138,40 @@ export class DeckSelectView {
     try { const r = localStorage.getItem(LEGACY_KEY); if (r) { const m = DeckSelectView.migrateLegacyIds(JSON.parse(r), ci, db); if (m.length) return m; } } catch {}
     return null;
   }
-  static saveDeck(si, ci, group = 'default') {
+  static saveDeck(si, ci, group = 'default', opts = {}) {
     if (!ci) return;
     const bs = ci.getSlots();
     const groupKey = deckStorageKeyFor(group);
-    localStorage.setItem(groupKey, JSON.stringify(si.map((i) => slotFingerprint(i, bs[i])).filter(Boolean)));
+    const payload = JSON.stringify(si.map((i) => slotFingerprint(i, bs[i])).filter(Boolean));
+    // 2026-10-11（用户：「进战斗是对的，打完/退出又给我改回去了」）：
+    // 写入守卫 —— 这个键有 8 处回写点，其中自动回写（账号镜像 / 服务端快照 / 聚合草稿）
+    // 只能拿到"卡 id"，推出来的实例是"第一张同 id"，会把玩家选的品质/星级顶掉。
+    // 规则：**非玩家操作**的写入（opts.trusted 不为 true）如果"卡片组成"和已存的一致，
+    // 就保持已存内容不动（实例以玩家选的为准）。玩家在卡组界面里的操作走 trusted，可正常改。
+    if (!opts.trusted) {
+      try {
+        const existing = localStorage.getItem(groupKey);
+        if (existing) {
+          const prev = JSON.parse(existing);
+          const nextIds = si.map((i) => Number(bs[i]?.cardId) || 0);
+          const prevIds = (Array.isArray(prev) ? prev : []).map((fp) => Number(fp?.cardId) || 0);
+          const sameIds = prevIds.length === nextIds.length && prevIds.every((v, i) => v === nextIds[i]);
+          if (sameIds && existing !== payload) {
+            console.log('[deck-write] 拒绝自动回写（卡片组成相同，实例以玩家所选为准）', groupKey, { 保持: existing, 被拒: payload });
+            return;
+          }
+        }
+      } catch { /* 守卫失败不影响写入 */ }
+    }
+    // 每一次写都打出来（键 + 内容 + 调用栈），出问题时一次就能看出是谁写的。
+    try {
+      const trace = String(new Error().stack || '').split('\n').slice(1, 5).map((line) => line.trim());
+      console.log('[deck-write]', groupKey, payload, '←', trace);
+      globalThis.clbwzDeckWrites = globalThis.clbwzDeckWrites ?? [];
+      globalThis.clbwzDeckWrites.push({ key: groupKey, payload, trace, at: Date.now() });
+      if (globalThis.clbwzDeckWrites.length > 60) globalThis.clbwzDeckWrites.shift();
+    } catch { /* 打点失败不影响写入 */ }
+    localStorage.setItem(groupKey, payload);
     // 旧键只在默认组清理，避免把别的战团的迁移源删掉。
     if (groupKey === STORAGE_KEY) localStorage.removeItem(LEGACY_KEY);
   }
@@ -642,7 +671,7 @@ export class DeckSelectView {
         const valid = this._selected.filter((i) => this._bagSlots[i]);
         if (!valid.length) { this._showToast(root, '请至少选择1张卡牌'); return; }
         // 显式带上当前页签（战团）：不带组会按"当前选中组"猜，猜错就把这套卡写进别的战团。
-        DeckSelectView.saveDeck(this._selected, this._cardInventory, this._deckTab);
+        DeckSelectView.saveDeck(this._selected, this._cardInventory, this._deckTab, { trusted: true });
         if (this._isOwner) {
           this._roomState.onStart?.();
         } else {
@@ -657,7 +686,7 @@ export class DeckSelectView {
         // PVE/Boss模式可直接开始
         if (this._mode !== 'pvp') {
           // 显式带上当前页签（战团）：不带组会按"当前选中组"猜，猜错就把这套卡写进别的战团。
-          DeckSelectView.saveDeck(this._selected, this._cardInventory, this._deckTab);
+          DeckSelectView.saveDeck(this._selected, this._cardInventory, this._deckTab, { trusted: true });
           // 带上当前页签（战团）：战斗入口要按它把牌写回同一组，不能靠"当前选中组"猜。
           this._onConfirm?.([...valid], this._sid, { trainingMode: this._training, deckGroup: this._deckTab });
           return;
@@ -666,7 +695,7 @@ export class DeckSelectView {
         const others = this._members.filter(m => !m.owner);
         const allReady = others.length === 0 || others.every(m => m.ready);
         if (!allReady) { this._showToast(root, '等待所有玩家准备'); return; }
-        DeckSelectView.saveDeck(this._selected, this._cardInventory, this._deckTab);
+        DeckSelectView.saveDeck(this._selected, this._cardInventory, this._deckTab, { trusted: true });
         this._onConfirm?.([...valid], this._sid, { trainingMode: this._training, deckGroup: this._deckTab });
       } else {
         // 普通玩家点击：切换准备状态(roomState 模式用真实 userId 匹配自己，可能在任一边)

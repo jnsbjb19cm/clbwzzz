@@ -60,7 +60,7 @@ function syncDeckTabs(root, group) {
 function saveDeckGroup(view, group, selection) {
   if (!view?._cardInventory) return Promise.resolve();
   const normalized = normalizeDeckGroup20260906(group);
-  const result = DeckSelectView.saveDeck(copyDeck(selection), view._cardInventory, normalized);
+  const result = DeckSelectView.saveDeck(copyDeck(selection), view._cardInventory, normalized, { trusted: true });
   return Promise.resolve(result)
     .then(() => DeckSelectView.awaitDeckSave20260908?.(normalized));
 }
@@ -390,7 +390,7 @@ function installDeckRenderGuard() {
       const activeGroup = normalizeDeckGroup20260906(
         this._deckTab ?? cardInventory?.__activeDeckGroup20260907 ?? group,
       );
-      return DeckSelectView.saveDeck(selected, cardInventory, activeGroup);
+      return DeckSelectView.saveDeck(selected, cardInventory, activeGroup, { trusted: true });
     };
 
     const owner = this.__roomDeckRefreshOwner20260907;
