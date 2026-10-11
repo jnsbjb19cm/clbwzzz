@@ -33,8 +33,8 @@ const SCENES = Object.freeze({
     map: '/battle/background/backforest.png',
     left: '/battle/background/leftforest.png',
     right: '/battle/background/rightforest.png',
-    leftWidth: '42.4vh',
-    rightWidth: '42.4vh',
+    leftWidth: '80vh',
+    rightWidth: '80vh',
   },
   fire: {
     key: 'fire',
@@ -42,8 +42,8 @@ const SCENES = Object.freeze({
     map: '/battle/background/backfire.png',
     left: '/battle/background/leftfire.png',
     right: '/battle/background/rightfire.png',
-    leftWidth: '42.4vh',
-    rightWidth: '42.4vh',
+    leftWidth: '80vh',
+    rightWidth: '80vh',
   },
   beach: {
     key: 'beach',
@@ -51,8 +51,8 @@ const SCENES = Object.freeze({
     map: '/battle/background/backbeach.png',
     left: '/battle/background/leftbeach.png',
     right: '/battle/background/rightbeach.png',
-    leftWidth: '42.4vh',
-    rightWidth: '42.4vh',
+    leftWidth: '80vh',
+    rightWidth: '80vh',
   },
   temple: {
     key: 'temple',
@@ -60,8 +60,8 @@ const SCENES = Object.freeze({
     map: '/battle/background/backtemple.png',
     left: '/battle/background/lefttemple.png',
     right: '/battle/background/righttemple.png',
-    leftWidth: '42.4vh',
-    rightWidth: '42.4vh',
+    leftWidth: '80vh',
+    rightWidth: '80vh',
   },
   ice: {
     key: 'ice',
