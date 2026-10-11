@@ -262,9 +262,20 @@ export class App {
     const refreshQuestGlow = () => {
       document.documentElement.dataset.questRewardReady = String(QuestView.hasClaimableReward(this.player?.level));
     };
-    window.addEventListener('clbwz:quest-state', refreshQuestGlow);
+    // 2026-10-11 用户：「有任务已经完成但是没领取的时候，任务图标要有红色闪烁标志（右下角那个）」。
+    // 红色闪烁样式其实早就有了（ClassicCardTooltip.css 的 html[data-quest-reward-ready="true"]），
+    // 但这里**只监听 clbwz:quest-state**；而任务进度推进时 QuestView.dispatch 发的是
+    // **clbwz:quest-progress** → 打完一局/完成条件后徽章不亮（这才是"没有闪烁"的原因）。
+    // 现在三类事件都听：progress（进度变化）/ state / claimed（领取），再加兜底刷新。
+    for (const eventName of ['clbwz:quest-progress', 'clbwz:quest-state', 'clbwz:quest-claimed']) {
+      window.addEventListener(eventName, refreshQuestGlow);
+    }
     window.addEventListener('storage', refreshQuestGlow);
+    window.addEventListener('focus', refreshQuestGlow);
     refreshQuestGlow();
+    if (!this._questGlowTimer) {
+      this._questGlowTimer = window.setInterval(refreshQuestGlow, 5000);   // 低频兜底（开销很小）
+    }
     this.root.addEventListener('click', (event) => {
       if (event.target.closest('#global-notice-close')) {
         this.dismissGlobalNotice();
