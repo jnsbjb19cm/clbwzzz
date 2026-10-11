@@ -20,12 +20,22 @@
  *   松果战士(11)    → 防御（用户点名"除了松果战士"：它主要靠抵挡，不是攻击型近战）
  */
 export const CARD_FUNCTION_ICON_FRAMES = Object.freeze({
+  // 2026-10-11 用户给的**权威对照**（我此前把 5/6/7 认错了，现按用户为准）：
+  //   1=远程攻击(弓箭) 2=近战攻击(刀) 3=防御(盾) 4=辅助(鼓)
+  //   5=特殊(蘑菇仙人等) 6=飞行(所有飞行单位) 7=钻地(钻地大蒜/地道工兵)
   远程攻击: 'cardType_1',
   近战攻击: 'cardType_2',
   防御: 'cardType_3',
   辅助: 'cardType_4',
-  特殊效果: 'cardType_7',
+  特殊效果: 'cardType_5',
+  飞行: 'cardType_6',
+  钻地: 'cardType_7',
 });
+
+/** 飞行单位：card_view_type=6（BattleUnit.isFlying() 就是这个判定） */
+const FLYING_VIEW_TYPE = 6;
+/** 钻地单位：card_view_type=7（地道工兵 41 / 钻地大蒜 43） */
+const BURROW_VIEW_TYPE = 7;
 
 /** 用户点名的"带特殊效果"卡（蘑菇仙人 / 火龙 / 剧毒巫师 / 带刀中尉 / 火球术士 / 外星哨兵） */
 export const SPECIAL_EFFECT_CARD_IDS = Object.freeze([58, 56, 75, 76, 104, 38]);
@@ -70,6 +80,7 @@ export function cardFunctionIcon(card) {
   const cardId = Number(card?.card_id ?? card?.id ?? card?.cardId ?? 0);
   const atkStyle = Number(card?.atk_style ?? card?.atkStyle ?? 0);
   const quality = Number(card?.card_quality ?? card?.quality ?? 1);
+  const viewType = Number(card?.card_view_type ?? card?.viewType ?? card?.view_type ?? -1);
   const moving = Number(card?.move_speed ?? card?.moveSpeed ?? 0) > 0;
 
   // ① 特殊效果（火焰）—— 三类：
@@ -82,7 +93,16 @@ export function cardFunctionIcon(card) {
   if (atkStyle === MELEE_ATK_STYLE && quality >= 5) {
     return { frame: CARD_FUNCTION_ICON_FRAMES.特殊效果, label: '特殊效果', rule: 'special-high-melee' };
   }
-  // ② 辅助（鼓）—— 用户点名：稻草人(19)/嗜血稻草人(32)/蒲公英医生(22)/蒲公英精灵(36)/
+  // ② 钻地（cardType_7）：地道工兵(41)/钻地大蒜(43) —— view_type=7
+  if (viewType === BURROW_VIEW_TYPE) {
+    return { frame: CARD_FUNCTION_ICON_FRAMES.钻地, label: '钻地', rule: 'burrow' };
+  }
+  // ③ 飞行（cardType_6）：所有飞行单位（view_type=6：飞行忍者12/飞行水蜜桃40/幻·飞行忍者45）
+  //    必须在近战/远程之前判断，否则飞行忍者会被当成"1-4 级近战刀"。
+  if (viewType === FLYING_VIEW_TYPE) {
+    return { frame: CARD_FUNCTION_ICON_FRAMES.飞行, label: '飞行', rule: 'flying' };
+  }
+  // ④ 辅助（鼓）—— 用户点名：稻草人(19)/嗜血稻草人(32)/蒲公英医生(22)/蒲公英精灵(36)/
   //    部落巫婆(26)/太古巫婆(51)。必须**先于防御**判断：这几张里有 atk_style=1 的（会被防御规则抢走）。
   if (SUPPORT_BUFF_CARD_IDS.includes(cardId)) {
     return { frame: CARD_FUNCTION_ICON_FRAMES.辅助, label: '辅助', rule: 'support' };

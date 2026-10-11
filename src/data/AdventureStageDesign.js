@@ -43,7 +43,7 @@ export function monsterMirrorWaves(plantWaves) {
 const STAGE_CARD_THINNING = Object.freeze({
   8: { cardId: 18, maxPerWave: 1, maxPerCycle: 3 },
   12: { cardId: 70, maxPerWave: 1, maxPerCycle: 3 },
-  // 4-2 蘑菇回廊：蘑菇仙人最多 3 个，削掉的位置补偿极寒冰椰子（每循环最多 2 个）
+  // 4-2 蘑菇回廊：蘑菇仙人最多 3 个，削掉的位置补偿极·寒冰椰子（每循环最多 2 个）
   14: { cardId: 58, maxPerWave: 1, maxPerCycle: 3, compensateCardId: 54, compensateMaxPerCycle: 2 },
   // 4-4 古树攻坚：战争古树(55) 不再随波出（改成每 10 波滴灌 1 只）；玉米炮手削到每循环 2 只
   16: [
@@ -303,7 +303,7 @@ const STAGE_DRIP_CARD = Object.freeze({
   ],
 });
 
-/** 怪物线专用滴灌（2026-10-09）：怪物线 3-4 每 9 波来 1 只幻.飞行忍者(45) */
+/** 怪物线专用滴灌（2026-10-09）：怪物线 3-4 每 9 波来 1 只幻·飞行忍者(45) */
 const MONSTER_STAGE_DRIP_CARD = Object.freeze({
   12: [{ cardId: 45, everyWaves: 9 }],
   // 4-4 火龙：场上最多 1 只，死后往后推 9 波才能出下一只

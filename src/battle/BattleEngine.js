@@ -456,7 +456,7 @@ export class BattleEngine {
       && other.team !== unit.team
       && other.lane === unit.lane
       && other.isFlying?.()
-      // 2026-09-12（用户要求）：幻.飞行忍者(45)/飞行忍者(12) 碰到敌方**飞行**单位就要落地。
+      // 2026-09-12（用户要求）：幻·飞行忍者(45)/飞行忍者(12) 碰到敌方**飞行**单位就要落地。
       // 两个非自爆飞行单位会互相阻挡，最多走到约 1.0 格外，用 0.62 的"贴身"阈值永远判不到 ——
       // 放宽到 1.02（≈ 相邻即算碰到），相遇立刻请求落地（45 落地还会触发十字分身）。
       && Math.abs(Number(other.col) - Number(unit.col)) < AERIAL_CONTACT_COLS);
@@ -1180,7 +1180,7 @@ export class BattleEngine {
       v.takeDamage(dmg, this.time);
       this.spawnDamageFloat(v, dmg);
       if (!v.alive) {
-        v._suicideKilled = true; // 被自爆炸死：不触发死亡分身(如幻飞行忍者45)
+        v._suicideKilled = true; // 被自爆炸死：不触发死亡分身(如幻·飞行忍者45)
         this.onUnitDeath(v);
         this.pushLog(`${unit.name} 炸毁 ${v.name}`);
       }
@@ -1260,7 +1260,7 @@ export class BattleEngine {
       }
       // 2026-09-12（用户要求）：像大嘴花一样 —— 吸进去就是秒杀，不再让它在场上被慢慢扣血
       v._swallowedByUid = unit.uid;
-      v._suicideKilled = true;          // 被吞掉 → 不触发死亡分身(如幻飞行忍者45)
+      v._suicideKilled = true;          // 被吞掉 → 不触发死亡分身(如幻·飞行忍者45)
       v.alive = false;
       this.onUnitDeath(v);
       v.alive = false;
@@ -1748,7 +1748,7 @@ export class BattleEngine {
       if (unit.alive && unit.isFlying?.()) this.landCollidingAerialUnits(unit);
       if (!unit.alive || !unit.isMovable()) continue;
 
-      // 飞行单位(飞行忍者/幻飞行忍者等)血量 ≤50% 立即下坠变地面单位，落地不可逆，触发落地技能。
+      // 飞行单位(飞行忍者/幻·飞行忍者等)血量 ≤50% 立即下坠变地面单位，落地不可逆，触发落地技能。
       // 飞行水蜜桃(40)保持全程飞行：即便血量低于 50% 也不下坠。
       if (unit.viewType === 6 && unit.cardId !== 40 && unit._aerialLanded !== true && unit.hp / Math.max(1, unit.maxHp) <= 0.5) {
         this.forceAerialLanding(unit);
@@ -2146,7 +2146,7 @@ export class BattleEngine {
         pvpOwnerUserId: unit.pvpOwnerUserId ?? null,
       });
     }
-    // 幻.飞行忍者：正常死亡召唤分身；被自爆炸死(飞行水蜜桃/热血火龙果)不产生分身
+    // 幻·飞行忍者：正常死亡召唤分身；被自爆炸死(飞行水蜜桃/热血火龙果)不产生分身
     if (unit.cardId === 45 && !unit._suicideKilled) {
       this.spawnSummon(60, unit.lane, unit.col, unit.team, {
         pvpBossMinion: Boolean(unit.pvpBossMinion),

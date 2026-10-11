@@ -119,7 +119,7 @@ export function installBattleUserRules20260903() {
       return previousOnUnitDeath.call(this, unit, ...args);
     }
 
-    // 幻.飞行忍者只有“真正完成落地”后死亡才允许触发死亡分身。
+    // 幻·飞行忍者只有“真正完成落地”后死亡才允许触发死亡分身。
     // 空中、下坠中、落地动画尚未完成时死亡统一按“飞行中死亡”处理，绝不生成 60 号分身。
     // 核心 onUnitDeath 以 _suicideKilled 作为“禁止 45 号死亡召唤”的现有开关，
     // 这里仅在本次死亡结算期间临时置 true，避免改动其它死亡逻辑/掉落/击杀统计。

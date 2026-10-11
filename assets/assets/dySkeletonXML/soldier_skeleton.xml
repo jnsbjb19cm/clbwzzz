@@ -65660,7 +65660,7 @@
     </bone>
     <skin name="">
       <slot name="图层 15" parent="图层 15" z="10">
-        <display name="bulletFile54-极寒冰椰子_8.png--blt54" type="image">
+        <display name="bulletFile54-极·寒冰椰子_8.png--blt54" type="image">
           <transform x="-19.5" y="-20" skX="0" skY="0" scX="1" scY="1" pX="0" pY="0"/>
         </display>
       </slot>

@@ -41,7 +41,7 @@ const OVERSIZED_NAMES = new Set([
 const UNDERSIZED_NAMES = new Set([
   '寒冰椰子',
   '仙人掌',
-  '极寒冰椰子',
+  '极·寒冰椰子',
   '嗜血稻草人',
   '稻草人',
   '三头仙人掌',

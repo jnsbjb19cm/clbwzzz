@@ -128,7 +128,7 @@
     <SubTexture name="bulletFile54-003.png" x="559" y="901" width="65" height="82" frameX="-1" frameY="-1" frameWidth="69" frameHeight="86"/>
     <SubTexture name="bulletFile54-004.png" x="559" y="773" width="67" height="66" frameX="-1" frameY="-10" frameWidth="69" frameHeight="86"/>
     <SubTexture name="bulletFile54-005.png" x="770" y="460" width="69" height="70" frameX="0" frameY="-7" frameWidth="69" frameHeight="86"/>
-    <SubTexture name="bulletFile54-极寒冰椰子_8.png--blt54" x="1680" y="1590" width="35" height="38" frameX="-2" frameY="0" frameWidth="39" frameHeight="40"/>
+    <SubTexture name="bulletFile54-极·寒冰椰子_8.png--blt54" x="1680" y="1590" width="35" height="38" frameX="-2" frameY="0" frameWidth="39" frameHeight="40"/>
     <SubTexture name="bulletFile54-补间 10--blt54" x="468" y="996" width="20" height="25"/>
     <SubTexture name="bulletFile54-补间 12--blt54" x="1046" y="1414" width="22" height="20"/>
     <SubTexture name="bulletFile54-补间 14--blt54" x="1141" y="1491" width="21" height="27"/>

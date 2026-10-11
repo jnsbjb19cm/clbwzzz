@@ -12,7 +12,7 @@ const MONSTER_TOASTER_CARD_ID = 20;
 const WALNUT_GUARD_CARD_ID = 2;
 const BURROW_CARD_IDS = new Set([43, 41]); // 钻地大蒜 / 地道工兵
 const REAR_SUPPORT_CARD_IDS = new Set([36]); // 蒲公英精灵
-const PHANTOM_FLYING_NINJA_CARD_ID = 45; // 幻.飞行忍者
+const PHANTOM_FLYING_NINJA_CARD_ID = 45; // 幻·飞行忍者
 const GIANT_HEAD_CARD_ID = 5; // 巨头怪
 const SLIME_NINJA_CARD_ID = 28; // 软泥忍者怪
 const DANDELION_CARD_ID = 36; // 蒲公英精灵
@@ -317,7 +317,7 @@ function spawnFormation(battle, wave, limit) {
 
 // 循环波次特殊召唤：
 // - 第 4 波（4,14,24...）加钻地大蒜/地道工兵：简单1 / 普通2 / 困难5
-// - 第 11 波（11,21,31...）加幻.飞行忍者：简单3 / 普通5 / 困难5
+// - 第 11 波（11,21,31...）加幻·飞行忍者：简单3 / 普通5 / 困难5
 function spawnWaveSpecific(battle, wave) {
   const spawned = [];
   const bossId = String(battle.bossInfo?.id || '');

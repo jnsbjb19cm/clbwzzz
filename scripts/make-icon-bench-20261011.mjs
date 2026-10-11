@@ -12,9 +12,10 @@ const root = path.resolve(import.meta.dirname, '..');
 const cards = JSON.parse(fs.readFileSync(path.join(root, 'src/data/card.json'), 'utf8'));
 
 // 与 src/data/cardFunctionIcon.js 同步的"当前实现"
+// 2026-10-11 用户给的权威对照
 const CURRENT = {
   1: '远程攻击（弓箭）', 2: '近战攻击（刀）', 3: '防御（盾）', 4: '辅助（鼓）',
-  5: '未改动·突击', 6: '未使用', 7: '特殊效果（月亮？）',
+  5: '特殊（蘑菇仙人等）', 6: '飞行（所有飞行单位）', 7: '钻地（钻地大蒜/地道工兵）',
 };
 const NAMED = {
   19: '稻草人', 32: '嗜血稻草人', 22: '蒲公英医生', 36: '蒲公英精灵', 26: '部落巫婆', 51: '太古巫婆',

@@ -1009,7 +1009,7 @@
   },
   {
     "card_id": 45,
-    "card_name": "幻.飞行忍者",
+    "card_name": "幻·飞行忍者",
     "res": 45,
     "card_atk": 15,
     "card_hp": 69,
@@ -1165,7 +1165,7 @@
   },
   {
     "card_id": 54,
-    "card_name": "极.寒冰椰子",
+    "card_name": "极·寒冰椰子",
     "res": 54,
     "card_atk": 8,
     "card_hp": 50,
@@ -1321,7 +1321,7 @@
   },
   {
     "card_id": 60,
-    "card_name": "幻.飞行忍者(分身)",
+    "card_name": "幻·飞行忍者(分身)",
     "res": 60,
     "card_atk": 15,
     "card_hp": 69,
@@ -1330,7 +1330,7 @@
     "cost_a": 0,
     "atk_style": 7,
     "card_quality": 1,
-    "desc": "幻.飞行忍者召唤出的影分身",
+    "desc": "幻·飞行忍者召唤出的影分身",
     "card_category": 1,
     "card_type": 1,
     "born_line": 0,
