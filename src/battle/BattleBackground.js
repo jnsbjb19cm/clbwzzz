@@ -52,6 +52,12 @@ export const BOSS_SCENE = Object.freeze({
   boss_ice: 'ice',
   boss_fire: 'volcano',
   boss_forest: 'rock',
+  // 2026-10-11 用户：海洋神殿组 —— 除「狂暴的刀牙」用沙滩外，其余都是海底神殿
+  boss_shark: 'beach',      // 狂暴的刀牙
+  boss_lobster: 'temple',   // 龙虾战士
+  boss_bluebaby: 'temple',  // 失控的蓝贝贝
+  boss_turtle: 'temple',    // 龟老师
+  boss_princess: 'temple',  // 人鱼公主琴音
 });
 
 /** PVP 随机池（火山未做不参与随机） */

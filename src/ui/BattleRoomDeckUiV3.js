@@ -667,21 +667,28 @@ function bindBaseRoomEvents(view, root) {
     if (!isOwner) diceBtn.disabled = true;
     diceBtn.addEventListener('click', () => {
       if (!isOwner) return;
+      // 2026-10-11 用户：「随机 roll 是在战斗准备房间 roll 的，你也没接入」
+      // 这里才是房间随机地图的**真正池子**（原来写死 3 张 ✗）
       const scenes = [
         { key: 'grass', label: '草地' },
         { key: 'rock', label: '黄沙' },
         { key: 'ice', label: '冰川' },
+        { key: 'forest', label: '古老密林' },
+        { key: 'fire', label: '火焰' },
+        { key: 'beach', label: '沙滩' },
+        { key: 'temple', label: '海底神殿' },
       ];
       const picked = scenes[Math.floor(Math.random() * scenes.length)];
       if (typeof window !== 'undefined') window.__pvpMapScene = picked.key;
       // 房主随机地图 → 广播给全房间（2=草地、4=冰川、7=黄沙），全员同步同一场景
-      const mapIdByScene = { grass: '2', rock: '7', ice: '4' };
+      const mapIdByScene = { grass: '2', rock: '7', ice: '4', forest: '8', fire: '9', beach: '10', temple: '11' };
       view._roomState?.onChangeMap?.(mapIdByScene[picked.key]);
       // 地图名显示在随机地图按钮上（不占用顶部房间名称区）
       const label = root.querySelector('.dice-label');
       if (label) label.textContent = `${picked.label}地图`;
       const icon = root.querySelector('.dice-icon');
-      if (icon) icon.textContent = picked.key === 'grass' ? '🌿' : picked.key === 'rock' ? '🏜️' : '❄️';
+      const iconByScene = { grass: '🌿', rock: '🏜️', ice: '❄️', forest: '🌳', fire: '🔥', beach: '🏖️', temple: '🔱' };
+      if (icon) icon.textContent = iconByScene[picked.key] ?? '🎲';
       const btn = root.querySelector('.dice-btn');
       if (btn) btn.title = `随机地图（当前：${picked.label}地图）`;
     });

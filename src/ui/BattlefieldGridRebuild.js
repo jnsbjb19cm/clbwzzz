@@ -121,10 +121,14 @@ function installBattlefieldLayers(view, root) {
   overlay.classList.add('battle-placement-layer');
   wrap.__battleView = view;
 
+  // 2026-10-11 用户：「沃里尔还不是那个地图」→ 真凶：这里**没传 bossId** ✗
+  // 于是重新解析成 grass 并覆盖掉 BattleView 已经设好的 BOSS 场景背景。
   const bg = resolveBattleBackground(view.engine?.stage, {
     trainingMode: view.trainingMode,
     pvpMode: isPvpMode(view),
     useMap: true,
+    bossId: view?.pvp?.bossId ?? view?.bossId ?? null,
+    trainingMap: view?.trainingMap ?? null,
   });
   game.style.setProperty('--bg-left', `url('${bg.leftColumnUrl}')`);
   game.style.setProperty('--bg-right', `url('${bg.rightColumnUrl}')`);
