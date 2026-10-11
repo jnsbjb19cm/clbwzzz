@@ -124,6 +124,7 @@ export function resolveBattleBackground(
     mapUrl: baseUrl,
     sceneKey,
     sceneLabel: scene.label,
+    label: scene.label,   // 2026-10-11：原来这里漏了 label，界面上取地图名会拿到 undefined ✗
     leftColumnUrl: `/battle/background/${scene.left}`,
     rightColumnUrl: `/battle/background/${scene.right}`,
     showLeftColumn: true,
