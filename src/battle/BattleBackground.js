@@ -30,11 +30,17 @@ export const SCENE_SETS = Object.freeze({
     right: 'rightice.png',
     label: '冰川',
   },
+  // 2026-10-11 用户：新增 4 张地图（素材从 resources/background 复制到 assets/battle/background，
+  // 因为战斗实际是从 /battle/background/ 取图的）
+  forest: { base: 'backforest.png', left: 'leftforest.png', right: 'rightforest.png', label: '古老密林' },
+  fire:   { base: 'backfire.png',   left: 'leftfire.png',   right: 'rightfire.png',   label: '火焰' },
+  beach:  { base: 'backbeach.png',  left: 'leftbeach.png',  right: 'rightbeach.png',  label: '沙滩' },
+  temple: { base: 'backtemple.png', left: 'lefttemple.png', right: 'righttemple.png', label: '海底神殿' },
   volcano: {
-    // 火山图尚未制作：先用草地素材占位
-    base: 'grassbg.jpg',
-    left: 'mushroomleft.png',
-    right: 'mushroomright.png',
+    // 2026-10-11：火焰素材已就位（原来用草地占位）
+    base: 'backfire.png',
+    left: 'leftfire.png',
+    right: 'rightfire.png',
     label: '火山',
   },
 });
@@ -42,14 +48,15 @@ export const SCENE_SETS = Object.freeze({
 /** BOSS → 场景（痴情的多特=草地、愤怒的沃里尔=黄沙、疯狂的安娜=冰川、火焰的复仇=火山、树妖洛丽塔=黄沙） */
 export const BOSS_SCENE = Object.freeze({
   boss_dot: 'grass',
-  boss_gravo: 'rock',
+  boss_gravo: 'fire',   // 2026-10-11 用户：愤怒的沃里尔改为「火焰」地图（原黄沙）
   boss_ice: 'ice',
   boss_fire: 'volcano',
   boss_forest: 'rock',
 });
 
 /** PVP 随机池（火山未做不参与随机） */
-const PVP_SCENE_POOL = ['grass', 'rock', 'ice'];
+// 2026-10-11 用户：随机地图也要包含新地图
+const PVP_SCENE_POOL = ['grass', 'rock', 'ice', 'forest', 'fire', 'beach', 'temple'];
 
 /**
  * @param {object} stage
