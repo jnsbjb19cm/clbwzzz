@@ -301,7 +301,7 @@ export function installDeckGroupStartGuard20260911() {
  * 账号里的某一组卡组 → 背包槽位下标（用于把账号数据写回本地缓存）。
  * 账号里"明确保存为空"返回 []；账号里没有这一组返回 null。
  */
-function accountDeckIndices20260911(deckNo, cardInventory) {
+function accountDeckIndices20260911(deckNo, cardInventory, localFingerprints = []) {
   const decks = authStore?.snapshot?.decks;
   if (!Array.isArray(decks) || !cardInventory?.getSlots) return null;
   const deck = decks.find((entry) => Number(entry?.deckNo ?? entry?.deck_no) === Number(deckNo));
@@ -309,15 +309,22 @@ function accountDeckIndices20260911(deckNo, cardInventory) {
   const slots = cardInventory.getSlots() ?? [];
   const used = new Set();
   const selected = [];
-    for (const raw of deck.cards) {
+  // 2026-10-11（用户实测数据）：花生射手本来是【完美(品质5)】，进战斗却变成【品质2】那张。
+  // 原因：账号牌组里**只有 cardId**（服务端没存品质/星级），换算时落到"第一张同 id 的卡"。
+  // 所以这里先记下**玩家本地已经选过的那些卡**（哪个品质、在哪个槽），
+  // 换算时优先复用本地那一格 —— 账号数据只用来决定"这一组有哪些卡"，不再决定"用哪一张实例"。
+  const localByCardId = new Map();
+  for (const fp of Array.isArray(localFingerprints) ? localFingerprints : []) {
+    if (!fp || typeof fp.cardId !== 'number') continue;
+    if (!localByCardId.has(fp.cardId)) localByCardId.set(fp.cardId, fp);
+  }
+  for (const raw of deck.cards) {
     const cardId = Number(raw?.cardId ?? raw);
     if (!Number.isInteger(cardId) || cardId <= 0) continue;
-    // 2026-10-11（用户：「拥有同类型多个卡牌，选 a 进游戏却是 b」）：
-    // 这里原来**只比 cardId**，同一张卡有多个实例（不同品质/星级）时就会选中"第一张"，
-    // 于是玩家选的 a 被换成了另一张 b。账号牌组里如果带了品质/星级，就必须按指纹精确匹配。
     const wantQuality = Number(raw?.craftQuality ?? raw?.craft_quality ?? 0);
     const wantStar = Number(raw?.strengthLv ?? raw?.strength_lv ?? raw?.star ?? 0);
     let index = -1;
+    // ① 账号里真带了品质/星级 → 按指纹精确匹配
     if (wantQuality > 0 || wantStar > 0) {
       index = slots.findIndex((slot, slotIndex) => {
         if (used.has(slotIndex) || Number(slot?.cardId) !== cardId) return false;
@@ -325,6 +332,18 @@ function accountDeckIndices20260911(deckNo, cardInventory) {
         if (wantStar > 0 && (slot.strengthLv ?? 0) !== wantStar) return false;
         return true;
       });
+    }
+    // ② 本地这一组里已经选过这张卡 → 复用本地那一格（保住玩家选的实例）
+    if (index < 0) {
+      const fp = localByCardId.get(cardId);
+      const fpIndex = fp?.index;
+      if (Number.isInteger(fpIndex) && fpIndex >= 0 && !used.has(fpIndex)) {
+        const slot = slots[fpIndex];
+        const sameCard = Number(slot?.cardId) === cardId;
+        const sameQuality = (slot?.craftQuality ?? 1) === (fp.craftQuality ?? 1);
+        const sameStar = (slot?.strengthLv ?? 0) === (fp.strengthLv ?? 0);
+        if (sameCard && sameQuality && sameStar) index = fpIndex;
+      }
     }
     if (index < 0) {
       index = slots.findIndex((slot, slotIndex) => (
@@ -369,16 +388,21 @@ export function mirrorAccountDecksToLocal20260911(cardInventory, db) {
   let fixed = 0;
   for (const group of ['default', 'team1', 'team2', 'team3']) {
     const deckNo = deckNoForGroup20260911(group);
-    const account = accountDeckIndices20260911(deckNo, cardInventory);
-    if (!Array.isArray(account)) continue;
-    const local = localGroupIndices20260911(group, cardInventory);
-    if (sameIndices20260911(local, account)) continue;
-    // 2026-10-11（用户：「拥有同类型多个卡牌，选 a 进游戏却是 b」）：
-    // 账号牌组只记 cardId 时，accountDeckIndices 只能落到"第一张同 id 的卡"——
-    // 于是这里一旦重写，玩家刚选的**实例**（品质/星级）就被换成了另一张同 id 的卡。
-    // 判定：只要**卡片组成**（按 cardId 的序列）已经和账号一致，就不重写 —— 保留玩家的实例选择；
-    // 只有组成真的不同（比如串组、缺卡）才用账号内容纠正。
     const slotsNow = cardInventory.getSlots() ?? [];
+    // 先把**本地已经选好的**那些卡拿出来（含品质/星级），交给换算函数复用 ——
+    // 账号里只有 cardId 时，绝不能让换算结果把玩家选的实例（比如"完美花生射手"）换成同 id 的另一张。
+    const local = localGroupIndices20260911(group, cardInventory);
+    const localFps = (Array.isArray(local) ? local : []).map((i) => ({
+      index: i,
+      cardId: Number(slotsNow[i]?.cardId) || 0,
+      craftQuality: slotsNow[i]?.craftQuality ?? 1,
+      strengthLv: slotsNow[i]?.strengthLv ?? 0,
+    }));
+    const account = accountDeckIndices20260911(deckNo, cardInventory, localFps);
+    if (!Array.isArray(account)) continue;
+    if (sameIndices20260911(local, account)) continue;
+    // 2026-10-11：只要**卡片组成**（按 cardId 的序列）已经和账号一致，就不重写 —— 保留玩家的实例选择；
+    // 只有组成真的不同（比如串组、缺卡）才用账号内容纠正。
     const idsOf = (list) => (Array.isArray(list) ? list : []).map((i) => Number(slotsNow[i]?.cardId) || 0);
     if (local && sameIndices20260911(idsOf(local), idsOf(account))) continue;
     try {
