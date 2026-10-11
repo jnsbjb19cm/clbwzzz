@@ -1,4 +1,5 @@
 import { CardDatabase } from '../core/CardDatabase.js';
+import { nightmareGoldExpMult } from '../data/NightmareReward20261011.js';
 import { installClassicCardTooltip } from './ClassicCardTooltip.js';
 import { ItemDatabase, InventoryStore } from '../core/ItemDatabase.js';
 import { CardInventoryStore } from '../core/CardInventoryStore.js';
@@ -311,9 +312,11 @@ export class App {
   handleBattleResult({ won, stage, drops = [], durationMs = 0, mode = 'pve' }) {
     // PVP 任务由 BattleView 按局上报；房间奖励由服务器结算并刷新快照。
     if (mode === 'pvp' || mode === 'boss') return;
+    // 2026-10-11：噩梦档单机结算也要 x2.5（与服务端 PveStageSettlement 一致，避免"联机给、单机不给"）
     const reward = getBattleRewards(stage, won);
-    let totalGold = reward.gold;
-    let totalExp = reward.exp;
+    const nmMult = nightmareGoldExpMult(stage);
+    let totalGold = Math.round(reward.gold * nmMult);
+    let totalExp = Math.round(reward.exp * nmMult);
     const special = won ? markWorldStageCleared(stage.stage_id ?? stage.id) : { firstClear: false, rewards: [] };
     if (won && (stage?.stage_id || drops.length)) {
       authStore.api.post('/player/stage-result', {

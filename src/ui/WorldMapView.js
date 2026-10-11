@@ -1,4 +1,5 @@
 import { audio } from '../core/AudioManager.js';
+import { scaleRewardsForNightmare, nightmareHintText } from '../data/NightmareReward20261011.js';
 import { emitQuestEvent } from '../core/QuestEventBus.js';
 import { authStore } from '../core/AuthStore.js';
 import { createAdventureStages } from '../data/AdventureCampaign.js';
@@ -403,7 +404,8 @@ export class WorldMapView {
       });
       return;
     }    const enemy = brokenText(stage.enemy_name) ? '未知' : (stage.enemy_name || '未知');
-    const rewards = parseRewards(stage.reward);
+    // 2026-10-11：噩梦档的预览必须与服务端结算一致（金币/经验 x2.5、材料 x1.6、追加专属材料）
+    const rewards = scaleRewardsForNightmare(parseRewards(stage.reward), stage);
     detail.innerHTML = [
       '<div class="ch-stage-detail-inner"><div class="ch-detail-left"><h3>主线：', escapeHtml(stageName(stage, index)), '</h3><p>', escapeHtml(desc), '</p>',
       '<p class="ch-detail-muted">敌人：', escapeHtml(enemy), '</p><p class="ch-detail-muted">特殊奖励：', escapeHtml(rewardText(rewards)), '</p>',
