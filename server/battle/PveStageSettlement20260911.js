@@ -69,10 +69,23 @@ export async function settlePveStageForPlayer(conn, userId, { stageId, stage, wo
   const id = String(stageId ?? stage?.stage_id ?? '').trim();
   const summary = { gold: 0, exp: 0, honor: 0, items: [], firstClear: false, level: 1 };
 
+  // 2026-10-11 噩梦模式奖励（用户：奖励 x2.5、材料 x1.6、材料爆率更高、专属材料）
+  const NIGHTMARE = {
+    difficulty: 3,
+    goldExpMult: 2.5,
+    materialMult: 1.6,
+    dropMult: 1.5,
+    exclusiveItemId: 10005,   // 噩梦专属材料（暂用 5级强化粉 10005，要换只改这个 id）
+    exclusiveFirst: 1,        // 首通必给 1
+    exclusiveRepeatRate: 0.35 // 重复挑战 35%
+  };
+  const isNightmare = Number(stage?.adventure?.difficulty) === NIGHTMARE.difficulty;
+
   // 1) 基础奖励（胜负都给，与单机 App.handleBattleResult 一致）
   const base = getBattleRewards(stage, Boolean(won));
-  summary.gold += Number(base?.gold) || 0;
-  summary.exp += Number(base?.exp) || 0;
+  const goldExpMult = isNightmare ? NIGHTMARE.goldExpMult : 1;
+  summary.gold += Math.round((Number(base?.gold) || 0) * goldExpMult);
+  summary.exp += Math.round((Number(base?.exp) || 0) * goldExpMult);
 
   // 2) 通关进度 / 功勋 / 首通特殊奖励（仅胜利，与 /player/stage-result 一致）
   if (won && id) {
@@ -98,19 +111,30 @@ export async function settlePveStageForPlayer(conn, userId, { stageId, stage, wo
     }
     summary.honor += existing ? 10 : 50;
 
+    // 2026-10-11 噩梦专属材料：首通必给 1，重复挑战 35%
+    if (isNightmare) {
+      const got = existing ? (Math.random() < NIGHTMARE.exclusiveRepeatRate ? 1 : 0) : NIGHTMARE.exclusiveFirst;
+      if (got > 0 && await grantItem(conn, userId, NIGHTMARE.exclusiveItemId, got)) {
+        const found = summary.items.find((item) => Number(item.itemId) === NIGHTMARE.exclusiveItemId);
+        if (found) found.count += got;
+        else summary.items.push({ itemId: NIGHTMARE.exclusiveItemId, count: got });
+      }
+    }
+
     if (!existing) {
       summary.firstClear = true;
       for (const reward of parseStageRewards(stage?.reward)) {
         if (reward.type === 3) {
-          summary.gold += reward.amount;
+          summary.gold += Math.round(reward.amount * goldExpMult);
         } else if (reward.type === 27) {
-          summary.exp += reward.amount;
+          summary.exp += Math.round(reward.amount * goldExpMult);
         } else if (reward.type === 2) {
           // 首通卡牌
           if (await grantCard(conn, userId, reward.amount)) summary.items.push({ itemId: reward.amount, count: 1 });
         } else if (reward.type === 1) {
-          // 首通道具
-          if (await grantItem(conn, userId, reward.amount, 1)) summary.items.push({ itemId: reward.amount, count: 1 });
+          // 首通道具（噩梦：数量 x1.6）
+          const itemCount = isNightmare ? Math.max(1, Math.round(NIGHTMARE.materialMult)) : 1;
+          if (await grantItem(conn, userId, reward.amount, itemCount)) summary.items.push({ itemId: reward.amount, count: itemCount });
         }
       }
     }
@@ -119,7 +143,8 @@ export async function settlePveStageForPlayer(conn, userId, { stageId, stage, wo
   // 3) 掉落：每名玩家各拿一份（服务端权威战斗的共享掉落池）
   for (const drop of Array.isArray(drops) ? drops : []) {
     const itemId = Number(drop?.itemId);
-    const count = clampInt(drop?.count ?? 1, 1, 99);
+    const rawCount = clampInt(drop?.count ?? 1, 1, 99);
+    const count = isNightmare ? Math.max(1, Math.round(rawCount * NIGHTMARE.dropMult)) : rawCount;
     if (!Number.isInteger(itemId) || itemId <= 0) continue;
     if (!(await grantItem(conn, userId, itemId, count))) continue;
     const existing = summary.items.find((item) => Number(item.itemId) === itemId);
