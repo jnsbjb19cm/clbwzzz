@@ -111,15 +111,7 @@ export async function settlePveStageForPlayer(conn, userId, { stageId, stage, wo
     }
     summary.honor += existing ? 10 : 50;
 
-    // 2026-10-11 噩梦专属材料：首通必给 1，重复挑战 35%
-    if (isNightmare) {
-      const got = existing ? (Math.random() < NIGHTMARE.exclusiveRepeatRate ? 1 : 0) : NIGHTMARE.exclusiveFirst;
-      if (got > 0 && await grantItem(conn, userId, NIGHTMARE.exclusiveItemId, got)) {
-        const found = summary.items.find((item) => Number(item.itemId) === NIGHTMARE.exclusiveItemId);
-        if (found) found.count += got;
-        else summary.items.push({ itemId: NIGHTMARE.exclusiveItemId, count: got });
-      }
-    }
+    // 2026-10-11 用户：「但是没啥专属道具的」→ 噩梦不发专属材料（游戏里没这个道具）
 
     if (!existing) {
       summary.firstClear = true;

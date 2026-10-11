@@ -49,7 +49,8 @@ export function scaleRewardsForNightmare(rewards, stage) {
     }
     return { ...r };
   });
-  out.push({ type: 1, amount: NIGHTMARE_EXCLUSIVE_ITEM_ID, count: NIGHTMARE_EXCLUSIVE_FIRST, nightmareExclusive: true });
+  // 2026-10-11 用户：「但是没啥专属道具的」→ 不再追加专属材料（游戏里没有这个道具），
+  // 所以只保留 金币/经验 x2.5、材料 x1.6、掉落 x1.5 这三条。
   return out;
 }
 
@@ -67,5 +68,5 @@ export function nightmareDropCount(stage, count) {
 /** 文案：给预览用的一句话 */
 export function nightmareHintText(stage) {
   if (!isNightmareStage(stage)) return '';
-  return `噩梦加成：金币/经验 ×${NIGHTMARE_GOLD_EXP_MULT}、材料 ×${NIGHTMARE_MATERIAL_MULT}、掉落 ×${NIGHTMARE_DROP_MULT}，首通必得${NIGHTMARE_EXCLUSIVE_NAME}`;
+  return '噩梦加成：金币/经验 ×' + NIGHTMARE_GOLD_EXP_MULT + '、材料 ×' + NIGHTMARE_MATERIAL_MULT + '、掉落 ×' + NIGHTMARE_DROP_MULT;
 }

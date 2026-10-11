@@ -318,6 +318,8 @@ export class App {
     let totalGold = Math.round(reward.gold * nmMult);
     let totalExp = Math.round(reward.exp * nmMult);
     const special = won ? markWorldStageCleared(stage.stage_id ?? stage.id) : { firstClear: false, rewards: [] };
+    // 2026-10-11：噩梦档首通奖励也要 x2.5/x1.6（单机结算与服务端保持一致）
+    if (special.firstClear) special.rewards = scaleRewardsForNightmare(special.rewards, stage);
     if (won && (stage?.stage_id || drops.length)) {
       authStore.api.post('/player/stage-result', {
         stageId: stage?.stage_id ?? null,

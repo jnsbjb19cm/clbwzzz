@@ -409,6 +409,7 @@ export class WorldMapView {
     detail.innerHTML = [
       '<div class="ch-stage-detail-inner"><div class="ch-detail-left"><h3>主线：', escapeHtml(stageName(stage, index)), '</h3><p>', escapeHtml(desc), '</p>',
       '<p class="ch-detail-muted">敌人：', escapeHtml(enemy), '</p><p class="ch-detail-muted">特殊奖励：', escapeHtml(rewardText(rewards)), '</p>',
+      (nightmareHintText(stage) ? '<p class="ch-detail-muted">' + nightmareHintText(stage) + '</p>' : ''),
       '<div class="ch-detail-btns"><button type="button" class="ch-battle-btn">进入战斗</button></div><p class="ch-detail-muted">首次通关后自动发放特殊奖励。</p></div>',
       '<div class="ch-detail-right"><span class="ch-chest-icon">🎁</span><span class="ch-detail-ready">未领取</span></div></div>',
     ].join('');
