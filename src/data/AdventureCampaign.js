@@ -53,12 +53,18 @@ export function isForestUnlocked(cleared = []) {
 
 /**
  * 噩梦模式解锁条件：通关全部「困难」关卡（两条线的 1-1~4-4 + 困难最终关）。
- * 模式本身尚未开放，界面点击现在只提示"暂未开放"。
+ *
+ * 2026-10-11 用户：「你可以先开一下能直接打（之后再约束能否打噩梦模式）」
+ *   → 现在 NIGHTMARE_OPEN_FOR_ALL = true，**所有人都能直接打**；
+ *     等要收紧时把下面这个开关改成 false，就会自动恢复"困难全通才解锁"。
  */
+export const NIGHTMARE_OPEN_FOR_ALL = true;
+
 export function isNightmareUnlocked(cleared = []) {
+  if (NIGHTMARE_OPEN_FOR_ALL) return true;      // 先全开（临时）
   const ids = new Set(cleared.map(Number));
   for (const route of [0, 1]) {
-    for (let index = 1; index <= 16; index++) {
+    for (let index = 1; index <= 16; index += 1) {
       if (!ids.has(campaignStageId(route, index, 2))) return false;
     }
   }

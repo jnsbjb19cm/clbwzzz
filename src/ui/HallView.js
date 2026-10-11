@@ -1,5 +1,6 @@
 import { authStore } from '../core/AuthStore.js';
 import './HallView.css';
+import { hallStageName } from './HallStageName.js';
 
 const esc = value => String(value ?? '').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const number = value => Math.max(0, Number(value) || 0);
@@ -52,9 +53,13 @@ export class HallView {
     const stageSelect=root.querySelector('[data-hall-stage]');
     root.querySelector('[data-hall-stage-wrap]').hidden=this.tab!=='fastest'||!groups.length;
     if(!groups.some(g=>String(g.stageId)===this.stage))this.stage=String(groups[0]?.stageId??'');
-    stageSelect.innerHTML=groups.map(g=>`<option value="${esc(g.stageId)}" ${String(g.stageId)===this.stage?'selected':''}>${esc(g.stageId)}</option>`).join('');
+    stageSelect.innerHTML=groups.map(g=>`<option value="${esc(g.stageId)}" ${String(g.stageId)===this.stage?'selected':''}>${esc(hallStageName(g.stageId,g.difficulty||g.best?.difficulty))}</option>`).join('');
     const description={honor:'荣誉积累，见证每一场胜利。',fastest:groups.length?'同关卡比较用时，越快排名越高。':'各关卡最佳纪录（用时由短到长）。',adventure:'按已通关数量排列，记录冒险足迹。'};
     root.querySelector('[data-hall-description]').textContent=description[this.tab];
+    if(this.tab==='fastest' && groups.length) {
+      const group=groups.find(g=>String(g.stageId)===this.stage);
+      root.querySelector('[data-hall-description]').textContent=`${hallStageName(group.stageId,group.difficulty||group.best?.difficulty)} · 用时越短排名越高`;
+    }
     const content=root.querySelector('[data-hall-content]');
     if(this.loading&&!this.data){content.innerHTML='<div class="hall-empty">正在读取荣誉榜…</div>';return;}
     if(this.error){content.innerHTML=`<div class="hall-empty">${this.error}</div>`;return;}
@@ -62,6 +67,6 @@ export class HallView {
     if(!Array.isArray(rows)||!rows.length){content.innerHTML='<div class="hall-empty"><b>虚位以待</b><p>还没有这项纪录，等待冒险者留下名字。</p></div>';return;}
     const value=row=>this.tab==='fastest'?`${(number(row.bestTimeMs)/1000).toFixed(2)} 秒`:this.tab==='adventure'?`${number(row.clearedStages)} 关`:number(row.honor).toLocaleString('zh-CN');
     content.innerHTML=`<div class="hall-podium">${rows.slice(0,3).map((row,i)=>`<article class="hall-champion rank-${i+1}"><span class="hall-medal">${['Ⅰ','Ⅱ','Ⅲ'][i]}</span><small>${['冠军','亚军','季军'][i]}</small><h3 title="${esc(row.nickname)}">${esc(row.nickname||'玩家')}</h3><span>Lv.${number(row.level)||1}</span><strong>${value(row)}</strong></article>`).join('')}</div>
-      <div class="hall-table-wrap"><table><thead><tr><th>排名</th><th>冒险者</th><th>等级</th><th>${this.tab==='fastest'?'最佳用时':this.tab==='adventure'?'通关数量':'荣誉值'}</th></tr></thead><tbody>${rows.map((row,i)=>`<tr><td><span class="hall-rank rank-${i+1}">${i+1}</span></td><td><span class="hall-player-name">${esc(row.nickname||'玩家')}</span>${row.online?'<small class="hall-online">在线</small>':''}${this.tab==='fastest'&&!groups.length?`<small class="hall-stage-name">${esc(row.stageId)}</small>`:''}</td><td>${number(row.level)||1}</td><td><b>${value(row)}</b></td></tr>`).join('')}</tbody></table></div>`;
+      <div class="hall-table-wrap"><table><thead><tr><th>排名</th><th>冒险者</th><th>等级</th><th>${this.tab==='fastest'?'最佳用时':this.tab==='adventure'?'通关数量':'荣誉值'}</th></tr></thead><tbody>${rows.map((row,i)=>`<tr><td><span class="hall-rank rank-${i+1}">${i+1}</span></td><td><span class="hall-player-name">${esc(row.nickname||'玩家')}</span>${row.online?'<small class="hall-online">在线</small>':''}${this.tab==='fastest'&&!groups.length?`<small class="hall-stage-name">${esc(hallStageName(row.stageId,row.difficulty))}</small>`:''}</td><td>${number(row.level)||1}</td><td><b>${value(row)}</b></td></tr>`).join('')}</tbody></table></div>`;
   }
 }

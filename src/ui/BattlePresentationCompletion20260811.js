@@ -303,6 +303,10 @@ function installBossScale() {
     }
 
     ctx.save();
+    // Only move the rendered model toward its own base, before scale so the
+    // small offset is not multiplied by the BOSS's 4x display size.
+    const bossRearOffset = Math.abs(Number(this.battleVisualGrid?.stepX) || 64) * .33 * (unit.team === 'enemy' ? 1 : -1);
+    ctx.translate(bossRearOffset, 0);
     ctx.translate(layout.cx, layout.footY);
     ctx.scale(extra, extra);
     ctx.translate(-layout.cx, -layout.footY);
@@ -314,6 +318,7 @@ function installBossScale() {
         uid: unit.uid,
         cardId: unit.cardId,
         configured,
+        bossRearOffset,
         extra,
         lane: unit.lane,
         col: unit.col,
