@@ -69,8 +69,9 @@ const SCENES = Object.freeze({
     map: '/battle/background/backice.png',
     left: '/battle/background/leftice-column.png',
     right: '/battle/background/rightice-column.png',
-    leftWidth: '53.9vh',
-    rightWidth: '39.7vh',
+    // 2026-10-11 用户：冰川的左右基地柱不好看，拉伸一下（53.9/39.7 -> 72/53）
+    leftWidth: '72vh',
+    rightWidth: '53vh',
   },
   rock: {
     key: 'rock',
