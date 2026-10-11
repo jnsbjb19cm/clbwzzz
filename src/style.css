@@ -5449,9 +5449,13 @@ html, body { margin:0; padding:0; width:100%; height:100%; overflow:hidden; }
 }
 
 /* 战团（卡组编辑）页的卡槽：同样拉长一点，和战斗内保持一致的"竖长方形"手感 */
-/* 2026-10-11 修正：之前给 .deck-slot-item 加宽到 84px 是**反效果** ——
-   容器的 height:77px 是 JS 内联 !important 写死的（样式表压不过），
-   加宽后每格变成 84x77 = 更方了。所以这里先**不加宽**，等高由 JS 那一侧改。 */
+/* 2026-10-11 用户：「你应该单改卡牌卡槽」——只改**单张卡**的形状，绝不动房间容器。
+   容器仍是 941x95（缩放后 762.8x77.0），网格每列 ~90px；
+   这里把卡片自身收窄并居中 → 每张卡变成**竖长方形**（约 62x77），房间布局完全不受影响。 */
 #deck-slots-row .deck-slot-item {
-  min-height: 77px;
+  width: 62px !important;
+  min-width: 62px !important;
+  max-width: 62px !important;
+  height: 100% !important;
+  justify-self: center !important;
 }
