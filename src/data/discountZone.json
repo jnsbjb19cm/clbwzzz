@@ -1,30 +1,107 @@
 {
-  "_doc": "打折专区（2026-10-11 用户要求：出一个打折的位置，但限购，每天最多购买 xx 个；低等级打折力度低、高等级打折力度高）。价格以 ShopView 的 SHOP_ITEMS 为基础价（按 realId 匹配），折扣由 level（材料等级）决定。",
+  "_doc": "打折/特惠专区（2026-10-11）：位置在商城「特惠区」（原金币礼券区）；限购每日重置；**商品池每 7 天轮换一次**。折扣随材料等级递增。额度由服务端校验（player_daily_deals）。",
   "slots": 6,
   "tiers": [
-    { "level": 1, "discount": 0.95, "dailyLimit": 5, "label": "95折" },
-    { "level": 2, "discount": 0.9, "dailyLimit": 4, "label": "9折" },
-    { "level": 3, "discount": 0.85, "dailyLimit": 3, "label": "85折" },
-    { "level": 4, "discount": 0.8, "dailyLimit": 2, "label": "8折" },
-    { "level": 5, "discount": 0.7, "dailyLimit": 1, "label": "7折" }
+    {
+      "level": 1,
+      "discount": 0.95,
+      "dailyLimit": 5,
+      "label": "95折"
+    },
+    {
+      "level": 2,
+      "discount": 0.9,
+      "dailyLimit": 4,
+      "label": "9折"
+    },
+    {
+      "level": 3,
+      "discount": 0.85,
+      "dailyLimit": 3,
+      "label": "85折"
+    },
+    {
+      "level": 4,
+      "discount": 0.8,
+      "dailyLimit": 2,
+      "label": "8折"
+    },
+    {
+      "level": 5,
+      "discount": 0.7,
+      "dailyLimit": 1,
+      "label": "7折"
+    }
   ],
   "pool": [
-    { "realId": 10001, "level": 1 },
-    { "realId": 10002, "level": 2 },
-    { "realId": 10003, "level": 3 },
-    { "realId": 10004, "level": 4 },
-    { "realId": 10005, "level": 5 },
-    { "realId": 50011, "level": 1 },
-    { "realId": 50012, "level": 2 },
-    { "realId": 50013, "level": 3 },
-    { "realId": 50014, "level": 4 },
-    { "realId": 50001, "level": 1 },
-    { "realId": 50002, "level": 2 },
-    { "realId": 50003, "level": 3 },
-    { "realId": 50004, "level": 4 },
-    { "realId": 50031, "level": 1 },
-    { "realId": 50032, "level": 2 },
-    { "realId": 50033, "level": 3 },
-    { "realId": 50034, "level": 4 }
-  ]
+    {
+      "realId": 10001,
+      "level": 1
+    },
+    {
+      "realId": 10002,
+      "level": 2
+    },
+    {
+      "realId": 10003,
+      "level": 3
+    },
+    {
+      "realId": 10004,
+      "level": 4
+    },
+    {
+      "realId": 10005,
+      "level": 5
+    },
+    {
+      "realId": 50011,
+      "level": 1
+    },
+    {
+      "realId": 50012,
+      "level": 2
+    },
+    {
+      "realId": 50013,
+      "level": 3
+    },
+    {
+      "realId": 50014,
+      "level": 4
+    },
+    {
+      "realId": 50001,
+      "level": 1
+    },
+    {
+      "realId": 50002,
+      "level": 2
+    },
+    {
+      "realId": 50003,
+      "level": 3
+    },
+    {
+      "realId": 50004,
+      "level": 4
+    },
+    {
+      "realId": 50031,
+      "level": 1
+    },
+    {
+      "realId": 50032,
+      "level": 2
+    },
+    {
+      "realId": 50033,
+      "level": 3
+    },
+    {
+      "realId": 50034,
+      "level": 4
+    }
+  ],
+  "rotateDays": 7
 }

@@ -295,6 +295,16 @@ CREATE TABLE IF NOT EXISTS deck_cards (
   FOREIGN KEY(deck_id) REFERENCES player_decks(id) ON DELETE CASCADE
 );
 
+-- 2026-10-11 特惠/打折专区的每日限购额度（服务端权威，防改本地）
+CREATE TABLE IF NOT EXISTS player_daily_deals (
+  user_id INTEGER NOT NULL,
+  deal_day TEXT NOT NULL,
+  quota_key TEXT NOT NULL,
+  used INTEGER NOT NULL DEFAULT 0,
+  PRIMARY KEY(user_id, deal_day, quota_key),
+  FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
 CREATE TABLE IF NOT EXISTS player_items (
   user_id INTEGER NOT NULL,
   item_id INTEGER NOT NULL,
@@ -503,6 +513,14 @@ const MYSQL_TABLES = [
     strength_lv INT NOT NULL DEFAULT 0,
     PRIMARY KEY(deck_id, slot_index),
     CONSTRAINT fk_deckcards_deck FOREIGN KEY(deck_id) REFERENCES player_decks(id) ON DELETE CASCADE
+  ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci`,
+  `CREATE TABLE IF NOT EXISTS player_daily_deals (
+    user_id BIGINT NOT NULL,
+    deal_day VARCHAR(16) NOT NULL,
+    quota_key VARCHAR(64) NOT NULL,
+    used INT NOT NULL DEFAULT 0,
+    PRIMARY KEY(user_id, deal_day, quota_key),
+    CONSTRAINT fk_dailydeals_user FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE
   ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci`,
   `CREATE TABLE IF NOT EXISTS player_items (
     user_id BIGINT NOT NULL,

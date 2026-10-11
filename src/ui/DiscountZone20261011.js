@@ -14,6 +14,15 @@ import discountZoneData from '../data/discountZone.json';
  */
 export const DISCOUNT_QUOTA_KEY = 'clbwz_discount_quota_v1';
 
+/** 2026-10-11：商品池按 **7 日**轮换（rotateDays 可配），所以抽样的种子用周期键而不是当天日期 */
+export function discountPeriodKey(now = new Date()) {
+  const days = Math.max(1, Number(discountZoneData?.rotateDays) || 7);
+  const start = new Date(now.getFullYear(), 0, 1);
+  const dayOfYear = Math.floor((now - start) / 86400000);
+  return `P${Math.floor(dayOfYear / days)}`;
+}
+
+/** 每日限购额度按天重置 */
 export function discountDateKey(now = new Date()) {
   return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
 }
@@ -45,7 +54,7 @@ function tierForLevel(level) {
 export function buildDiscountSlots(shopItems) {
   const pool = Array.isArray(discountZoneData?.pool) ? discountZoneData.pool : [];
   const slots = Math.max(1, Number(discountZoneData?.slots) || 6);
-  const seedStr = discountDateKey();
+  const seedStr = discountPeriodKey();
   let seed = 2166136261;
   for (let i = 0; i < seedStr.length; i += 1) { seed ^= seedStr.charCodeAt(i); seed = Math.imul(seed, 16777619); }
   seed >>>= 0;
@@ -179,7 +188,8 @@ export async function buyDiscountItem(button, { onDone } = {}) {
   button.disabled = true;
   try {
     const { authStore } = await import('../core/AuthStore.js');
-    const result = await authStore.api.post('/player/shop/buy-item', { itemId, count, goldCost, gemCost: 0 });
+    // 2026-10-11：额度交给服务端校验（player_daily_deals），本地只做 UI 显示
+    const result = await authStore.api.post('/player/shop/buy-item', { itemId, count, goldCost, gemCost: 0, dealQuotaKey: quotaKey, dealLimit: limit });
     const quota = readQuota();
     quota.used = quota.used ?? {};
     quota.used[quotaKey] = discountUsedToday(quotaKey) + 1;

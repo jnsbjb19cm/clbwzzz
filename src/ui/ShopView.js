@@ -31,7 +31,7 @@ const CLASSIC_SHOP_CATEGORIES = [
   { id: 'item', label: '道具' },
   { id: 'fashion', label: '服饰' },
   { id: 'beauty', label: '美容' },
-  { id: 'coupon', label: '金币礼券区' },
+  { id: 'coupon', label: '特惠区' },
 ];
 
 const CLASSIC_SHOP_SUBCATEGORIES = Object.freeze({
@@ -142,7 +142,6 @@ export class ShopView {
       <div class="classic-shop-layout">
         <aside class="classic-shop-profile">
           <div class="classic-shop-player-line"><strong>${this.player?.nickname ?? this.player?.name ?? '森林守卫'}</strong><span>排名 ${Number(this.player?.rank) > 0 ? Number(this.player.rank) : '暂无'}</span></div>
-          ${discountPanelHtml(SHOP_ITEMS)}
           <div class="classic-shop-avatar" aria-label="角色预览">
             ${referenceCharacterMarkup(this.player)}
             <button type="button" class="shop-equip shop-equip-hat">帽子</button>
@@ -397,11 +396,19 @@ export class ShopView {
     const pageStart = this.classicPage * CLASSIC_SHOP_PAGE_SIZE;
     const products = allProducts.slice(pageStart, pageStart + CLASSIC_SHOP_PAGE_SIZE);
     const catalog = root.querySelector('[data-shop-products]');
-    catalog.innerHTML = products.length ? products.map((product) => `<article class="classic-shop-product">
+    // 2026-10-11 用户要求：打折/特惠商品和「特惠区」（原金币礼券区）放一块 —— 渲染在这个页面的最上方
+    const discountHtml = this.classicCategory === 'coupon' ? discountPanelHtml(SHOP_ITEMS) : '';
+    catalog.innerHTML = discountHtml + (products.length ? products.map((product) => `<article class="classic-shop-product">
       <div class="classic-shop-product-art">${this.renderClassicProductIcon(product)}</div>
       <div class="classic-shop-product-copy"><h3>${product.name}</h3><p>${product.desc}</p><span>${this.formatClassicPrice(product)}</span></div>
       <button type="button" class="shop-buy-btn" data-add-cart="${product.key}" aria-label="加入购物车：${product.name}">加入购物车</button>
-    </article>`).join('') : '<p class="classic-shop-empty">当前分类暂无商品。</p>';
+    </article>`).join('') : '<p class="classic-shop-empty">当前分类暂无商品。</p>');
+    // 面板里的购买按钮：额度校验 → 折后价下单（必须放在 innerHTML 之后绑定）
+    catalog.querySelectorAll('[data-discount-buy]').forEach((button) => {
+      if (button.dataset.discountBound === 'true') return;
+      button.dataset.discountBound = 'true';
+      button.addEventListener('click', () => buyDiscountItem(button, { onDone: () => this.renderClassicCatalog(root) }));
+    });
     catalog.querySelectorAll('.classic-shop-product').forEach((article, index) => {
       const product = products[index];
       article.dataset.shopItemId = String(product?.realId ?? '');

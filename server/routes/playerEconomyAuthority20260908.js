@@ -346,9 +346,22 @@ playerEconomyAuthorityRouter20260908.post('/shop/buy-item', async (req, res) => 
   const count = clampInt(req.body?.count ?? 1, 1, 9999);
   const goldCost = clampInt(req.body?.goldCost ?? 0, 0, 2_000_000_000);
   const gemCost = clampInt(req.body?.gemCost ?? 0, 0, 2_000_000_000);
+  // 2026-10-11（用户：额度校验放后端）：特惠/打折专区每日限购由服务端权威记账
+  const dealQuotaKey = String(req.body?.dealQuotaKey ?? '').trim().slice(0, 64);
+  const dealLimit = clampInt(req.body?.dealLimit ?? 0, 0, 999);
+  const dealDay = new Date().toISOString().slice(0, 10);
   const def = itemDef(itemId);
   if (!def) return res.status(400).json({ message: '商品道具配置不存在' });
   try {
+    if (dealQuotaKey && dealLimit > 0) {
+      const row = await db.get(
+        'SELECT used FROM player_daily_deals WHERE user_id=? AND deal_day=? AND quota_key=?',
+        [userId, dealDay, dealQuotaKey],
+      );
+      if (Number(row?.used ?? 0) >= dealLimit) {
+        return res.status(409).json({ message: '今日该特惠商品已达限购上限，明天再来' });
+      }
+    }
     await withTransaction(async (conn) => {
       const debit = await conn.run(
         'UPDATE player_profiles SET gold=gold-?, diamond=diamond-?, updated_at=CURRENT_TIMESTAMP WHERE user_id=? AND gold>=? AND diamond>=?',
@@ -358,6 +371,20 @@ playerEconomyAuthorityRouter20260908.post('/shop/buy-item', async (req, res) => 
       if (affected !== 1) throw new Error(gemCost > 0 ? '钻石不足' : '金币不足');
       await addItem(conn, userId, itemId, count, false);
     });
+    if (dealQuotaKey && dealLimit > 0) {
+      // 2026-10-11：扣款成功后记一次额度（先 UPDATE 再 INSERT，SQLite/MySQL 通用，避免方言差异）
+      const bumped = await db.run(
+        'UPDATE player_daily_deals SET used=used+1 WHERE user_id=? AND deal_day=? AND quota_key=?',
+        [userId, dealDay, dealQuotaKey],
+      );
+      const changed = Number(bumped?.affectedRows ?? bumped?.changes ?? 0);
+      if (changed === 0) {
+        await db.run(
+          'INSERT INTO player_daily_deals(user_id,deal_day,quota_key,used) VALUES(?,?,?,1)',
+          [userId, dealDay, dealQuotaKey],
+        );
+      }
+    }
     return res.json(await buildResponse(userId, { purchasedItemId: itemId, purchasedCount: count }));
   } catch (error) {
     return res.status(400).json({ message: error?.message || '购买失败' });
