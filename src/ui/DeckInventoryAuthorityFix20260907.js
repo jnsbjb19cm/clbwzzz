@@ -11,6 +11,35 @@ const DECK_RUNTIME_FLAG = Symbol.for('clbwz.deckServerPersistence20260907');
 const REFILL_RUNTIME_FLAG = Symbol.for('clbwz.cardRefillAuthority20260907');
 const DECK_PENDING = new Map();
 
+/**
+ * 2026-10-11（用户实测：牌组键里是「完美花生射手 @20 q5」，进战斗却永远拿到 slot0 的 q2）：
+ * 读本地「按组存档」（battle_deck_v2 / battle_deck_v2_teamN）并做指纹比对，
+ * 拿回**玩家自己选的那一套下标**（含品质/星级）。读不到/比对不出 → null。
+ */
+function localKeyedDeckIndices20261011(group, cardInventory) {
+  try {
+    const key = !group || group === 'default' ? 'battle_deck_v2' : `battle_deck_v2_${group}`;
+    const raw = globalThis.localStorage?.getItem(key);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    if (!Array.isArray(parsed) || !parsed.length) return null;
+    const reconciled = DeckSelectView.reconcileFingerprints?.(parsed, cardInventory) ?? [];
+    return reconciled.length ? reconciled : null;
+  } catch {
+    return null;
+  }
+}
+
+/** 两套下标对应的"卡片组成"（按 cardId 的顺序）是否一致。 */
+function sameCardIdSequence20261011(a, b, cardInventory) {
+  if (!Array.isArray(a) || !Array.isArray(b) || a.length !== b.length) return false;
+  const slots = cardInventory?.getSlots?.() ?? [];
+  const ids = (list) => list.map((i) => Number(slots[i]?.cardId) || 0);
+  const left = ids(a);
+  const right = ids(b);
+  return left.every((value, index) => value === right[index]);
+}
+
 function currentUserId() {
   return Number(authStore?.user?.id ?? authStore?.snapshot?.profile?.userId) || 0;
 }
@@ -122,6 +151,16 @@ function installDeckServerPersistence() {
       const cardIds = pending ?? snapshotDeckIds(deckNo);
       if (Array.isArray(cardIds)) {
         const selected = reconcileCardIds(cardIds, cardInventory);
+        // 2026-10-11（用户实测：牌组键里是「完美花生射手 @20 q5」，进战斗却永远拿到 slot0 的 q2）：
+        // 本函数以前**直接返回**服务端快照推出来的下标。而服务端只存 cardId，
+        // reconcileCardIds 只能落到"第一张同 id 的卡" —— 玩家选的实例（品质/星级）就被换掉了。
+        // 现在：先看**本地按组存档**（battle_deck_v2[_teamN]，带品质/星级指纹）；
+        //   · 如果本地那一套的"卡片组成"（按 cardId 的顺序）与账号一致 → 用本地那一套（保住玩家的实例）；
+        //   · 组成不一致（账号确实改了牌组内容）→ 才用账号推出来的结果。
+        const localKeyed = localKeyedDeckIndices20261011(normalized, cardInventory);
+        if (localKeyed && Array.isArray(selected) && sameCardIdSequence20261011(localKeyed, selected, cardInventory)) {
+          return localKeyed;
+        }
         if (Array.isArray(selected)) return selected;
       }
     }
