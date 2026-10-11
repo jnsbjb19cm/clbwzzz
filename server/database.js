@@ -658,6 +658,15 @@ function migrateSqlite() {
     sqlite.exec('ALTER TABLE player_stage_progress ADD COLUMN best_time_ms INTEGER NOT NULL DEFAULT 0');
   }
 
+  // 2026-10-11（用户：「被动技能不要计入卡牌」）：清掉历史数据里混进背包的技能卡（id >= 500）。
+  // 服务端只发放 < 500 的卡牌，技能卡不是卡牌，留在背包里只会被误当成卡。
+  try {
+    const removed = sqlite.prepare('DELETE FROM player_cards WHERE card_id >= 500').run();
+    if (removed?.changes) console.log('[migrate] 清理背包内的技能卡', removed.changes, '张');
+  } catch (error) {
+    console.warn('[migrate] 清理技能卡失败（可忽略）', error?.message ?? error);
+  }
+
   // 2026-10-11：deck_cards 缺少 craft_quality / strength_lv（实例身份）→ 老库补列
   const deckCols = tableColumns('deck_cards');
   if (!deckCols.has('craft_quality')) {
@@ -837,6 +846,14 @@ async function migrateMysql() {
 
   if (!(await hasColumn('player_stage_progress', 'best_time_ms'))) {
     await pool.query('ALTER TABLE player_stage_progress ADD COLUMN best_time_ms BIGINT NOT NULL DEFAULT 0');
+  }
+
+  // 2026-10-11（用户：「被动技能不要计入卡牌」）：清掉历史数据里混进背包的技能卡（id >= 500，含被动技能）
+  try {
+    const [removedSkillRows] = await pool.query('DELETE FROM player_cards WHERE card_id >= 500');
+    if (removedSkillRows?.affectedRows) console.log('[migrate] 清理背包内的技能卡', removedSkillRows.affectedRows, '张');
+  } catch (error) {
+    console.warn('[migrate] 清理技能卡失败（可忽略）', error?.message ?? error);
   }
 
   // 2026-10-11：deck_cards 补实例字段（品质/星级），老库也要补

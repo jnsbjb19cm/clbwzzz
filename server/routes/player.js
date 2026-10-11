@@ -283,7 +283,10 @@ playerRouter.post('/migration/local-snapshot', async (req, res) => {
       for (let index = 0; index < Math.min(cards.length, 500); index += 1) {
         const card = cards[index];
         const cardId = Number(card?.cardId);
-        if (!Number.isInteger(cardId) || cardId <= 0) continue;
+        // 2026-10-11（用户：「被动技能不要计入卡牌好吗？补卡的时候也不补这些技能」）：
+        // 技能卡（id >= 500，含被动技能）不是"卡牌"——客户端 isCollectible() 也要求 id < 500。
+        // 老本地存档里混进来的技能卡，导入时直接丢掉，不再进 player_cards。
+        if (!Number.isInteger(cardId) || cardId <= 0 || cardId >= 500) continue;
         const slotIndex = Number.isInteger(card.slotIndex) ? card.slotIndex : index;
         await conn.run(
           'INSERT INTO player_cards(user_id,slot_index,card_id,star,craft_quality) VALUES(?,?,?,?,?)',

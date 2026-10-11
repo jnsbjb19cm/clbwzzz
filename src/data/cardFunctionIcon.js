@@ -33,6 +33,19 @@ export const SPECIAL_EFFECT_CARD_IDS = Object.freeze([58, 56, 75, 76, 104, 38]);
 /** 抵挡型但会反击的卡：用户明确"除了松果战士"，所以它算防御 */
 export const DEFENSE_CARD_IDS = Object.freeze([11]);
 
+/**
+ * 辅助（鼓）的严格标准 —— 用户：「鼓必须是实打实给增益、而且自身没有输出手段的」。
+ *   蒲公英医生(22)：atk=0，每 5 秒为周围 3x3 己方回血 → 纯增益 ✔
+ *   蒲公英精灵(36)：atk=0，全屏己方回血 → 纯增益 ✔
+ *   魔法冰盾(88)  ：抵挡远程伤害 + 冰冻减速（用户点名"原魔法冰盾的鼓图标"，作为标准图）✔
+ * 被排除的（有输出或只是特殊机制）→ 归"特殊效果"：怪物吸尘器(34,吞噬)、魅惑妖灵(53,魅惑)、
+ * 黑铁土豆雷(61,高伤)、怪物工厂(66)/怪物作坊(93,造怪)、传送门(78,吞噬)、超级喷喷怪(101)。
+ */
+export const SUPPORT_BUFF_CARD_IDS = Object.freeze([22, 36, 88]);
+
+/** 特殊机制卡（非纯增益、也非靠普攻输出）→ 特殊效果(火焰) */
+export const SPECIAL_MECHANIC_CARD_IDS = Object.freeze([34, 53, 61, 66, 78, 93, 101]);
+
 const REMOTE_ATK_STYLES = Object.freeze([2, 3]);   // 远程单体 / 远程范围
 const MELEE_ATK_STYLE = 7;                          // 近战
 const DEFENSE_ATK_STYLE = 1;                        // 防御（只挡不打）
@@ -46,29 +59,37 @@ export function cardFunctionIcon(card) {
   if (!card) return null;
   const cardId = Number(card?.card_id ?? card?.id ?? card?.cardId ?? 0);
   const atkStyle = Number(card?.atk_style ?? card?.atkStyle ?? 0);
-  const type = Number(card?.card_type ?? card?.type ?? 1);
+  const quality = Number(card?.card_quality ?? card?.quality ?? 1);
+  const moving = Number(card?.move_speed ?? card?.moveSpeed ?? 0) > 0;
 
-  // ① 特殊效果（用户点名，优先级最高）
-  if (SPECIAL_EFFECT_CARD_IDS.includes(cardId)) {
+  // ① 特殊效果（火焰）—— 三类：
+  //    a. 用户点名的那几张
+  //    b. 高等级（5 级以上）"可攻击可移动"的近战精英（石巨人/死神/战争古树…）
+  //    c. 有特殊机制但**既不是纯增益、也不靠普攻输出**的卡（吞噬/魅惑/爆炸/造怪/传送/守卫喷吐）
+  if (SPECIAL_EFFECT_CARD_IDS.includes(cardId) || SPECIAL_MECHANIC_CARD_IDS.includes(cardId)) {
     return { frame: CARD_FUNCTION_ICON_FRAMES.特殊效果, label: '特殊效果', rule: 'special' };
+  }
+  if (atkStyle === MELEE_ATK_STYLE && moving && quality >= 5) {
+    return { frame: CARD_FUNCTION_ICON_FRAMES.特殊效果, label: '特殊效果', rule: 'special-high-melee' };
   }
   // ② 防御：只挡不打（atk_style=1）+ 用户点名的松果战士
   if (atkStyle === DEFENSE_ATK_STYLE || DEFENSE_CARD_IDS.includes(cardId)) {
     return { frame: CARD_FUNCTION_ICON_FRAMES.防御, label: '防御', rule: 'defense' };
   }
-  // ③ 辅助：card_type 2/3（蒲公英医生·精灵·魅惑妖灵 / 魔法冰盾·黑铁土豆雷）
-  if (type === 2 || type === 3) {
+  // ③ 辅助（鼓）—— 用户标准：**实打实给增益、而且自身没有输出手段**
+  //    只认这几张：蒲公英医生(22)/蒲公英精灵(36) 纯回血，魔法冰盾(88) 抵挡+冰冻（用户点名它是鼓的标准图）。
+  if (SUPPORT_BUFF_CARD_IDS.includes(cardId)) {
     return { frame: CARD_FUNCTION_ICON_FRAMES.辅助, label: '辅助', rule: 'support' };
   }
-  // ④ 远程攻击
+  // ④ 远程攻击（弓箭）：远程单体 / 远程范围
   if (REMOTE_ATK_STYLES.includes(atkStyle)) {
     return { frame: CARD_FUNCTION_ICON_FRAMES.远程攻击, label: '远程攻击', rule: 'remote' };
   }
-  // ⑤ 近战攻击
-  if (atkStyle === MELEE_ATK_STYLE) {
+  // ⑤ 近战攻击（刀）：用户标准 —— **1~4 级、可攻击可移动**的近战
+  if (atkStyle === MELEE_ATK_STYLE && moving && quality <= 4) {
     return { frame: CARD_FUNCTION_ICON_FRAMES.近战攻击, label: '近战攻击', rule: 'melee' };
   }
-  // ⑥ 其余 → 交给调用方的原有逻辑（技能卡/精灵/法师/地刺/工厂/陷阱…用户要先看一眼）
+  // ⑥ 其余 → 交给调用方的原有逻辑（技能卡/精灵/法师/地刺…用户要先看一眼）
   return null;
 }
 
