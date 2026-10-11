@@ -238,7 +238,7 @@ export const HAND_SLOTS_TOP = 33;
 //   所以这里**还原为 74**（匹配用户给的参考），我之前的 46 撤销。
 // 注意：这是手牌卡槽宽度的唯一真源头（BattleView 写成 #hand 的内联样式 --hand-slot-w，
 //       所以任何 CSS 覆盖都无效）。想改就改这一个数字。
-export const HAND_SLOT_W = 52;   // 【当前实验值】74 -> 52：明显变细，方便肉眼确认这个开关生效
+export const HAND_SLOT_W = 74;   // 唯一真源头（BattleView 写成 #hand 内联样式）；用户参考图实测 = 74
 export const HAND_SLOT_GAP = 0;
 export const HAND_SLOTS_WIDTH = HAND_SLOT_COUNT * HAND_SLOT_W;
 export const HAND_SLOTS_HEIGHT = 48;

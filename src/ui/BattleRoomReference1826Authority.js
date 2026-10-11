@@ -15,7 +15,12 @@ const REF = Object.freeze({
   // 2026-10-11：曾把这里高度改到 170 想拉长卡槽 —— **改错了**：这是战斗房间整块面板的尺寸，
   // 动了它等于改整个房间布局。已还原为原值 95；卡槽形状只改单张卡（见 style.css 的 .deck-slot-item）。
   // 2026-10-11：整排尺寸=**原值**（我曾放大到 1050x106 导致卡出格，已还原）。
-  slots: [296, 193, 941, 95],
+  // 2026-10-11 用户：「准备房间的卡槽把星星截断了」→ 根因是**容器太矮**：
+  //   卡片自身 96px 高（style.css .deck-slot-item），而容器 = 95(设计) × 0.81(缩放) ≈ 77px，
+  //   96 > 77 → 卡片顶部被 overflow:hidden 裁掉，而星星正好在卡片最上面。
+  //   96px ÷ 0.81 ≈ 119 → 设计高度取 120（渲染 ≈97px，刚好容下 96px 的卡）。
+  //   下沿 193+120=313 < vs 的 365，不会压到下面元素。
+  slots: [296, 193, 941, 120],
   vs: [598, 365, 340, 190],
   chat: [0, 626, 727, 306],
   dice: [737, 626, 230, 205],
@@ -207,8 +212,7 @@ function stabilizeDeck(room, stage) {
     display: 'grid',
     'grid-template-columns': 'repeat(10, minmax(0, 1fr))',
     'grid-template-rows': '1fr',
-    // 2026-10-11 用户：准备房间的卡再紧密一点（原 4 -> 1.2 设计单位）
-    gap: `${1.2 * stage.scale}px`,
+    gap: `${4 * stage.scale}px`,
     overflow: 'hidden',
   });
 }
