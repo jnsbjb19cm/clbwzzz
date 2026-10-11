@@ -257,14 +257,14 @@ body .battle-hand-tooltip .classic-tip-bitmap { display: inline-block; vertical-
                   </span>
    只调费用数字：字号变小 + 在页脚里水平居中（不影响卡面与图标）。
    ========================================================================== */
-.game-room .deck-slot-item .v3-card-footer,
-.game-room .v3-deck-slot .v3-card-footer {
+body .game-room.room-deck-ui-v3 .deck-slot-item .v3-card-footer,
+body .game-room.room-deck-ui-v3 .v3-deck-slot .v3-card-footer {
   justify-content: center !important;
   gap: 2px !important;
 }
-.game-room .deck-slot-item .v3-card-cost,
-.game-room .v3-deck-slot .v3-card-cost {
-  font-size: 11px !important;
+body .game-room.room-deck-ui-v3 .deck-slot-item .v3-card-cost,
+body .game-room.room-deck-ui-v3 .v3-deck-slot .v3-card-cost {
+  font-size: 11px !important;   /* 必须用同族更高权重：文件里另有一条 body .game-room.room-deck-ui-v3 .v3-card-cost { font-size: clamp(...) !important } 会压过普通选择器 */
   line-height: 1 !important;
   font-weight: 700 !important;
   min-width: 0 !important;
