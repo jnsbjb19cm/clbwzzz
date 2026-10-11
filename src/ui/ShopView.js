@@ -22,7 +22,7 @@ const TABS = [
 
 const QUALITY_NAMES = { 1: '普通', 2: '优秀', 3: '精良', 4: '史诗', 5: '传说', 6: '逆天' };
 
-import { buildDiscountSlots, discountProductFor, installDiscountGuard } from './DiscountZone20261011.js';
+import { discountPanelHtml, buyDiscountItem } from './DiscountZone20261011.js';
 
 const CLASSIC_SHOP_CATEGORIES = [
   { id: 'fitting', label: '试衣间' },
@@ -32,7 +32,6 @@ const CLASSIC_SHOP_CATEGORIES = [
   { id: 'fashion', label: '服饰' },
   { id: 'beauty', label: '美容' },
   { id: 'coupon', label: '金币礼券区' },
-  { id: 'discount', label: '打折专区' },
 ];
 
 const CLASSIC_SHOP_SUBCATEGORIES = Object.freeze({
@@ -56,7 +55,7 @@ const SHOP_ITEMS = [
   // 2026-10-11 用户要求：删除「用金币购买的 金币礼盒」（5 金 → 5000 金，等于刷金币）
   { cat:'货币', name:'红钻礼盒',     desc:'打开获得10钻石',        price:15000, icon:'🎁', effect:{type:'inventory',realId:2,count:1} },
   { cat:'货币', name:'荣誉礼盒',     desc:'打开获得5,000荣誉',     price:8000,  icon:'🎁', effect:{type:'inventory',realId:3,count:1} },
-  { cat:'货币', name:'豪华金币箱',   desc:'打开获得20,000金币',    price:18000, icon:'🎁', effect:{type:'inventory',realId:60020,count:1} },
+  // 2026-10-11 用户要求：『豪华金币箱』改为钻石购买（原本 18000 金 → 20000 金，等于用金币刷金币）
   { cat:'货币', name:'超值钻石包',   desc:'打开获得50钻石',        price:65000, icon:'💎', effect:{type:'inventory',realId:60021,count:1} },
   { cat:'货币', name:'经验大礼包',   desc:'打开获得5,000经验值',   price:5000,  icon:'🧪', effect:{type:'inventory',realId:60022,count:1} },
   { cat:'货币', name:'体力药水·大',  desc:'使用后恢复100点体力',   price:4000,  icon:'🧪', effect:{type:'inventory',realId:60023,count:1} },
@@ -143,6 +142,7 @@ export class ShopView {
       <div class="classic-shop-layout">
         <aside class="classic-shop-profile">
           <div class="classic-shop-player-line"><strong>${this.player?.nickname ?? this.player?.name ?? '森林守卫'}</strong><span>排名 ${Number(this.player?.rank) > 0 ? Number(this.player.rank) : '暂无'}</span></div>
+          ${discountPanelHtml(SHOP_ITEMS)}
           <div class="classic-shop-avatar" aria-label="角色预览">
             ${referenceCharacterMarkup(this.player)}
             <button type="button" class="shop-equip shop-equip-hat">帽子</button>
@@ -290,11 +290,6 @@ export class ShopView {
     const products = this.getClassicProducts();
     if (this.classicCategory === 'cart') return [...this.cart.values()].map((entry) => entry.product);
     if (this.classicCategory === 'recommend') return [...products.filter((product) => product.kind === 'pack').slice(0, 4), ...products.filter((product) => product.kind === 'item').slice(0, 8)];
-    // 2026-10-11 打折专区：限购 + 等级越高折扣越大（数据见 src/data/discountZone.json）
-    if (this.classicCategory === 'discount') {
-      installDiscountGuard();
-      return buildDiscountSlots(SHOP_ITEMS).map((slot, index) => discountProductFor(slot, index, getCraftMaterialSprite));
-    }
     if (this.classicCategory === 'fitting') return products.filter((product) => product.category === 'fashion').slice(0, 12);
     let visible = products.filter((product) => product.category === this.classicCategory);
     if (this.classicCategory === 'item' && this.classicSubcategory && this.classicSubcategory !== '全部') {
@@ -386,6 +381,12 @@ export class ShopView {
 
   renderClassicCatalog(root) {
     root.querySelectorAll('[data-shop-category]').forEach((button) => button.classList.toggle('active', button.dataset.shopCategory === this.classicCategory));
+    // 2026-10-11 左栏「打折专区」面板：购买按钮走 DiscountZone 的额度校验 + 折后价下单
+    root.querySelectorAll('[data-discount-buy]').forEach((button) => {
+      if (button.dataset.discountBound === 'true') return;
+      button.dataset.discountBound = 'true';
+      button.addEventListener('click', () => buyDiscountItem(button, { onDone: () => this.renderClassicCatalog(root) }));
+    });
     this.renderClassicSubcategories(root);
     const category = CLASSIC_SHOP_CATEGORIES.find((entry) => entry.id === this.classicCategory);
     const title = root.querySelector('[data-shop-title]');

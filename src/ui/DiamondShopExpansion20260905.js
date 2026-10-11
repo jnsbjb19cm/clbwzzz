@@ -5,6 +5,17 @@ const PATCH_FLAG = Symbol.for('clbwz.diamondShopExpansion20260905');
 // 固定钻石套餐：保留成“批量优惠包”，同时下方会为商城现有道具自动生成单独的钻石购买版本。
 const DIAMOND_PRODUCTS = Object.freeze([
   {
+    // 2026-10-11 用户要求：豪华金币箱改为钻石购买
+    key: 'gem-item:gold-box-big',
+    name: '豪华金币箱',
+    desc: '钻石购买；打开后获得 20,000 金币',
+    icon: '箱',
+    realId: 60020,
+    subcategory: '经济',
+    gemPrice: 50,
+    count: 1,
+  },
+  {
     key: 'gem-item:gold-box-10',
     name: '金币箱子×6',
     desc: '钻石购买；打开后每个可获得5,000金币，共可获得50,000金币',

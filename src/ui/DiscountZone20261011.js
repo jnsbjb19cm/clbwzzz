@@ -135,3 +135,62 @@ function showTip(text) {
     setTimeout(() => tip.remove(), 1600);
   } catch { /* 忽略 */ }
 }
+
+/**
+ * 左栏「打折专区」面板的 HTML（2026-10-11 用户：别占分类页签的位置，放左边）。
+ * 左栏是商城的 aside.classic-shop-profile —— 放这里不会挤掉原来的分类页签。
+ */
+export function discountPanelHtml(shopItems) {
+  const slots = buildDiscountSlots(shopItems);
+  if (!slots.length) return '';
+  const rows = slots.map((slot) => {
+    const remaining = Math.max(0, slot.limit - slot.used);
+    const soldOut = remaining <= 0;
+    return `<li class="shop-discount-row${soldOut ? ' is-sold-out' : ''}">
+        <b>${slot.base.name}</b>
+        <span class="shop-discount-tag">${slot.tier.label ?? '折扣'}</span>
+        <span class="shop-discount-price"><s>${slot.basePrice}</s> 💰${slot.price}</span>
+        <span class="shop-discount-left">剩余 ${remaining}/${slot.limit}</span>
+        <button type="button" class="shop-discount-buy" data-discount-buy
+          data-discount-quota-key="${slot.quotaKey}" data-discount-limit="${slot.limit}"
+          data-discount-item-id="${Number(slot.base.effect?.realId) || 0}"
+          data-discount-count="${Number(slot.base.effect?.count) || 1}"
+          data-discount-price="${slot.price}"${soldOut ? ' disabled' : ''}>${soldOut ? '售罄' : '购买'}</button>
+      </li>`;
+  }).join('');
+  return `<section class="shop-discount-panel" aria-label="打折专区">
+      <h3>打折专区 <small>每日限购 · 等级越高折扣越大</small></h3>
+      <ul class="shop-discount-list">${rows}</ul>
+    </section>`;
+}
+
+/** 面板购买流程：校验额度 → /player/shop/buy-item（带折后价）→ 刷新面板 */
+export async function buyDiscountItem(button, { onDone } = {}) {
+  const itemId = Number(button?.dataset?.discountItemId) || 0;
+  const count = Math.max(1, Number(button?.dataset?.discountCount) || 1);
+  const goldCost = Math.max(0, Number(button?.dataset?.discountPrice) || 0);
+  const quotaKey = String(button?.dataset?.discountQuotaKey ?? '');
+  const limit = Math.max(1, Number(button?.dataset?.discountLimit) || 1);
+  if (!itemId) return { ok: false, message: '商品配置缺失' };
+  if (discountUsedToday(quotaKey) >= limit) {
+    showTip('今日该折扣商品已售罄，明天再来');
+    return { ok: false, message: '今日已售罄' };
+  }
+  button.disabled = true;
+  try {
+    const { authStore } = await import('../core/AuthStore.js');
+    const result = await authStore.api.post('/player/shop/buy-item', { itemId, count, goldCost, gemCost: 0 });
+    const quota = readQuota();
+    quota.used = quota.used ?? {};
+    quota.used[quotaKey] = discountUsedToday(quotaKey) + 1;
+    writeQuota(quota);
+    showTip(`已购买 ${count} 个（折后 ${goldCost} 金）`);
+    if (typeof onDone === 'function') onDone();
+    return { ok: true, result };
+  } catch (error) {
+    showTip(error?.message ?? '购买失败');
+    return { ok: false, message: error?.message ?? '购买失败' };
+  } finally {
+    button.disabled = false;
+  }
+}
