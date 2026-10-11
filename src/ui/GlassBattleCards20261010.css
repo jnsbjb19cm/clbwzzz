@@ -10,8 +10,8 @@ body #hand.reference-battle-hand.video-battle-hand .deck-slot.battle-hand-card.f
   box-shadow: inset 1px 1px 1px rgba(255,255,255,.8), inset -1px -1px 2px rgba(26,36,43,.48) !important;
 }
 body .game-room.room-deck-ui-v3 .v3-card-quality.v3-atlas-card-bg {
-  background: linear-gradient(110deg, rgba(255,255,255,.18), transparent 47%, rgba(15,25,35,.24)), var(--quality) !important;
-  opacity: .86 !important;
+  background: linear-gradient(110deg, rgba(15,25,35,.26), transparent 55%, rgba(232,242,247,.22)), var(--card-tone) !important;
+  opacity: 1 !important;
 }
 body .pvp-room-card.quality-1 { --card-tone: #929582; }
 body .pvp-room-card.quality-2 { --card-tone: #53a23b; }
@@ -19,12 +19,12 @@ body .pvp-room-card.quality-3 { --card-tone: #318db3; }
 body .pvp-room-card.quality-4 { --card-tone: #9244ab; }
 body .pvp-room-card.quality-5 { --card-tone: #dbb438; }
 body .pvp-room-card .pvp-room-card-bg {
-  background: linear-gradient(110deg, rgba(255,255,255,.18), transparent 47%, rgba(15,25,35,.24)), var(--card-tone) !important;
-  opacity: .86 !important;
+  background: linear-gradient(110deg, rgba(15,25,35,.26), transparent 55%, rgba(232,242,247,.22)), var(--card-tone) !important;
+  opacity: 1 !important;
 }
 body #hand.reference-battle-hand.video-battle-hand .slot-bg {
-  background: linear-gradient(110deg, rgba(255,255,255,.24), transparent 47%, rgba(15,25,35,.24)), var(--card-tone) !important;
-  opacity: .72 !important;
+  background: linear-gradient(110deg, rgba(15,25,35,.26), transparent 55%, rgba(232,242,247,.22)), var(--card-tone) !important;
+  opacity: 1 !important;
 }
 /* 右上到下方的窄反光，覆盖卡图但不拦截点击、不使用逐卡模糊。 */
 body .pvp-room-card:not(.empty)::after,
@@ -35,7 +35,7 @@ body #hand.reference-battle-hand.video-battle-hand .slot-face::after {
   inset: 0;
   z-index: 6;
   pointer-events: none;
-  background: linear-gradient(100deg, rgba(255,255,255,.06) 0 58%, rgba(255,255,255,.33) 80%, rgba(239,249,255,.55) 100%);
+  background: linear-gradient(105deg, transparent 0 65%, rgba(236,249,255,.06) 76%, rgba(236,249,255,.3) 94%, rgba(255,255,255,.52) 100%);
   box-shadow: inset 0 1px rgba(255,255,255,.55);
 }
 body .pvp-room-card .pvp-room-card-stars.glass-card-stars,
@@ -92,7 +92,7 @@ body .pvp-room-card .pvp-room-card-resource img { width: 20px; height: 20px; }
 body .pvp-room-card .pvp-room-card-function i { width: 16px; height: 16px; }
 body .game-room.room-deck-ui-v3 .v3-drawer-card,
 body .game-room.room-deck-ui-v3 #deck-slots-row .v3-deck-slot,
-body .pvp-room-card { height: auto !important; aspect-ratio: 1 !important; align-self: center; }
+body .pvp-room-card { height: auto !important; aspect-ratio: .84 !important; align-self: center; }
 body .pvp-room-card .pvp-room-card-art,
 body .game-room.room-deck-ui-v3 .v3-card-art,
 body .battle-game-wrap #hand.reference-battle-hand.video-battle-hand .slot-portrait {
@@ -141,3 +141,90 @@ body .top-ui:has(#hand.reference-battle-hand) {
 body #hand.reference-battle-hand.video-battle-hand .deck-slot.battle-hand-card.locked {
   background: linear-gradient(110deg, rgba(236,242,245,.3), rgba(77,90,101,.18) 55%, rgba(229,236,240,.25)) !important;
 }
+
+/* One palette for the drawer, prepared deck and live battle; level, not craft quality. */
+body :is([data-card-grade="1"], .card-grade-1, .pvp-room-card.quality-1) { --card-tone: #898e88 !important; }
+body :is([data-card-grade="2"], .card-grade-2, .pvp-room-card.quality-2) { --card-tone: #438839 !important; }
+body :is([data-card-grade="3"], .card-grade-3, .pvp-room-card.quality-3) { --card-tone: #287da8 !important; }
+body :is([data-card-grade="4"], .card-grade-4, .pvp-room-card.quality-4) { --card-tone: #803c9e !important; }
+body :is([data-card-grade="5"], [data-card-grade="6"], .card-grade-5, .card-grade-6, .pvp-room-card.quality-5) { --card-tone: #bca132 !important; }
+
+/* Fullscreen rules previously cropped the coloured face above a separate grey footer. */
+body.battle-immersive .game-container #hand.reference-battle-hand.video-battle-hand.transparent-battle-hand .slot-face {
+  inset: 0 !important; width: 100% !important; height: 100% !important;
+  border: 0 !important; border-radius: 0 !important;
+}
+body.battle-immersive .game-container #hand.reference-battle-hand.video-battle-hand.transparent-battle-hand .slot-meta {
+  position: absolute !important; left: 1px !important; right: 1px !important; bottom: 1px !important;
+  width: auto !important; height: 24% !important; min-height: 18px !important;
+  display: grid !important; grid-template-columns: minmax(0,1fr) 24% !important;
+  align-items: center !important; gap: 1px !important; padding: 0 2px !important;
+  border: 0 !important; border-radius: 0 !important; z-index: 10 !important;
+  background: linear-gradient(0deg, rgba(8,16,21,.82), rgba(8,16,21,.48)) !important;
+}
+body.battle-immersive .game-container #hand.reference-battle-hand.video-battle-hand.transparent-battle-hand .slot-cost {
+  display: flex !important; align-items: center !important; justify-content: flex-start !important;
+  gap: 4% !important; width: auto !important; height: 100% !important; min-width: 0 !important;
+  padding: 0 !important; border: 0 !important; border-radius: 0 !important; background: none !important;
+  font-size: clamp(12px,1.65vw,25px) !important; color: #fff !important;
+}
+body.battle-immersive .game-container #hand.reference-battle-hand.video-battle-hand.transparent-battle-hand .slot-cost img {
+  width: 32% !important; height: 90% !important; object-fit: contain !important; flex: 0 0 32% !important;
+}
+body.battle-immersive .game-container #hand.reference-battle-hand.video-battle-hand.transparent-battle-hand .slot-function {
+  width: 100% !important; height: 90% !important; display: flex !important; position: static !important;
+  border: 0 !important; border-radius: 0 !important; padding: 0 !important; background: none !important;
+}
+body.battle-immersive .game-container #hand.reference-battle-hand.video-battle-hand.transparent-battle-hand .slot-function img {
+  width: 100% !important; height: 100% !important; object-fit: contain !important;
+}
+body.battle-immersive .game-container #hand.reference-battle-hand.video-battle-hand.transparent-battle-hand .slot-portrait {
+  left: -10% !important; top: -9% !important; width: 120% !important; height: 112% !important;
+  object-fit: contain !important; object-position: center bottom !important;
+}
+body.battle-immersive .game-container #hand.reference-battle-hand.video-battle-hand.transparent-battle-hand .glass-card-stars {
+  top: 3% !important; left: 4% !important; right: auto !important; bottom: auto !important;
+  width: 84% !important; height: auto !important; max-height: none !important;
+}
+
+/* Compact three-row drawer, with vertical categories and page controls. */
+body .game-room.room-deck-ui-v3 #card-drawer.card-drawer-v3-host {
+  left: 7% !important; right: 5% !important; top: auto !important; bottom: 7% !important;
+  height: 60% !important; border-radius: 6px !important;
+  background: linear-gradient(#a8bb5a,#879d36) !important;
+}
+body .game-room.room-deck-ui-v3 #card-drawer .deck-drawer-v3 {
+  grid-template-rows: 0 9% minmax(0,1fr) 13% !important;
+}
+body .game-room.room-deck-ui-v3 .v3-drawer-header { visibility: hidden !important; }
+body .game-room.room-deck-ui-v3 .v3-drawer-tip { justify-content: flex-end !important; padding-right: 4% !important; font-size: clamp(12px,1.3vw,22px) !important; }
+body .game-room.room-deck-ui-v3 .v3-drawer-body { background: #b4c578 !important; padding-top: .6% !important; padding-bottom: .6% !important; }
+body .game-room.room-deck-ui-v3 .v3-drawer-grid { gap: 3% .65% !important; }
+body .game-room.room-deck-ui-v3 .v3-drawer-card { height: 100% !important; aspect-ratio: auto !important; }
+body .game-room.room-deck-ui-v3 .v3-drawer-filters { grid-template-rows: 18% 1fr 1fr !important; }
+body .game-room.room-deck-ui-v3 .v3-drawer-filters button { writing-mode: vertical-rl !important; font-size: clamp(13px,1.5vw,24px) !important; color: #4f6128 !important; background: linear-gradient(#b6c778,#93a94c) !important; border-color: #6d852e !important; }
+body .game-room.room-deck-ui-v3 .v3-drawer-filters button[data-v3-filter="all"] { writing-mode: horizontal-tb !important; font-size: 12px !important; }
+body .game-room.room-deck-ui-v3 .v3-drawer-filters button.active { color: #ffe752 !important; text-shadow: 1px 1px #8c5415 !important; }
+body .game-room.room-deck-ui-v3 .v3-drawer-pager button { writing-mode: vertical-rl !important; font-size: clamp(12px,1.5vw,23px) !important; background: linear-gradient(#bfd49a,#7d9c39) !important; }
+body .game-room.room-deck-ui-v3 .v3-drawer-actions { justify-content: flex-end !important; padding-right: 3% !important; gap: 2% !important; }
+body .game-room.room-deck-ui-v3 .v3-drawer-actions button { border-radius: 22px !important; min-width: 9% !important; font-size: clamp(12px,1.3vw,20px) !important; }
+body .game-room.room-deck-ui-v3 .v3-drawer-actions button.primary { background: linear-gradient(#ffd6b3,#eb794f) !important; }
+body .pvp-deck-editor-shell { inset: 20% 9% 9% !important; border-radius: 6px !important; grid-template-rows: 0 1fr !important; }
+body .pvp-deck-editor-title { display: none !important; }
+body .pvp-deck-editor-body .game-room.room-deck-ui-v3 #card-drawer.card-drawer-v3-host { inset: 0 !important; height: 100% !important; }
+body .pvp-deck-editor-body .game-room.room-deck-ui-v3 #card-drawer .deck-drawer-v3 { padding: 6px !important; grid-template-rows: 0 9% minmax(0,1fr) 13% !important; }
+
+body .battle-hand-tooltip {
+  position: fixed; z-index: 2147483000; pointer-events: none;
+  width: max-content; max-width: min(370px,calc(100vw - 12px)); max-height: calc(100vh - 12px);
+  overflow: hidden; box-sizing: border-box; padding: 7px 10px;
+  border: 1px solid rgba(222,226,215,.8); border-radius: 3px;
+  background: rgba(5,10,8,.88); box-shadow: inset 0 0 0 1px rgba(255,255,255,.1);
+  color: #e4e3dc; font: 16px/20px SimSun,'宋体',serif; text-align: left;
+}
+body .battle-hand-tooltip .hand-tip-stat { color: #d6a316; }
+body .battle-hand-tooltip .hand-tip-bonus { color: #49bd36; margin-left: 4px; }
+body .battle-hand-tooltip .hand-tip-trait { color: #08bcbc; }
+body .battle-hand-tooltip .hand-tip-status.ready { color: #65c748; }
+body .battle-hand-tooltip .hand-tip-status.blocked { color: #f03b24; }
+body .battle-hand-tooltip .classic-tip-bitmap { display: inline-block; vertical-align: top; max-width: 100%; image-rendering: pixelated; }

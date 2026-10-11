@@ -1,5 +1,6 @@
 import { BattleView } from './BattleView.js';
 import { cardStarRows } from './CardStarRows.js';
+import { bindBattleHandTooltip } from './BattleHandTooltip.js';
 import {
   CARD_CATEGORY,
   HAND_SLOT_COUNT,
@@ -71,6 +72,9 @@ function resolveFunctionPart(card) {
   if (type === 3) return { part: 'cardType_4', label: '陷阱' };
   if (getCardCategory(card) === CARD_CATEGORY.ACTIVE_SKILL) {
     return { part: 'cardType_7', label: '主动技能' };
+  }
+  if (Number(card.moveSpeed ?? card.move_speed ?? 0) > 0) {
+    return { part: 'cardType_5', label: '突击' };
   }
   return { part: 'cardType_1', label: '攻击' };
 }
@@ -144,6 +148,7 @@ export function installExactBattleHand() {
     // 参考图样式只作用于战斗手牌，不影响房间编辑器、图鉴和棋盘。
     hand.classList.remove('opaque-battle-hand');
     hand.classList.add('card-slots', 'video-battle-hand', 'transparent-battle-hand', 'reference-battle-hand');
+    bindBattleHandTooltip(this, hand);
     hand.innerHTML = Array.from({ length: HAND_SLOT_COUNT }, (_, handIndex) => {
       const entry = this.engine.deck[handIndex];
       return entry ? renderCardSlot(this, entry, handIndex) : renderLockedSlot(handIndex);

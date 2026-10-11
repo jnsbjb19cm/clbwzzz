@@ -61,6 +61,7 @@ function bitmap(cp) {
   return null;
 }
 const charset = new Set(Array.from('劣质普通精良优秀完美的级卡攻击生命冷却时间秒特技描述暂无永久有效至绑定体验星[]:.,!?0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz'));
+for (const ch of '快捷键可放置没有足够的阳光食物当前位置目标剩余战斗已结束观战中不能海妖之声生效出牌()+-，：') charset.add(ch);
 for (const file of ['card.json', 'cardLore.json']) {
   for (const ch of fs.readFileSync(new URL(`../src/data/${file}`, import.meta.url), 'utf8')) if (ch >= ' ') charset.add(ch);
 }

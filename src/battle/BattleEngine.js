@@ -226,7 +226,16 @@ export class BattleEngine {
       const card = this.db.getById(slot.cardId);
       if (!card) continue;
       used.add(bagIndex);
-      entries.push({ bagIndex, card, instance: slot });
+      // 2026-10-11：连指纹一起记下来（同一张卡 + 品质 + 星级），
+      // 这样即使背包下标以后错位（自动整理会重排），deploy 也能识别出「这不是我选的那张卡」。
+      entries.push({
+        bagIndex,
+        card,
+        instance: slot,
+        cardId: Number(slot.cardId),
+        craftQuality: slot.craftQuality ?? 1,
+        strengthLv: slot.strengthLv ?? 0,
+      });
       if (entries.length >= HAND_SLOT_COUNT) break;
     }
 
@@ -623,11 +632,31 @@ export class BattleEngine {
     if (!this.canDeploy(lane, col, handIndex)) return false;
     const entry = this.deck[handIndex];
     const card = entry.card;
-    const instance =
-      entry.instance ??
-      (entry.bagIndex >= 0 ? this.cardInventory?.getSlots()[entry.bagIndex] : null) ??
-      this.cardInventory?.findFirstInstance(card.id)?.slot ??
-      null;
+    // 2026-10-11（用户：「拥有同类型多个卡牌，选择卡牌 a 进入游戏，带进去的却是另外的卡牌 b」）：
+    // 这里原来直接拿 entry.bagIndex 去当前背包取实例，但「整理背包/自动整理」会**重排**背包数组，
+    // 下标一错位就会取到**别的卡**的实例（品质/星级/名字前缀全跟着错，看起来就像换了一张卡）。
+    // 现在三道防线：① 按指纹（同一张卡 + 品质 + 星级）校验；
+    //               ② 下标取回来的实例 cardId 对不上就判为不可用；
+    //               ③ 回退到「这张卡自己的第一个实例」，绝不使用别的卡的实例。
+    const wantCardId = Number(card?.id);
+    const fpQuality = Number(entry.craftQuality ?? entry.instance?.craftQuality ?? 0);
+    const fpStar = Number(entry.strengthLv ?? entry.instance?.strengthLv ?? 0);
+    const slotMatchesEntry = (slot) => {
+      if (!slot) return false;
+      if (wantCardId && Number(slot.cardId) !== wantCardId) return false;
+      if (fpQuality && (slot.craftQuality ?? 1) !== fpQuality) return false;
+      if (fpStar !== 0 && (slot.strengthLv ?? 0) !== fpStar) return false;
+      return true;
+    };
+    let instance = slotMatchesEntry(entry.instance) ? entry.instance : null;
+    if (!instance && entry.bagIndex >= 0) {
+      const byIndex = this.cardInventory?.getSlots?.()[entry.bagIndex] ?? null;
+      if (slotMatchesEntry(byIndex)) instance = byIndex;
+    }
+    if (!instance) {
+      const first = this.cardInventory?.findFirstInstance?.(card.id)?.slot ?? null;
+      if (slotMatchesEntry(first)) instance = first;
+    }
     if (!this.trainingMode || !this.trainingFreeRes) {
       const cost = this.getDeployCost(card);
       this.sunlight -= cost.sun;

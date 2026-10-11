@@ -262,6 +262,9 @@ export class CardInventoryStore {
   }
 
   organize(mode = 'level') {
+    // 2026-10-11：整理会重排 slots，任何"背包下标"都会错位（用户报告的「选 a 进 b」）
+    // → 先留一份旧顺序，末尾据此算出「旧下标 → 新下标」映射。
+    this._slotsBeforeOrganize = [...this.state.slots];
     const filled = this.state.slots.filter(Boolean);
     filled.sort((a, b) => {
       const ca = this.cardDb.getById(a.cardId);
@@ -289,8 +292,25 @@ export class CardInventoryStore {
       return ca.id - cb.id;
     });
     const n = this.state.slotCount;
+    // 2026-10-11（用户：「拥有同类型多个卡牌，选择卡牌 a 进入游戏，带进去的却是另外的卡牌 b」）：
+    // **根因就在这里** —— 整理会把 state.slots 的元素换位置，而卡组/房间/战斗保存的都是
+    // 「背包下标」；下标错位就指到别的卡上（同类型卡尤其明显）。
+    // 所以这里先算出「旧下标 → 新下标」映射并暴露（lastOrganizeRemap），
+    // 再派发事件，让持有下标的调用方自己修正。
+    const before = Array.isArray(this._slotsBeforeOrganize) ? this._slotsBeforeOrganize : null;
+    const remap = new Map();
+    if (before) {
+      filled.forEach((slot, newIndex) => {
+        const oldIndex = before.indexOf(slot);
+        if (oldIndex >= 0) remap.set(oldIndex, newIndex);
+      });
+    }
+    this.lastOrganizeRemap = remap;
     this.state.slots = [...filled, ...Array(Math.max(0, n - filled.length)).fill(null)];
     this.save();
-    return { ok: true, count: filled.length, mode };
+    try {
+      globalThis.dispatchEvent?.(new CustomEvent('clbwz:card-slots-reordered', { detail: { remap, mode } }));
+    } catch { /* 非浏览器环境忽略 */ }
+    return { ok: true, count: filled.length, mode, remap };
   }
 }
