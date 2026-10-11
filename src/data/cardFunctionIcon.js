@@ -31,7 +31,10 @@ export const CARD_FUNCTION_ICON_FRAMES = Object.freeze({
 export const SPECIAL_EFFECT_CARD_IDS = Object.freeze([58, 56, 75, 76, 104, 38]);
 
 /** 抵挡型但会反击的卡：用户明确"除了松果战士"，所以它算防御 */
-export const DEFENSE_CARD_IDS = Object.freeze([11]);
+export const DEFENSE_CARD_IDS = Object.freeze([
+  11,  // 松果战士（用户点名"除了松果战士"）
+  88,  // 魔法冰盾（用户：「魔法冰盾是盾」）
+]);
 
 /**
  * 辅助（鼓）的严格标准 —— 用户：「鼓必须是实打实给增益、而且自身没有输出手段的」。
@@ -41,7 +44,14 @@ export const DEFENSE_CARD_IDS = Object.freeze([11]);
  * 被排除的（有输出或只是特殊机制）→ 归"特殊效果"：怪物吸尘器(34,吞噬)、魅惑妖灵(53,魅惑)、
  * 黑铁土豆雷(61,高伤)、怪物工厂(66)/怪物作坊(93,造怪)、传送门(78,吞噬)、超级喷喷怪(101)。
  */
-export const SUPPORT_BUFF_CARD_IDS = Object.freeze([22, 36, 88]);
+export const SUPPORT_BUFF_CARD_IDS = Object.freeze([
+  19,  // 稻草人
+  32,  // 嗜血稻草人
+  22,  // 蒲公英医生
+  36,  // 蒲公英精灵
+  26,  // 部落巫婆
+  51,  // 太古巫婆
+]);
 
 /** 特殊机制卡（非纯增益、也非靠普攻输出）→ 特殊效果(火焰) */
 export const SPECIAL_MECHANIC_CARD_IDS = Object.freeze([34, 53, 61, 66, 78, 93, 101]);
@@ -69,24 +79,24 @@ export function cardFunctionIcon(card) {
   if (SPECIAL_EFFECT_CARD_IDS.includes(cardId) || SPECIAL_MECHANIC_CARD_IDS.includes(cardId)) {
     return { frame: CARD_FUNCTION_ICON_FRAMES.特殊效果, label: '特殊效果', rule: 'special' };
   }
-  if (atkStyle === MELEE_ATK_STYLE && moving && quality >= 5) {
+  if (atkStyle === MELEE_ATK_STYLE && quality >= 5) {
     return { frame: CARD_FUNCTION_ICON_FRAMES.特殊效果, label: '特殊效果', rule: 'special-high-melee' };
   }
-  // ② 防御：只挡不打（atk_style=1）+ 用户点名的松果战士
-  if (atkStyle === DEFENSE_ATK_STYLE || DEFENSE_CARD_IDS.includes(cardId)) {
-    return { frame: CARD_FUNCTION_ICON_FRAMES.防御, label: '防御', rule: 'defense' };
-  }
-  // ③ 辅助（鼓）—— 用户标准：**实打实给增益、而且自身没有输出手段**
-  //    只认这几张：蒲公英医生(22)/蒲公英精灵(36) 纯回血，魔法冰盾(88) 抵挡+冰冻（用户点名它是鼓的标准图）。
+  // ② 辅助（鼓）—— 用户点名：稻草人(19)/嗜血稻草人(32)/蒲公英医生(22)/蒲公英精灵(36)/
+  //    部落巫婆(26)/太古巫婆(51)。必须**先于防御**判断：这几张里有 atk_style=1 的（会被防御规则抢走）。
   if (SUPPORT_BUFF_CARD_IDS.includes(cardId)) {
     return { frame: CARD_FUNCTION_ICON_FRAMES.辅助, label: '辅助', rule: 'support' };
+  }
+  // ③ 防御（盾）：只挡不打（atk_style=1）＋ 用户点名的松果战士(11) 与魔法冰盾(88)
+  if (atkStyle === DEFENSE_ATK_STYLE || DEFENSE_CARD_IDS.includes(cardId)) {
+    return { frame: CARD_FUNCTION_ICON_FRAMES.防御, label: '防御', rule: 'defense' };
   }
   // ④ 远程攻击（弓箭）：远程单体 / 远程范围
   if (REMOTE_ATK_STYLES.includes(atkStyle)) {
     return { frame: CARD_FUNCTION_ICON_FRAMES.远程攻击, label: '远程攻击', rule: 'remote' };
   }
-  // ⑤ 近战攻击（刀）：用户标准 —— **1~4 级、可攻击可移动**的近战
-  if (atkStyle === MELEE_ATK_STYLE && moving && quality <= 4) {
+  // ⑤ 近战攻击（刀）：用户标准 —— **1~4 级的近战**（不再要求"可移动"，站的近战也算）
+  if (atkStyle === MELEE_ATK_STYLE && quality <= 4) {
     return { frame: CARD_FUNCTION_ICON_FRAMES.近战攻击, label: '近战攻击', rule: 'melee' };
   }
   // ⑥ 其余 → 交给调用方的原有逻辑（技能卡/精灵/法师/地刺…用户要先看一眼）
@@ -103,3 +113,29 @@ export const CARD_FUNCTION_FRAME_BY_LABEL = Object.freeze({
   主动技能: 'cardType_7',
   主动: 'cardType_7',
 });
+
+/**
+ * 图标对照台（临时工具，方便确认"哪张图 = 鼓/盾/月亮"）。
+ * 控制台执行：__clbwzIconBench()
+ * 会把 cardType_1~7 平铺出来并标上编号，直接看就能对号。
+ */
+if (typeof window !== 'undefined') {
+  window.__clbwzIconBench = () => {
+    const old = document.getElementById('clbwz-icon-bench');
+    if (old) old.remove();
+    const box = document.createElement('div');
+    box.id = 'clbwz-icon-bench';
+    box.style.cssText = 'position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);z-index:99999;'
+      + 'background:rgba(0,0,0,.9);padding:16px;border-radius:12px;display:flex;gap:14px;'
+      + 'font:700 14px/1.2 "Microsoft YaHei",sans-serif;color:#fff;';
+    box.innerHTML = [1, 2, 3, 4, 5, 6, 7].map((n) => `
+      <div style="text-align:center">
+        <img src="/sprites/parts/cardType_${n}.png" alt="" style="width:64px;height:64px;image-rendering:pixelated" />
+        <div style="margin-top:6px">cardType_${n}</div>
+        <div style="opacity:.7;font-weight:400">${CARD_FUNCTION_ICON_FRAMES ? '' : ''}</div>
+      </div>`).join('');
+    box.addEventListener('click', () => box.remove());
+    document.body.appendChild(box);
+    return '已显示 cardType_1~7（点一下关闭）。告诉我「鼓 / 盾 / 月亮」分别是哪一号即可。';
+  };
+}

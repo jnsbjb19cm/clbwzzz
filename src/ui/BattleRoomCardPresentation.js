@@ -1,4 +1,5 @@
 import { usesFoodCost, HAND_SLOT_COUNT } from '../battle/BattleConfig.js';
+import { cardFunctionIcon } from '../data/cardFunctionIcon.js';
 import { calculateCardStats } from '../battle/CardStatFormula.js';
 import { formatCraftCardName, resolveCraftQuality } from '../core/constants.js';
 import { DeckSelectView } from './DeckSelectView.js';
@@ -97,7 +98,10 @@ function cardVisual(view, meta, { compact = false } = {}) {
   // 会丢掉 6 级(如死神)的底座，故优先用原始 card_quality。
   const bgQuality = Math.max(1, Math.min(6, Number(meta.card?.card_quality ?? meta.level) || 1));
   const bgStyle = atlasStyle(view, `card_bg_${bgQuality}`);
-  const typeStyle = atlasStyle(view, `cardType_${Math.max(1, Math.min(7, Number(meta.card.type) || 1))}`);
+  // 2026-10-11：功能图标统一走 cardFunctionIcon（远程=弓箭/近战=刀/防御=盾/辅助=鼓/特殊=月亮）；
+  // 这里以前直接拿 card_type 当图标号（1~7），跟战斗手牌完全对不上。
+  const sharedFrame = cardFunctionIcon(meta.card)?.frame;
+  const typeStyle = atlasStyle(view, sharedFrame ?? `cardType_${Math.max(1, Math.min(7, Number(meta.card.type) || 1))}`);
   return `
     <span class="room-card-level-bg room-atlas-sprite" style="${bgStyle}" aria-hidden="true"></span>
     <span class="room-card-stars-wrap">${starsMarkup(meta.stars)}</span>

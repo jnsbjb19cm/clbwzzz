@@ -9,6 +9,7 @@ import {
 } from '../core/constants.js';
 import cardPartsAtlas from '../data/atlas/preload_cardParts.json' with { type: 'json' };
 import { DeckSelectView } from './DeckSelectView.js';
+import { cardFunctionIcon } from '../data/cardFunctionIcon.js';
 import { RoomView } from './RoomView.js';
 import { cardStarRows } from './CardStarRows.js';
 import { BattleView } from './BattleView.js';
@@ -149,6 +150,9 @@ function atlasStyle(name) {
 }
 
 function getCardFunction(card) {
+  // 2026-10-11：与其它入口共用同一份映射（远程=弓箭/近战=刀/防御=盾/辅助=鼓/特殊=月亮）
+  const shared = cardFunctionIcon(card);
+  if (shared) return { frame: shared.frame, label: shared.label };
   if (card?.isActiveSkill?.() || Number(card?.type) === 4) return { label: '技能', frame: 'cardType_7' };
   if (Number(card?.type) === 3) return { label: '陷阱', frame: 'cardType_4' };
   if (Number(card?.type) === 2) return { label: '辅助', frame: 'cardType_3' };

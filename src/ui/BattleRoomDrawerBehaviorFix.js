@@ -1,4 +1,5 @@
 import { DeckSelectView } from './DeckSelectView.js';
+import { cardFunctionIcon } from '../data/cardFunctionIcon.js';
 import {
   CARD_CATEGORY,
   getCardCategory,
@@ -36,6 +37,10 @@ function getCardGroup(card) {
 }
 
 function getFunctionMeta(card) {
+  // 2026-10-11：功能图标统一由 cardFunctionIcon 决定（远程=弓箭/近战=刀/防御=盾/辅助=鼓/特殊=月亮）。
+  // 这里以前是自己一套（防御=2/辅助=3/陷阱=4/攻击=1），所以用户"看不到改动"。
+  const shared = cardFunctionIcon(card);
+  if (shared) return { frame: shared.frame, label: shared.label };
   const attackStyle = Number(card?.atkStyle ?? card?.atk_style ?? 0);
   const type = Number(card?.type ?? card?.card_type ?? 1);
 
