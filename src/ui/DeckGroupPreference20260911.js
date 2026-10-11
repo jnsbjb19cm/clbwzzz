@@ -418,7 +418,9 @@ export function mirrorAccountDecksToLocal20260911(cardInventory, db) {
     const idsOf = (list) => (Array.isArray(list) ? list : []).map((i) => Number(slotsNow[i]?.cardId) || 0);
     if (local && sameIndices20260911(idsOf(local), idsOf(account))) continue;
     try {
-      DeckSelectView.saveDeck(account, cardInventory, group);
+      // 账号镜像属于"自动回写"：显式标 auto，让写入守卫继续拦住它
+      // （自动回写只能拿到 cardId，推出来的实例是"第一张同 id"，会顶掉玩家选的品质/星级）
+      DeckSelectView.saveDeck(account, cardInventory, group, { auto: true });
       fixed += 1;
     } catch {
       /* 忽略：本地缓存纠正失败不影响账号数据 */
