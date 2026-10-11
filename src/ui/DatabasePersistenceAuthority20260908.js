@@ -122,17 +122,30 @@ function installBagAuthority() {
       });
     }
 
+    // 2026-10-11 用户：「批量操作里丢弃和出售我选了 222 个，结果还是 1 个」
+    // 原因：这两个处理器把数量写死成 count: 1，从不读界面上的数量控件。
+    // 这里按当前可见的数量控件取值（滑块/数字两种模式都兼容），并夹到实际持有量。
+    const readSelectedQty = () => {
+      const box = root.querySelector('#bag-detail');
+      const candidates = [box?.querySelector('[data-trade-range]'), box?.querySelector('[data-trade-count]')];
+      const visible = candidates.find((el) => el && el.offsetParent !== null) ?? candidates.find(Boolean);
+      const picked = Math.max(1, Math.floor(Number(visible?.value) || 1));
+      const owned = Math.max(1, Math.floor(Number(slot?.count) || picked));
+      return Math.max(1, Math.min(picked, owned));
+    };
+
     replaceButton(root.querySelector('#bag-detail #bag-sell'), async (event) => {
       const button = event.currentTarget;
       button.disabled = true;
       try {
+        const qty = readSelectedQty();   // 2026-10-11：读界面数量（原来写死 1，选 222 也只卖 1 个）
         const data = await authStore.api.post('/player/inventory/sell', {
-          itemId: Number(item.id), count: 1, bound: Boolean(slot.bound),
+          itemId: Number(item.id), count: qty, bound: Boolean(slot.bound),
         });
         applyServerData(this, data);
         this.selectedIndex = -1;
         this.refresh(root);
-        this.toast(root, `出售获得 ${data.gain ?? item.sellPrice ?? 0} 金币`);
+        this.toast(root, '出售 ' + qty + ' 个，获得 ' + (data.gain ?? item.sellPrice ?? 0) + ' 金币');
       } catch (error) {
         this.toast(root, error?.message || '出售失败');
       } finally {
@@ -144,13 +157,14 @@ function installBagAuthority() {
       const button = event.currentTarget;
       button.disabled = true;
       try {
+        const qty = readSelectedQty();
         const data = await authStore.api.post('/player/inventory/drop', {
-          itemId: Number(item.id), count: 1, bound: Boolean(slot.bound),
+          itemId: Number(item.id), count: qty, bound: Boolean(slot.bound),
         });
         applyServerData(this, data);
         this.selectedIndex = -1;
         this.refresh(root);
-        this.toast(root, '已丢弃 1 个');
+        this.toast(root, '已丢弃 ' + qty + ' 个');
       } catch (error) {
         this.toast(root, error?.message || '丢弃失败');
       } finally {
