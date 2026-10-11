@@ -287,6 +287,10 @@ CREATE TABLE IF NOT EXISTS deck_cards (
   deck_id INTEGER NOT NULL,
   slot_index INTEGER NOT NULL CHECK(slot_index BETWEEN 0 AND 9),
   card_id INTEGER NOT NULL,
+  -- 2026-10-11：只存 card_id 会丢"品质/星级"，任何一次同步都会把玩家选的实例换成
+  -- "第一张同 id 的卡"（用户反复报的「选 a 进 b」）。这两列就是实例身份。
+  craft_quality INTEGER NOT NULL DEFAULT 1,
+  strength_lv INTEGER NOT NULL DEFAULT 0,
   PRIMARY KEY(deck_id, slot_index),
   FOREIGN KEY(deck_id) REFERENCES player_decks(id) ON DELETE CASCADE
 );
@@ -495,6 +499,8 @@ const MYSQL_TABLES = [
     deck_id BIGINT NOT NULL,
     slot_index INT NOT NULL,
     card_id INT NOT NULL,
+    craft_quality INT NOT NULL DEFAULT 1,
+    strength_lv INT NOT NULL DEFAULT 0,
     PRIMARY KEY(deck_id, slot_index),
     CONSTRAINT fk_deckcards_deck FOREIGN KEY(deck_id) REFERENCES player_decks(id) ON DELETE CASCADE
   ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci`,
@@ -650,6 +656,15 @@ function migrateSqlite() {
   const stageCols = tableColumns('player_stage_progress');
   if (!stageCols.has('best_time_ms')) {
     sqlite.exec('ALTER TABLE player_stage_progress ADD COLUMN best_time_ms INTEGER NOT NULL DEFAULT 0');
+  }
+
+  // 2026-10-11：deck_cards 缺少 craft_quality / strength_lv（实例身份）→ 老库补列
+  const deckCols = tableColumns('deck_cards');
+  if (!deckCols.has('craft_quality')) {
+    sqlite.exec('ALTER TABLE deck_cards ADD COLUMN craft_quality INTEGER NOT NULL DEFAULT 1');
+  }
+  if (!deckCols.has('strength_lv')) {
+    sqlite.exec('ALTER TABLE deck_cards ADD COLUMN strength_lv INTEGER NOT NULL DEFAULT 0');
   }
 
   // 旧 player_profiles 缺少 selected_deck_group（4 个组的选择）
@@ -822,6 +837,14 @@ async function migrateMysql() {
 
   if (!(await hasColumn('player_stage_progress', 'best_time_ms'))) {
     await pool.query('ALTER TABLE player_stage_progress ADD COLUMN best_time_ms BIGINT NOT NULL DEFAULT 0');
+  }
+
+  // 2026-10-11：deck_cards 补实例字段（品质/星级），老库也要补
+  if (!(await hasColumn('deck_cards', 'craft_quality'))) {
+    await pool.query('ALTER TABLE deck_cards ADD COLUMN craft_quality INT NOT NULL DEFAULT 1');
+  }
+  if (!(await hasColumn('deck_cards', 'strength_lv'))) {
+    await pool.query('ALTER TABLE deck_cards ADD COLUMN strength_lv INT NOT NULL DEFAULT 0');
   }
 
   if (!(await hasColumn('player_profiles', 'selected_deck_group'))) {

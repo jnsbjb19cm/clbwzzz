@@ -79,6 +79,21 @@ function reconcileCardIds(cardIds, cardInventory) {
   return selected;
 }
 
+/** 2026-10-11：选择 → 条目（含品质/星级），供入库使用。 */
+function deckEntriesFromSelection(selected, cardInventory) {
+  const slots = cardInventory?.getSlots?.() ?? [];
+  const seen = new Set();
+  const entries = [];
+  for (const index of selected ?? []) {
+    const slot = slots[index];
+    const cardId = Number(slot?.cardId);
+    if (!Number.isInteger(cardId) || cardId <= 0 || seen.has(cardId)) continue;
+    seen.add(cardId);
+    entries.push({ cardId, craftQuality: slot?.craftQuality ?? 1, strengthLv: slot?.strengthLv ?? 0 });
+  }
+  return entries.slice(0, 10);
+}
+
 function snapshotDeckIds(deckNo) {
   const decks = authStore?.snapshot?.decks;
   if (!Array.isArray(decks)) return null;
@@ -95,11 +110,15 @@ function updateSnapshotDeck(deckNo, cardIds) {
   deck.cards = cardIds.map((cardId, slotIndex) => ({ slotIndex, cardId }));
 }
 
-function queueDeckSave(deckNo, cardIds) {
+function queueDeckSave(deckNo, cardIds, entries = null) {
   if (!authStore?.isLoggedIn?.() || deckNo < 0 || deckNo > 3) return Promise.resolve();
   const key = deckCacheKey(deckNo);
   const requestedIds = [...cardIds];
   const signature = requestedIds.join(',');
+  // 2026-10-11：把实例（品质/星级）一起发给服务端入库；没有 entries 时按纯 id 兜底。
+  const requestedEntries = Array.isArray(entries) && entries.length
+    ? entries
+    : requestedIds.map((cardId) => ({ cardId, craftQuality: 1, strengthLv: 0 }));
   const state = DECK_PENDING.get(key) ?? { signature: null, queue: Promise.resolve(), cardIds: null };
   state.cardIds = [...requestedIds];
   if (state.signature === signature) {
@@ -111,7 +130,7 @@ function queueDeckSave(deckNo, cardIds) {
     .catch(() => {})
     .then(async () => {
       try {
-        const result = await authStore.api.put(`/player/decks/${deckNo}`, { cards: requestedIds });
+        const result = await authStore.api.put(`/player/decks/${deckNo}`, { cards: requestedIds, entries: requestedEntries });
         const savedIds = Array.isArray(result?.cards)
           ? result.cards.map(Number).filter(Number.isInteger)
           : requestedIds;
@@ -173,7 +192,9 @@ function installDeckServerPersistence() {
     const deckNo = deckGroupToNumber20260906(normalized);
     if (deckNo < 0 || deckNo > 3) return Promise.resolve();
     const cardIds = cardIdsFromSelection(selected, cardInventory);
-    return queueDeckSave(deckNo, cardIds);
+    // 2026-10-11：连实例（品质/星级）一起入库，这样从库里回读也能精确还原玩家选的那张。
+    const entriesForSave = deckEntriesFromSelection(selected, cardInventory);
+    return queueDeckSave(deckNo, cardIds, entriesForSave);
   };
 
   // Room start/ready must not race the asynchronous PUT /player/decks/:deckNo.

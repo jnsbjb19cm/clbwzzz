@@ -138,7 +138,15 @@ playerRouter.put('/decks/:deckNo', async (req, res) => {
   // 0=默认组，1~3=战团1~3
   const deckNo = clampInt(req.params.deckNo, 0, 3);
   const rawCards = Array.isArray(req.body.cards) ? req.body.cards : [];
-  const cards = rawCards.map(Number).filter((id) => Number.isInteger(id) && id > 0);
+  // 2026-10-11（用户：「是不是入数据库有问题？」）：以前只存 card_id，品质/星级全丢，
+  // 于是任何一次从库里回读都会把玩家选的实例换成"第一张同 id"（反复出现的「选 a 进 b」）。
+  // 现在接受 {cardId, craftQuality, strengthLv}（也兼容纯 id），把实例一起入库。
+  const entries = rawCards.map((raw) => ({
+    cardId: Number(raw?.cardId ?? raw),
+    craftQuality: Math.max(1, Math.min(9, Number(raw?.craftQuality ?? raw?.craft_quality ?? 1) || 1)),
+    strengthLv: Math.max(0, Number(raw?.strengthLv ?? raw?.strength_lv ?? raw?.star ?? 0) || 0),
+  })).filter((entry) => Number.isInteger(entry.cardId) && entry.cardId > 0);
+  const cards = entries.map((entry) => entry.cardId);
   if (cards.length > 10) {
     return res.status(400).json({ message: '战团最多包含10张卡牌' });
   }
@@ -158,10 +166,14 @@ playerRouter.put('/decks/:deckNo', async (req, res) => {
   await withTransaction(async (conn) => {
     await conn.run('DELETE FROM deck_cards WHERE deck_id=?', [deck.id]);
     for (let index = 0; index < cards.length; index += 1) {
-      await conn.run('INSERT INTO deck_cards(deck_id,slot_index,card_id) VALUES(?,?,?)', [deck.id, index, cards[index]]);
+      const entry = entries[index] ?? { cardId: cards[index], craftQuality: 1, strengthLv: 0 };
+      await conn.run(
+        'INSERT INTO deck_cards(deck_id,slot_index,card_id,craft_quality,strength_lv) VALUES(?,?,?,?,?)',
+        [deck.id, index, entry.cardId, entry.craftQuality ?? 1, entry.strengthLv ?? 0],
+      );
     }
   });
-  return res.json({ ok: true, deckNo, cards });
+  return res.json({ ok: true, deckNo, cards, entries });
 });
 
 playerRouter.post('/stage-result', async (req, res) => {
