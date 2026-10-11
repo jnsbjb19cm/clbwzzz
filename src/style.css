@@ -5430,7 +5430,11 @@ html, body { margin:0; padding:0; width:100%; height:100%; overflow:hidden; }
   min-width: 44px !important;
   max-width: 44px !important;
   flex: 0 0 44px !important;
-  min-height: 124px !important;
+  /* 2026-10-11 用户：「总感觉更正方形了」→ 用显式 height 锁死比例（只给 min-height 时，
+     容器比它高就会按 100% 撑开，比例就漂了） */
+  height: 132px !important;
+  min-height: 132px !important;
+  max-height: 132px !important;
   overflow: hidden !important;
 }
 #hand .deck-slot img,
@@ -5445,7 +5449,9 @@ html, body { margin:0; padding:0; width:100%; height:100%; overflow:hidden; }
 }
 
 /* 战团（卡组编辑）页的卡槽：同样拉长一点，和战斗内保持一致的"竖长方形"手感 */
+/* 2026-10-11 修正：之前给 .deck-slot-item 加宽到 84px 是**反效果** ——
+   容器的 height:77px 是 JS 内联 !important 写死的（样式表压不过），
+   加宽后每格变成 84x77 = 更方了。所以这里先**不加宽**，等高由 JS 那一侧改。 */
 #deck-slots-row .deck-slot-item {
-  min-height: 112px !important;
-  width: 84px !important;   /* 战团页：同样再拉高一点、宽收一点 */
+  min-height: 77px;
 }
