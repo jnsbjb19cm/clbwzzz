@@ -22,7 +22,7 @@ const TABS = [
 
 const QUALITY_NAMES = { 1: '普通', 2: '优秀', 3: '精良', 4: '史诗', 5: '传说', 6: '逆天' };
 
-import { discountPanelHtml, buyDiscountItem } from './DiscountZone20261011.js';
+import { buildDiscountSlots, discountProductFor, buyDiscountItem } from './DiscountZone20261011.js';
 
 const CLASSIC_SHOP_CATEGORIES = [
   { id: 'fitting', label: '试衣间' },
@@ -290,6 +290,13 @@ export class ShopView {
     if (this.classicCategory === 'cart') return [...this.cart.values()].map((entry) => entry.product);
     if (this.classicCategory === 'recommend') return [...products.filter((product) => product.kind === 'pack').slice(0, 4), ...products.filter((product) => product.kind === 'item').slice(0, 8)];
     if (this.classicCategory === 'fitting') return products.filter((product) => product.category === 'fashion').slice(0, 12);
+    // 2026-10-11 用户要求「融合」：折扣商品并入「特惠区」商品列表（排最前），用同一套卡片渲染；
+    // 折扣商品按钮是「购买」（额度校验 + 折后价），普通商品仍是「加入购物车」。
+    if (this.classicCategory === 'coupon') {
+      const discountProducts = buildDiscountSlots(SHOP_ITEMS)
+        .map((slot, index) => discountProductFor(slot, index, getCraftMaterialSprite));
+      return [...discountProducts, ...products.filter((product) => product.category === 'coupon')];
+    }
     let visible = products.filter((product) => product.category === this.classicCategory);
     if (this.classicCategory === 'item' && this.classicSubcategory && this.classicSubcategory !== '全部') {
       visible = visible.filter((product) => product.subcategory === this.classicSubcategory);
@@ -396,13 +403,14 @@ export class ShopView {
     const pageStart = this.classicPage * CLASSIC_SHOP_PAGE_SIZE;
     const products = allProducts.slice(pageStart, pageStart + CLASSIC_SHOP_PAGE_SIZE);
     const catalog = root.querySelector('[data-shop-products]');
-    // 2026-10-11 用户要求：打折/特惠商品和「特惠区」（原金币礼券区）放一块 —— 渲染在这个页面的最上方
-    const discountHtml = this.classicCategory === 'coupon' ? discountPanelHtml(SHOP_ITEMS) : '';
-    catalog.innerHTML = discountHtml + (products.length ? products.map((product) => `<article class="classic-shop-product">
+    // 2026-10-11 用户要求「融合」：折扣商品不单独一块，直接并进商品列表（见 getClassicVisibleProducts 的 coupon 分支）
+    catalog.innerHTML = products.length ? products.map((product) => `<article class="classic-shop-product">
       <div class="classic-shop-product-art">${this.renderClassicProductIcon(product)}</div>
       <div class="classic-shop-product-copy"><h3>${product.name}</h3><p>${product.desc}</p><span>${this.formatClassicPrice(product)}</span></div>
-      <button type="button" class="shop-buy-btn" data-add-cart="${product.key}" aria-label="加入购物车：${product.name}">加入购物车</button>
-    </article>`).join('') : '<p class="classic-shop-empty">当前分类暂无商品。</p>');
+      ${product.discountQuotaKey
+        ? `<button type="button" class="shop-buy-btn shop-discount-buy" data-discount-buy data-discount-quota-key="${product.discountQuotaKey}" data-discount-limit="${product.discountLimit}" data-discount-item-id="${Number(product.data?.effect?.realId) || 0}" data-discount-count="${Number(product.data?.effect?.count) || 1}" data-discount-price="${Number(product.price) || 0}">购买</button>`
+        : `<button type="button" class="shop-buy-btn" data-add-cart="${product.key}" aria-label="加入购物车：${product.name}">加入购物车</button>`}
+    </article>`).join('') : '<p class="classic-shop-empty">当前分类暂无商品。</p>';
     // 面板里的购买按钮：额度校验 → 折后价下单（必须放在 innerHTML 之后绑定）
     catalog.querySelectorAll('[data-discount-buy]').forEach((button) => {
       if (button.dataset.discountBound === 'true') return;
