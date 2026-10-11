@@ -101,9 +101,14 @@ export function adventureBaseHp(stage) {
 // Keep existing craft-quality enum: 普通=2, 优秀=4, 精良=3, 完美=5.
 export function adventureQuality(stage, ordinal = 0) {
   const { difficulty, act, final } = stage.adventure;
-  const pool = difficulty === 0 ? [2] : difficulty === 1 ? [2, 4]
-    // 2026-10-11 用户：噩梦模式暂时先把「优秀(4)」升成「完美(5)」（其余档位不变）
-    : final ? [5] : act === 1 ? [5] : act === 2 ? [5, 3] : act === 3 ? [5, 5, 3, 3, 5] : [3, 5];
+  // 困难档的品质池（简单/普通另有池子；噩梦是在它基础上再升级）
+  const hardPool = final ? [5] : act === 1 ? [4] : act === 2 ? [4, 3] : act === 3 ? [4, 4, 3, 3, 5] : [3, 5];
+  const pool = difficulty === 0 ? [2]
+    : difficulty === 1 ? [2, 4]
+    : difficulty === 2 ? hardPool
+    // 2026-10-11 用户：噩梦暂时把「**优秀(4) → 完美(5)**」，其余档位不动。
+    // 注意：只能作用于噩梦 —— 上一版我改到共用分支，连带把困难也升成完美了（已修正）。
+    : hardPool.map((quality) => (quality === 4 ? 5 : quality));
   return pool[Math.abs(ordinal) % pool.length];
 }
 
