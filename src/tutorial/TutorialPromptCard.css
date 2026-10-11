@@ -1,0 +1,29 @@
+/* Specificity intentionally exceeds the old V4 overrides, regardless of load order. */
+.new-player-tutorial-panel.tutorial-prompt-card {
+  box-sizing: border-box; width: min(460px,calc(100vw - 24px)) !important;
+  bottom: 12px !important; max-height: min(240px,36vh) !important;
+  padding: 9px 13px !important; border: 1px solid #9dab7b !important; border-radius: 7px !important;
+  background: rgba(23,40,32,.94) !important; box-shadow: 0 3px 10px #0003 !important;
+  backdrop-filter: none !important; animation: none !important;
+}
+.tutorial-prompt-card .new-player-tutorial-progress { cursor: grab; touch-action: none; user-select: none; margin-bottom: 4px !important; }
+.tutorial-prompt-card .new-player-tutorial-progress:active { cursor: grabbing; }
+.tutorial-prompt-card .new-player-tutorial-progress-bar { height: 2px !important; }
+.tutorial-prompt-card .tutorial-prompt-toggle { padding: 2px 7px; border: 1px solid #859674; border-radius: 4px; background: #ffffff0d; color: #e5edcb; font: 12px/1.5 sans-serif; cursor: pointer; }
+.tutorial-prompt-card .new-player-tutorial-title { font-size: 15px !important; color: #e0eab9; margin-bottom: 4px !important; }
+.tutorial-prompt-card .new-player-tutorial-text { font-size: 13px !important; line-height: 1.5 !important; }
+.tutorial-prompt-card .new-player-tutorial-hint { border-left: 1px solid #899b63; background: transparent; padding: 2px 7px !important; }
+.tutorial-prompt-card .new-player-tutorial-continue { animation: none; min-height: 0 !important; }
+.tutorial-prompt-card .new-player-tutorial-actions { margin-top: 4px !important; }
+.tutorial-prompt-card .new-player-tutorial-actions button { padding: 3px 9px !important; min-width: 70px !important; }
+.tutorial-prompt-card .new-player-tutorial-exit { border: 0; background: transparent; color: #b9c8af; }
+.tutorial-prompt-card .new-player-tutorial-next { background: #c8d899; }
+.tutorial-prompt-card:is([data-mode="deploy"],[data-mode="skill"],[data-mode="win"]):not(.is-expanded) .new-player-tutorial-hint,
+.tutorial-prompt-card:is([data-mode="deploy"],[data-mode="skill"],[data-mode="win"]):not(.is-expanded) .new-player-tutorial-shortcuts,
+.tutorial-prompt-card .new-player-tutorial-hint:empty,
+.tutorial-prompt-card .new-player-tutorial-continue:empty { display: none !important; }
+.tutorial-prompt-card:is([data-mode="deploy"],[data-mode="skill"],[data-mode="win"]):not(.is-expanded) .new-player-tutorial-text { max-height: 39px; overflow-y: auto; }
+.tutorial-prompt-card.is-folded > :not(.new-player-tutorial-progress):not(.new-player-tutorial-title) { display: none !important; }
+.tutorial-prompt-card.is-folded .new-player-tutorial-title { margin: 0 !important; font-size: 13px !important; }
+.new-player-tutorial-panel.tutorial-prompt-card.is-skill-step { bottom: 76px !important; }
+@media(max-height:500px) { .new-player-tutorial-panel.tutorial-prompt-card { max-height: 42vh !important; } }

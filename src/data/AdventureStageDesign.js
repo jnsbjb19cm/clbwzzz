@@ -259,11 +259,11 @@ export function applyAdventureDifficulty(stage, waves) {
 
 /**
  * 补怪在**场上**的数量上限（2026-10-09 用户要求）：
- *   黑铁土豆雷 普通 ≤ 3、困难 ≤ 5（简单本来就不补怪）。
+ *   黑铁土豆雷 普通 ≤ 5、困难 ≤ 5、噩梦 ≤ 5（2026-10-11 用户：普通模式和困难模式地雷场上最多5个）。
  * 波次是无限循环的，光靠"每波补 N 只"会越堆越多，所以在出怪时按场上存活数卡上限。
  */
 export const ADVENTURE_REINFORCE_ALIVE_CAP = Object.freeze({
-  [MINE_CARD_ID]: Object.freeze({ 1: 3, 2: 5 }),
+  [MINE_CARD_ID]: Object.freeze({ 1: 5, 2: 5, 3: 5 }),   // 普通/困难/噩梦 都是场上最多 5
 });
 
 /**

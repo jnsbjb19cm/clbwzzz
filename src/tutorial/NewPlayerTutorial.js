@@ -7,6 +7,7 @@ import {
 import { emitQuestEvent } from '../core/QuestEventBus.js';
 import './NewPlayerTutorial.css';
 import './TrainingResponsiveFix.css';
+import { installTutorialPromptCard } from './TutorialPromptCard.js';
 
 const PATCH_FLAG = Symbol.for('clbwzzz.newPlayerTutorialStoryV3');
 const PROTECTED_ENEMY_BASE_HP = 800;
@@ -421,6 +422,7 @@ class NewPlayerTutorialController {
 
     this.layer = layer;
     this.panel = layer.querySelector('.new-player-tutorial-panel');
+    this._promptCleanup = installTutorialPromptCard(this.panel);
     this.focus = layer.querySelector('.new-player-tutorial-focus');
     this.nextButton = layer.querySelector('.new-player-tutorial-next');
     this.nextButton.style.display = 'none';
@@ -473,6 +475,7 @@ class NewPlayerTutorialController {
     const current = this.stepIndex + 1;
 
     this.panel.dataset.step = step.key;
+    this.panel.dataset.mode = step.mode;
     this.panel.classList.toggle('is-skill-step', step.mode === 'skill');
     this.panel.classList.remove('complete', 'failure');
     this.panel.querySelector('.new-player-tutorial-step').textContent = `${current}/${total}`;
@@ -773,6 +776,7 @@ class NewPlayerTutorialController {
     this.engine && (this.engine.tutorialPlacementRule = null);
     this.clearDirectHighlights();
     this.layer?.remove();
+    this._promptCleanup?.();
   }
 }
 
