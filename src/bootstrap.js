@@ -93,11 +93,13 @@ function installSafely(label, install) {
 // 具体切到哪个账号由 AuthStore 在登录/登出时决定。
 // 版本标记：控制台执行 __clbwzBuild() / __clbwzIconInfo() 可随时确认
 console.log('[clbwz] 当前版本:', BUILD_STAMP);
-  // 把版本挂在标签页标题上：不用开控制台也能确认跑的是哪一版（用户反馈"看不到改动生效"时用它排查）
-  try { document.title = `${document.title.split(' · 图标')[0]} · 图标⑤`; } catch { /* 非浏览器环境忽略 */ }
 globalThis.__clbwzIconInfo = () => ({ 说明: '1弓 2刀 3盾 4鼓 5特殊 6飞行 7钻地', 映射: CARD_FUNCTION_ICON_FRAMES,
   抽查: { 花生射手: cardFunctionIcon({ card_id: 1 }), 西瓜太郎: cardFunctionIcon({ card_id: 7 }) } });
-globalThis.__clbwzIconOf = (card) => cardFunctionIcon(card);
+// 容错：直接粘贴 __clbwzIconOf() 不带参数也不会报 ReferenceError（之前用户在控制台贴了 __clbwzIconOf(card) 报 card is not defined）
+globalThis.__clbwzIconOf = (card) => {
+  if (card == null) return '用法：__clbwzIconOf({ card_id: 7 }) 或 __clbwzIconInfo() 看整张对照表';
+  return cardFunctionIcon(card);
+};
 
 installSafely('installPlayerStorageScope', () => installPlayerStorageScope());
 // 2026-10-10：资源预加载（登录页预热轻量资源 + 进房间的精灵动画加载界面）。

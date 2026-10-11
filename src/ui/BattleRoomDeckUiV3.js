@@ -7,6 +7,7 @@ import {
   isPlantCard,
   usesFoodCost,
 } from '../battle/BattleConfig.js';
+import { cardFunctionIcon } from '../data/cardFunctionIcon.js';
 import {
   formatCraftCardName,
   resolveCraftQuality,
@@ -319,7 +320,13 @@ function cardMeta(view, bagIndex) {
   const range = Number(card.range ?? card.atkRange ?? 0);
   let functionLabel = '攻击';
   let functionIcon = '⚔';
-  if (getCardCategory(card) === CARD_CATEGORY.ACTIVE_SKILL) {
+  // 2026-10-11：功能标签必须走唯一映射源，否则这里会写出旧标签「突击」，
+  // 而房间卡组是"按标签取图"（突击 → cardType_5 = 月牙），近战卡就永远显示月牙。
+  const sharedFunction = cardFunctionIcon(card);
+  if (sharedFunction) {
+    functionLabel = sharedFunction.label;
+    functionIcon = '◆';
+  } else if (getCardCategory(card) === CARD_CATEGORY.ACTIVE_SKILL) {
     functionLabel = '主动';
     functionIcon = '✦';
   } else if (type === 3) {
