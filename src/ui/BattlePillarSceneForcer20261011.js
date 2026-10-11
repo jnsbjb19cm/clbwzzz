@@ -87,9 +87,22 @@ function forcePillars() {
   return changed > 0;
 }
 
+// 供 PvpAuthoritySyncFinal 在"建单位"时调用：当前场景应有的柱子 id ✔
+export function currentScenePillarId() {
+  const scene = currentScene();
+  const rand = RANDOM_BY_SCENE[scene];
+  if (rand) return rand[Math.floor(Math.random() * rand.length)];
+  const one = PILLAR_BY_SCENE[scene];
+  return Number.isInteger(one) ? one : null;
+}
+
 export function installBattlePillarSceneForcer20261011() {
   if (globalThis[PATCHED_FLAG]) return;
   globalThis[PATCHED_FLAG] = true;
+  globalThis.__clbwzPillarForScene = currentScenePillarId;   // 供同步模块在"建单位"时调用 ✔
+  // 注意：不再周期性抢改单位（会和快照同步打架造成闪烁 ✗），改为在创建单位时纠正 ✔
+  return;
+  // eslint-disable-next-line no-unreachable
   let lastScene = null;
   setInterval(() => {
     try {

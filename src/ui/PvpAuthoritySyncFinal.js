@@ -314,6 +314,14 @@ function applySnapshot(view, snapshot, { force = false } = {}) {
   const units = [];
   const incomingUnitIds = new Set();
   for (const data of snapshot.units ?? []) {
+    // 2026-10-11 用户：中间中立柱按"当前地图场景"取，不用快照里的 id ✗
+    // （快照给的是旧地图的柱子 -> 黄沙/古老密林都出沙丘；在别处改单位又会和这里打架造成闪烁 ✗）
+    // 在这一处（唯一的建单位点）纠正，就不会闪 ✔
+    const isNeutral = data.neutral === true || data.team === 'neutral';
+    if (isNeutral && !data.isPvpBarrier) {
+      const wantPillar = globalThis.__clbwzPillarForScene?.();
+      if (Number.isInteger(wantPillar) && wantPillar > 0) data.cardId = wantPillar;
+    }
     const card = view.db?.getById?.(data.cardId);
     if (!card) continue;
     // 2026-09-12：客户端素材没有死亡动画的单位，死亡后就该直接消除。
