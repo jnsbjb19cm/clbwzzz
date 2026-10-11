@@ -41,6 +41,12 @@ export class ApiClient {
 
     const contentType = response.headers.get('content-type') || '';
     const data = contentType.includes('application/json') ? await response.json() : await response.text();
+    // An old account's result must not reach *any* caller after a session switch.
+    if (token !== this.getToken()) {
+      const error = new Error('账号已切换，已忽略旧账号请求');
+      error.name = 'AbortError';
+      throw error;
+    }
     if (!response.ok) {
       throw new ApiError(data?.message || `请求失败(${response.status})`, response.status, data);
     }

@@ -11,6 +11,7 @@ const ALLOWED_KEYS = new Set([
   'boss_progress',
   'worldmap',
   'player_meta',
+  'lobby_music_intro',
 ]);
 const MAX_STATE_JSON_BYTES = 256 * 1024;
 let readyPromise = null;

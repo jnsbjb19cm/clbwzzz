@@ -5,7 +5,8 @@ import { App } from './App.js';
 
 const PATCH_FLAG = Symbol.for('clbwz.playerStateDatabaseBridge20260908');
 const STORAGE_TO_STATE = new Map([
-  ['clbwz_quest_v5', 'quest'],
+  ['clbwz_quest_v12', 'quest'],
+  ['clbwz_lobby_music_intro_v1', 'lobby_music_intro'],
   ['clbwz_hero_skills_v1', 'hero_skills'],
   ['clbwz_boss_progress_v1', 'boss_progress'],
   ['clbwz_worldmap_v1', 'worldmap'],
@@ -95,13 +96,15 @@ export function installPlayerStateDatabaseBridge20260908() {
     return state;
   };
 
-  async function hydrateOne(storageKey, stateKey, { allowMigration }) {
+  async function hydrateOne(storageKey, stateKey, { allowMigration, token }) {
+    if (token !== authStore.token) return;
     let remote = null;
     try {
       remote = await authStore.api.get(`/player/state/${stateKey}`);
     } catch {
       return;
     }
+    if (token !== authStore.token) return;
     if (remote?.state && typeof remote.state === 'object') {
       originalSetItem?.call(globalThis.localStorage, storageKey, JSON.stringify(remote.state));
       if (stateKey === 'hero_skills') HERO_STORES.forEach((store) => applyHeroState(store, remote.state));
@@ -112,6 +115,7 @@ export function installPlayerStateDatabaseBridge20260908() {
     const local = parseStored(originalGetItem?.call(globalThis.localStorage, storageKey));
     if (allowMigration && local) {
       try { await authStore.api.put(`/player/state/${stateKey}`, { state: local }); } catch {}
+      if (token !== authStore.token) return;
       if (stateKey === 'hero_skills') HERO_STORES.forEach((store) => applyHeroState(store, local));
       if (stateKey === 'player_meta') APPS.forEach((app) => applyPlayerMeta(app, local));
       return;
@@ -123,8 +127,10 @@ export function installPlayerStateDatabaseBridge20260908() {
   }
 
   async function hydrateAll({ allowMigration = true } = {}) {
+    const token = authStore.token;
     for (const [storageKey, stateKey] of STORAGE_TO_STATE.entries()) {
-      await hydrateOne(storageKey, stateKey, { allowMigration });
+      if (token !== authStore.token) return;
+      await hydrateOne(storageKey, stateKey, { allowMigration, token });
     }
   }
 
@@ -133,7 +139,13 @@ export function installPlayerStateDatabaseBridge20260908() {
     if (!original) continue;
     authStore[method] = async (...args) => {
       const result = await original(...args);
+      const token = authStore.token;
       if (result) await hydrateAll({ allowMigration: method !== 'register' });
+      if (token !== authStore.token) {
+        const error = new Error('账号已切换');
+        error.name = 'AbortError';
+        throw error;
+      }
       return result;
     };
   }

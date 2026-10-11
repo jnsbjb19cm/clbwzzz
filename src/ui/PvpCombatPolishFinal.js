@@ -146,18 +146,7 @@ function processSnapshot(view, snapshot) {
     if (!unit) continue;
     unit.team = data.neutral ? 'neutral' : localTeam(view, data.team);
     unit.pvpNeutral = Boolean(data.neutral);
-    // 中间中立柱按场景用 card.json 障碍卡（冰川=冰山1000、草地=木桩1002、黄沙=沙丘1004），名字同步
-    if (data.neutral) {
-      const scene = view.pvp?.mapScene
-        ?? ({ '2': 'grass', '4': 'ice', '7': 'rock' }[String(view.pvp?.mapId ?? '')]);
-      const neutralId = scene === 'ice' ? 1000 : scene === 'grass' ? 1002 : 1004;
-      if (unit.cardId !== neutralId) {
-        unit.cardId = neutralId;
-        unit.res = neutralId;
-        const ncard = view.db?.getById?.(neutralId);
-        unit.name = ncard?.card_name ?? ncard?.name ?? unit.name;
-      }
-    }
+    // 柱子卡牌、名称和素材已由权威快照统一创建；这里仅同步动作，不能按旧地图表改成沙丘。
     unit.__pvpNetTargetCol = localCol(view, data.col);
     unit.__pvpNetTargetLane = finite(data.lane);
     unit.__pvpNetVelocityCol = isRedPerspective(view)

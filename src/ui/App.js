@@ -125,7 +125,15 @@ export class App {
     }
     // 已有 token：刷新页面后恢复用户/快照(否则 currentUserId 为空，房主判定失效)
     if (!authStore.user) {
-      authStore.restore().catch(() => {}).then(() => this.bootstrap());
+      authStore.restore().then((result) => {
+        if (!result) return this.mount();
+        this.resetPlayerState();
+        this.bootstrap();
+      }).catch((error) => {
+        if (error?.name === 'AbortError') return;
+        if (!authStore.isLoggedIn()) this.mount();
+        else this.root.textContent = '恢复账号数据失败，请刷新重试。';
+      });
       return;
     }
     this.bootstrap();

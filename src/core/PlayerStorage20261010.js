@@ -14,9 +14,8 @@
  * 本模块解决 ①：包一层 localStorage，把名单里的键在读写时自动加上 `#u<userId>` 后缀。
  * 好处：十几个模块一行都不用改，将来新增的键只要加进 PLAYER_SCOPED_BASES 就自动隔离。
  *
- * 老数据兼容：某个键第一次被访问时，如果「只有旧的全局键」存在，就把它**搬**（rename）
- * 到当前账号下、并删掉全局键。搬家只可能发生一次，所以不会把 A 的数据送给 B，
- * 同时老玩家的存档也不会丢。
+ * 无归属的旧全局缓存原样保留，但不自动认领：首次读它的人不一定就是存档主人。
+ * 登录后只读取当前账号缓存，背包等以该账号的服务器快照为准。
  *
  * ② 由 App.resetPlayerState() 处理（登录成功 / 登出时重建玩家相关运行时对象）。
  */
@@ -27,6 +26,8 @@ export const PLAYER_SCOPED_BASES = Object.freeze([
   'clbwz_card_inventory_v1',                    // 卡牌背包
   'clbwz_inventory_v1',                         // 道具背包
   'clbwz_quest_v12',                            // 任务进度
+  ...Array.from({ length: 9 }, (_, i) => `clbwz_quest_v${i + 3}`), // 旧版任务迁移入口也必须隔离
+  'clbwz_lobby_music_intro_v1',                 // 每个账号只显示一次的音乐提示
   'clbwz_craft_state_v1',                       // 制作状态
   'clbwz_worldmap_v1',                          // 世界地图进度
   'clbwz_room_decks_v4',                        // 房间卡组（当前版本）
@@ -45,6 +46,9 @@ export const PLAYER_SCOPED_BASES = Object.freeze([
   'clbwz_star_upgrade_v2',                      // 卡牌升星记录（玩家数据！）
   'battle_deck_ids',                            // 战斗卡组
   'battle_deck_v2',
+  'battle_deck_v2_team1',
+  'battle_deck_v2_team2',
+  'battle_deck_v2_team3',
 ]);
 
 /**
@@ -81,7 +85,11 @@ export function playerStorageUserId() {
  */
 export function setPlayerStorageUser(userId) {
   const next = userId == null || userId === '' ? null : String(userId);
+  const previous = currentUserId;
   currentUserId = next;
+  if (previous !== next && typeof window?.dispatchEvent === 'function') {
+    window.dispatchEvent(new CustomEvent('clbwz:player-changed', { detail: { previous, userId: next } }));
+  }
   return next;
 }
 
@@ -112,36 +120,27 @@ export function installPlayerStorageScope() {
   const rawSet = proto.setItem;
   const rawRemove = proto.removeItem;
 
-  /** 旧全局键 → 当前账号键：只搬一次，搬完删掉全局键，避免被下一个账号继承。 */
-  const adoptLegacy = (store, base) => {
-    if (!currentUserId) return;
-    const legacy = rawGet.call(store, base);
-    if (legacy == null) return;
-    const target = scopedKey(base);
-    if (rawGet.call(store, target) == null) rawSet.call(store, target, legacy);
-    rawRemove.call(store, base);
-  };
+  // Explicitly owner-bound delayed writes must not be redirected into the next account.
+  const permitted = (key, base) => currentUserId && (key === base || key === scopedKey(base));
 
   proto.getItem = function getItemScopedByPlayer(key) {
     const base = baseOf(key);
     if (!base) return rawGet.call(this, key);
-    if (!currentUserId) return rawGet.call(this, key);
-    adoptLegacy(this, base);
+    if (!permitted(key, base)) return null;
     return rawGet.call(this, scopedKey(base));
   };
 
   proto.setItem = function setItemScopedByPlayer(key, value) {
     const base = baseOf(key);
-    if (!base || !currentUserId) return rawSet.call(this, key, value);
+    if (!base) return rawSet.call(this, key, value);
+    if (!permitted(key, base)) return undefined;
     return rawSet.call(this, scopedKey(base), value);
   };
 
   proto.removeItem = function removeItemScopedByPlayer(key) {
     const base = baseOf(key);
     if (!base) return rawRemove.call(this, key);
-    // 旧的全局键也一并清掉：否则它会被下一个登录的账号「继承」。
-    rawRemove.call(this, key);
-    if (!currentUserId) return undefined;
+    if (!permitted(key, base)) return undefined;
     return rawRemove.call(this, scopedKey(base));
   };
 

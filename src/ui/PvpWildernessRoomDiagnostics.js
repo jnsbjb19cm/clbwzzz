@@ -64,41 +64,8 @@ const MAP_BARRIER_PILLAR = {
   // 11 海底神殿：五种随机（见 barrierPillarId）
 };
 const ALL_PILLARS = [1000, 1001, 1002, 1003, 1004];
-// 2026-10-11 用户实测: 房间=8、战场pvp=8，柱子却是 1004(沙滩10 的配置) ✗
-// 结论: 数字 id 在不同链路里编号不一致 ✗ -> 改成**按场景名**决定柱子（场景名唯一、不会串）✔
-function currentBattleScene() {
-  const fromDom = document?.querySelector?.('[data-round3-scene]')?.dataset?.round3Scene ?? null;
-  const sceneToId = { grass: '2', ice: '4', rock: '7', forest: '8', fire: '9', beach: '10', temple: '11' };
-  const fromGlobal = String(window?.__pvpMapScene || '');
-  if (fromDom) return String(fromDom);
-  if (sceneToId[fromGlobal]) return fromGlobal;
-  const btnId = document?.querySelector?.('.dice-btn')?.dataset?.mapId ?? null;
-  const idToScene = { '2': 'grass', '4': 'ice', '7': 'rock', '8': 'forest', '9': 'fire', '10': 'beach', '11': 'temple' };
-  return idToScene[String(btnId)] ?? 'grass';
-}
-const SCENE_TO_PILLAR = {
-  grass: 1002,   // 木桩 -> 木精灵
-  ice: 1000,     // 冰山 -> 冰精灵
-  rock: [1003, 1004],  // 黄沙: 土块/沙丘 随机
-  forest: 1002,  // 古老密林: 木桩 -> 木精灵
-  fire: 1001,    // 火焰: 火山 -> 火精灵
-  beach: 1004,   // 沙滩: 沙丘 -> 沙精灵
-  temple: [1000, 1001, 1002, 1003, 1004],  // 海底神殿: 五种随机
-};
-function barrierPillarByScene(scene) {
-  const v = SCENE_TO_PILLAR[String(scene || 'grass')];
-  return Array.isArray(v) ? v[Math.floor(Math.random() * v.length)] : (Number(v) || 1002);
-}
-function currentBattleMapId() {
-  const fromButton = document?.querySelector?.(".dice-btn")?.dataset?.mapId ?? null;
-  const sceneToId = { grass: '2', ice: '4', rock: '7', forest: '8', fire: '9', beach: '10', temple: '11' };
-  const fromScene = sceneToId[String(window?.__pvpMapScene || '')] ?? null;
-  return String(fromButton ?? fromScene ?? '2');
-}
-function barrierPillarId(mapId = currentBattleMapId()) {
-  // 优先按**场景名**决定（避免数字 id 编号不一致 ✗）
-  const byScene = barrierPillarByScene(currentBattleScene());
-  if (byScene) return byScene;
+function barrierPillarId(mapId) {
+  // 测试房间按本局地图生成柱子，不读上一场残留的 DOM / 全局骰子值。
   const m = String(mapId || '');
   if (m === '11') return ALL_PILLARS[Math.floor(Math.random() * ALL_PILLARS.length)];   // 海底神殿随机
   const v = MAP_BARRIER_PILLAR[m];
@@ -106,8 +73,8 @@ function barrierPillarId(mapId = currentBattleMapId()) {
   return Number(v) || 1000;
 }
 
-function neutralIceUnits() {
-  const pillarId = barrierPillarId();
+function neutralIceUnits(mapId) {
+  const pillarId = barrierPillarId(mapId);
   const result = [];
   for (let lane = 0; lane < 5; lane += 1) {
     for (const col of [5, 6]) {
@@ -141,7 +108,7 @@ function socketStub(room, db) {
   const handlers = new Map();
   let seq = 0;
   let visualEventSeq = 0;
-  const units = neutralIceUnits();
+  const units = neutralIceUnits(room.mapId);
   const visualEvents = [];
   const resources = { sun: 15, food: 12 };
   const skill = {
