@@ -189,8 +189,13 @@ function lockBossBattlefieldBackground(view, root) {
     element.style.setProperty('--bg-base', `url('${bg.baseUrl}')`);
     element.style.setProperty('--bg-grass', `url('${bg.baseUrl}')`);
     element.style.setProperty('--bg-map', `url('${bg.mapUrl || bg.baseUrl}')`);
-    element.style.setProperty('--bg-left', `url('${bg.leftColumnUrl}')`);
-    element.style.setProperty('--bg-right', `url('${bg.rightColumnUrl}')`);
+    // 同上：权威绘制者（PvpRound3ReferenceFinal）已画过就不要再覆盖柱子 ✗
+    const paintedByAuthority =
+      Boolean(view?.__round3SceneKey) || Boolean(document?.querySelector?.("[data-round3-scene]"));
+    if (!paintedByAuthority) {
+      element.style.setProperty('--bg-left', `url('${bg.leftColumnUrl}')`);
+      element.style.setProperty('--bg-right', `url('${bg.rightColumnUrl}')`);
+    }
   }
   for (const layer of [game.querySelector('.bg-layer-base'), game.querySelector('.bg-layer-map')]) {
     layer?.style?.setProperty('background-image', `url('${bg.baseUrl}')`, 'important');

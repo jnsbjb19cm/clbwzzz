@@ -130,8 +130,15 @@ function installBattlefieldLayers(view, root) {
     bossId: view?.pvp?.bossId ?? view?.bossId ?? null,
     trainingMap: view?.trainingMap ?? null,
   });
-  game.style.setProperty('--bg-left', `url('${bg.leftColumnUrl}')`);
-  game.style.setProperty('--bg-right', `url('${bg.rightColumnUrl}')`);
+  // 2026-10-11 用户：火焰地图的柱子被画成沙丘 → 根因是**柱子有多个写入者** ✗
+  // PVP 场景的权威绘制者是 PvpRound3ReferenceFinal（它认识新地图），
+  // 它跑过之后这里再写一次就会把柱子覆盖回旧场景 ✗ → 因此跳过。
+  const paintedByAuthority =
+    Boolean(view?.__round3SceneKey) || Boolean(document?.querySelector?.("[data-round3-scene]"));
+  if (!paintedByAuthority) {
+    game.style.setProperty('--bg-left', `url('${bg.leftColumnUrl}')`);
+    game.style.setProperty('--bg-right', `url('${bg.rightColumnUrl}')`);
+  }
 
   if (bgStack && !bgStack.querySelector('.bg-layer-left-column')) {
     const left = document.createElement('div');
