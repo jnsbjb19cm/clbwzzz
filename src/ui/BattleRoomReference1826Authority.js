@@ -207,7 +207,8 @@ function stabilizeDeck(room, stage) {
     display: 'grid',
     'grid-template-columns': 'repeat(10, minmax(0, 1fr))',
     'grid-template-rows': '1fr',
-    gap: `${4 * stage.scale}px`,
+    // 2026-10-11 用户：准备房间的卡再紧密一点（原 4 -> 1.2 设计单位）
+    gap: `${1.2 * stage.scale}px`,
     overflow: 'hidden',
   });
 }

@@ -228,3 +228,31 @@ body .battle-hand-tooltip .hand-tip-trait { color: #08bcbc; }
 body .battle-hand-tooltip .hand-tip-status.ready { color: #65c748; }
 body .battle-hand-tooltip .hand-tip-status.blocked { color: #f03b24; }
 body .battle-hand-tooltip .classic-tip-bitmap { display: inline-block; vertical-align: top; max-width: 100%; image-rendering: pixelated; }
+
+/* ==========================================================================
+   2026-10-11 用户：「战斗内那个我看一直也没怎么改」
+   原因：我上一轮把规则写在 /src/style.css 里，但 main.js 还 import 了一批 src/ui/*.css
+   （本文件是最后一个），打包后它们排在 style.css 之后 → 把我写的规则覆盖掉了 ✗
+   所以战斗内手牌卡槽的覆盖必须写在**本文件**（最后加载）才生效。
+   ========================================================================== */
+#hand .deck-slot {
+  width: 38px !important;
+  min-width: 38px !important;
+  max-width: 38px !important;
+  flex: 0 0 38px !important;
+  height: 152px !important;
+  min-height: 152px !important;
+  max-height: 152px !important;
+  overflow: hidden !important;
+}
+#hand .deck-slot .slot-portrait,
+#hand .deck-slot img {
+  transform: scale(1.14);
+  transform-origin: center center;
+}
+/* 外层容器别把变高的卡槽裁掉 */
+.top-ui .slots-container,
+#hand.card-slots {
+  min-height: 152px !important;
+  overflow: visible !important;
+}
