@@ -151,9 +151,11 @@ function resolveScene(view, snapshot = null) {
   const byId = sceneById[String(view?.pvp?.mapId ?? '')];
   const fallbackScene = String(view?.pvp?.mapScene ?? '');
   const chosen = byId ?? (sceneById[Object.keys(sceneById).find((k) => sceneById[k] === fallbackScene)] ? fallbackScene : null);
-  if (chosen && SCENES[chosen] && chosen !== 'default') {
-    return SCENES[chosen] ?? SCENES.default;
-  }
+  // 2026-10-11 用户实测: pvpMapId=2(草地) 却显示 rock(黄沙) ✗
+  // 根因: SCENES 里**没有 grass 这个 key**，草地是用 default 表示的 ✗，
+  //       而我上一版把 default 排除了 -> 草地一律掉到下面的"默认黄沙" ✗
+  if (chosen === 'grass') return SCENES.default;      // 草地 = default ✔
+  if (chosen && SCENES[chosen]) return SCENES[chosen];    // 其余场景按 key 取 ✔
   // 默认黄沙场景（PVP 轮换核心 = 黄沙）；dice 可随机其它场景
   if (!view.__round3FixedScene) {
     view.__round3FixedScene = SCENES.rock;
