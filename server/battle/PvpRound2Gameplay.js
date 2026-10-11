@@ -48,17 +48,26 @@ function normalizeBarrier(unit) {
 
 function normalizeSpirit(unit) {
   if (!unit || !SPIRIT_IDS.has(Number(unit.cardId))) return;
+  // 2026-10-11 用户：「火焰地图配的是火焰小精灵 检查其数值和技能是否正确」
+  // 原来这里把精灵的 血/攻 硬编码成 SPIRIT_HP(220)/SPIRIT_ATK(8)，**覆盖了卡牌自身数值** ✗
+  // （所以刚调过的火精灵 80/4 在 PVP 里根本不生效 ✗）
+  // 改成：优先使用卡牌自身数值（首次进入时 unit.maxHp / unit.atk 还是卡牌数据），
+  //       取不到时才回退常量 —— 各精灵按卡牌配置生效 ✔
+  const fallbackHp = SPIRIT_HP;
+  const fallbackAtk = SPIRIT_ATK;
   if (!unit.__pvpSpiritStatsReady) {
     unit.__pvpSpiritStatsReady = true;
-    unit.maxHp = SPIRIT_HP;
-    unit.baseMaxHp = SPIRIT_HP;
-    unit.hp = SPIRIT_HP;
+    const cardHp = Number(unit.maxHp) > 0 ? Number(unit.maxHp) : fallbackHp;
+    unit.maxHp = cardHp;
+    unit.baseMaxHp = cardHp;
+    unit.hp = cardHp;
   } else {
-    unit.maxHp = SPIRIT_HP;
-    unit.baseMaxHp = SPIRIT_HP;
-    unit.hp = Math.max(0, Math.min(SPIRIT_HP, Number(unit.hp) || 0));
+    const capHp = Number(unit.maxHp) > 0 ? Number(unit.maxHp) : fallbackHp;
+    unit.maxHp = capHp;
+    unit.baseMaxHp = capHp;
+    unit.hp = Math.max(0, Math.min(capHp, Number(unit.hp) || 0));
   }
-  unit.atk = SPIRIT_ATK;
+  unit.atk = Number(unit.atk) > 0 ? Number(unit.atk) : fallbackAtk;
 }
 
 function normalizeNeutralUnits(battle) {
