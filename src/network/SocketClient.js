@@ -4,8 +4,11 @@ import { io } from 'socket.io-client';
 const DEV_SOCKET_HOST = (() => {
   try { return globalThis.location?.hostname || 'localhost'; } catch { return 'localhost'; }
 })();
-const DEFAULT_SOCKET_URL = import.meta.env.VITE_SOCKET_URL || (
-  import.meta.env.DEV ? `http://${DEV_SOCKET_HOST}:3001` : (globalThis.location?.origin || '')
+// 2026-10-11：Node 里（服务端/验证脚本）没有 import.meta.env，直接取会 TypeError。
+// 与 ApiClient 同一处理：先兜底成空对象，浏览器行为不变。
+const VITE_ENV = import.meta.env ?? {};
+const DEFAULT_SOCKET_URL = VITE_ENV.VITE_SOCKET_URL || (
+  VITE_ENV.DEV ? `http://${DEV_SOCKET_HOST}:3001` : (globalThis.location?.origin || '')
 );
 
 export class SocketClient {

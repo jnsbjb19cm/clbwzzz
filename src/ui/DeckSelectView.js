@@ -16,6 +16,12 @@ const LEGACY_KEY = 'battle_deck_ids';
 const WORLD_MAP_STORAGE = 'clbwz_worldmap_v1';
 const ROOM_SETTINGS_KEY = 'clbwz_room_settings_v1';
 
+/** 2026-10-11：战团 → 本地键。默认组沿用 battle_deck_v2，其余 battle_deck_v2_<组>。 */
+function deckStorageKeyFor(group) {
+  const g = String(group ?? 'default');
+  return !g || g === 'default' ? STORAGE_KEY : `${STORAGE_KEY}_${g}`;
+}
+
 function loadWM() {
   try { const r = localStorage.getItem(WORLD_MAP_STORAGE); if (r) return JSON.parse(r); } catch {}
   return { stageClaimed: [], chapterUnlocked: 1 };
@@ -75,20 +81,44 @@ export class DeckSelectView {
     if (!r.length) bs.forEach((s, i) => { if (isBattleSlot(db, s) && r.length < HAND_SLOT_COUNT) r.push(i); });
     return r.slice(0, HAND_SLOT_COUNT);
   }
-  static loadSavedDeck(ci, db) {
+  /**
+   * 2026-10-11（用户：「选 a 进游戏却是 b」）：
+   * 这两个函数的第三个参数是**战团**（default / team1 / team2 / team3），
+   * 但签名里没有它 —— 参数被静默丢掉 → 不管在哪个战团选卡，**永远写/读默认组的键**，
+   * 而镜像又按各自的战团键去比对 → 战团之间互相污染（同类型卡看起来就像"选 a 进 b"）。
+   * 现在按战团取键：默认组 battle_deck_v2，其余 battle_deck_v2_<组>。
+   */
+  static loadSavedDeck(ci, db, group = 'default') {
     if (!ci) return null;
+    const groupKey = deckStorageKeyFor(group);
     try {
-      const r = localStorage.getItem(STORAGE_KEY);
+      const r = localStorage.getItem(groupKey);
       if (r) { const p = JSON.parse(r); if (Array.isArray(p) && p.length) { const rec = DeckSelectView.reconcileFingerprints(p, ci); if (rec.length) return rec; } }
     } catch {}
+    // 一次性迁移：修好丢参数之前，所有战团的牌组都被写进了默认键，
+    // 所以本组还没有自己的键时，先从默认键借用一次，并**落到本组的键**上；之后各归各的。
+    if (groupKey !== STORAGE_KEY) {
+      try {
+        const r = localStorage.getItem(STORAGE_KEY);
+        if (r) {
+          const p = JSON.parse(r);
+          if (Array.isArray(p) && p.length) {
+            const rec = DeckSelectView.reconcileFingerprints(p, ci);
+            if (rec.length) { DeckSelectView.saveDeck(rec, ci, group); return rec; }
+          }
+        }
+      } catch {}
+    }
     try { const r = localStorage.getItem(LEGACY_KEY); if (r) { const m = DeckSelectView.migrateLegacyIds(JSON.parse(r), ci, db); if (m.length) return m; } } catch {}
     return null;
   }
-  static saveDeck(si, ci) {
+  static saveDeck(si, ci, group = 'default') {
     if (!ci) return;
     const bs = ci.getSlots();
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(si.map((i) => slotFingerprint(i, bs[i])).filter(Boolean)));
-    localStorage.removeItem(LEGACY_KEY);
+    const groupKey = deckStorageKeyFor(group);
+    localStorage.setItem(groupKey, JSON.stringify(si.map((i) => slotFingerprint(i, bs[i])).filter(Boolean)));
+    // 旧键只在默认组清理，避免把别的战团的迁移源删掉。
+    if (groupKey === STORAGE_KEY) localStorage.removeItem(LEGACY_KEY);
   }
 
   constructor() {

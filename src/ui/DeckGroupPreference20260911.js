@@ -311,8 +311,8 @@ export function mirrorAccountDecksToLocal20260911(cardInventory, db) {
     // 判定：只要**卡片组成**（按 cardId 的序列）已经和账号一致，就不重写 —— 保留玩家的实例选择；
     // 只有组成真的不同（比如串组、缺卡）才用账号内容纠正。
     const slotsNow = cardInventory.getSlots() ?? [];
-    const idsOf = (list) => list.map((i) => Number(slotsNow[i]?.cardId) || 0);
-    if (sameIndices20260911(idsOf(local), idsOf(account))) continue;
+    const idsOf = (list) => (Array.isArray(list) ? list : []).map((i) => Number(slotsNow[i]?.cardId) || 0);
+    if (local && sameIndices20260911(idsOf(local), idsOf(account))) continue;
     try {
       DeckSelectView.saveDeck(account, cardInventory, group);
       fixed += 1;
