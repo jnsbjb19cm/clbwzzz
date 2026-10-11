@@ -294,6 +294,9 @@ export class RoomManager {
     if (room.status !== 'waiting') throw new Error('战斗开始后不能切换地图');
     if (!PVP_MAP_IDS.includes(String(mapId))) throw new Error('地图不存在');
     room.mapId = String(mapId);
+    // 2026-10-11 用户：战斗准备随机 roll 都不对 → 玩家手动 roll 过就记下来，
+    // 开战时不要再随机覆盖（原来第 386 行会重新 roll，把玩家选的图丢掉 ✗）
+    room.mapChosen = true;
     this.resetReady(room);
     return cloneRoom(room);
   }
@@ -383,7 +386,9 @@ export class RoomManager {
   markStarted(userId) {
     const room = this.canStart(userId);
     this.fillRandomBots(room);
-    if (room.mode === 'pvp' && room._hasStarted) room.mapId = rollPvpMap(room.mapId);
+    // 2026-10-11：pvp 开战时原本无条件重新 roll，会把房间 roll 的结果丢掉 ✗
+    // 现在只有玩家没手动选过地图时才自动随机（保留每局随机的老行为 ✔）
+    if (room.mode === 'pvp' && room._hasStarted && !room.mapChosen) room.mapId = rollPvpMap(room.mapId);
     room._hasStarted = true;
     room.status = 'starting';
     return cloneRoom(room);
