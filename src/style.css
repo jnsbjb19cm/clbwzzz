@@ -5453,9 +5453,9 @@ html, body { margin:0; padding:0; width:100%; height:100%; overflow:hidden; }
    容器仍是 941x95（缩放后 762.8x77.0），网格每列 ~90px；
    这里把卡片自身收窄并居中 → 每张卡变成**竖长方形**（约 62x77），房间布局完全不受影响。 */
 #deck-slots-row .deck-slot-item {
-  width: 62px !important;
-  min-width: 62px !important;
-  max-width: 62px !important;
+  width: 69px !important;
+  min-width: 69px !important;
+  max-width: 69px !important;
   height: 100% !important;
   justify-self: center !important;
 }
