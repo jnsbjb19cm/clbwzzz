@@ -5419,33 +5419,6 @@ html, body { margin:0; padding:0; width:100%; height:100%; overflow:hidden; }
 .bag-slot-trial { position: absolute; top: 2px; left: 2px; padding: 0 4px; border-radius: 4px; background: #b8860b; color: #fff; font-size: .6rem; line-height: 1.4; }
 .bag-detail-trial { margin: 0; font-size: .82rem; color: #b8860b; }
 
-/* ==========================================================================
-   2026-10-11 用户：战斗内单个卡卡槽要拉长成竖长方形（宽变短、高变高）。
-   注意：src/ui/BattleHandCooldownFinal.css 并没有被 index.html 加载（只有 /src/style.css 生效），
-   所以规则必须写在**这个文件**里才会生效。用 !important 压过下面已有的 #hand .deck-slot 规则。
-   ========================================================================== */
-/* 2026-10-11 用户追加：再拉高、宽再低 */
-#hand .deck-slot {
-  width: 38px !important;
-  min-width: 38px !important;
-  max-width: 38px !important;
-  flex: 0 0 38px !important;
-  /* 2026-10-11 用户：「总感觉更正方形了」→ 用显式 height 锁死比例（只给 min-height 时，
-     容器比它高就会按 100% 撑开，比例就漂了） */
-  height: 152px !important;
-  min-height: 152px !important;
-  max-height: 152px !important;
-  overflow: hidden !important;
-}
-#hand .deck-slot img,
-#hand .deck-slot .slot-face img,
-#hand .deck-slot .slot-card-img img {
-  transform: scale(1.14);
-  transform-origin: center center;
-}
-#hand .deck-slot .slot-face,
-#hand .deck-slot .slot-card-img {
-  overflow: hidden;
-}
-
-/* 战团（卡组编辑）页的卡槽：同样拉长一点，和战斗内保持一致的"竖长方形"手感 */
+/* 2026-10-11：战斗内手牌卡槽的覆盖**已移到** src/ui/GlassBattleCards20261010.css
+   （那是 main.js 里最后一个加载的 CSS）。写在 style.css 会被它覆盖，所以这里不再重复定义，
+   避免两个地方互相干扰、谁生效说不清。 */
