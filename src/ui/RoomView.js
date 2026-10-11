@@ -393,12 +393,17 @@ export class RoomView {
       this.socket.on('pvp:end', ({ winner }) => {
         const won = winner === this.myTeam;
         this.notice(won ? '胜利！' : '失败…');
+        // 2026-10-11 用户：「主线任务尝试一局PvP，打完不生效」（结算提示有弹出 → 事件是到了的）
+        // 原因：下面那句 `if (!this.room || this.watchingRoomId) return;` 会提前返回
+        //      （房间对象被清掉 / 观战态 都会命中），于是 battle_pvp 永远发不出去 ✗
+        // 修法：**PvP 相关任务一律在 return 之前派发** —— 只要这一局打完了就算数 ✔
+        QuestView.dispatch('battle_pvp', { count: 1 });
+        if (won) QuestView.dispatch('pvp_win', { count: 1 });
         if (!this.room || this.watchingRoomId) return;
         QuestView.dispatch('battle_complete', { count: 1 });
         if (won) QuestView.dispatch('battle_win', { count: 1 });
         if (this.room.mode === 'pvp') {
-          QuestView.dispatch('battle_pvp', { count: 1 });
-          if (won) QuestView.dispatch('pvp_win', { count: 1 });
+          // battle_pvp / pvp_win 已在上面派发过 → 这里不能再发一次（否则重复计数 ✗）
           return;
         }
         if (this.room.mode === 'boss') {
