@@ -249,3 +249,24 @@ body .battle-hand-tooltip .hand-tip-trait { color: #08bcbc; }
 body .battle-hand-tooltip .hand-tip-status.ready { color: #65c748; }
 body .battle-hand-tooltip .hand-tip-status.blocked { color: #f03b24; }
 body .battle-hand-tooltip .classic-tip-bitmap { display: inline-block; vertical-align: top; max-width: 100%; image-rendering: pixelated; }
+
+/* ==========================================================================
+   2026-10-11 用户：战斗准备房间卡槽的「数字」要小一点、并且居中。
+   卡片底部结构： <span class="v3-card-footer">
+                    <span class="v3-card-resource"><img/></span><b class="v3-card-cost">4</b>
+                  </span>
+   只调费用数字：字号变小 + 在页脚里水平居中（不影响卡面与图标）。
+   ========================================================================== */
+.game-room .deck-slot-item .v3-card-footer,
+.game-room .v3-deck-slot .v3-card-footer {
+  justify-content: center !important;
+  gap: 2px !important;
+}
+.game-room .deck-slot-item .v3-card-cost,
+.game-room .v3-deck-slot .v3-card-cost {
+  font-size: 11px !important;
+  line-height: 1 !important;
+  font-weight: 700 !important;
+  min-width: 0 !important;
+  padding: 0 1px !important;
+}
