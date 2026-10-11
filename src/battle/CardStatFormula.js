@@ -70,7 +70,8 @@ export function calculateCardStats(card, craftQuality = 2, stars = 0, attributeR
   const defense = isDefenseBattleCard(card);
   const V = defense && baseCooldown <= 6 ? getStarDefenseBonus(Q) : 0;
   const mult = P + 0.08 * Q;
-  const hpMult = defense ? P + 0.16 * Q + 0.16 * V : mult;
+  // 2026-10-11 用户：普通卡每星生命 8% -> 5%；防御卡 16% -> 8%（V 项同步减半）；攻击不变
+  const hpMult = defense ? P + 0.08 * Q + 0.08 * V : P + 0.05 * Q;
   const roll = normalizeAttributeRoll(attributeRoll);
   const atkRollMult = 1 + roll.atk / 100;
   const hpRollMult = 1 + roll.hp / 100;

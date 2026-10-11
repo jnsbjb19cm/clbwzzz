@@ -13,6 +13,7 @@ import { cardFunctionIcon } from '../data/cardFunctionIcon.js';
 import { RoomView } from './RoomView.js';
 import { cardStarRows } from './CardStarRows.js';
 import { BattleView } from './BattleView.js';
+import { emitQuestEvent } from '../core/QuestEventBus.js';
 import { roomDeckGroup20260912, selectedBattleDeck20260912 } from './DeckGroupPreference20260911.js';
 
 const PATCH_FLAG = Symbol.for('clbwzzz.pvpWildernessRoomFinal');
@@ -512,6 +513,7 @@ function enterPvpBattle(view) {
       mapScene,
     },
     onNavigate: view.onNavigate,
+    onQuestEvent: emitQuestEvent,
   });
   view.roomBattleView.render(panel);
 

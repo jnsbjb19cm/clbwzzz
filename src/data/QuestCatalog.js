@@ -113,6 +113,7 @@ const MAIN_ROWS = [
   }],
   ['初入竞技场', 1, 'battle_pvp', {
     desc: '尝试一局 PVP（输赢均可）。',
+    cumulativeKey: 'totalPvpBattles',
     rewardTier: 1, gold: 200, exp: 300, gem: 100,
   }],
 

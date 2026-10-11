@@ -190,6 +190,8 @@ export function backfillQuestProgressFromHistory(state, { groups = QUEST_GROUPS,
       case 'material_combine': return num(extra.totalMaterialCombines);
       case 'battle_complete': return num(extra.totalBattles);
       case 'battle_win': return num(extra.totalBattleWins);
+      case 'battle_pvp': return num(extra.totalPvpBattles);
+      case 'pvp_win': return num(extra.totalPvpWins);
       case 'kill_enemy': return num(extra.totalKills);
       case 'level': return num(playerLevel) || 1;
       case 'lucky_wheel': return num(extra.totalWheelSpins);

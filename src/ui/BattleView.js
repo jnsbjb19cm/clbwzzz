@@ -808,7 +808,7 @@ export class BattleView {
         drops: this.__pvpAuthorityActive ? [] : (this.engine.lootDrops ?? []).map((drop) => ({ ...drop })),
       });
       // 任务事件：训练营不计任务；野外冒险只认带 adventure 元数据的正式关卡。
-      if (!this.trainingMode) {
+      if (!this.trainingMode && !this.pvp?.spectator) {
         const bossId = this.pvp?.bossId ?? this.boss?.id ?? null;
         const adventure = this.engine.stage?.adventure ?? null;
         const questMeta = {
@@ -825,6 +825,11 @@ export class BattleView {
         };
         const distinctCards = this.questBattleStats?.cardIds?.size ?? 0;
         const lanesUsed = this.questBattleStats?.lanes?.size ?? 0;
+        // 权威 PVP 走结果面板结算，不依赖旧版 pvp:end；_resultReported 保证每局一次。
+        if (this.pvp && (this.pvp.mode || 'pvp') === 'pvp' && !bossId) {
+          this.onQuestEvent?.('battle_pvp', questMeta);
+          if (win) this.onQuestEvent?.('pvp_win', questMeta);
+        }
         if (win) this.onQuestEvent?.('battle_win', questMeta);
         // 2026-10-07（P0）：PVE 联机（野外冒险）也是 this.pvp（mode='pve'）。
         // 旧写法 !this.pvp 把联机冒险的「通关」事件也挡掉了 → 主线关卡任务永远不涨。

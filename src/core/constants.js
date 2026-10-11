@@ -131,7 +131,9 @@ export const DEFENSE_CARD_IDS = new Set([2, 11, 21, 34, 88, 90]);
  * 核心公式：
  * mult = P + 0.08Q
  * atk  = (card_atk + R) × mult
- * hp   = card_hp × (防御卡 ? P + 0.16Q + 0.16V : mult)
+ * hp   = card_hp × (防御卡 ? P + 0.08Q + 0.08V : P + 0.05Q)
+ *        （2026-10-11 用户调整：普通卡生命每星 8%→5%，防御卡 16%→8%，额外防御同步减半；
+ *          注意攻击仍用 mult = P + 0.08Q，**未被削弱**）
  * cd   = max(6, card_cooldown − M)
  */
 export function calcCardStats(card, craftQuality, stars) {
@@ -144,7 +146,9 @@ export function calcCardStats(card, craftQuality, stars) {
   const mult = P + 0.08 * Q;
   const isDef = Number(card?.atkStyle ?? card?.atk_style) === 1;
   const V = isDef && baseCd <= 6 ? getStarDefBonus(Q) : 0;
-  const hpMult = isDef ? P + 0.16 * Q + 0.16 * V : mult;
+  // 2026-10-11 用户：普通卡每星生命 8% -> 5%；防御卡 16% -> 8%（额外防御项 V 同步减半）
+  // 攻击不变（仍用上面的 mult = P + 0.08 * Q）
+  const hpMult = isDef ? P + 0.08 * Q + 0.08 * V : P + 0.05 * Q;
   const baseAtk = Math.max(0, Number(card?.atk ?? card?.card_atk) || 0);
   const baseHp = Math.max(0, Number(card?.hp ?? card?.card_hp) || 0);
   return {
