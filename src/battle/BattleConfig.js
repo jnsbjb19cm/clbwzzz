@@ -233,7 +233,12 @@ export const HAND_SLOTS_TOP = 33;
 // 2026-10-11 用户：「这个条宽度调细一些」——
 // 这是手牌卡槽宽度的**唯一真源头**：BattleView 会把它写成 #hand 的内联样式
 // (--hand-slot-w:74px)，内联样式**任何 CSS 都压不过**，所以只能改这里。
-export const HAND_SLOT_W = 46;
+// 2026-10-11 用户给了参考图（2026-10-10 22:01 的截图）当宽度基准：
+//   实测两张图的卡槽周期几乎一致（参考 133px / 当前(74) 132px）→ 参考图就是 74 的效果，
+//   所以这里**还原为 74**（匹配用户给的参考），我之前的 46 撤销。
+// 注意：这是手牌卡槽宽度的唯一真源头（BattleView 写成 #hand 的内联样式 --hand-slot-w，
+//       所以任何 CSS 覆盖都无效）。想改就改这一个数字。
+export const HAND_SLOT_W = 74;
 export const HAND_SLOT_GAP = 0;
 export const HAND_SLOTS_WIDTH = HAND_SLOT_COUNT * HAND_SLOT_W;
 export const HAND_SLOTS_HEIGHT = 48;
