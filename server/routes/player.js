@@ -306,13 +306,22 @@ playerRouter.post('/migration/local-snapshot', async (req, res) => {
       const deckNo = clampInt(entry.deckNo, 1, 3);
       const deck = await conn.get('SELECT id FROM player_decks WHERE user_id=? AND deck_no=?', [req.user.id, deckNo]);
       if (!deck) continue;
-      const deckCards = Array.isArray(entry.cards)
-        ? entry.cards.map((c) => Number(c.cardId ?? c)).filter(Number.isInteger)
+      const deckEntries = Array.isArray(entry.cards)
+        ? entry.cards.map((c) => ({
+          cardId: Number(c?.cardId ?? c),
+          craftQuality: Math.max(1, Math.min(9, Number(c?.craftQuality ?? c?.craft_quality ?? 1) || 1)),
+          strengthLv: Math.max(0, Number(c?.strengthLv ?? c?.strength_lv ?? c?.star ?? 0) || 0),
+        })).filter((e) => Number.isInteger(e.cardId) && e.cardId > 0)
         : [];
+      const deckCards = deckEntries.map((e) => e.cardId);
       if (!deckCards.length || deckCards.length > 10 || new Set(deckCards).size !== deckCards.length) continue;
       await conn.run('DELETE FROM deck_cards WHERE deck_id=?', [deck.id]);
-      for (let index = 0; index < deckCards.length; index += 1) {
-        await conn.run('INSERT INTO deck_cards(deck_id,slot_index,card_id) VALUES(?,?,?)', [deck.id, index, deckCards[index]]);
+      for (let index = 0; index < deckEntries.length; index += 1) {
+        // 2026-10-11：这里以前也只写 card_id（第二处漏网），品质/星级同样要入库。
+        await conn.run(
+          'INSERT INTO deck_cards(deck_id,slot_index,card_id,craft_quality,strength_lv) VALUES(?,?,?,?,?)',
+          [deck.id, index, deckEntries[index].cardId, deckEntries[index].craftQuality, deckEntries[index].strengthLv],
+        );
       }
     }
   });
