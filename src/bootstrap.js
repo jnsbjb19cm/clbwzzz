@@ -1,4 +1,6 @@
 import { installTrainingBaseThreatFix20260905 } from './battle/TrainingBaseThreatFix20260905.js';
+import { BUILD_STAMP } from './data/buildStamp.js';
+import { CARD_FUNCTION_ICON_FRAMES, cardFunctionIcon } from './data/cardFunctionIcon.js';
 import { installBattleLootVariety20260908 } from './battle/BattleLootVariety20260908.js';
 import { installPlayerStorageScope } from './core/PlayerStorage20261010.js';
 import { installAssetPreloadUi20261010 } from './ui/AssetPreloadUi20261010.js';
@@ -89,6 +91,14 @@ function installSafely(label, install) {
 // 2026-10-10：玩家数据按账号隔离（修玩家反馈的「换号串数据」）。
 // 必须最早装 —— 它包的是 Storage.prototype，要在任何模块读玩家存档之前生效；
 // 具体切到哪个账号由 AuthStore 在登录/登出时决定。
+// 版本标记：控制台执行 __clbwzBuild() / __clbwzIconInfo() 可随时确认
+console.log('[clbwz] 当前版本:', BUILD_STAMP);
+  // 把版本挂在标签页标题上：不用开控制台也能确认跑的是哪一版（用户反馈"看不到改动生效"时用它排查）
+  try { document.title = `${document.title.split(' · 图标')[0]} · 图标⑤`; } catch { /* 非浏览器环境忽略 */ }
+globalThis.__clbwzIconInfo = () => ({ 说明: '1弓 2刀 3盾 4鼓 5特殊 6飞行 7钻地', 映射: CARD_FUNCTION_ICON_FRAMES,
+  抽查: { 花生射手: cardFunctionIcon({ card_id: 1 }), 西瓜太郎: cardFunctionIcon({ card_id: 7 }) } });
+globalThis.__clbwzIconOf = (card) => cardFunctionIcon(card);
+
 installSafely('installPlayerStorageScope', () => installPlayerStorageScope());
 // 2026-10-10：资源预加载（登录页预热轻量资源 + 进房间的精灵动画加载界面）。
 installSafely('installAssetPreloadUi20261010', () => installAssetPreloadUi20261010());

@@ -42,8 +42,10 @@ export const SPECIAL_EFFECT_CARD_IDS = Object.freeze([58, 56, 75, 76, 104, 38]);
 
 /** 抵挡型但会反击的卡：用户明确"除了松果战士"，所以它算防御 */
 export const DEFENSE_CARD_IDS = Object.freeze([
-  11,  // 松果战士（用户点名"除了松果战士"）
-  88,  // 魔法冰盾（用户：「魔法冰盾是盾」）
+  11,   // 松果战士（用户点名"除了松果战士"）
+  88,   // 魔法冰盾（用户：「魔法冰盾是盾」）
+  62,   // 喷喷怪（用户：防御）
+  101,  // 超级喷喷怪（用户：防御）
 ]);
 
 /**
@@ -64,9 +66,14 @@ export const SUPPORT_BUFF_CARD_IDS = Object.freeze([
 ]);
 
 /** 特殊机制卡（非纯增益、也非靠普攻输出）→ 特殊效果(火焰) */
-export const SPECIAL_MECHANIC_CARD_IDS = Object.freeze([34, 53, 61, 66, 78, 93, 101]);
+export const SPECIAL_MECHANIC_CARD_IDS = Object.freeze([
+  34, 53, 61, 66, 78, 93,   // 吞噬/魅惑/爆炸/造怪/传送
+  15, 52,                   // 地刺 / 强化地刺（用户：属于特殊 = 5）
+]);
 
 const REMOTE_ATK_STYLES = Object.freeze([2, 3]);   // 远程单体 / 远程范围
+/** 用户点名归"远程(弓箭)"但不属于上面 atk_style 的卡 */
+const REMOTE_CARD_IDS = Object.freeze([72]);       // 燃烧瓶专家
 const MELEE_ATK_STYLE = 7;                          // 近战
 const DEFENSE_ATK_STYLE = 1;                        // 防御（只挡不打）
 
@@ -112,7 +119,7 @@ export function cardFunctionIcon(card) {
     return { frame: CARD_FUNCTION_ICON_FRAMES.防御, label: '防御', rule: 'defense' };
   }
   // ④ 远程攻击（弓箭）：远程单体 / 远程范围
-  if (REMOTE_ATK_STYLES.includes(atkStyle)) {
+  if (REMOTE_ATK_STYLES.includes(atkStyle) || REMOTE_CARD_IDS.includes(cardId)) {
     return { frame: CARD_FUNCTION_ICON_FRAMES.远程攻击, label: '远程攻击', rule: 'remote' };
   }
   // ⑤ 近战攻击（刀）：用户标准 —— **1~4 级的近战**（不再要求"可移动"，站的近战也算）
