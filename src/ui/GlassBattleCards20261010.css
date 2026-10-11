@@ -283,3 +283,25 @@ html body #hand .deck-slot {
   min-width: 52px !important;
   max-width: 52px !important;
 }
+
+/* ==========================================================================
+   2026-10-11 用户实测：改窄后变成 56x56（正方形）✗
+   原因：有规则让卡槽**按宽度等比**（aspect-ratio / height:auto）→ 宽一缩、高也缩 ✗
+   用户要的是「**宽变小、高度不变**」→ 所以这里把高度**锁回容器高度**、并禁掉等比。
+   ========================================================================== */
+html body.battle-immersive .battle-fullscreen-final #hand .deck-slot,
+html body.battle-immersive #hand.battle-hand-large .deck-slot,
+html body.battle-immersive #hand.video-battle-hand .deck-slot,
+html body.battle-immersive #hand .deck-slot,
+html body #hand.reference-battle-hand.video-battle-hand .deck-slot,
+html body #hand .deck-slot {
+  width: 52px !important;
+  min-width: 52px !important;
+  max-width: 52px !important;
+  flex: 0 0 52px !important;
+  /* ↓↓ 关键：高度锁回容器（= 改动前的高度），并禁掉"按宽等比" */
+  height: 100% !important;
+  min-height: 0 !important;
+  max-height: none !important;
+  aspect-ratio: auto !important;
+}
