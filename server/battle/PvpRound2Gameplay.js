@@ -279,7 +279,7 @@ export function installPvpRound2Gameplay() {
       }
     }
     snapshot.neutralBarrierRule = {
-      hp: BARRIER_HP,
+      hp: BARRIER_HP_FALLBACK,   // 仅构造用兜底；真正血量由卡片配置决定 ✔
       summonHp: SPIRIT_HP,
       summonAtk: SPIRIT_ATK,
       ownership: 'last-hit-team',
