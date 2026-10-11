@@ -66,13 +66,16 @@ function ensureNeutralIce(battle) {
     // 2026-10-11 用户更正：黄沙 = 石柱子(打破出石精灵1008)、沙滩 = 沙丘(出沙精灵1009)
     // （我上一版把 7 和 10 配反了 ✗）
     '10': 1004,
-    '7': 1003,
+    // 2026-10-11 用户：黄沙(7) 出土块和沙丘**随机**（即石精灵或沙精灵随机）
+    '7': [1003, 1004],
   };
   // 海底神殿(11)：从五种精灵里**随机**挑一个（用户：'海底神殿的是随机小精灵'）
   const TEMPLE_SPIRIT_BARRIERS = [1000, 1001, 1002, 1003, 1004];
+  // 2026-10-11：支持一图多障碍随机（黄沙=土块/沙丘随机）
+  const pickFrom = (v) => Array.isArray(v) ? v[Math.floor(Math.random() * v.length)] : v;
   const barrierId = roomMapId === '11'
     ? TEMPLE_SPIRIT_BARRIERS[Math.floor(Math.random() * TEMPLE_SPIRIT_BARRIERS.length)]
-    : (NEUTRAL_BY_MAP[roomMapId] || 1000);
+    : (pickFrom(NEUTRAL_BY_MAP[roomMapId]) || 1000);
   const card = battle.db?.getById?.(barrierId);
   if (!card) throw new Error('PVP中立障碍卡牌' + barrierId + '不存在');
 
