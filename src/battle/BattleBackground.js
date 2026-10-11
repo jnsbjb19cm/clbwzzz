@@ -60,6 +60,24 @@ export const BOSS_SCENE = Object.freeze({
   boss_princess: 'temple',  // 人鱼公主琴音
 });
 
+/**
+ * 2026-10-11 用户：「房间 roll 了 50 次都没有新地图 / 沃里尔也没修」
+ * 真凶：房间 roll 会把地图 id 塞进 stage.mapBg_res（PvpBattleBridgeFinal.js:149
+ *       mapBg_res: Number(this.pvp.mapId) || 4），但本函数**完全不读它** ✗，
+ *       自己又随机 roll 一次 → 两套机制打架，房间选的地图永远不生效 ✗
+ * 修：优先采用 stage.mapBg_res / window.__pvpMapScene 指定的场景 ✔
+ */
+export const MAP_BG_RES_TO_SCENE = Object.freeze({
+  1: 'grass',   // 密林（老关卡默认）
+  2: 'grass',   // 草地（房间 roll 用 2）
+  4: 'ice',     // 冰川
+  7: 'rock',    // 黄沙
+  8: 'forest',  // 古老密林（新）
+  9: 'fire',    // 火焰（新）
+  10: 'beach',  // 沙滩（新）
+  11: 'temple', // 海底神殿（新）
+});
+
 /** PVP 随机池（火山未做不参与随机） */
 // 2026-10-11 用户：随机地图也要包含新地图
 const PVP_SCENE_POOL = ['grass', 'rock', 'ice', 'forest', 'fire', 'beach', 'temple'];
@@ -110,9 +128,16 @@ export function resolveBattleBackground(
     };
   }
 
+  // 优先级：BOSS 指定 > 关卡/房间自带的地图 id > PVP 随机
+  // （2026-10-11：新增中间这一档，房间 roll 出来的地图才会真正生效 ✔）
   let sceneKey = 'grass';
+  const explicitScene = (typeof window !== 'undefined' && window.__pvpMapScene)
+    ? String(window.__pvpMapScene)
+    : MAP_BG_RES_TO_SCENE[Number(stage?.mapBg_res)];
   if (bossId) {
     sceneKey = BOSS_SCENE[bossId] || 'grass';
+  } else if (explicitScene && SCENE_SETS[explicitScene]) {
+    sceneKey = explicitScene;
   } else if (pvpMode) {
     sceneKey = PVP_SCENE_POOL[Math.floor(Math.random() * PVP_SCENE_POOL.length)];
   }
