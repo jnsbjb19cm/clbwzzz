@@ -72,7 +72,7 @@ const AERIAL_CONTACT_COLS = 1.02;
 /** 自爆卡(40 飞行水蜜桃 / 61 黑铁土豆雷 / 65 热血火龙果)借用的爆炸序列 res（bullet anim 里有 baoza）*/
 const SUICIDE_BOOM_RES = Object.freeze({ 40: 4, 61: 4, 65: 17 });
 /**
- * 死亡爆炸(30 真.西瓜太郎 / 69 / 102 这类"死亡后触发"的卡)借用的爆炸序列 res。
+ * 死亡爆炸(30 真·西瓜太郎 / 69 / 102 这类"死亡后触发"的卡)借用的爆炸序列 res。
  * 这些卡自己的子弹包里没有 baoza，所以借一个有的；否则死亡爆炸只有飘字、看不到爆炸。
  */
 const DEATH_BOOM_RES = 4;
@@ -2153,7 +2153,7 @@ export class BattleEngine {
         pvpOwnerUserId: unit.pvpOwnerUserId ?? null,
       });
     }
-    // 真.西瓜太郎：死亡后爆炸，对周围3x3格范围内敌方单位造成伤害。
+    // 真·西瓜太郎：死亡后爆炸，对周围3x3格范围内敌方单位造成伤害。
     // 2026-10-07（用户要求）：爆炸伤害 = 1.5 倍单次攻击（原来 1 倍，和普通一拳一样没打击感）。
     if (unit.cardId === 30) {
       this.deathExplosion(unit, 1, unit.atk * 1.5);
@@ -2204,7 +2204,7 @@ export class BattleEngine {
     const t = this.time;
     const centerCol = Math.round(unit.col);
     const dmg = roundBattleAmount(Math.max(1, damage));
-    // 2026-10-07：以前这里只飘伤害字、一个爆炸动画都不放，玩家以为"真.西瓜太郎的自爆没做"。
+    // 2026-10-07：以前这里只飘伤害字、一个爆炸动画都不放，玩家以为"真·西瓜太郎的自爆没做"。
     // 借自爆卡(40/61/65)那套带 baoza 的爆炸序列，让死亡爆炸看得见。
     this.spawnImpactFx(unit.lane, centerCol, dmg, unit.res, DEATH_BOOM_RES);
     for (let dr = -radius; dr <= radius; dr++) {
