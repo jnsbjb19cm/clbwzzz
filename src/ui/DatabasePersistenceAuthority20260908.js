@@ -308,8 +308,10 @@ function installShopAuthority() {
     }
     this.cart = remaining;
     this.renderClassicCatalog(root);
-    // 2026-10-06：不再播报"已购买 N 件/成功购买"这类调试信息；有失败才提示原因（那才是有用的）。
+    // 2026-10-06：曾把"已购买 N 件"这类播报去掉；2026-10-11 用户反馈"购物车买成功了一点提示都没有"，
+    // 所以恢复成功提示（失败分支保持原样，仍然只提示有用的原因）。
     if (stopMessage) this.toast(root, purchased ? `已购买 ${purchased} 件；其余未购买：${stopMessage}` : stopMessage);
+    else if (purchased > 0) this.toast(root, `购买成功：已购买 ${purchased} 件`);
     } finally {
       this._shopPurchasePending = false;
     }
