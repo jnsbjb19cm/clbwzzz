@@ -2,7 +2,9 @@ const DISCONNECT_GRACE_MS = 30_000;
 import { getBossById } from '../../src/data/bossList.js';
 
 /** 房间规模 → 每队人数(1v1 / 2v2 / 3v3) */
-export const PVP_MAP_IDS = Object.freeze(['2', '4', '7']);
+// 2026-10-11 用户：「古老密林/海底神殿显示地图不存在」→ 白名单只放了老 3 张 ✗
+// 新地图 id：8=古老密林 9=火焰 10=沙滩 11=海底神殿
+export const PVP_MAP_IDS = Object.freeze(['2', '4', '7', '8', '9', '10', '11']);
 export function rollPvpMap(previous = null, rng = Math.random) {
   const candidates = PVP_MAP_IDS.filter(id => id !== String(previous));
   return candidates[Math.min(candidates.length - 1, Math.max(0, Math.floor(rng() * candidates.length)))];
