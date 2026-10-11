@@ -4,7 +4,9 @@ import { BattleSkillSystem } from '../../src/systems/BattleSkillSystem.js';
 import { PvpBattle } from './PvpBattle.js';
 
 const PATCH_FLAG = Symbol.for('clbwzzz.pvpRound2Gameplay');
-const BARRIER_HP = 220;
+// 2026-10-11 用户：中间柱血量怎么是 220？卡片里明明是 1400 ✗
+// -> 这里原先把柱子血量强行覆盖成 220 ✗。改为**使用卡片自身配置**（1400 ✔），取不到才回退 220
+const BARRIER_HP_FALLBACK = 220;
 const SPIRIT_HP = 220;
 const SPIRIT_ATK = 8;
 const BARRIER_TO_SPIRIT = new Map([
@@ -32,13 +34,16 @@ function normalizeBarrier(unit) {
   if (!isNeutralBarrier(unit)) return;
   if (!unit.__pvpBarrierStatsReady) {
     unit.__pvpBarrierStatsReady = true;
-    unit.maxHp = BARRIER_HP;
-    unit.baseMaxHp = BARRIER_HP;
-    unit.hp = BARRIER_HP;
+    // 用卡片自身血量（首次进入时 unit.maxHp 还是卡片数据）✔
+    const cardHp = Number(unit.maxHp) > 0 ? Number(unit.maxHp) : BARRIER_HP_FALLBACK;
+    unit.maxHp = cardHp;
+    unit.baseMaxHp = cardHp;
+    unit.hp = cardHp;
   } else {
-    unit.maxHp = BARRIER_HP;
-    unit.baseMaxHp = BARRIER_HP;
-    unit.hp = Math.max(0, Math.min(BARRIER_HP, Number(unit.hp) || 0));
+    const capHp = Number(unit.maxHp) > 0 ? Number(unit.maxHp) : BARRIER_HP_FALLBACK;
+    unit.maxHp = capHp;
+    unit.baseMaxHp = capHp;
+    unit.hp = Math.max(0, Math.min(capHp, Number(unit.hp) || 0));
   }
   unit.atk = 0;
   unit.moveSpeed = 0;
@@ -261,7 +266,8 @@ export function installPvpRound2Gameplay() {
       const unit = this.engine.units.find((candidate) => Number(candidate.uid) === Number(data.uid));
       if (isNeutralBarrier(unit)) {
         data.hp = round1(unit.hp);
-        data.maxHp = BARRIER_HP;
+        // 用单位自身血量（卡片配置 1400），取不到才回退 ✔
+        data.maxHp = Number(unit?.maxHp) > 0 ? Number(unit.maxHp) : BARRIER_HP_FALLBACK;
         data.neutral = true;
         data.barrier = true;
       } else if (unit?.__pvpBarrierSummon) {
