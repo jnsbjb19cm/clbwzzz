@@ -1,4 +1,42 @@
+import levelRows20261011 from '../data/levelConfig.json';
+
+/**
+ * 2026-10-11 用户：
+ *   · 上榜（荣誉榜只回前 50 名）→ 显示「第 xx 名」
+ *   · 未上榜 → 显示「xxxx 积分」（也就是该玩家的荣誉值）
+ */
+function honorRankText20261011(player) {
+  const rank = Number(player?.honorRank ?? 0);
+  if (rank > 0) return `第 ${rank} 名`;
+  const honor = Math.max(0, Number(player?.honor) || 0);
+  return `${honor} 积分`;
+}
+
+/**
+ * 2026-10-11 用户：血量/魔法要显示真实值 —— 缺失就显示 —，不再编造默认值。
+ */
+function realStatText20261011(value) {
+  const num = Number(value);
+  return Number.isFinite(num) && num > 0 ? num : '—';
+}
+
+/**
+ * 2026-10-11 用户：经验显示两个数字（当前绝对经验 / 升到下一级所需经验），
+ * 鼠标悬停显示「还需 X 经验升级 · 当前进度 Y%」。
+ */
+function expInfo20261011(player) {
+  const level = Math.max(1, Number(player?.level) || 1);
+  const current = Math.max(0, Number(player?.exp) || 0);
+  const rows = Array.isArray(levelRows20261011) ? levelRows20261011 : [];
+  const row = rows.find((r) => Number(r?.hero_level) === level);
+  const nextRow = rows.find((r) => Number(r?.hero_level) === level + 1);
+  const need = Math.max(0, Number(row?.lvup_exp ?? nextRow?.lvup_exp ?? 0) || 0);
+  const remain = Math.max(0, need - current);
+  const pct = need > 0 ? Math.min(100, Math.round((current / need) * 1000) / 10) : 100;
+  return { current, next: need, tip: `还需 ${remain} 经验升级 · 当前进度 ${pct}%` };
+}
 import {
+
   CARD_QUALITY,
   CARD_TYPE,
   formatCraftCardName,
@@ -116,7 +154,7 @@ export class BagView {
               <button type="button" class="bag-equip-slot bag-equip-badge">翅膀</button>
             </div>
             <dl class="bag-profile-stats">
-              <div><dt>竞技积分</dt><dd id="bag-profile-arena"></dd></div><div><dt>经验</dt><dd>${Math.max(0, Number(this.player?.exp) || 0)}%</dd></div>
+              <div><dt>竞技积分</dt><dd id="bag-profile-arena"></dd></div><div><dt>经验</dt><dd id="bag-profile-exp" title=""></dd></div>
               <div><dt>生命</dt><dd id="bag-profile-hp"></dd></div><div><dt>荣誉</dt><dd id="bag-profile-honor"></dd></div>
               <div><dt>卡数</dt><dd>${this.cardInventory.getUsedCount()}</dd></div><div><dt>金币</dt><dd id="bag-profile-gold"></dd></div>
             </dl>
@@ -148,6 +186,14 @@ export class BagView {
     root.querySelector('#bag-profile-honor').textContent = Math.max(0, Number(this.player?.honor) || 0);
     // 2026-10-11 用户：竞技积分就是荣誉 → 直接显示荣誉值（不再用 player.arena 这个假字段）
     root.querySelector('#bag-profile-arena').textContent = Math.max(0, Number(this.player?.honor) || 0);
+    // 2026-10-11 用户：经验值显示两个 —— 当前绝对经验 / 升到下一级所需经验；
+    // 悬停显示：还差多少经验 + 当前百分比。
+    const expCell = root.querySelector('#bag-profile-exp');
+    if (expCell) {
+      const info = expInfo20261011(this.player);
+      expCell.textContent = `${info.current} / ${info.next}`;
+      expCell.title = info.tip;
+    }
     root.querySelector('#bag-profile-gold').textContent = Math.max(0, Number(this.player?.gold) || 0);
 
     this.bindModeEvents(root);
