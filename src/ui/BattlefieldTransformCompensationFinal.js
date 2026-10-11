@@ -93,8 +93,36 @@ function viewportColumnWidth() {
   return Math.max(170, Math.min(viewportWidth * 0.115, 280));
 }
 
+// 2026-10-11 用户：房间人机局进去还是沙堆 ✗
+// 原因：本函数把背景图改写成"柱子图"，但只认识 rock/ice/mushroom ✗
+//       -> 新地图(forest/fire/beach/temple)没有分支 ✗ -> 一律落回黄沙的沙堆柱 ✗
+// 修：先按【当前场景】强制给出正确的柱子图 ✔，其余再走原有替换兜底
+const SCENE_COLUMN_PAIR = {
+  grass: '/battle/background/mushroomleft-column.png',
+  rock: '/battle/background/leftrock-column.png',
+  ice: '/battle/background/leftice-column.png',
+  forest: '/battle/background/leftforest.png',
+  fire: '/battle/background/leftfire.png',
+  beach: '/battle/background/leftbeach.png',
+  temple: '/battle/background/lefttemple.png',
+};
+function currentColumnScene() {
+  const dom = document?.querySelector?.('[data-round3-scene]')?.dataset?.round3Scene ?? null;
+  if (dom && SCENE_COLUMN_PAIR[dom]) return dom;
+  const g = String(window?.__pvpMapScene || '');
+  if (SCENE_COLUMN_PAIR[g]) return g;
+  return null;
+}
 function runtimeColumnBackground(backgroundImage) {
-  return String(backgroundImage || '')
+  const raw = String(backgroundImage || '');
+  const scene = currentColumnScene();
+  if (scene) {
+    const isRight = /right/i.test(raw);
+    const leftPath = SCENE_COLUMN_PAIR[scene];
+    const path = isRight ? leftPath.replace('left', 'right') : leftPath;
+    return `url("${path}")`;
+  }
+  return raw
     .replace('leftrock.png', 'leftrock-column.png')
     .replace('rightrock.png', 'rightrock-column.png')
     .replace('leftice.png', 'leftice-column.png')
