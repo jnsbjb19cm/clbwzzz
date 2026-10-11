@@ -1,5 +1,6 @@
 import { CardDatabase } from '../core/CardDatabase.js';
 import { installClassicCardTooltip } from './ClassicCardTooltip.js';
+import { emitQuestEvent } from '../core/QuestEventBus.js';
 import { ItemDatabase, InventoryStore } from '../core/ItemDatabase.js';
 import { CardInventoryStore } from '../core/CardInventoryStore.js';
 import { HeroSkillStore } from '../core/HeroSkillStore.js';
@@ -309,7 +310,22 @@ export class App {
   }
 
   handleBattleResult({ won, stage, drops = [], durationMs = 0, mode = 'pve' }) {
-    if (mode === 'pvp' || mode === 'boss') return; // 权威房间奖励由服务器结算并刷新快照。
+    // 2026-10-11 用户：「大厅匹配人机，打完 PvP 主线『初入竞技场』不生效」
+    // 原因：PvP/BOSS 局在这行**直接 return**（房间奖励由服务端结算），
+    //       于是它下面所有任务派发都不会执行 ✗ → 任务永远推进不了。
+    // 修法：把 PvP 任务派发放到 return **之前**；3 秒去重，避免与 RoomView 的 pvp:end 重复计数。
+    if (mode === 'pvp' || mode === 'boss') {
+      const nowAt = Date.now();
+      if (nowAt - (globalThis.__clbwzPvpQuestAt20261011 ?? 0) > 3000) {
+        globalThis.__clbwzPvpQuestAt20261011 = nowAt;
+        if (mode === 'pvp') {
+          emitQuestEvent('battle_pvp', { count: 1 });
+          if (won) emitQuestEvent('pvp_win', { count: 1 });
+        }
+        // BOSS 局的任务由 RoomView/服务端负责（需要 bossId），这里不掺和
+      }
+      return; // 权威房间奖励由服务器结算并刷新快照。
+    }
     const reward = getBattleRewards(stage, won);
     let totalGold = reward.gold;
     let totalExp = reward.exp;

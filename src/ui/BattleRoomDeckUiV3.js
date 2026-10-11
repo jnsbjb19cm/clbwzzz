@@ -381,7 +381,7 @@ function cardMarkup(meta, { compact = false, selected = false, duplicate = false
     <span class="v3-card-footer">
       <span class="v3-card-resource"><img src="${meta.resourceIcon}" alt="${meta.resourceLabel}" /></span>
       <b class="v3-card-cost">${meta.cost}</b>
-      <span class="v3-card-function" title="${escapeHtml(meta.functionLabel)}"><i>${meta.functionIcon}</i>${compact ? '' : `<em>${meta.functionLabel}</em>`}</span>
+      <span class="v3-card-function" aria-label="${escapeHtml(meta.functionLabel)}"><i>${meta.functionIcon}</i>${compact ? '' : `<em>${meta.functionLabel}</em>`}</span>
     </span>
     ${selected ? '<span class="v3-card-mark selected">已上阵</span>' : ''}
     ${duplicate ? '<span class="v3-card-mark duplicate">同名已上阵</span>' : ''}
@@ -461,7 +461,7 @@ function renderDeckSlots(root) {
       <button type="button" class="deck-slot-item v3-deck-slot filled${active ? ' swap-source' : ''}"
         data-slot-idx="${slotIndex}" data-bag-idx="${bagIndex}"
         style="--quality:${meta.quality.color}"
-        title="${escapeHtml(meta.card.name)}｜${meta.resourceLabel}${meta.cost}｜${escapeHtml(meta.functionLabel)}｜${escapeHtml(meta.feature)}">
+        aria-label="${escapeHtml(meta.card.name)}，${meta.resourceLabel}${meta.cost}，${escapeHtml(meta.functionLabel)}，${escapeHtml(meta.feature)}">
         ${cardMarkup(meta, { compact: true })}
       </button>`;
   }).join('');
@@ -496,7 +496,7 @@ function renderDrawer(root) {
           <button type="button" class="drawer-card v3-drawer-card${picked ? ' selected' : ''}${duplicate ? ' same-name-disabled' : ''}"
             data-idx="${meta.bagIndex}" aria-disabled="${duplicate ? 'true' : 'false'}"
             style="--quality:${meta.quality.color}"
-            title="${escapeHtml(meta.card.name)}｜${meta.resourceLabel}${meta.cost}｜${escapeHtml(meta.functionLabel)}｜${escapeHtml(meta.feature)}">
+            aria-label="${escapeHtml(meta.card.name)}，${meta.resourceLabel}${meta.cost}，${escapeHtml(meta.functionLabel)}，${escapeHtml(meta.feature)}">
             ${cardMarkup(meta, { selected: picked, duplicate })}
           </button>`;
       }).join('')

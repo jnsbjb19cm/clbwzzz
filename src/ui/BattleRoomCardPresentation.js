@@ -107,7 +107,7 @@ function cardVisual(view, meta, { compact = false } = {}) {
     <span class="room-card-stars-wrap">${starsMarkup(meta.stars)}</span>
     <img class="room-card-art" src="/sprites/cards/${meta.card.spriteRes}.png" alt="" draggable="false" />
     <span class="room-card-cost room-card-cost--${meta.resource === '食物' ? 'food' : 'sun'}"><i>${meta.resourceSymbol}</i><b>${meta.cost}</b></span>
-    <span class="room-card-type room-atlas-sprite" style="${typeStyle}" title="${meta.card.typeLabel}" aria-label="${meta.card.typeLabel}"></span>
+    <span class="room-card-type room-atlas-sprite" style="${typeStyle}" aria-label="${meta.card.typeLabel}"></span>
     ${compact ? '' : `<span class="room-card-level-label">${meta.level}级</span>`}
   `;
 }

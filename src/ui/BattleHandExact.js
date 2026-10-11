@@ -118,7 +118,7 @@ function renderCardSlot(view, entry, handIndex) {
       data-hand-idx="${handIndex}"
       draggable="${canDrag}"
       style="--quality:${craftQuality.color}"
-      title="${escapeAttr(label)} · ${cardGrade}级 · ${functionMeta.label}${stars > 0 ? ` · 强化${stars}星` : ''}(拖拽到战场放置)">
+      aria-label="${escapeAttr(label)}，${cardGrade}级，${functionMeta.label}${stars > 0 ? `，强化${stars}星` : ''}，拖拽到战场放置">
       <span class="slot-face">
         <span class="slot-bg" aria-hidden="true"></span>
         <img class="slot-portrait" src="/sprites/cards/${card.spriteRes}.png" alt="${escapeAttr(label)}" draggable="false" />
@@ -130,7 +130,7 @@ function renderCardSlot(view, entry, handIndex) {
           <img src="${costIcon}" alt="" draggable="false" />
           <b>${Number(card.cost) || 0}</b>
         </span>
-        <span class="slot-function" title="${functionMeta.label}" aria-label="${functionMeta.label}">
+        <span class="slot-function" aria-label="${functionMeta.label}">
           <img src="/sprites/parts/${functionMeta.part}.png" alt="" draggable="false" />
         </span>
       </span>
