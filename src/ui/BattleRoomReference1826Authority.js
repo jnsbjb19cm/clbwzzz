@@ -15,7 +15,7 @@ const REF = Object.freeze({
   // 2026-10-11 用户：准备房间的卡槽要竖长方形（原来是 941x95 近正方形，每格约 90x77）。
   // 宽度不动、只把高度 95 -> 170：每格变成约 90x170 的竖长条；
   // 下沿 193+170=363 < vs 的 365，不会压到下面的元素。
-  slots: [296, 193, 941, 170],
+  slots: [296, 193, 941, 240],   // 【诊断中】故意夸张的高度，用来确认是不是这个模块在生效
   vs: [598, 365, 340, 190],
   chat: [0, 626, 727, 306],
   dice: [737, 626, 230, 205],
@@ -204,6 +204,9 @@ function stabilizeDeck(room, stage) {
   const slots = room.querySelector('#deck-slots-row');
   applyReferenceBox(slots, stage, REF.slots, { z: 26, pointer: 'auto' });
   important(slots, {
+    // 【诊断中 2026-10-11】临时红底：确认是不是这个模块在写尺寸。确认后删掉这一行。
+    background: 'rgba(255, 0, 0, 0.35)',
+    'box-shadow': 'inset 0 0 0 3px rgba(255,0,0,0.9)',
     display: 'grid',
     'grid-template-columns': 'repeat(10, minmax(0, 1fr))',
     'grid-template-rows': '1fr',
