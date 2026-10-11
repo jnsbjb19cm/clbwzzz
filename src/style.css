@@ -5426,15 +5426,15 @@ html, body { margin:0; padding:0; width:100%; height:100%; overflow:hidden; }
    ========================================================================== */
 /* 2026-10-11 用户追加：再拉高、宽再低 */
 #hand .deck-slot {
-  width: 44px !important;
-  min-width: 44px !important;
-  max-width: 44px !important;
-  flex: 0 0 44px !important;
+  width: 38px !important;
+  min-width: 38px !important;
+  max-width: 38px !important;
+  flex: 0 0 38px !important;
   /* 2026-10-11 用户：「总感觉更正方形了」→ 用显式 height 锁死比例（只给 min-height 时，
      容器比它高就会按 100% 撑开，比例就漂了） */
-  height: 132px !important;
-  min-height: 132px !important;
-  max-height: 132px !important;
+  height: 152px !important;
+  min-height: 152px !important;
+  max-height: 152px !important;
   overflow: hidden !important;
 }
 #hand .deck-slot img,
