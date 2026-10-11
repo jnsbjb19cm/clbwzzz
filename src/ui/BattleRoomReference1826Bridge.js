@@ -6,6 +6,12 @@ const MAPS = Object.freeze([
   { id: '2', label: '草地', scene: 'grass' },
   { id: '4', label: '冰川', scene: 'ice' },
   { id: '7', label: '黄沙', scene: 'rock' },
+  // 2026-10-11 用户：「随机 pvp roll 还是有问题」→ 真凶：房间地图 id 是在**这张表**里查的 ✗
+  // （BattleRoomDeckUiV3 roll 出 8/9/10/11，这里查不到 → 回退 MAPS[2] 黄沙 ✗）
+  { id: '8', label: '古老密林', scene: 'forest' },
+  { id: '9', label: '火焰', scene: 'fire' },
+  { id: '10', label: '沙滩', scene: 'beach' },
+  { id: '11', label: '海底神殿', scene: 'temple' },
 ]);
 
 function roomView(room) {
