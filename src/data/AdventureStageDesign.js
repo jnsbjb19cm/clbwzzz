@@ -254,6 +254,11 @@ export function applyAdventureDifficulty(stage, waves) {
   } else if (monsterSide && difficulty === 1 && isChallenge) {
     out = reinforceRear(out, SPRAY_CARD_ID, 1);
   }
+  // 2026-10-11 噩梦（difficulty=3）：换更强的敌方阵容 —— 只改卡 id，
+  // 波数 / 每波数量 / 位置全部沿用普通档（用户要求"出怪要合理"）。
+  if (difficulty === NIGHTMARE_DIFFICULTY) {
+    out = applyNightmareLineup(out, stage);
+  }
   return out;
 }
 
@@ -360,4 +365,62 @@ export function adventureDesignSummary(route,index) {
   const p=PLANT_STAGE_DESIGNS[index-1];
   if(!p)return {name:'双线会合',tip:'植物与怪物混编的最终难关，无独立 BOSS。'};
   return {name:p.name,tip:route===0?p.tip:`对标植物线 ${Math.ceil(index/4)}-${(index-1)%4+1}：同卡牌等级、同波次、同生命预算与基地血量；使用怪物单位技能组合。`};
+}
+
+/* ========================================================================
+ * 噩梦模式敌方阵容（2026-10-11 用户：「噩梦模式…换更强的 NPC 阵容（敌卡池换成高阶卡）
+ *   另外高阶卡问题进行多方面配合（但是出怪要合理）」）
+ *
+ * 原则：**只换"是谁"，波数 / 每波数量 / 站位一律不动** —— 所以出怪节奏与普通档完全一致，
+ * 不会出现"突然多一堆 6 级怪"。卡牌等级：1/2 = 低级卡，3/4/5 = 高等级卡。
+ *   低章（act 1~2）：换成 4 级为主 + 少量 5 级
+ *   高章（act 3~4 与最终关）：换成 5 级为主 + 少量 6 级
+ * 表中每条 = [原卡, 低章替换, 高章替换]；没列出的卡（本身已是高阶 / 无同族上位）保持原样。
+ * ====================================================================== */
+const NIGHTMARE_LINEUP_TABLE = [
+  [12, 45, 45],    // 飞行忍者(q2)     → 幻·飞行忍者(q4)
+  [17, 54, 54],    // 寒冰椰子(q2)     → 极·寒冰椰子(q4)
+  [69, 102, 102],  // 猕猴桃剑客(q2)   → 超级猕猴桃剑客(q4)
+  [83, 98, 118],   // 暗影法师(q1)     → 嗜血法师(q4) / 狂暴法师(q6)
+  [26, 51, 51],    // 部落巫婆(q3)     → 太古巫婆(q4)
+  [70, 106, 106],  // 玉米炮手(q3)     → 玉米迫击炮(q4)
+  [27, 35, 35],    // 战盔巨头怪(q3)   → 石巨人(q5)
+  [51, 75, 75],    // 太古巫婆(q4)     → 剧毒巫师(q5)
+  [98, 75, 118],   // 嗜血法师(q4)     → 剧毒巫师(q5) / 狂暴法师(q6)
+  [30, 100, 100],  // 真·西瓜太郎(q3)  → 超级菠萝勇士(q4)
+];
+export const NIGHTMARE_LINEUP = new Map(NIGHTMARE_LINEUP_TABLE.map(function (row) {
+  return [Number(row[0]), { low: Number(row[1]), high: Number(row[2]) }];
+}));
+
+/** 6 级卡（最高阶）：噩梦每波最多混 1 只，避免"全 6 级堆一波" */
+export const NIGHTMARE_TIER6_CARD_IDS = new Set([55, 56, 57, 58, 116, 118, 126, 125]);
+export const NIGHTMARE_MAX_TIER6_PER_WAVE = 1;
+/** 噩梦难度编号（与 AdventureCampaign.NIGHTMARE_DIFFICULTY 一致；这里不能用 import，会循环依赖） */
+export const NIGHTMARE_DIFFICULTY = 3;
+
+/**
+ * 把普通档的波次换成噩梦阵容：返回**结构完全相同**的新波次（只改 cardId）。
+ */
+export function applyNightmareLineup(waves, stage) {
+  if (!Array.isArray(waves)) return waves;
+  const adv = stage && stage.adventure ? stage.adventure : {};
+  const highChapter = Number(adv.act) >= 3 || adv.final === true;
+  return waves.map(function (wave) {
+    if (!Array.isArray(wave)) return wave;
+    let tier6Used = 0;
+    return wave.map(function (cell) {
+      if (!Array.isArray(cell)) return cell;
+      const cardId = Number(cell[0]);
+      const entry = NIGHTMARE_LINEUP.get(cardId);
+      if (!entry) return cell;
+      const target = Number(highChapter ? entry.high : entry.low);
+      if (!target || !Number.isFinite(target)) return cell;
+      if (NIGHTMARE_TIER6_CARD_IDS.has(target)) {
+        if (tier6Used >= NIGHTMARE_MAX_TIER6_PER_WAVE) return cell;   // 超过上限就保持原卡
+        tier6Used += 1;
+      }
+      return [target].concat(cell.slice(1));
+    });
+  });
 }
