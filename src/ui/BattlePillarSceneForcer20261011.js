@@ -64,11 +64,21 @@ function forcePillars() {
   let changed = 0;
   for (const u of pillars) {
     if (Number(u.cardId) === id) continue;
+    // 关键：渲染取美术会读 unit.card（只改 cardId/res 不够 ✗）
+    // -> 必须把 unit.card 换成目标柱子对应的卡对象 ✔
+    const db = globalThis.__clbwzAppInstance?.db ?? null;
+    const nextCard = db?.getById?.(id) ?? null;
     u.cardId = id;
     u.res = id;
-    u.name = PILLAR_NAME[id] ?? u.name;
-    u.spriteRes = null;              // 让它按新的 res 重新取美术
+    u.name = nextCard?.name ?? PILLAR_NAME[id] ?? u.name;
+    u.spriteRes = null;
     u.artRes = id;
+    if (nextCard) {
+      u.card = nextCard;
+      u.atkStyle = nextCard.atkStyle ?? u.atkStyle;
+      u.viewType = nextCard.viewType ?? u.viewType;
+      u.cardType = nextCard.type ?? u.cardType;
+    }
     u.__pillarForced = true;
     u.__pillarScene = scene;
     changed += 1;
