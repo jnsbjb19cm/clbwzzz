@@ -122,19 +122,87 @@ export function preferredRoomDeckGroup20260911(serverDeckNo) {
  */
 export function resolveDeckGroup20260911(cardInventory, group = null) {
   if (group != null) return normalizeDeckGroup20260906(group);
+  // 2026-10-11（用户：「选 a 进游戏却是 b」仍是这个问题）：
+  // 以前这里**先看 `cardInventory.__activeDeckGroup20260907`** —— 而这个环境标记会被
+  // BattleCriticalFixes / BattleRoomFlowPatch / BattleRoomDeckUiV3 / AdventureCoopBridge /
+  // BattleUserRegressionFix 等 6 处到处写，很容易残留成**上一场/房间**的战团，
+  // 于是"界面看着是战团1、进战斗却按战团3 取牌"→ 拿到的当然是另一张（同类型的）卡。
+  // 本文件下面那段注释早就警告过"不要用它当依据"，这里把优先级反过来：
+  //   玩家**明确记住**的战团（切页签时写入）优先；环境标记只当兜底。
   return normalizeDeckGroup20260906(
-    cardInventory?.__activeDeckGroup20260907
-      ?? readRememberedDeckGroup20260911()
+    readRememberedDeckGroup20260911()
+      ?? cardInventory?.__activeDeckGroup20260907
       ?? 'default',
   );
 }
 
 export function loadBattleDeckSlots20260911(cardInventory, db, group = null) {
   const normalized = resolveDeckGroup20260911(cardInventory, group);
+  // 2026-10-11：用户反复报「选 a 进游戏却是 b」。为了不再靠猜，这里把**实际用到的牌组**
+  // 打点出来（战团来源、每个战团键里的内容、最终拿到的每张卡的 cardId/品质/星级）。
+  // 控制台里搜 `[deck]` 即可看到；也可以随时执行 __clbwzDeckDebug() 打印最近一次。
+  const record = describeDeckResolve20261011(cardInventory, db, normalized, group);
+  try {
+    globalThis.clbwzLastDeckResolve = record;
+    console.log('[deck] 进战斗用哪套牌', record);
+  } catch { /* 打点失败不影响战斗 */ }
   const saved = DeckSelectView.loadSavedDeck(cardInventory, db, normalized);
   if (Array.isArray(saved)) return saved;
   if (normalized === 'default') return DeckSelectView.defaultDeckSlots(cardInventory, db) ?? [];
   return [];
+}
+
+/** 把这次"进战斗到底用了哪套牌"整理成一条可读记录（诊断用）。 */
+function describeDeckResolve20261011(cardInventory, db, normalized, explicitGroup) {
+  const slots = cardInventory?.getSlots?.() ?? [];
+  const readKey = (key) => {
+    try {
+      const raw = globalThis.localStorage?.getItem(key);
+      if (!raw) return null;
+      const parsed = JSON.parse(raw);
+      if (!Array.isArray(parsed)) return null;
+      return parsed.map((fp) => (fp && typeof fp === 'object'
+        ? `#${fp.cardId}q${fp.craftQuality ?? 1}s${fp.strengthLv ?? 0}@${fp.index}`
+        : String(fp)));
+    } catch { return 'parse-error'; }
+  };
+  return {
+    explicitGroup: explicitGroup ?? null,
+    remembered: readRememberedDeckGroup20260911(),
+    ambientMarker: cardInventory?.__activeDeckGroup20260907 ?? null,
+    resolvedGroup: normalized,
+    localDecks: {
+      default: readKey('battle_deck_v2'),
+      team1: readKey('battle_deck_v2_team1'),
+      team2: readKey('battle_deck_v2_team2'),
+      team3: readKey('battle_deck_v2_team3'),
+      legacyIds: readKey('battle_deck_ids'),
+    },
+    resolvedCards: (DeckSelectView.loadSavedDeck(cardInventory, db, normalized) ?? []).map((i) => {
+      const s = slots[i];
+      return s ? `slot${i}:#${s.cardId}q${s.craftQuality ?? 1}s${s.strengthLv ?? 0}` : `slot${i}:空`;
+    }),
+  };
+}
+
+/**
+ * 诊断入口：控制台执行 __clbwzDeckDebug() —— 打印"最近一次进战斗用了哪套牌"。
+ * 如果看到的卡不是自己选的那张，把这条输出发我即可定位。
+ */
+if (typeof window !== 'undefined') {
+  window.__clbwzDeckDebug = () => {
+    const last = globalThis.clbwzLastDeckResolve ?? null;
+    if (!last) return '还没有进过战斗（或打点未触发）。先在卡组界面选好牌、进一次关卡，再执行本命令。';
+    console.table?.(last.localDecks);
+    console.log('战团解析：', {
+      explicitGroup: last.explicitGroup,
+      玩家记住的战团: last.remembered,
+      环境残留标记: last.ambientMarker,
+      最终采用: last.resolvedGroup,
+    });
+    console.log('这次战斗实际拿到的卡：', last.resolvedCards);
+    return last;
+  };
 }
 
 /**
