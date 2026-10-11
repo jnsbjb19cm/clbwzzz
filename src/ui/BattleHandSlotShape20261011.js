@@ -12,8 +12,8 @@
  * 效果：宽 W 窄、高 H 长 → 竖长方形。要改就改下面两个数字。
  */
 
-const SLOT_W = 62;      // 卡槽宽度（比原来 81 窄一点，但不至于成条）
-const SLOT_H = 96;      // 卡槽高度（比宽度长）—— 46x126 太极端会像条子，96 是温和的竖长方形
+const SLOT_W = 74;      // 宽度保持设计值（= 原来的 --hand-slot-w），不做窄化（用户：62 太细了）
+const SLOT_H = 116;     // 高度加长 → 竖长方形（宽 74 : 高 116 ≈ 1:1.57）
 
 const FLAG = Symbol.for('clbwz.battleHandSlotShape20261011');
 const STYLE_ID = 'clbwz-hand-slot-shape-20261011';
