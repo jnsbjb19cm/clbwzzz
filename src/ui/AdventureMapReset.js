@@ -1,4 +1,4 @@
-import { ADVENTURE_DIFFICULTIES, NIGHTMARE_DIFFICULTY, FOREST_BOSS_IDS, TEMPLE_BOSS_IDS, isAdventureStageUnlocked, isForestUnlocked, isNightmareUnlocked, BOSS_REGION_PREREQUISITES_ENABLED } from '../data/AdventureCampaign.js';
+import { ADVENTURE_DIFFICULTIES, NIGHTMARE_DIFFICULTY, NIGHTMARE_OPEN_FOR_ALL, FOREST_BOSS_IDS, TEMPLE_BOSS_IDS, isAdventureStageUnlocked, isForestUnlocked, isNightmareUnlocked, BOSS_REGION_PREREQUISITES_ENABLED } from '../data/AdventureCampaign.js';
 import { getBossById } from '../data/bossList.js';
 import { isBossCleared, isBossUnlocked } from '../core/BossProgress.js';
 import './AdventureMapReset.css';
@@ -48,7 +48,8 @@ export function renderAdventureMap(view, root) {
   // 噩梦模式：需通关全部「困难」关卡才解锁；目前模式本身尚未开放，点击只提示。
   const nightmareUnlocked = isNightmareUnlocked(clears(view));
   // 2026-10-11 用户要求「噩梦模式还要提醒」：解锁后首次进地图给一次提示（按账号记，只提醒一次）
-  if (nightmareUnlocked) {
+  // 2026-10-11：全开期间不要再提示『已解锁』（改回受限模式时才提示一次）
+  if (nightmareUnlocked && !NIGHTMARE_OPEN_FOR_ALL) {
     try {
       if (!globalThis.localStorage?.getItem('clbwz_nightmare_notice_v1')) {
         globalThis.localStorage?.setItem('clbwz_nightmare_notice_v1', '1');

@@ -102,7 +102,8 @@ export function adventureBaseHp(stage) {
 export function adventureQuality(stage, ordinal = 0) {
   const { difficulty, act, final } = stage.adventure;
   const pool = difficulty === 0 ? [2] : difficulty === 1 ? [2, 4]
-    : final ? [5] : act === 1 ? [4] : act === 2 ? [4, 3] : act === 3 ? [4, 4, 3, 3, 5] : [3, 5];
+    // 2026-10-11 用户：噩梦模式暂时先把「优秀(4)」升成「完美(5)」（其余档位不变）
+    : final ? [5] : act === 1 ? [5] : act === 2 ? [5, 3] : act === 3 ? [5, 5, 3, 3, 5] : [3, 5];
   return pool[Math.abs(ordinal) % pool.length];
 }
 

@@ -60,11 +60,12 @@ import { TALENT_NODE_MAP } from '../core/TalentRegistry.js';
 /**
  * 怪物吸尘器(34)（2026-09-12 用户要求）：
  *   - 放下后 3 秒才可以吸入（放置 CD）
- *   - 吞下后进入 25 秒消化期：期间**保持膨胀姿态**、不能攻击、不能再吞
+ *   - 吞下后进入 56 秒消化期：期间**保持膨胀姿态**、不能攻击、不能再吞
  *   - 消化完毕播放"完毕"动画（素材里有 `digestEnd` 就播它）并回到待机
  */
 const SWALLOW_READY_DELAY = 3;
-const SWALLOW_DIGEST_SECONDS = 25;
+// 2026-10-11 用户：怪物吸尘器消化时间 25 秒 → **56 秒**
+const SWALLOW_DIGEST_SECONDS = 56;
 /** attacking 动画里身体最鼓的那一帧（像素统计：default 平均 4684 → 第 35 帧 5812 ≈ +24% 峰值） */
 const SWALLOW_PUFF_FRAME = 35;
 /** 空中"碰到"的判定距离（格）：两个非自爆飞行单位最多互相靠到 ~1.0 格 */
