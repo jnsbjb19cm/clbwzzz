@@ -1,4 +1,4 @@
-/* 两处卡面共用银灰玻璃边和左上角金星。只覆盖外观，不改变尺寸/拖放/冷却。 */
+/* 两处卡面共用银灰玻璃边和左上角金星；末尾仅调整战斗手牌比例。 */
 body .pvp-room-card:not(.empty),
 body .game-room.room-deck-ui-v3 .v3-card-grade-atlas,
 body #hand.reference-battle-hand.video-battle-hand .deck-slot.battle-hand-card.filled {
@@ -132,6 +132,20 @@ body #hand.reference-battle-hand.video-battle-hand .slot-function {
   box-shadow: none !important;
 }
 body #hand.reference-battle-hand.video-battle-hand .slot-function img { width: 100% !important; height: 100% !important; object-fit: contain; }
+/* 参考视频：战斗卡槽约 3:4；保持 HUD 高度，不改棋盘/房间卡槽。 */
+body.battle-immersive .game-container .top-ui:has(#hand.reference-battle-hand.video-battle-hand) {
+  width: 910px !important;
+  max-width: calc(100% - 24px) !important;
+  height: 114px !important;
+}
+body.battle-immersive .game-container .top-ui:has(#hand.reference-battle-hand.video-battle-hand) .slots-container {
+  left: 112px !important; right: 5px !important; top: 4px !important; bottom: 4px !important;
+  width: auto !important; height: auto !important;
+}
+body.battle-immersive .game-container #hand.reference-battle-hand.video-battle-hand .deck-slot.battle-hand-card:is(.filled,.locked) {
+  width: 100% !important; height: auto !important; min-height: 0 !important;
+  aspect-ratio: 3 / 4 !important; align-self: center !important;
+}
 /* 阳光/食物所在整条 HUD 使用灰色透明玻璃，不更换资源图标和原数字字形。 */
 body .top-ui:has(#hand.reference-battle-hand) {
   background: linear-gradient(180deg, rgba(226,233,235,.38), rgba(82,94,103,.32) 44%, rgba(146,159,167,.28)) !important;
@@ -181,6 +195,13 @@ body.battle-immersive .game-container #hand.reference-battle-hand.video-battle-h
 body.battle-immersive .game-container #hand.reference-battle-hand.video-battle-hand.transparent-battle-hand .slot-portrait {
   left: -10% !important; top: -9% !important; width: 120% !important; height: 112% !important;
   object-fit: contain !important; object-position: center bottom !important;
+}
+body.battle-immersive .game-container #hand.reference-battle-hand.video-battle-hand.transparent-battle-hand .slot-portrait.fitted-hand-portrait {
+  left: var(--portrait-left) !important; top: var(--portrait-top) !important;
+  width: var(--portrait-width) !important; height: var(--portrait-height) !important;
+  max-width: none !important; max-height: none !important; transform: none !important;
+  object-fit: contain !important; object-position: center !important;
+  filter: drop-shadow(0 1px 1px rgba(0,0,0,.35)) !important;
 }
 body.battle-immersive .game-container #hand.reference-battle-hand.video-battle-hand.transparent-battle-hand .glass-card-stars {
   top: 3% !important; left: 4% !important; right: auto !important; bottom: auto !important;

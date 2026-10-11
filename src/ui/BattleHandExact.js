@@ -159,5 +159,7 @@ export function installExactBattleHand() {
       const entry = this.engine.deck[handIndex];
       return entry ? renderCardSlot(this, entry, handIndex) : renderLockedSlot(handIndex);
     }).join('');
+    fitBattleHandPortraits(hand);
   };
 }
+import { fitBattleHandPortraits } from './BattleHandPortrait.js';
