@@ -281,26 +281,37 @@ if (typeof window !== 'undefined') {
  *   · quality-{poor,common,fine,excellent,perfect}.png 实测都是 1448x1086（比例 0.75）
  *   · DISPLAY_WIDTH = 112 → 画出来是 112 x 84
  *   · 绘制方式：以 (cx, footY + 1) 为**中心**居中绘制
- * 于是：图片底边切线 = footY + 1 + 42；图片高度 2/3 处（自下往上）= 中心 - 42 + 28。
+ * 图片有透明留白，切线与星星必须按下方记录的可见圆盘边界计算，不能直接使用图片外框。
  *
  * 说明：这里**不再**用 circleSize 去近似（那是我早期按几何猜的，跟真图对不上），
- * 保留后面两个参数只是为了兼容既有调用点。
+ * circleSize 参数保留兼容；craftQuality 用于匹配对应原图的可见边界。
  */
 export const QUALITY_DISC_WIDTH = 112;      // 与 BattleQualityHaloFix20260908.DISPLAY_WIDTH 一致
 export const QUALITY_DISC_ASPECT = 0.75;    // 五张 quality-*.png 实测 1448x1086
 
-export function qualityPedestalGeometry(cx, footY, _circleSize, _craftQuality = 1) {
+// Visible alpha bounds (alpha >= 32) of the five original 1448x1086 textures.
+// Transparent padding is not part of the oval and must not move the HP bar.
+const QUALITY_DISC_VISIBLE_BOUNDS = {
+  1: [.0939, .9275, .2357, .8066],
+  2: [.0981, .9268, .2320, .8029],
+  3: [.0994, .9088, .2284, .7772],
+  4: [.0988, .9254, .2256, .7956],
+  5: [.1008, .9157, .2265, .7864],
+};
+
+export function qualityPedestalGeometry(cx, footY, _circleSize, craftQuality = 1) {
   const width = QUALITY_DISC_WIDTH;
-  const height = width * QUALITY_DISC_ASPECT;      // 84
-  const centerY = (Number(footY) || 0) + 1;        // paintQualityDisc: cy = footY + 1
+  const height = width * QUALITY_DISC_ASPECT;
+  const [left, right, top, bottom] = QUALITY_DISC_VISIBLE_BOUNDS[craftQuality] ?? QUALITY_DISC_VISIBLE_BOUNDS[1];
+  const imageCenterY = (Number(footY) || 0) + 1;
+  const centerY = imageCenterY + height * ((top + bottom) / 2 - .5);
+  const ry = height * (bottom - top) / 2;
   return {
-    cx,
+    cx: cx + width * ((left + right) / 2 - .5),
     centerY,
-    rx: width / 2,
-    ry: height / 2,
-    /** 圆盘底边切线：血条放这里 */
-    tangentY: centerY + height / 2,
-    /** 圆盘高度 2/3 处（自下往上）：星星底边对齐这里 */
-    twoThirdsY: centerY - height / 2 + height / 3,
+    rx: width * (right - left) / 2,
+    ry,
+    tangentY: centerY + ry,
+    twoThirdsY: centerY + ry * .67,
   };
 }

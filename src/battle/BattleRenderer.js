@@ -1,3 +1,4 @@
+import { drawUnitFootStars, drawUnitFootHp } from './BattleUnitFootUi.js';
 import {
   CELL_H,
   CELL_W,
@@ -689,32 +690,10 @@ export class BattleRenderer {
 
   /**
    * 2026-10-10（用户要求）：「强化的星星在上，血条在下，而且星星要稍微小一点」。
-   * 入参从「脚底 y」改成「星星底边 y」：星星底边对齐品质圆盘的 2/3 高度处 ——
-   * 原来 firstY = footY + circleSize*0.08 会压在血条上、还溢出格子。
-   * 尺寸从 0.135 收到 0.105（上下限也压小），确实是"稍微小一点"。
+   * 本地与联网共用脚底坐标；在可见底盘内布局，透明素材留白不计入圆盘。
    */
-  drawStrengthStars(ctx, unit, cx, starsBottomY, circleSize) {
-    const level = Math.max(0, Math.floor(Number(unit.strengthLv) || 0));
-    if (level <= 0) return;
-    const rows = level > 7 ? [7, level - 7] : [level];
-    const starSize = Math.max(7, Math.min(10, circleSize * 0.105));
-    const gap = 1;
-    const totalH = rows.length * starSize + (rows.length - 1) * gap;
-    const baseY = Number.isFinite(starsBottomY) ? starsBottomY : 0;
-    const firstY = baseY - totalH;   // 底边对齐「品质圆盘 2/3 高度」
-
-    rows.forEach((rowStars, rowIndex) => {
-      let remaining = rowStars;
-      let x = cx - rowStars * starSize / 2;
-      const y = firstY + rowIndex * (starSize + gap);
-      while (remaining > 0) {
-        const chunk = Math.min(6, remaining);
-        const image = this.partsCache.get(`single_star_${chunk}`);
-        if (image) SpriteAtlas.drawContained(ctx, image, x, y, chunk * starSize, starSize);
-        x += chunk * starSize;
-        remaining -= chunk;
-      }
-    });
+  drawStrengthStars(ctx, unit, cx, footY, circleSize) {
+    drawUnitFootStars(this, ctx, unit, cx, footY, circleSize);
   }
 
   drawDeployEffects(ctx, engine) {
@@ -860,19 +839,13 @@ export class BattleRenderer {
     } = layout;
     // 名字始终跟随设置显示；低画质时只省略星级等文字，不省略名称。
     this.drawUnitName(ctx, portraitX, cellTop + 2, portraitW, unit.customName || unit.name, unit.team);
-    // 2026-10-10：星星排在血条**上方**（原来是 footY 往下，压在血条上）→ 传血条顶边 barY。
-    // 2026-10-10：星星底边 = 品质圆盘高度的 2/3 处（用户要求）。
+    // 星星内切于底座下半部；血条贴住同一可见底座的下沿。
     if (!this._lowQuality) {
-      const pedestal = qualityPedestalGeometry(cx, footY, circleSize, unit.craftQuality);
-      this.drawStrengthStars(ctx, unit, cx, pedestal.twoThirdsY, circleSize);
+      this.drawStrengthStars(ctx, unit, cx, footY, circleSize);
     }
     // 2026-09-11：血条可由设置页开关（默认开）。
     if (shouldDrawUnitHpBar()) {
-      const hpPct = unit.hp / unit.maxHp;
-      ctx.fillStyle = '#1a1a1a';
-      ctx.fillRect(barX, barY, barW, 5);
-      ctx.fillStyle = unit.team === 'player' ? '#4ade80' : '#f87171';
-      ctx.fillRect(barX, barY, barW * hpPct, 5);
+      drawUnitFootHp(ctx, unit, layout);
     }
 
     if (engine) this.drawStatusEffects(ctx, unit, engine, layout);

@@ -3,19 +3,14 @@ import { shouldDrawUnitHpBar } from '../core/BattleClientFlags20260910.js';
 import { BattleView } from './BattleView.js';
 import { CELL_W } from '../battle/BattleConfig.js';
 import { normalizeCraftQuality, resolveCraftQuality } from '../core/constants.js';
-import { SpriteAtlas } from '../core/SpriteAtlas.js';
-import { qualityPedestalGeometry } from '../battle/unitDisplayTuning.js';
+import { drawUnitFootStars, drawUnitFootHp } from '../battle/BattleUnitFootUi.js';
 
 const PATCH_FLAG = Symbol.for('clbwzzz.battleUnitPresentation20260906');
 const PRESENTATION_FLAG = '__pvpBossUnitPresentation20260906';
-const HP_BAR_HEIGHT = 5;
-const HP_BAR_RADIUS = 4;
-const HP_BAR_WIDTH_RATIO = 0.78;
 const PEDESTAL_MIN_W = 38;
 const PEDESTAL_MAX_W = 66;
 const PEDESTAL_ASPECT = 0.27;
 const PEDESTAL_CACHE_LIMIT = 36;
-const STAR_PEDESTAL_OFFSET = 13;
 
 function clamp(value, min, max) {
   return Math.max(min, Math.min(max, value));
@@ -215,74 +210,6 @@ function drawQualityPedestalRing(renderer, ctx, unit, layout) {
   }
 }
 
-function drawHpBar(ctx, unit, layout) {
-  const width = CELL_W * HP_BAR_WIDTH_RATIO;
-  const height = HP_BAR_HEIGHT;
-  const x = layout.cx - width / 2;
-  // 对齐旧版“bottom:3px;height:5px”规范：cellBottom - 8。
-  const y = layout.cellBottom - 8;
-  const ratio = clamp(Number(unit.hp) / Math.max(1, Number(unit.maxHp) || 1), 0, 1);
-  const fill = unit.team === 'player'
-    ? '#47b36f'
-    : unit.team === 'enemy'
-      ? '#d86a4d'
-      : '#c9a94d';
-
-  ctx.save();
-  roundedRectPath(ctx, x, y, width, height, HP_BAR_RADIUS);
-  ctx.fillStyle = 'rgba(25,28,25,0.28)';
-  ctx.fill();
-
-  if (ratio > 0) {
-    ctx.save();
-    roundedRectPath(ctx, x, y, width, height, HP_BAR_RADIUS);
-    ctx.clip();
-    ctx.fillStyle = fill;
-    ctx.fillRect(x, y, width * ratio, height);
-    ctx.restore();
-  }
-
-  roundedRectPath(ctx, x, y, width, height, HP_BAR_RADIUS);
-  ctx.strokeStyle = 'rgba(255,255,255,0.70)';
-  ctx.lineWidth = 1;
-  ctx.stroke();
-  ctx.restore();
-}
-
-function drawAuthorityStars(renderer, ctx, unit, cx, footY, circleSize) {
-  const level = Math.max(0, Math.floor(Number(unit.strengthLv ?? unit.star) || 0));
-  if (level <= 0) return;
-
-  const rows = [];
-  let remainingLevel = level;
-  while (remainingLevel > 0) {
-    const row = Math.min(7, remainingLevel);
-    rows.push(row);
-    remainingLevel -= row;
-  }
-
-  // 2026-10-10（用户要求）：「星星位于品质底盘的 2/3 圆圈处，血条要在品质圆盘切线的位置」。
-  // PVP/BOSS 走的就是这一份实现 —— 用与品质底盘（BattleUnitHaloFinal）**同一份几何**，
-  // 把星星底边对齐圆盘高度的 2/3 处；尺寸同时收到 0.105（用户要小一点）。
-  const starSize = clamp(circleSize * 0.105, 7, 10);
-  const gap = 1;
-  const totalH = rows.length * starSize + (rows.length - 1) * gap;
-  const pedestal = qualityPedestalGeometry(cx, footY, circleSize, unit.craftQuality);
-  const firstY = pedestal.twoThirdsY - totalH;
-
-  rows.forEach((rowStars, rowIndex) => {
-    let remaining = rowStars;
-    let x = cx - rowStars * starSize / 2;
-    const y = firstY + rowIndex * (starSize + gap);
-    while (remaining > 0) {
-      const chunk = Math.min(6, remaining);
-      const image = renderer.partsCache.get(`single_star_${chunk}`);
-      if (image) SpriteAtlas.drawContained(ctx, image, x, y, chunk * starSize, starSize);
-      x += chunk * starSize;
-      remaining -= chunk;
-    }
-  });
-}
 
 export function installBattleUnitPresentation20260906() {
   if (globalThis[PATCH_FLAG]) return;
@@ -313,7 +240,7 @@ export function installBattleUnitPresentation20260906() {
   const previousStars = BattleRenderer.prototype.drawStrengthStars;
   BattleRenderer.prototype.drawStrengthStars = function drawPvpBossStars20260906(ctx, unit, cx, footY, circleSize) {
     if (!isPvpOrBossRenderer(this)) return previousStars.call(this, ctx, unit, cx, footY, circleSize);
-    return drawAuthorityStars(this, ctx, unit, cx, footY, circleSize);
+    return drawUnitFootStars(this, ctx, unit, cx, footY, circleSize);
   };
 
   const previousUi = BattleRenderer.prototype.drawUnitUi;
@@ -331,7 +258,7 @@ export function installBattleUnitPresentation20260906() {
     );
 
     // 2026-09-11：血条开关（默认开）。
-    if (shouldDrawUnitHpBar()) drawHpBar(ctx, unit, layout);
+    if (shouldDrawUnitHpBar()) drawUnitFootHp(ctx, unit, layout);
     // 底座已在 drawUnitHalo 阶段绘制，保证它永远位于单位脚下而不是盖住角色。
     if (!this._lowQuality) {
       this.drawStrengthStars(ctx, unit, layout.cx, layout.footY, layout.circleSize);
@@ -347,12 +274,11 @@ export function installBattleUnitPresentation20260906() {
       pedestalRendering: 'pre-rendered offscreen cache by quality/size bucket',
       animatedQualityPackPerUnit: false,
       hpBar: {
-        widthRatio: HP_BAR_WIDTH_RATIO,
-        height: HP_BAR_HEIGHT,
-        radius: HP_BAR_RADIUS,
-        bottom: 3,
+        visibleDiscWidthRatio: .5,
+        height: 5,
+        anchor: 'visible disc lower tangent',
       },
-      starSize: '9~12px; max 7 per row; unlimited rows',
+      starSize: '7~10px; max 7 per row; constrained inside visible disc',
       automaticVisualDowngrade: false,
       manualLowQualityPreserved: true,
     });

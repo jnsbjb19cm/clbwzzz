@@ -241,12 +241,28 @@ function accountDeckIndices20260911(deckNo, cardInventory) {
   const slots = cardInventory.getSlots() ?? [];
   const used = new Set();
   const selected = [];
-  for (const raw of deck.cards) {
+    for (const raw of deck.cards) {
     const cardId = Number(raw?.cardId ?? raw);
     if (!Number.isInteger(cardId) || cardId <= 0) continue;
-    const index = slots.findIndex((slot, slotIndex) => (
-      !used.has(slotIndex) && Number(slot?.cardId) === cardId
-    ));
+    // 2026-10-11（用户：「拥有同类型多个卡牌，选 a 进游戏却是 b」）：
+    // 这里原来**只比 cardId**，同一张卡有多个实例（不同品质/星级）时就会选中"第一张"，
+    // 于是玩家选的 a 被换成了另一张 b。账号牌组里如果带了品质/星级，就必须按指纹精确匹配。
+    const wantQuality = Number(raw?.craftQuality ?? raw?.craft_quality ?? 0);
+    const wantStar = Number(raw?.strengthLv ?? raw?.strength_lv ?? raw?.star ?? 0);
+    let index = -1;
+    if (wantQuality > 0 || wantStar > 0) {
+      index = slots.findIndex((slot, slotIndex) => {
+        if (used.has(slotIndex) || Number(slot?.cardId) !== cardId) return false;
+        if (wantQuality > 0 && (slot.craftQuality ?? 1) !== wantQuality) return false;
+        if (wantStar > 0 && (slot.strengthLv ?? 0) !== wantStar) return false;
+        return true;
+      });
+    }
+    if (index < 0) {
+      index = slots.findIndex((slot, slotIndex) => (
+        !used.has(slotIndex) && Number(slot?.cardId) === cardId
+      ));
+    }
     if (index >= 0) { used.add(index); selected.push(index); }
   }
   return selected;
@@ -289,6 +305,14 @@ export function mirrorAccountDecksToLocal20260911(cardInventory, db) {
     if (!Array.isArray(account)) continue;
     const local = localGroupIndices20260911(group, cardInventory);
     if (sameIndices20260911(local, account)) continue;
+    // 2026-10-11（用户：「拥有同类型多个卡牌，选 a 进游戏却是 b」）：
+    // 账号牌组只记 cardId 时，accountDeckIndices 只能落到"第一张同 id 的卡"——
+    // 于是这里一旦重写，玩家刚选的**实例**（品质/星级）就被换成了另一张同 id 的卡。
+    // 判定：只要**卡片组成**（按 cardId 的序列）已经和账号一致，就不重写 —— 保留玩家的实例选择；
+    // 只有组成真的不同（比如串组、缺卡）才用账号内容纠正。
+    const slotsNow = cardInventory.getSlots() ?? [];
+    const idsOf = (list) => list.map((i) => Number(slotsNow[i]?.cardId) || 0);
+    if (sameIndices20260911(idsOf(local), idsOf(account))) continue;
     try {
       DeckSelectView.saveDeck(account, cardInventory, group);
       fixed += 1;
