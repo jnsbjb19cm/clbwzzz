@@ -6,96 +6,98 @@ const PATCH_FLAG = Symbol.for('clbwz.diamondShopExpansion20260905');
 const DIAMOND_PRODUCTS = Object.freeze([
   {
     key: 'gem-item:gold-box-10',
-    name: '金币箱子×10',
+    name: '金币箱子×6',
     desc: '钻石购买；打开后每个可获得5,000金币，共可获得50,000金币',
     icon: '箱',
     realId: 1,
     subcategory: '经济',
-    gemPrice: 20,
-    count: 10,
+    gemPrice: 30,
+    count: 6,
   },
   {
     key: 'gem-item:item-box-10',
-    name: '道具礼盒×10',
+    name: '道具礼盒×6',
     desc: '钻石购买；可批量打开的随机道具礼盒',
     icon: '礼',
     realId: 9,
     subcategory: '特殊',
-    gemPrice: 25,
-    count: 10,
+    gemPrice: 38,
+    count: 6,
   },
   {
     key: 'gem-item:quality-reroll-5',
-    name: '品质洗练石×5',
+    name: '品质洗练石×3',
     desc: '钻石购买；用于重新洗练卡牌底座品质',
     icon: '洗',
     realId: 80,
     subcategory: '功能',
-    gemPrice: 35,
-    count: 5,
+    gemPrice: 53,
+    count: 3,
   },
   {
     key: 'gem-item:star-reroll-5',
-    name: '属性洗练石×5',
+    name: '属性洗练石×3',
     desc: '钻石购买；用于卡牌相关洗练功能',
     icon: '炼',
     realId: 81,
     subcategory: '功能',
-    gemPrice: 35,
-    count: 5,
+    gemPrice: 53,
+    count: 3,
   },
   {
     key: 'gem-item:bag-expand-3',
-    name: '背包扩容符×3',
+    name: '背包扩容符×1',
     desc: '钻石购买；每张使用后永久增加10格道具背包',
     icon: '扩',
     realId: 92,
     subcategory: '功能',
-    gemPrice: 45,
-    count: 3,
+    gemPrice: 68,
+    count: 1,
   },
   {
     key: 'gem-item:reverse-card-10',
-    name: '逆转卡×10',
+    name: '逆转卡×6',
     desc: '钻石购买；用于还原铁匠铺销毁层内尚未过期的副卡',
     icon: '逆',
     realId: 50041,
     subcategory: '功能',
-    gemPrice: 30,
-    count: 10,
+    gemPrice: 45,
+    count: 6,
   },
   {
     key: 'gem-item:charm4-20',
-    name: '四级保护符×20',
+    name: '四级保护符×12',
     desc: '钻石购买；高阶造卡与强化保护材料',
     icon: '护',
     realId: 50024,
     subcategory: '材料',
-    gemPrice: 25,
-    count: 20,
+    gemPrice: 38,
+    count: 12,
   },
   {
     key: 'gem-item:dna4-20',
-    name: '四级DNA×20',
+    name: '四级DNA×12',
     desc: '钻石购买；四级卡牌制造定向材料',
     icon: 'DNA',
     realId: 50034,
     subcategory: '材料',
-    gemPrice: 25,
-    count: 20,
+    gemPrice: 38,
+    count: 12,
   },
 ]);
 
 // 部分常用功能道具给出明确的单件钻石价，让上面的批量包始终有批量优惠。
+// 2026-10-11 用户要求「钻石购买也削弱，上调购买价格、个数也减少」：
+// 单件钻石底价统一 ×1.5（3→5 / 8→12 / 18→27 / 4→6 / 2→3）
 const SINGLE_ITEM_GEM_PRICE = new Map([
-  [1, 3],
-  [9, 3],
-  [80, 8],
-  [81, 8],
-  [92, 18],
-  [50041, 4],
-  [50024, 2],
-  [50034, 2],
+  [1, 5],
+  [9, 5],
+  [80, 12],
+  [81, 12],
+  [92, 27],
+  [50041, 6],
+  [50024, 3],
+  [50034, 3],
 ]);
 
 function toProduct(entry) {
@@ -123,9 +125,10 @@ function diamondPriceForProduct(product) {
     return Math.max(1, fixedSinglePrice * count);
   }
 
-  // 其余金币道具统一折算为钻石价。最低2钻，避免低金币价格商品变成0钻石。
+  // 其余金币道具统一折算为钻石价。最低 3 钻，避免低价商品变成 0 钻石。
+  // 2026-10-11 用户要求削弱钻石购买：折算比例由 3000金=1钻 改为 **1500金=1钻**（同样翻倍变贵）。
   const goldPrice = Math.max(0, Number(product?.data?.price) || 0);
-  return Math.max(2, Math.ceil(goldPrice / 3000));
+  return Math.max(3, Math.ceil(goldPrice / 1500));
 }
 
 function toDiamondAlternative(product) {

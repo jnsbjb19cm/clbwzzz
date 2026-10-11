@@ -46,8 +46,11 @@ const CLASSIC_SHOP_PAGE_SIZE = 8;
 
 // Every physical shop item uses a stable inventory id. Rewards and battle buffs
 // are applied only when the player opens/uses the item from the bag.
+// 2026-10-11 用户指定：通用 DNA 固定售价（id 50031~50034 对应 1~4 级）
+const DNA_PRICE_BY_ID = Object.freeze({ 50031: 1200, 50032: 2500, 50033: 5000, 50034: 6000 });
+
 const SHOP_ITEMS = [
-  { cat:'货币', name:'金币礼盒',     desc:'打开获得5,000金币',     price:5,     icon:'🎁', effect:{type:'inventory',realId:1,count:1} },
+  // 2026-10-11 用户要求：删除「用金币购买的 金币礼盒」（5 金 → 5000 金，等于刷金币）
   { cat:'货币', name:'红钻礼盒',     desc:'打开获得10钻石',        price:15000, icon:'🎁', effect:{type:'inventory',realId:2,count:1} },
   { cat:'货币', name:'荣誉礼盒',     desc:'打开获得5,000荣誉',     price:8000,  icon:'🎁', effect:{type:'inventory',realId:3,count:1} },
   { cat:'货币', name:'豪华金币箱',   desc:'打开获得20,000金币',    price:18000, icon:'🎁', effect:{type:'inventory',realId:60020,count:1} },
@@ -55,20 +58,20 @@ const SHOP_ITEMS = [
   { cat:'货币', name:'经验大礼包',   desc:'打开获得5,000经验值',   price:5000,  icon:'🧪', effect:{type:'inventory',realId:60022,count:1} },
   { cat:'货币', name:'体力药水·大',  desc:'使用后恢复100点体力',   price:4000,  icon:'🧪', effect:{type:'inventory',realId:60023,count:1} },
 
-  { cat:'强化', name:'一级强化粉×30', desc:'用于强化1级卡牌',     price:5000,  icon:'✦', effect:{type:'inventory',realId:10001,count:30} },
-  { cat:'强化', name:'二级强化粉×20', desc:'用于强化2级卡牌',     price:7000,  icon:'✦', effect:{type:'inventory',realId:10002,count:20} },
-  { cat:'强化', name:'三级强化粉×15', desc:'用于强化3级卡牌',     price:10000, icon:'✦', effect:{type:'inventory',realId:10003,count:15} },
-  { cat:'强化', name:'四级强化粉×10', desc:'用于强化4级卡牌',     price:15000, icon:'✦', effect:{type:'inventory',realId:10004,count:10} },
-  { cat:'强化', name:'五级强化粉×6',  desc:'用于强化5级卡牌',     price:22000, icon:'✦', effect:{type:'inventory',realId:10005,count:6} },
+  { cat:'强化', name:'一级强化粉×10', desc:'用于强化1级卡牌（10个/6000金）',  price:6000,  icon:'✦', effect:{type:'inventory',realId:10001,count:10} },
+  { cat:'强化', name:'二级强化粉×10', desc:'用于强化2级卡牌（10个/12000金）', price:12000, icon:'✦', effect:{type:'inventory',realId:10002,count:10} },
+  { cat:'强化', name:'三级强化粉×5',  desc:'用于强化3级卡牌（5个/30000金）',  price:30000, icon:'✦', effect:{type:'inventory',realId:10003,count:5} },
+  { cat:'强化', name:'四级强化粉×6',  desc:'用于强化4级卡牌（6个/39999金）',  price:39999, icon:'✦', effect:{type:'inventory',realId:10004,count:6} },
+  { cat:'强化', name:'五级强化粉×5',  desc:'用于强化5级卡牌（5个/49999金）',  price:49999, icon:'✦', effect:{type:'inventory',realId:10005,count:5} },
 
-  { cat:'材料', name:'一级宝石×10',  desc:'制作卡牌材料',         price:2000,  icon:'💎', effect:{type:'inventory',realId:50011,count:10} },
-  { cat:'材料', name:'二级宝石×8',   desc:'制作卡牌材料',         price:4000,  icon:'💎', effect:{type:'inventory',realId:50012,count:8} },
-  { cat:'材料', name:'三级宝石×5',   desc:'制作卡牌材料',         price:8000,  icon:'💎', effect:{type:'inventory',realId:50013,count:5} },
-  { cat:'材料', name:'四级宝石×2',   desc:'制作卡牌材料',         price:15000, icon:'💎', effect:{type:'inventory',realId:50014,count:2} },
-  { cat:'材料', name:'一级羊皮纸×25', desc:'制作1级卡牌基础材料',  price:3500,  icon:'📜', effect:{type:'inventory',realId:50001,count:25} },
-  { cat:'材料', name:'二级羊皮纸×20', desc:'制作2级卡牌基础材料',  price:6000,  icon:'📜', effect:{type:'inventory',realId:50002,count:20} },
-  { cat:'材料', name:'三级羊皮纸×15', desc:'制作3级卡牌基础材料',  price:10000, icon:'📜', effect:{type:'inventory',realId:50003,count:15} },
-  { cat:'材料', name:'四级羊皮纸×10', desc:'制作4级卡牌基础材料',  price:16000, icon:'📜', effect:{type:'inventory',realId:50004,count:10} },
+  { cat:'材料', name:'一级宝石×4',   desc:'制作卡牌材料（4个/1500金）',   price:1500,  icon:'💎', effect:{type:'inventory',realId:50011,count:4} },
+  { cat:'材料', name:'二级宝石×4',   desc:'制作卡牌材料（4个/3000金）',   price:3000,  icon:'💎', effect:{type:'inventory',realId:50012,count:4} },
+  { cat:'材料', name:'三级宝石×8',   desc:'制作卡牌材料（8个/9000金）',   price:9000,  icon:'💎', effect:{type:'inventory',realId:50013,count:8} },
+  { cat:'材料', name:'四级宝石×2',   desc:'制作卡牌材料（2个/15000金）',  price:15000, icon:'💎', effect:{type:'inventory',realId:50014,count:2} },
+  { cat:'材料', name:'一级羊皮纸×1',  desc:'制作1级卡牌基础材料（1个/1000金）',  price:1000,  icon:'📜', effect:{type:'inventory',realId:50001,count:1} },
+  { cat:'材料', name:'二级羊皮纸×2',  desc:'制作2级卡牌基础材料（2个/4000金）',  price:4000,  icon:'📜', effect:{type:'inventory',realId:50002,count:2} },
+  { cat:'材料', name:'三级羊皮纸×3',  desc:'制作3级卡牌基础材料（3个/9000金）',  price:9000,  icon:'📜', effect:{type:'inventory',realId:50003,count:3} },
+  { cat:'材料', name:'四级羊皮纸×1',  desc:'制作4级卡牌基础材料（1个/12000金）', price:12000, icon:'📜', effect:{type:'inventory',realId:50004,count:1} },
   { cat:'材料', name:'一级保护符×8',  desc:'制作失败时保留材料',    price:5000,  icon:'🛡️', effect:{type:'inventory',realId:50021,count:8} },
 
   { cat:'功能', name:'品质洗练石',  desc:'使用后,选择一张需要洗练的卡牌,将其品质重新洗练',    price:25000, icon:'🔮', effect:{type:'inventory',realId:80,count:1} },
@@ -238,7 +241,8 @@ export class ShopView {
         category: 'item',
         subcategory: '材料',
         data: {
-          price: Math.max(1000, (Number(item.sellPrice) || 200) * 5),
+          // 2026-10-11 用户指定：1级1200 / 2级2500 / 3级5000 / 4级6000 金
+          price: DNA_PRICE_BY_ID[Number(item.id)] ?? Math.max(1000, (Number(item.sellPrice) || 200) * 5),
           effect: { type: 'inventory', realId: item.id, count: 1 },
         },
       }));
