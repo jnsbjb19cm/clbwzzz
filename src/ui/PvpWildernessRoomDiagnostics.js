@@ -53,14 +53,40 @@ function createData() {
   return { db, inventory, heroSkills };
 }
 
+// 2026-10-11 用户：中间那个中立柱子（木桩/土块/沙丘…）永远只出冰山 ✗
+// 根因：这里把 cardId 写死成 1000 ✗ → 与地图无关
+// 修：按当前地图取（与 server/battle/PvpCombatPolishFinal.js 的 NEUTRAL_BY_MAP 保持一致）
+//   1000冰山(冰精灵) 1001火山(火精灵) 1002木桩(木精灵) 1003土块(石精灵) 1004沙丘(沙精灵)
+const MAP_BARRIER_PILLAR = {
+  '2': 1002, '4': 1000, '8': 1002, '9': 1001,
+  '7': [1003, 1004],   // 黄沙：土块/沙丘随机
+  '10': 1004,          // 沙滩：沙丘
+  // 11 海底神殿：五种随机（见 barrierPillarId）
+};
+const ALL_PILLARS = [1000, 1001, 1002, 1003, 1004];
+function currentBattleMapId() {
+  const fromButton = document?.querySelector?.(".dice-btn")?.dataset?.mapId ?? null;
+  const sceneToId = { grass: '2', ice: '4', rock: '7', forest: '8', fire: '9', beach: '10', temple: '11' };
+  const fromScene = sceneToId[String(window?.__pvpMapScene || '')] ?? null;
+  return String(fromButton ?? fromScene ?? '2');
+}
+function barrierPillarId(mapId = currentBattleMapId()) {
+  const m = String(mapId || '');
+  if (m === '11') return ALL_PILLARS[Math.floor(Math.random() * ALL_PILLARS.length)];   // 海底神殿随机
+  const v = MAP_BARRIER_PILLAR[m];
+  if (Array.isArray(v)) return v[Math.floor(Math.random() * v.length)];
+  return Number(v) || 1000;
+}
+
 function neutralIceUnits() {
+  const pillarId = barrierPillarId();
   const result = [];
   for (let lane = 0; lane < 5; lane += 1) {
     for (const col of [5, 6]) {
       result.push({
         uid: 900000 + lane * 2 + (col - 5),
-        cardId: 1000,
-        res: 1000,
+        cardId: pillarId,
+        res: pillarId,
         team: 'neutral',
         neutral: true,
         lane,
@@ -125,7 +151,8 @@ function socketStub(room, db) {
       nickname: member.nickname,
       team: member.team,
     })),
-    neutralIce: { cardId: 1000, columns: [5, 6], lanes: 5 },
+    // 注意：这里在另一个函数作用域内，pillarId 不可见 → 重新按当前地图取 ✔
+    neutralIce: { cardId: barrierPillarId(), columns: [5, 6], lanes: 5 },
     visualEvents: visualEvents.map((event) => ({ ...event })),
     specialAuditVersion: 'pvp-specials-v4',
     units: units.map((unit) => ({ ...unit })),
