@@ -1,4 +1,6 @@
 import levelRows20261011 from '../data/levelConfig.json';
+// 2026-10-11 用户：血量 = 我方基地血量 = 玩家等级决定的战场英雄生命（1级200，每级+30）
+import { calcPlayerHeroHp } from '../battle/BattleConfig.js';
 
 /**
  * 2026-10-11 用户：
@@ -182,7 +184,8 @@ export class BagView {
 
     root.querySelector('#bag-profile-level').textContent = `Lv.${Math.max(1, Number(this.player?.level) || 1)}`;
     // 2026-10-11 用户：血量显示真实血量（原来 hp 缺失时硬编码 1000 是假的）
-    root.querySelector('#bag-profile-hp').textContent = realStatText20261011(this.player?.hp);
+    // 2026-10-11 用户：血量显示**我方基地血量**（= 玩家等级决定的战场英雄生命：1级 200，此后每级 +30）
+    root.querySelector('#bag-profile-hp').textContent = calcPlayerHeroHp(this.player?.level);
     root.querySelector('#bag-profile-honor').textContent = Math.max(0, Number(this.player?.honor) || 0);
     // 2026-10-11 用户：竞技积分就是荣誉 → 直接显示荣誉值（不再用 player.arena 这个假字段）
     root.querySelector('#bag-profile-arena').textContent = Math.max(0, Number(this.player?.honor) || 0);

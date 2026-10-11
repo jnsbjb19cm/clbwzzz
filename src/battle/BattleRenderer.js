@@ -758,7 +758,7 @@ export class BattleRenderer {
       flying,
       barW: CELL_W - 6,
       barX: cx - (CELL_W - 6) / 2,
-      // 2026-10-10（用户要求）：「血条要在品质圆盘切线的位置」——
+      // 血条要在品质圆盘切线的位置」——
       // 用与品质底盘同一份几何算出底部切线，血条从切线往下画。
       barY: qualityPedestalGeometry(cx, footY, circleSize, unit.craftQuality).tangentY,
     };
@@ -766,7 +766,7 @@ export class BattleRenderer {
 
   drawUnitHalo(ctx, unit, layout) {
     if (layout.isDying) return;
-    // 2026-10-10（用户要求）：「给所有卡的脚下加有层次感的阴影」+「按对应体积一小块就行」。
+    //给所有卡的脚下加有层次感的阴影」+「按对应体积一小块就行」。
     // 三层同心椭圆（外淡内深）做出软阴影的层次；尺寸直接取单位脚下的体积（circleSize 由
     // 脚下不透明宽度算出），飞行单位不画（离地）。成本 3 次椭圆填充，无渐变无离屏。
     drawUnitGroundShadow(ctx, layout.cx, layout.footY, layout.circleSize, layout.flying);
