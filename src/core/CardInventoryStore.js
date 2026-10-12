@@ -258,6 +258,39 @@ export class CardInventoryStore {
     return { ok: true, added, total: this.getUsedCount() };
   }
 
+  /**
+   * 2026-10-12：用**服务端权威快照**覆盖本地卡牌。
+   *
+   * 为什么必须有：DeckInventoryAuthorityFix20260907.js 在服务端补卡成功后调用
+   *   if (typeof store.applyServerSnapshot === 'function') store.applyServerSnapshot(snapshot)
+   * 但本类此前**没有这个方法** ✗ -> 判断永远为 false -> 服务端的权威卡表从未应用回客户端。
+   * 结果：客户端本地膨胀到 ~94 张，服务端 player_cards 只有 2~32 张，
+   *       保存战团时服务端返回 {"message":"战团中包含未拥有的卡牌"}（player.js:160）。
+   * 现在补齐：以服务端为准重建槽位（槽位索引优先用 slotIndex，缺失则按顺序）。
+   */
+  applyServerSnapshot(snapshot) {
+    const cards = Array.isArray(snapshot?.cards) ? snapshot.cards : null;
+    if (!cards) return false;
+    const slotCount = Math.max(DEFAULT_SLOT_COUNT, Number(snapshot?.slotCount) || 0, cards.length);
+    const slots = new Array(slotCount).fill(null);
+    cards.forEach((entry, i) => {
+      const cardId = Number(entry?.cardId ?? entry);
+      if (!Number.isInteger(cardId) || cardId <= 0) return;
+      const rawIndex = Number(entry?.slotIndex ?? entry?.slot_index);
+      const idx = Number.isInteger(rawIndex) && rawIndex >= 0 ? rawIndex : i;
+      if (idx >= slotCount) return;
+      slots[idx] = normalizeSlot({
+        cardId,
+        star: Number(entry?.star ?? entry?.strengthLv ?? 0) || 0,
+        strengthLv: Number(entry?.strengthLv ?? entry?.star ?? 0) || 0,
+        craftQuality: Number(entry?.craftQuality ?? entry?.craft_quality ?? 1) || 1,
+      });
+    });
+    this.state = { slotCount, slots };
+    this.save();
+    return true;
+  }
+
   grantAllCollectibleCards() {
     const owned = new Set(this.getOwnedCardIds());
     let added = 0;
