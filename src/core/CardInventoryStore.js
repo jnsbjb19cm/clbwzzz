@@ -60,6 +60,10 @@ export class CardInventoryStore {
   constructor(cardDb) {
     this.cardDb = cardDb;
     this.state = this.load();
+    if (this.state.__purgedUnreleased) {
+      delete this.state.__purgedUnreleased;
+      this.save();   // 清理结果立即持久化
+    }
   }
 
   load() {
@@ -69,6 +73,20 @@ export class CardInventoryStore {
         const parsed = JSON.parse(raw);
         if (Array.isArray(parsed.slots)) {
           parsed.slots = parsed.slots.map(normalizeSlot);
+          // 2026-10-12 一次性清理：把"服务端不认的卡"（未开放卡，如 126 怪物冷萃机）剔除。
+          // ⚠ 必须把格子置为 null，**不能删除**：战团保存的是槽位索引，删除会让后面整体前移、战团错位。
+          let purged = 0;
+          parsed.slots = parsed.slots.map((slot) => {
+            if (!slot) return null;
+            const card = this.cardDb?.getById?.(slot.cardId);
+            if (card?.isCollectible?.()) return slot;
+            purged += 1;
+            return null;
+          });
+          if (purged > 0) {
+            parsed.__purgedUnreleased = true;
+            console.warn('[card-inventory] 已清理 ' + purged + ' 个不可拥有的卡槽（未开放卡/机制卡）');
+          }
           const savedCount = Number(parsed.slotCount);
           parsed.slotCount = Math.max(
             DEFAULT_SLOT_COUNT,

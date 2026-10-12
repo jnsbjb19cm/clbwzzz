@@ -5,6 +5,7 @@ import {
 } from '../battle/BattleConfig.js';
 import cardLoreJson from '../data/cardLore.json' with { type: 'json' };
 import { ATK_STYLE, CARD_QUALITY, CARD_TYPE, VIEW_TYPE } from './constants.js';
+import { isCardReleased } from '../data/unreleasedCards.js';
 
 export const EXPERIENCE_CARD_IDS = new Set([122, 123, 124]);
 
@@ -70,7 +71,10 @@ export class Card {
     // 之后战团又被判定为「有未拥有的卡牌」——因为它是敌方机制卡，服务端不认。
     // 根因：126 的 show_card=1 让它通过了 visible 判定（Card.js 里还给它硬编码 quality=6）。
     // 规则统一为：**只有 1~5 级才是玩家可拥有的卡**（与 constants.js / ResetForgeView 的写法一致）。
-    return this.visible && this.id < 500 && !this.isExperienceCard && this.quality <= 5;
+    // 2026-10-12：再加一道"未开放卡"开关（126 怪物冷萃机 = 以后要出的卡，
+    // 现在不该被补发/入战团）。上线时改 src/data/unreleasedCards.js 一处即可解除。
+    return this.visible && this.id < 500 && !this.isExperienceCard
+      && isCardReleased(this.id) && this.quality <= 5;
   }
 
   /** 背包可以保存普通卡牌和经验材料卡，但经验材料卡不能出战。 */
