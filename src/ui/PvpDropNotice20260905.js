@@ -238,10 +238,11 @@ function install() {
   };
 
   const previousHandleBattleResult = App.prototype.handleBattleResult;
-  App.prototype.handleBattleResult = function handlePveResultWithDropNotice(payload = {}) {
-    const result = previousHandleBattleResult.call(this, payload);
-    if (Array.isArray(payload?.drops) && payload.drops.length) {
-      showDropNotice(payload.drops, { addToLocalBag: false });
+  App.prototype.handleBattleResult = async function handlePveResultWithDropNotice(payload = {}) {
+    const result = await previousHandleBattleResult.call(this, payload);
+    const confirmedDrops = result?.persistedDrops ?? (authStore.isLoggedIn() ? [] : payload?.drops);
+    if (Array.isArray(confirmedDrops) && confirmedDrops.length) {
+      showDropNotice(confirmedDrops, { addToLocalBag: false });
     }
     return result;
   };

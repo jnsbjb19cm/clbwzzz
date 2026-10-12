@@ -1,4 +1,6 @@
 import { drawUnitFootStars, drawUnitFootHp } from './BattleUnitFootUi.js';
+import { drawBattleFloatText } from './BattleFloatText.js';
+import { drawSummonVisuals } from './BattleSummonVisual.js';
 import {
   CELL_H,
   CELL_W,
@@ -11,8 +13,6 @@ import {
   cellCenterY,
   cellY,
   colFracToX,
-  formatBattleAmount,
-  formatBattleDelta,
   fracColToCenterX,
   laneFracToY,
 } from './BattleConfig.js';
@@ -36,11 +36,6 @@ for (const row of skillPosData) {
   if (row.position != null) SKILL_FX_POS.set(Number(row.cardId), Number(row.position));
 }
 
-// 伤害/治疗数字精灵(battle.atf：number_r_* 红=扣血，number_g_* 绿=回血)
-const BATTLE_NUM_RECTS = new Map();
-for (const s of battleAtlasData.sprites ?? []) {
-  if (/^number_[rg]_/.test(s.name)) BATTLE_NUM_RECTS.set(s.name, s);
-}
 import {
   backColPortraitShiftX,
   CARD_FACE_OVERLAY,
@@ -1239,81 +1234,15 @@ export class BattleRenderer {
   }
 
   drawFloats(ctx, engine) {
-    ctx.font = 'bold 13px sans-serif';
-    ctx.textAlign = 'center';
-    const atlasImg = this.battleAtlasImage;
-    if (!atlasImg) void this.requestBattleAtlas();
     const list = engine.floats;
     for (let i = this._effectSliceStart(list); i < list.length; i += 1) {
       const f = list[i];
-      const alpha = Math.min(1, f.life);
-      // 基地伤害/回复也用同一套数字精灵(与卡牌相同字体)；位置 clamp 到画布内
       const g = this.battleVisualGrid;
       const cx = g && !this.isBaseFloat(f.col) ? g.x0 + g.stepX * f.col : this.isBaseFloat(f.col)
         ? Math.min(fracColToCenterX(f.col), FIELD_W - 22)
         : fracColToCenterX(f.col);
-      const cy = (g ? g.y0 + g.stepY * f.lane : cellCenterY(f.lane)) + 14 + (f.y || 0) * 12;
-
-      // 伤害/治疗数字精灵：红=扣血(-)，绿=回血(+)
-      if (atlasImg) {
-        const isHeal = f.amount > 0;
-        const prefix = isHeal ? 'g' : 'r';
-        // 2026-09-12：不再四舍五入成整数 —— 剩余血量是小数（例如 3.2）时飘字要显示 -3.2。
-        // 小数点用图集里的 number_*_d 字形（8×8 的小点）画。
-        const glyphs = formatBattleAmount(Math.abs(f.amount))
-          .split('')
-          .map((ch) => (ch === '.' ? 'd' : ch));
-        const signRect = BATTLE_NUM_RECTS.get(isHeal ? 'number_g_add' : 'number_r_sub');
-        if (glyphs.length) {
-          const digitW = 13 * 0.85;
-          const digitH = 18 * 0.85;
-          const dotRect = BATTLE_NUM_RECTS.get(`number_${prefix}_d`);
-          const dotW = (dotRect ? (dotRect.width ?? 8) : 8) * 0.85;
-          const dotH = (dotRect ? (dotRect.height ?? 8) : 8) * 0.85;
-          const dotCount = glyphs.filter((ch) => ch === 'd').length;
-          // 加减号按原生宽高比缩小绘制(不拉伸到数字高度)
-          const signScale = 0.85 * 0.7;
-          const signW = (signRect ? (signRect.width ?? 11) : 11) * signScale;
-          const signH = (signRect ? (signRect.height ?? 8) : 8) * signScale;
-          const textW = glyphs.length * digitW - dotCount * (digitW - dotW);
-          let dx = cx - ((textW + signW) / 2);
-          let drawn = 0;
-          if (signRect) {
-            ctx.save();
-            ctx.globalAlpha = alpha;
-            ctx.drawImage(
-              atlasImg, signRect.x, signRect.y, signRect.width, signRect.height,
-              dx, cy - signH / 2, signW, signH,
-            );
-            ctx.restore();
-            dx += signW;
-          }
-          for (const ch of glyphs) {
-            const rect = BATTLE_NUM_RECTS.get(`number_${prefix}_${ch}`);
-            if (!rect) continue;
-            const isDot = ch === 'd';
-            const w = isDot ? dotW : digitW;
-            const h = isDot ? dotH : digitH;
-            // 小数点必须落在基线上（图集里 number_*_d 的 frameY=-10/frameHeight=18 就是"贴底"）。
-            // 居中画的话，它正好卡在数字中间，看起来像减号 —— 用户看到的就是 "-2-5"。
-            const y = isDot ? (cy + digitH / 2 - h) : (cy - h / 2);
-            ctx.save();
-            ctx.globalAlpha = alpha;
-            ctx.drawImage(
-              atlasImg, rect.x, rect.y, rect.width, rect.height,
-              dx, y, w, h,
-            );
-            ctx.restore();
-            dx += w;
-            drawn += 1;
-          }
-          if (drawn) continue;
-        }
-      }
-      ctx.fillStyle = f.amount > 0
-        ? `rgba(74,222,128,${alpha})`
-        : `rgba(248,113,113,${alpha})`;
-      ctx.fillText(formatBattleDelta(f.amount), cx, cy);
+      const cy = (g ? g.y0 + g.stepY * f.lane : cellCenterY(f.lane)) - 14 + (f.y || 0) * 36;
+      drawBattleFloatText(ctx, f.amount, cx, cy, { alpha: Math.min(1, f.life) });
     }
   }
 
@@ -1359,8 +1288,9 @@ export class BattleRenderer {
       tick: engine?.battleTick,
     }, operation);
     renderPhase('renderer.ensure-sprites', () => this.ensureSprites(engine));
-    // 部署法阵画在单位上层，避免被刚放置的单位模型遮挡（放置卡牌时地面召唤法阵应可见）
-    renderPhase('renderer.units', () => this.drawUnits(ctx, engine));
+    // 地面法阵先淡入；卡牌随后出现，最后法阵淡出。只影响显示，不改变部署规则。
+    const visibleEngine = renderPhase('renderer.summon', () => drawSummonVisuals(this, ctx, engine)) ?? engine;
+    renderPhase('renderer.units', () => this.drawUnits(ctx, visibleEngine));
     renderPhase('renderer.deploy-effects', () => this.drawDeployEffects(ctx, engine));
     renderPhase('renderer.loot-drops', () => this.drawLootDrops(ctx, engine));
     renderPhase('renderer.skill-effects', () => this.drawSkillFx(ctx, engine));

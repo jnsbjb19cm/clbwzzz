@@ -320,6 +320,38 @@ export class App {
   handleBattleResult({ won, stage, drops = [], durationMs = 0, mode = 'pve' }) {
     // PVP 任务由 BattleView 按局上报；房间奖励由服务器结算并刷新快照。
     if (mode === 'pvp' || mode === 'boss') return;
+    if (authStore.isLoggedIn()) {
+      const rewardToken = authStore.token;
+      // Only the server snapshot grants online rewards. Optimistic local grants
+      // used to disappear when the response replaced the inventory.
+      return authStore.api.post('/player/stage-result', {
+        stageId: stage?.stage_id ?? stage?.id ?? null, won, durationMs,
+        bestStars: stage?.stars ?? 1,
+        drops: drops.map(drop => ({ itemId: Number(drop?.itemId), count: Number(drop?.count) || 1 })),
+      }).then(async result => {
+        if (authStore.token !== rewardToken) return { ok: false, accountChanged: true };
+        if (!result?.ok) throw new Error('结算未完成');
+        if (result.firstClear) {
+          // First-clear rewards may include cards, absent from stage-result's
+          // item snapshot. A refresh failure must not retry an already paid reward.
+          try { await authStore.api.get('/player/snapshot'); }
+          catch (error) { console.warn('[battle-rewards] 奖励已入库，卡牌快照暂未刷新', error); }
+          if (authStore.token !== rewardToken) return { ok: false, accountChanged: true };
+        }
+        if (won) markWorldStageCleared(stage.stage_id ?? stage.id);
+        if (won) this._pendingBoss = null;
+        QuestView.dispatch('gold_gain', { amount: Number(result.goldGain) || 0 });
+        this.updatePlayerDisplay();
+        this.showGlobalNotice(won ? '冒险胜利' : '战斗结束',
+          `金币 +${Number(result.goldGain) || 0}；经验 +${Number(result.expGain) || 0}。奖励已入库。`);
+        return result;
+      }).catch(error => {
+        if (authStore.token !== rewardToken) return { ok: false, accountChanged: true };
+        this.showGlobalNotice('奖励结算失败', '奖励尚未确认入库，请保留本局结果并检查连接。');
+        console.warn('[battle-rewards] settlement failed', error);
+        return { ok: false };
+      });
+    }
     // 2026-10-11：噩梦档单机结算也要 x2.5（与服务端 PveStageSettlement 一致，避免"联机给、单机不给"）
     const reward = getBattleRewards(stage, won);
     const nmMult = nightmareGoldExpMult(stage);
@@ -328,15 +360,6 @@ export class App {
     const special = won ? markWorldStageCleared(stage.stage_id ?? stage.id) : { firstClear: false, rewards: [] };
     // 2026-10-11：噩梦档首通奖励也要 x2.5/x1.6（单机结算与服务端保持一致）
     if (special.firstClear) special.rewards = scaleRewardsForNightmare(special.rewards, stage);
-    if (won && (stage?.stage_id || drops.length)) {
-      authStore.api.post('/player/stage-result', {
-        stageId: stage?.stage_id ?? null,
-        won,
-        durationMs,
-        bestStars: stage?.stars ?? 1,
-        drops: drops.map((drop) => ({ itemId: Number(drop?.itemId), count: Number(drop?.count) || 1 })),
-      }).catch(() => {});
-    }
     const specialText = [];
     const dropTotals = new Map();
     for (const drop of Array.isArray(drops) ? drops : []) {

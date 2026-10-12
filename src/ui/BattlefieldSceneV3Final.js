@@ -274,6 +274,7 @@ function updateProjectilesV3(dt) {
       projectile.launched
       && projectile.trajectory === 'straight'
       && !projectile.visualOnly
+      && !projectile.pierce
       && !projectile.targetBase
     ) {
       const direction = projectile.owner === 'player' ? 1 : -1;

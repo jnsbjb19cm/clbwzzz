@@ -266,7 +266,7 @@ export function installBattleAttackTimingFix() {
     if (unit.isDefensive() && unit.atk <= 0) return false;
     if (isSuicideCard(unit)) return this.trySuicideBomber(unit);
     // Global multi-target cards must not be converted into a normal lane projectile.
-    if (unit.cardId === 58 || unit.cardId === COLD_BREW_CARD_ID) return originalTryAttack.call(this, unit);
+    if (unit.cardId === 58 || unit.cardId === 77 || unit.cardId === COLD_BREW_CARD_ID) return originalTryAttack.call(this, unit);
 
     // 飞鞋怪在首次物理接触之前绝不能提前进入普通攻击动画；否则攻击动画锁会让它
     // 停在接触距离之外，永远触发不了首碰（23 vs 5 首次相遇卡死的实际根因）。

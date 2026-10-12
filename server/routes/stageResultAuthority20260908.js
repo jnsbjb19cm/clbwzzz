@@ -5,6 +5,8 @@ import { db, withTransaction } from '../database.js';
 import { requireAuth } from '../middleware/auth.js';
 import { getBattleRewards, grantPlayerExp } from '../../src/core/PlayerProgression.js';
 import { readPlayerItems20260908 } from '../domain/playerInventoryAuthority20260908.js';
+import { normalizeBattleDrops20260908 } from '../domain/battleDropValidation20261012.js';
+export { normalizeBattleDrops20260908 } from '../domain/battleDropValidation20261012.js';
 
 const require = createRequire(import.meta.url);
 const stageInfo = require('../../src/data/stageInfo.json');
@@ -13,33 +15,10 @@ const STAGE_BY_ID = new Map([...stageInfo, ...createAdventureStages(stageInfo)].
 export const stageResultAuthorityRouter20260908 = Router();
 stageResultAuthorityRouter20260908.use(requireAuth);
 
-const MAX_BATTLE_DROPS_PER_RESULT = 40;
-const BATTLE_DROP_ITEM_IDS = new Set([
-  10001, 10002, 10003, 10004, 10005, // 强化粉
-  50001, 50002, 50003, 50004,        // 羊皮纸
-  50011, 50012, 50013, 50014,        // 宝石
-  50031, 50032, 50033, 50034,        // 卡牌DNA
-  50021, 50022, 50023, 50024,        // 保护符，与实际战斗材料掉落表一致
-]);
-
 function clampInt(value, min, max) {
   const n = Number(value);
   if (!Number.isFinite(n)) return min;
   return Math.max(min, Math.min(max, Math.floor(n)));
-}
-
-export function normalizeBattleDrops20260908(rawDrops) {
-  if (!Array.isArray(rawDrops)) return [];
-  const out = [];
-  for (const raw of rawDrops) {
-    if (out.length >= MAX_BATTLE_DROPS_PER_RESULT) break;
-    const itemId = Number(raw?.itemId);
-    if (!Number.isInteger(itemId) || !BATTLE_DROP_ITEM_IDS.has(itemId)) continue;
-    // BattleEngine 每个死亡单位最多产生一个掉落。服务端不接受浏览器放大的 count，
-    // 只允许真实战斗掉落表中的单件材料进入数据库。
-    out.push({ itemId, count: 1 });
-  }
-  return out;
 }
 
 function parseFirstClearRewards(stage) {

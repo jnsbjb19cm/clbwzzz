@@ -1,11 +1,11 @@
 import { BattleRenderer } from '../battle/BattleRenderer.js';
+import { drawBattleFloatText } from '../battle/BattleFloatText.js';
 import {
   COLS,
   FIELD_H,
   FIELD_W,
   LANES,
   cellCenterY,
-  formatBattleDelta,
   fracColToCenterX,
 } from '../battle/BattleConfig.js';
 import { BattleView } from './BattleView.js';
@@ -13,7 +13,7 @@ import { PROVIDED_GRASS_BACKGROUND_URL } from '../battle/BattleBackground.js';
 
 const PATCH_FLAG = Symbol.for('clbwzzz.pvpRound3ReferenceFinal');
 const FLOAT_DURATION = 0.82;
-const FLOAT_RISE_PX = 10;
+const FLOAT_RISE_PX = 32;
 const REFERENCE_RECT = Object.freeze({ left: 0.092, top: 0.233, width: 0.78, height: 0.613 });
 
 const SCENES = Object.freeze({
@@ -353,7 +353,6 @@ function drawAuthorityFloats(renderer, ctx, engine) {
   ctx.save();
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
-  ctx.font = '900 16px "Microsoft YaHei", sans-serif';
   ctx.lineJoin = 'round';
   ctx.lineWidth = 3;
   for (const item of queue) {
@@ -363,13 +362,8 @@ function drawAuthorityFloats(renderer, ctx, engine) {
     const alpha = progress < 0.68 ? 1 : Math.max(0, (1 - progress) / 0.32);
     const g = renderer.battleVisualGrid;
     const x = g ? g.x0 + g.stepX * finite(item.col) : fracColToCenterX(finite(item.col));
-    const y = (g ? g.y0 + g.stepY * finite(item.lane, 2) : cellCenterY(finite(item.lane, 2))) + 14 - eased * FLOAT_RISE_PX;
-    const text = formatBattleDelta(finite(item.amount));
-    ctx.globalAlpha = alpha;
-    ctx.strokeStyle = 'rgba(24, 20, 17, 0.86)';
-    ctx.fillStyle = item.amount > 0 ? '#70f58a' : '#ff6b66';
-    ctx.strokeText(text, x, y);
-    ctx.fillText(text, x, y);
+    const y = (g ? g.y0 + g.stepY * finite(item.lane, 2) : cellCenterY(finite(item.lane, 2))) - 14 - eased * FLOAT_RISE_PX;
+    drawBattleFloatText(ctx, finite(item.amount), x, y, { alpha });
   }
   ctx.restore();
 }

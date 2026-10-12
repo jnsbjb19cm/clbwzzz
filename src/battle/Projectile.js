@@ -237,6 +237,10 @@ function splashVictims(proj, primary, engine) {
 
 export function resolveProjectileHit(proj, engine, collisionTarget = null) {
   if (proj.visualOnly) return;
+  if (proj.attackPattern?.rangeWave && engine.resolveRangeWave) {
+    engine.resolveRangeWave(proj);
+    return;
+  }
   if (proj.targetBase) {
     const dmg = engine.damageBase(proj.targetBase, proj.damage);
     const floatCol = proj.resolveCol ?? proj.hitCol;

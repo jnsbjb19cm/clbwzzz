@@ -14,7 +14,8 @@ import { audio } from '../core/AudioManager.js';
 import { BattleUnit } from '../battle/BattleUnit.js';
 import { BattleEngine } from '../battle/BattleEngine.js';
 import { BattleRenderer } from '../battle/BattleRenderer.js';
-import { CELL_H, CELL_W, cellCenterY, formatBattleAmount, fracColToCenterX } from '../battle/BattleConfig.js';
+import { CELL_H, CELL_W, cellCenterY, fracColToCenterX } from '../battle/BattleConfig.js';
+import { drawBattleFloatText } from '../battle/BattleFloatText.js';
 import { bgmAllowedFor, shouldShowDamageNumbers } from '../core/BattleClientFlags20260910.js';
 
 const PATCH_FLAG = Symbol.for('clbwz.battleDisplayRuntime20260911');
@@ -50,17 +51,11 @@ function drawDamagePop(ctx, pop, cx, topY, cellW, time) {
   const age = time - pop.at;
   if (!(age >= 0) || age >= POP_MS) return false;
   const progress = age / POP_MS;
-  const y = topY + 18 - progress * 12;
+  const y = topY - 6 - progress * 32;
   const alpha = progress < 0.75 ? 1 : 1 - (progress - 0.75) / 0.25;
-  const size = Math.max(11, Math.round((cellW ?? 40) * 0.34));
+  const size = 20;
   // 2026-09-12：不四舍五入 —— 剩余血量是小数（例如 3.2）时显示 -3.2
-  const text = `-${formatBattleAmount(Math.abs(pop.amount))}`;
-  ctx.font = `bold ${size}px "Microsoft YaHei", sans-serif`;
-  ctx.lineWidth = 3;
-  ctx.strokeStyle = `rgba(24, 12, 0, ${0.85 * alpha})`;
-  ctx.strokeText(text, cx, y);
-  ctx.fillStyle = pop.crit ? `rgba(255, 236, 120, ${alpha})` : `rgba(255, 122, 110, ${alpha})`;
-  ctx.fillText(text, cx, y);
+  drawBattleFloatText(ctx, -Math.abs(pop.amount), cx, y, { alpha, size });
   return true;
 }
 
