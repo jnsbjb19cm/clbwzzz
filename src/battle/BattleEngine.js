@@ -926,6 +926,16 @@ export class BattleEngine {
       this.processBattleTick();
     }
 
+    // 2026-10-12 用户：魅惑妖灵魅惑成功后，等攻击动画播完就**从战场移除自己**
+    // 与地道工兵/钻地大蒜同一套：不播死亡动画、不走掉血、不计击杀/不掉落
+    for (const u of this.units) {
+      if (u && u._charmVanishAt && this.time >= u._charmVanishAt) {
+        u._charmVanishAt = 0;
+        u.alive = false;
+        u._charmRemoved = true;
+        u._deathUntil = this.time;
+      }
+    }
     this.updateUnitMovement(dt);
     this.updateProjectiles(dt);
     this.updateFloats(dt);
@@ -1377,6 +1387,11 @@ export class BattleEngine {
     v.team = unit.team;
     v._charmed = true;
     this.pushLog(`[${unit.name}]魅惑 ${v.name} → 永久加入我方`);
+    // 2026-10-12 用户：魅惑时**播放攻击动画**，且魅惑成功后**魅惑妖灵自身消失**
+    // （攻击动画沿用既有字段 _attackAnimUntil；单位移除复用钻地大蒜那套写法）
+    const CHARM_ANIM_SECONDS = 0.6;
+    unit._attackAnimUntil = Math.max(Number(unit._attackAnimUntil) || 0, this.time + CHARM_ANIM_SECONDS);
+    unit._charmVanishAt = this.time + CHARM_ANIM_SECONDS;
     return true;
   }
 
@@ -2659,7 +2674,7 @@ export class BattleEngine {
       return;
     }
     // 2026-10-12 用户：跳字动画时长延长约 20%（1.2 -> 1.44）
-    this.floats.push({ lane, col, amount: amt, life: 1.73, y: 0, targetUid, createdAt: this.time });
+    this.floats.push({ lane, col, amount: amt, life: 1.9, y: 0, targetUid, createdAt: this.time });
     // 卡牌多时浮字数量上限（超出丢最旧，避免每帧渲染大量伤害数字卡顿）
     if (this.floats.length > 40) this.floats.splice(0, this.floats.length - 40);
   }
