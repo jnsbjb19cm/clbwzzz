@@ -9,6 +9,9 @@ const NEW_PLAYER_TUTORIAL_PROMPT_KEY = 'clbwz_new_player_tutorial_prompt_v1';
 
 export class AuthStore {
   constructor() {
+    // 2026-10-12：暴露给 ApiClient —— 接口返回的权威卡表要同步进 snapshot.cardInventory
+    // （否则任务刚发的卡在保存战团时会被当成"未拥有"过滤掉，刷新后才恢复）
+    if (typeof globalThis !== 'undefined') globalThis.__clbwzAuthStore = this;
     // 登录态只保留在当前浏览器会话：刷新页面仍可继续，关闭标签页/浏览器后重新进入必须登录。
     // 同时清掉旧版本留在 localStorage 的长期 token，避免升级后仍然自动登录。
     try { localStorage.removeItem(TOKEN_KEY); } catch {}

@@ -50,6 +50,20 @@ export class ApiClient {
     if (!response.ok) {
       throw new ApiError(data?.message || `请求失败(${response.status})`, response.status, data);
     }
+    // 2026-10-12：任何接口返回的「权威卡表」都立刻应用到本地与玩家快照 —— 否则会出现
+    // 「任务拿到的卡当次带不进战团，刷新后又能带」的问题。
+    // 原因链：任务领奖服务端已返回 cardInventory（questRewardAuthority20260908.js:205），
+    //        但客户端没应用它 → authStore.snapshot.cardInventory 还是旧的 →
+    //        保存战团时的"按服务端拥有卡过滤"会把刚拿到的卡当成"未拥有"过滤掉。
+    // 用全局句柄避免 ApiClient ↔ App/AuthStore 的循环依赖。
+    if (data && typeof data === 'object' && data.cardInventory) {
+      try {
+        const appCardInventory = globalThis.__clbwzAppInstance?.cardInventory;
+        if (appCardInventory?.applyServerSnapshot) appCardInventory.applyServerSnapshot(data.cardInventory);
+        const snapshot = globalThis.__clbwzAuthStore?.snapshot;
+        if (snapshot) snapshot.cardInventory = data.cardInventory;
+      } catch { /* 快照应用失败不应影响接口本身的返回值 */ }
+    }
     return data;
   }
 
