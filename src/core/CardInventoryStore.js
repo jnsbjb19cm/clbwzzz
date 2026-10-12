@@ -83,6 +83,35 @@ export class CardInventoryStore {
             purged += 1;
             return null;
           });
+          // 2026-10-12 同一根源的另一半：战团里存的是"卡牌指纹（含 cardId）"，
+          // 只清背包不够 —— 非法卡（如 126）还留在战团数据里，
+          // 于是保存战团时服务端返回：{"message":"战团中包含未拥有的卡牌"}（player.js:160）
+          // 这里把战团存档里的非法条目一并置空（保持数组长度与槽位对应，不做删除）。
+          const deckKeys = [
+            'battle_deck_v2', 'battle_deck_v2_team1', 'battle_deck_v2_team2', 'battle_deck_v2_team3',
+            'battle_deck_ids', 'clbwz_room_decks_v4',
+          ];
+          let deckFixed = 0;
+          const cardOk = (id) => Boolean(this.cardDb?.getById?.(Number(id))?.isCollectible?.());
+          for (const key of deckKeys) {
+            try {
+              const deckRaw = localStorage.getItem(key);
+              if (!deckRaw) continue;
+              const deckParsed = JSON.parse(deckRaw);
+              if (!Array.isArray(deckParsed)) continue;   // 结构不认识的键一律不动（安全）
+              const deckCleaned = deckParsed.map((entry) => {
+                if (entry == null) return null;
+                const id = Array.isArray(entry) ? entry[0] : (entry.cardId ?? entry.card_id ?? entry);
+                if (cardOk(id)) return entry;
+                deckFixed += 1;
+                return null;
+              });
+              if (JSON.stringify(deckCleaned) !== JSON.stringify(deckParsed)) {
+                localStorage.setItem(key, JSON.stringify(deckCleaned));
+              }
+            } catch { /* 单个键解析失败不影响其它键 */ }
+          }
+          if (deckFixed > 0) console.warn('[card-inventory] 已清理战团存档里的非法卡 ' + deckFixed + ' 处');
           if (purged > 0) {
             parsed.__purgedUnreleased = true;
             console.warn('[card-inventory] 已清理 ' + purged + ' 个不可拥有的卡槽（未开放卡/机制卡）');
