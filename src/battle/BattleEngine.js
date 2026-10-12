@@ -65,7 +65,10 @@ import { TALENT_NODE_MAP } from '../core/TalentRegistry.js';
  */
 const SWALLOW_READY_DELAY = 3;
 // 2026-10-11 用户：怪物吸尘器消化时间 25 秒 → **56 秒**
-const SWALLOW_DIGEST_SECONDS = 56;
+// 2026-10-12 用户：怪物吸尘器吸收时间应为 58s（此前 56s）
+const SWALLOW_DIGEST_SECONDS = 58;
+// 2026-10-12：魅惑持续时间（秒）—— 到期后目标归还原阵营（用户：不能永久魅惑）
+const CHARM_DURATION_SECONDS = 10;
 /** attacking 动画里身体最鼓的那一帧（像素统计：default 平均 4684 → 第 35 帧 5812 ≈ +24% 峰值） */
 const SWALLOW_PUFF_FRAME = 35;
 /** 空中"碰到"的判定距离（格）：两个非自爆飞行单位最多互相靠到 ~1.0 格 */
@@ -925,6 +928,18 @@ export class BattleEngine {
       this.processBattleTick();
     }
 
+    // 2026-10-12：魅惑到期 -> 归还原阵营（限时效果，不再永久 ✗）
+    for (const u of this.units) {
+      if (u && u._charmed && u._charmUntil && this.time >= u._charmUntil) {
+        u._charmed = false;
+        u._charmUntil = 0;
+        if (u._charmOriginTeam) {
+          u.team = u._charmOriginTeam;
+          u._charmOriginTeam = null;
+        }
+        this.pushLog(`[${u.name}]魅惑效果结束，回到原阵营`);
+      }
+    }
     this.updateUnitMovement(dt);
     this.updateProjectiles(dt);
     this.updateFloats(dt);
@@ -1361,19 +1376,22 @@ export class BattleEngine {
   /** 魅惑妖灵：魅惑低品质敌方单位，使其变为己方单位 */
   tryCharm(unit) {
     if (!unit.alive || (unit._charmCdUntil && this.time < unit._charmCdUntil)) return false;
-    const victims = this.contactEnemies(unit).filter((u) => (u.quality ?? 1) < 5);
-    if (!victims.length) return false;
+    // 2026-10-12 用户规则：魅惑妖灵**只能魅惑一个目标**，而且**不是永久**（限时后归还）
+    const candidates = this.contactEnemies(unit)
+      .filter((u) => (u.quality ?? 1) < 5 && !this.isDebuffImmune(u));
+    if (!candidates.length) return false;
+    // 取最近的一个（稳定、可预期）
+    const v = candidates.slice().sort(
+      (a, b) => Math.abs(Number(a.col) - Number(unit.col)) - Math.abs(Number(b.col) - Number(unit.col)),
+    )[0];
+    if (!v) return false;
     unit._charmCdUntil = this.time + 2;
     audio.playSfx('sound/effect/fire/c53.mp3', { tier: 'subtle' });
-    for (const v of victims) {
-      if (this.isDebuffImmune(v)) {
-        this.pushLog(`[${unit.name}]魅惑失败：${v.name} 免疫负面效果`);
-        continue;
-      }
-      v.team = unit.team;
-      v._charmed = true;
-      this.pushLog(`[${unit.name}]魅惑 ${v.name} → 加入我方`);
-    }
+    v._charmOriginTeam = v.team;
+    v.team = unit.team;
+    v._charmed = true;
+    v._charmUntil = this.time + CHARM_DURATION_SECONDS;
+    this.pushLog(`[${unit.name}]魅惑 ${v.name} → 加入我方（${CHARM_DURATION_SECONDS}秒）`);
     return true;
   }
 
@@ -1450,6 +1468,7 @@ export class BattleEngine {
     if (unit.atkTimer > 0) return false;
 
     if (unit.cardId === 58) return this.tryMushroomAttack(unit);
+    if (unit.cardId === 77) return this.tryInstantFrostAttack(unit);
 
     if (unit.atkRate === 3 || unit.cardId === 25) {
       return this.tryTripleAttack(unit);
@@ -1503,6 +1522,34 @@ export class BattleEngine {
       this.resolveMeleeImpact(unit, target, dmg);
       if (!target.alive) {
         this.pushLog(`${unit.name} 击败 ${target.name}`);
+      }
+    }
+    return true;
+  }
+
+  tryInstantFrostAttack(unit) {
+    const start = Math.max(0, Math.min(LANES - 3, unit.lane - 1));
+    const dir = unit.team === 'player' ? 1 : -1;
+    const targets = [start, start + 1, start + 2].map(lane => {
+      const front = this.getEnemiesInLane(unit, lane)
+        .filter(({ unit: target }) => dir * (target.col - unit.col) >= 0)
+        .sort((a, b) => dir * (a.unit.col - b.unit.col))[0]?.unit;
+      if (front) return front;
+      return canUnitHitBase(unit) ? { _isBase: true, lane, col: unit.getBaseFracCol() } : null;
+    }).filter(Boolean);
+    if (!targets.length) return false;
+    unit.atkTimer = Math.max(getAttackCooldown(unit.atkSpeed) * this.getAtkSpeedMult(unit), unitAnimPlayer.resolveAttackDuration(unit));
+    // Preserve the existing three-lane damage multiplier; only delivery changes.
+    const damage = roundBattleAmount(Math.max(1, (unit.atk + this.getAuraBonus(unit) + (unit.tempAtkBonus ?? 0)) * 0.5));
+    unitAnimPlayer.triggerAttack(unit, this);
+    audio.playAttack(unit.cardId, unit);
+    for (const target of targets) {
+      this.spawnImpactFx(target.lane, target.col, damage, unit.res);
+      if (target._isBase) {
+        const dealt = this.damageBase(unit.team === 'player' ? 'enemy' : 'player', damage);
+        if (dealt > 0) this.spawnFloat(target.lane, target.col, -dealt);
+      } else {
+        this.applyCardHit(unit, target, damage, { ranged: true, sourceTrajectory: 'skill' });
       }
     }
     return true;
@@ -1642,6 +1689,9 @@ export class BattleEngine {
 
   fireProjectile(unit, target, damage, opts = {}) {
     unitAnimPlayer.triggerAttack(unit, this);
+    const rangeWave = [48, 92].includes(Number(unit.cardId)) && !opts.reflected;
+    const waveEnd = rangeWave ? Math.max(PLAYER_BASE_FRAC, Math.min(ENEMY_BASE_FRAC,
+      unit.col + (unit.team === 'player' ? 1 : -1) * getAttackPattern(unit.cardId).cells)) : null;
     const trajectory = opts.trajectory ?? 'straight';
     const targetBase = opts.targetBase ?? null;
     const isBaseShot = target._isBase || targetBase;
@@ -1659,19 +1709,20 @@ export class BattleEngine {
         startCol: unit.col,
         attackerCol: unit.col,
         attackerLane: unit.lane,
-        hitLane: opts.hitLane ?? target.lane,
-        hitCol,
-        resolveCol,
+        hitLane: rangeWave ? unit.lane : (opts.hitLane ?? target.lane),
+        hitCol: rangeWave ? waveEnd : hitCol,
+        resolveCol: rangeWave ? waveEnd : resolveCol,
         damage,
         trajectory,
         // 反弹的子弹可以用 opts.attackPattern 指定形状（null = 单目标直线），否则用发射者卡牌自己的形状
-        attackPattern: 'attackPattern' in opts ? (opts.attackPattern ?? null) : (getAttackPattern(unit.cardId) || null),
+        attackPattern: rangeWave ? { ...getAttackPattern(unit.cardId), rangeWave: true }
+          : ('attackPattern' in opts ? (opts.attackPattern ?? null) : (getAttackPattern(unit.cardId) || null)),
         // 黑暗精灵雷电直接命中同行最远目标，无视路径阻挡
         pierce: unit.cardId === 46 || unit.cardId === 48 || unit.cardId === 92 || opts.pierce === true,
         // 2026-09-13：允许显式传 targetUid: null（反弹子弹不锁定原射手，只按本行路径命中）
-        targetUid: isBaseShot ? null : ('targetUid' in opts ? (opts.targetUid ?? null) : target.uid),
+        targetUid: rangeWave || isBaseShot ? null : ('targetUid' in opts ? (opts.targetUid ?? null) : target.uid),
         targetLayerMask: getUnitAttackLayerMask(unit),
-        targetBase,
+        targetBase: rangeWave ? null : targetBase,
         sourceUid: unit.uid,
         sourceRes: opts.sourceRes ?? unit.res,
         // 这颗子弹是"被弹回来的"：命中时不再触发二次反射（2026-09-12）
@@ -2430,6 +2481,28 @@ export class BattleEngine {
   }
 
   /** 统一处理子弹命中结算，应用溅射与卡牌特性(中毒、眩晕、吸血、治疗、减速等) */
+  resolveRangeWave(proj) {
+    const attacker = this.units.find(unit => unit.uid === proj.sourceUid);
+    if (!attacker) return;
+    const dir = proj.owner === 'player' ? 1 : -1;
+    const start = proj.attackerCol;
+    const length = Math.abs(proj.flightEndCol - start);
+    // Resolve the whole lane only at the fixed endpoint, even if the original
+    // target died or moved while the gas travelled. Nothing intercepts it.
+    const targets = this.units.filter(unit => this.isProjectileCollisionTarget(proj, unit)
+      && unit.lane === proj.attackerLane
+      && dir * (unit.col - start) >= 0 && dir * (unit.col - start) <= length + 1e-6);
+    for (const target of targets) {
+      this.spawnImpactFx(target.lane, target.col, proj.damage, proj.sourceRes);
+      this.applyCardHit(attacker, target, proj.damage, { ranged: true, sourcePattern: proj.attackPattern, sourceTrajectory: 'skill' });
+    }
+    const baseCol = proj.owner === 'player' ? ENEMY_BASE_FRAC : PLAYER_BASE_FRAC;
+    if (Math.abs(proj.flightEndCol - baseCol) < 1e-6 && canUnitHitBase(attacker)) {
+      const dealt = this.damageBase(proj.owner === 'player' ? 'enemy' : 'player', proj.damage);
+      if (dealt > 0) this.spawnFloat(proj.lane, baseCol, -dealt);
+    }
+  }
+
   resolveProjectileImpact(proj, primary) {
     const engine = this;
     if (!proj || !this.isProjectileCollisionTarget(proj, primary)) return;
@@ -2452,7 +2525,8 @@ export class BattleEngine {
           case 'forward':     return u.lane === selfL && ah >= -0.15 && ah <= pat.cells + 0.5;
           // 小臭鼬(92)/臭鼬王(48)："对自身前方 N 格范围内所有敌方单位造成伤害" —— 覆盖范围内所有行，不限同一行。
           case 'forward_area': return ah >= -0.15 && ah <= pat.cells + 0.5;
-          case 'row_splash':  return u.lane === primary.lane && dc <= pat.radius;
+          // 2026-10-12 用户：花生神射手的溅射 = 从命中格开始**向右 3 格**（算上命中格）
+          case 'row_splash':  return u.lane === primary.lane && dir * (c - ctr) >= -0.5 && dir * (c - ctr) <= 2.5;
           case 'col_splash':  return Math.abs(u.lane - primary.lane) <= pat.radius && Math.abs(c - ctr) <= 0.5;
           case 'square':      return dl <= pat.radius && dc <= pat.radius;
           case 'square_self': return Math.abs(u.lane - selfL) <= pat.radius && Math.abs(c - selfC) <= pat.radius;
@@ -2523,7 +2597,8 @@ export class BattleEngine {
           case 'forward':     return u.lane === selfL && ah >= -0.15 && ah <= pat.cells + 0.5;
           // 小臭鼬(92)/臭鼬王(48)："对自身前方 N 格范围内所有敌方单位造成伤害" —— 覆盖范围内所有行，不限同一行。
           case 'forward_area': return ah >= -0.15 && ah <= pat.cells + 0.5;
-          case 'row_splash':  return u.lane === primary.lane && dc <= pat.radius;
+          // 2026-10-12 用户：花生神射手的溅射 = 从命中格开始**向右 3 格**（算上命中格）
+          case 'row_splash':  return u.lane === primary.lane && dir * (c - ctr) >= -0.5 && dir * (c - ctr) <= 2.5;
           case 'col_splash':  return Math.abs(u.lane - primary.lane) <= pat.radius && Math.abs(c - ctr) <= 0.5;
           case 'square':      return dl <= pat.radius && dc <= pat.radius;
           case 'square_self': return Math.abs(u.lane - selfL) <= pat.radius && Math.abs(c - selfC) <= pat.radius;
