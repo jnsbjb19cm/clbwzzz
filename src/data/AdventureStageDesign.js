@@ -243,7 +243,20 @@ export function applyAdventureDifficulty(stage, waves) {
   const a = stage?.adventure;
   if (!a || !Array.isArray(waves) || waves.length === 0) return waves;
   const difficulty = Number(a.difficulty) || 0;
-  if (difficulty <= 0) return waves;
+  // 2026-10-12 用户要求（简单难度）：
+  //   ① 下调花生神射手(18)的出怪数（每波数量减半，最少 1）
+  //   ② 简单难度所有波次拉长为原来的 1.3 倍（间隔在 WaveManager 里按难度缩放）
+  if (difficulty <= 0) {
+    return waves.map((wave) => (Array.isArray(wave)
+      ? wave.map((cell) => {
+          if (!Array.isArray(cell)) return cell;
+          const [cardId, count, ...rest] = cell;
+          if (Number(cardId) !== 18) return cell;
+          const next = Math.max(1, Math.floor((Number(count) || 1) / 2));
+          return [cardId, next, ...rest];
+        })
+      : wave));
+  }
 
   let out = mirrorLanes(waves);
   // 最终关是"双线会合"（route 2），按怪物线那侧处理。
@@ -269,6 +282,8 @@ export function applyAdventureDifficulty(stage, waves) {
  */
 export const ADVENTURE_REINFORCE_ALIVE_CAP = Object.freeze({
   [MINE_CARD_ID]: Object.freeze({ 1: 5, 2: 5, 3: 5 }),   // 普通/困难/噩梦 都是场上最多 5
+  // 2026-10-12 用户：花生神射手最多存在数量要限一下（简单更严）
+  18: Object.freeze({ 0: 2, 1: 3, 2: 3, 3: 3 }),
 });
 
 /**

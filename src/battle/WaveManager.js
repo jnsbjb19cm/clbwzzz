@@ -1,4 +1,19 @@
 import { WAVE_FIRST_DELAY, WAVE_INTERVAL, getAttackCooldown } from './BattleConfig.js';
+
+// 2026-10-12 用户：简单难度所有波次拉长为原来的 1.3 倍。
+// 只影响简单(difficulty 0)；普通/困难/噩梦保持原节奏。
+const SIMPLE_WAVE_STRETCH = 1.3;
+function isSimpleStage(stage) {
+  const a = stage?.adventure;
+  if (!a) return false;
+  return (Number(a.difficulty) || 0) === 0;
+}
+function waveIntervalFor(stage) {
+  return WAVE_INTERVAL * (isSimpleStage(stage) ? SIMPLE_WAVE_STRETCH : 1);
+}
+function waveFirstDelayFor(stage) {
+  return WAVE_FIRST_DELAY * (isSimpleStage(stage) ? SIMPLE_WAVE_STRETCH : 1);
+}
 import { buildEnemyStageRoster } from './EnemyStageRoster.js';
 import { adventureWaveTemplate } from '../data/AdventureCampaign.js';
 import { adventureWaveInterval, adventureDripSpawn, adventureSubwavePlan } from '../data/AdventureStageDesign.js';
@@ -25,9 +40,9 @@ export class WaveManager {
       this.done = false;
       this.totalWaves = Infinity;
       this.waveCount = 0;
-      this.nextBuildTime = WAVE_FIRST_DELAY;
+      this.nextBuildTime = waveFirstDelayFor(this.stage);
       this.appendAdventureCycle();
-      this.nextWaveHint = WAVE_FIRST_DELAY;
+      this.nextWaveHint = waveFirstDelayFor(this.stage);
       return;
     }
     this.roster = buildEnemyStageRoster(stage, db, { randomMode });
@@ -37,13 +52,13 @@ export class WaveManager {
     this.queue = this.buildQueue();
     this.done = false;
     this.totalWaves = Infinity;
-    this.nextWaveHint = WAVE_FIRST_DELAY;
+    this.nextWaveHint = waveFirstDelayFor(this.stage);
     this.waveCount = 9;
   }
 
   buildQueue() {
     const waves = [];
-    let time = WAVE_FIRST_DELAY;
+    let time = waveFirstDelayFor(this.stage);
 
     // Enemy planting: all selected defensive types are placed at their configured columns.
     for (let index = 0; index < Math.min(6, this.defenses.length); index++) {
@@ -76,7 +91,7 @@ export class WaveManager {
         isBoss: false,
         col: entry.col,
       });
-      time += WAVE_INTERVAL;
+      time += waveIntervalFor(this.stage);
     }
 
     if (!this.stage.adventure) waves.push({
@@ -89,7 +104,7 @@ export class WaveManager {
       lane: 2,
       col: 11,
     });
-    this.nextBuildTime = time + WAVE_INTERVAL + 4;
+    this.nextBuildTime = time + waveIntervalFor(this.stage) + 4;
     return waves;
   }
 
@@ -130,7 +145,7 @@ export class WaveManager {
         lane: 2,
         col: 11,
       });
-      time += WAVE_INTERVAL + 2;
+      time += waveIntervalFor(this.stage) + 2;
       this.waveCount++;
     }
 
@@ -148,7 +163,7 @@ export class WaveManager {
         isBoss: false,
         col: entry.col,
       });
-      time += WAVE_INTERVAL;
+      time += waveIntervalFor(this.stage);
     }
 
     this.nextBuildTime = time;
