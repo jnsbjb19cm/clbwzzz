@@ -60,11 +60,11 @@ const SHOP_ITEMS = [
   { cat:'货币', name:'经验大礼包',   desc:'打开获得5,000经验值',   price:5000,  icon:'🧪', effect:{type:'inventory',realId:60022,count:1} },
   { cat:'货币', name:'体力药水·大',  desc:'使用后恢复100点体力',   price:4000,  icon:'🧪', effect:{type:'inventory',realId:60023,count:1} },
 
-  { cat:'强化', name:'一级强化粉×10', desc:'用于强化1级卡牌（10个/6000金）',  price:6000,  icon:'✦', effect:{type:'inventory',realId:10001,count:10} },
-  { cat:'强化', name:'二级强化粉×10', desc:'用于强化2级卡牌（10个/12000金）', price:12000, icon:'✦', effect:{type:'inventory',realId:10002,count:10} },
-  { cat:'强化', name:'三级强化粉×5',  desc:'用于强化3级卡牌（5个/30000金）',  price:30000, icon:'✦', effect:{type:'inventory',realId:10003,count:5} },
-  { cat:'强化', name:'四级强化粉×6',  desc:'用于强化4级卡牌（6个/39999金）',  price:39999, icon:'✦', effect:{type:'inventory',realId:10004,count:6} },
-  { cat:'强化', name:'五级强化粉×5',  desc:'用于强化5级卡牌（5个/49999金）',  price:49999, icon:'✦', effect:{type:'inventory',realId:10005,count:5} },
+  { cat:'强化', name:'一级强化粉×10', desc:'用于强化1级卡牌（10个/3000金）',  price:3000,  icon:'✦', effect:{type:'inventory',realId:10001,count:10} },
+  { cat:'强化', name:'二级强化粉×10', desc:'用于强化2级卡牌（10个/6000金）', price:6000, icon:'✦', effect:{type:'inventory',realId:10002,count:10} },
+  { cat:'强化', name:'三级强化粉×5',  desc:'用于强化3级卡牌（5个/15000金）',  price:15000, icon:'✦', effect:{type:'inventory',realId:10003,count:5} },
+  { cat:'强化', name:'四级强化粉×6',  desc:'用于强化4级卡牌（6个/20000金）',  price:20000, icon:'✦', effect:{type:'inventory',realId:10004,count:6} },
+  { cat:'强化', name:'五级强化粉×5',  desc:'用于强化5级卡牌（5个/25000金）',  price:25000, icon:'✦', effect:{type:'inventory',realId:10005,count:5} },
 
   { cat:'材料', name:'一级宝石×4',   desc:'制作卡牌材料（4个/1500金）',   price:1500,  icon:'💎', effect:{type:'inventory',realId:50011,count:4} },
   { cat:'材料', name:'二级宝石×4',   desc:'制作卡牌材料（4个/3000金）',   price:3000,  icon:'💎', effect:{type:'inventory',realId:50012,count:4} },
