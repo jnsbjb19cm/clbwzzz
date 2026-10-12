@@ -185,6 +185,7 @@ body.battle-immersive .game-container #hand.reference-battle-hand.video-battle-h
 body.battle-immersive .game-container #hand.reference-battle-hand.video-battle-hand.transparent-battle-hand .slot-cost img {
   width: 32% !important; height: 90% !important; object-fit: contain !important; flex: 0 0 32% !important;
 }
+body.battle-immersive .game-container #hand.reference-battle-hand.video-battle-hand.transparent-battle-hand .slot-cost b { display:inline-flex !important; align-items:center !important; justify-content:center !important; min-width:16px !important; height:22px !important; font-family:SimSun,'宋体',serif !important; font-size:16px !important; line-height:22px !important; font-weight:400 !important; -webkit-font-smoothing:none !important; }
 body.battle-immersive .game-container #hand.reference-battle-hand.video-battle-hand.transparent-battle-hand .slot-function {
   width: 100% !important; height: 90% !important; display: flex !important; position: static !important;
   border: 0 !important; border-radius: 0 !important; padding: 0 !important; background: none !important;

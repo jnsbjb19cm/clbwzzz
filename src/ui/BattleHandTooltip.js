@@ -1,11 +1,10 @@
 import { calculateCardStats, normalizeBattleCraftQuality } from '../battle/CardStatFormula.js';
 import { COLS, LANES, roundBattleAmount } from '../battle/BattleConfig.js';
 import { resolveCraftQuality } from '../core/constants.js';
-import { paintTooltipBitmapText } from './TooltipBitmapText.js';
 
 const escape = value => String(value ?? '').replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;').replaceAll('"', '&quot;');
 const number = value => String(roundBattleAmount(Number(value) || 0));
-const text = (value, className = '') => `<span class="${className}" data-bitmap-text>${escape(value)}</span>`;
+const text = (value, className = '') => `<span class="${className}">${escape(value)}</span>`;
 
 // Read-only preview: same formula and talent rounding as BattleUnit/deploy.
 export function battleHandPreview(view, index) {
@@ -81,7 +80,7 @@ export function bindBattleHandTooltip(view, hand) {
     const html = markup(preview, Number(active.dataset.handIdx));
     if (html !== lastMarkup) {
       lastMarkup = html; tip.innerHTML = html;
-      paintTooltipBitmapText(tip).then(() => { if (tip) position(); });
+      position();
     }
     position();
   };

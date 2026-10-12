@@ -6,6 +6,31 @@ export function loadTooltipBitmapFont() {
   ]).then(([meta, image]) => ({meta, image})).catch(error => { atlasPromise = null; throw error; });
 }
 
+export async function paintBattleCostBitmapText(root) {
+  const elements = [...(root?.querySelectorAll?.('[data-bitmap-cost]') ?? [])];
+  let font;
+  try { font = await loadTooltipBitmapFont(); } catch { return; }
+  for (const element of elements) {
+    if (!element.isConnected || element.querySelector('canvas')) continue;
+    const text = String(element.dataset.bitmapCost ?? element.textContent ?? '');
+    const chars = Array.from(text);
+    const glyph = ch => font.meta.glyphs[ch.codePointAt(0)];
+    if (chars.some(ch => !glyph(ch))) continue;
+    const advance = ch => glyph(ch)?.[6] ?? 16;
+    const canvas = document.createElement('canvas');
+    canvas.width = Math.max(1, chars.reduce((sum, ch) => sum + advance(ch), 0));
+    canvas.height = font.meta.lineHeight;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) continue;
+    ctx.imageSmoothingEnabled = false;
+    let x = 0;
+    for (const ch of chars) { const g = glyph(ch); if (g?.[2] && g?.[3]) ctx.drawImage(font.image, g[0], g[1], g[2], g[3], x + g[4], font.meta.baseline - g[5], g[2], g[3]); x += advance(ch); }
+    ctx.globalCompositeOperation = 'source-in'; ctx.fillStyle = getComputedStyle(element).color || '#fff'; ctx.fillRect(0, 0, canvas.width, canvas.height);
+    canvas.style.width = `${canvas.width}px`; canvas.style.height = `${canvas.height}px`; canvas.className = 'battle-cost-bitmap'; canvas.setAttribute('aria-hidden', 'true');
+    element.replaceChildren(canvas);
+  }
+}
+
 export function wrapTooltipText(value, limit = 14) {
   return String(value ?? '').split(/\r?\n/).flatMap(paragraph => {
     const chars = Array.from(paragraph);

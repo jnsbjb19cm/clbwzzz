@@ -3,7 +3,7 @@ import { gameSettings } from '../core/GameSettingsStore20260910.js';
 import { calculateCardStats } from '../battle/CardStatFormula.js';
 import { formatBattleAmount } from '../battle/BattleConfig.js';
 import { formatCraftCardName, resolveCraftQuality } from '../core/constants.js';
-import { paintTooltipBitmapText, wrapTooltipText } from './TooltipBitmapText.js';
+import { wrapTooltipText } from './TooltipBitmapText.js';
 const esc = value => String(value ?? '').replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
 
 export function classicCardTooltipMarkup(card, instance = {}) {
@@ -25,7 +25,6 @@ export function classicCardTooltipMarkup(card, instance = {}) {
 
 export function renderClassicCardTooltip(tooltip, card, instance = {}) {
   tooltip.innerHTML = classicCardTooltipMarkup(card, instance);
-  paintTooltipBitmapText(tooltip);
 }
 
 export function installClassicCardTooltip(app) {

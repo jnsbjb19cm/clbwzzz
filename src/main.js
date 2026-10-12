@@ -247,10 +247,13 @@ import './ui/ClassicReferenceScreens20261005.css';
 import './ui/GlassBattleCards20261010.css';
 // 2026-10-11 用户：战斗内手牌卡槽要竖长方形（宽窄、高长）—— 见该模块头注释（为什么只能用内联样式）
 import { installBattleHandSlotShape20261011 } from './ui/BattleHandSlotShape20261011.js';
+// 2026-10-12：（临时）BOSS 战卡顿排查探针 —— 定位完成后删掉这一行与对应文件即可
+import { installBattlePerfProbe20261012 } from './ui/BattlePerfProbe20261012.js';
 // 2026-09-11：暴露应用实例，供联机排障/自动化与旧补丁(PvpDropNotice)使用。
 globalThis.__clbwzAppInstance = app;
 const roomUtilityOverlay = new RoomUtilityOverlay(app);
 roomUtilityOverlay.install();
 // 2026-10-11 用户：「算了现改为回去」→ 手牌卡槽恢复原始布局（模块保留但不再安装）
 // installBattleHandSlotShape20261011();
+installBattlePerfProbe20261012();
 app.mount();
