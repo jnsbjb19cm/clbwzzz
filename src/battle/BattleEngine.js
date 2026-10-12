@@ -2674,7 +2674,7 @@ export class BattleEngine {
       return;
     }
     // 2026-10-12 用户：跳字动画时长延长约 20%（1.2 -> 1.44）
-    this.floats.push({ lane, col, amount: amt, life: 1.9, y: 0, targetUid, createdAt: this.time });
+    this.floats.push({ lane, col, amount: amt, life: 2.09, y: 0, targetUid, createdAt: this.time });
     // 卡牌多时浮字数量上限（超出丢最旧，避免每帧渲染大量伤害数字卡顿）
     if (this.floats.length > 40) this.floats.splice(0, this.floats.length - 40);
   }
