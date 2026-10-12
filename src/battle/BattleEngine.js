@@ -67,8 +67,6 @@ const SWALLOW_READY_DELAY = 3;
 // 2026-10-11 用户：怪物吸尘器消化时间 25 秒 → **56 秒**
 // 2026-10-12 用户：怪物吸尘器吸收时间应为 58s（此前 56s）
 const SWALLOW_DIGEST_SECONDS = 58;
-// 2026-10-12：魅惑持续时间（秒）—— 到期后目标归还原阵营（用户：不能永久魅惑）
-const CHARM_DURATION_SECONDS = 10;
 /** attacking 动画里身体最鼓的那一帧（像素统计：default 平均 4684 → 第 35 帧 5812 ≈ +24% 峰值） */
 const SWALLOW_PUFF_FRAME = 35;
 /** 空中"碰到"的判定距离（格）：两个非自爆飞行单位最多互相靠到 ~1.0 格 */
@@ -928,18 +926,6 @@ export class BattleEngine {
       this.processBattleTick();
     }
 
-    // 2026-10-12：魅惑到期 -> 归还原阵营（限时效果，不再永久 ✗）
-    for (const u of this.units) {
-      if (u && u._charmed && u._charmUntil && this.time >= u._charmUntil) {
-        u._charmed = false;
-        u._charmUntil = 0;
-        if (u._charmOriginTeam) {
-          u.team = u._charmOriginTeam;
-          u._charmOriginTeam = null;
-        }
-        this.pushLog(`[${u.name}]魅惑效果结束，回到原阵营`);
-      }
-    }
     this.updateUnitMovement(dt);
     this.updateProjectiles(dt);
     this.updateFloats(dt);
@@ -1387,11 +1373,10 @@ export class BattleEngine {
     if (!v) return false;
     unit._charmCdUntil = this.time + 2;
     audio.playSfx('sound/effect/fire/c53.mp3', { tier: 'subtle' });
-    v._charmOriginTeam = v.team;
+    // 2026-10-12 用户澄清：魅惑是**永久**的（之前误改成限时 ✗）—— 但仍**只魅惑一个目标** ✔
     v.team = unit.team;
     v._charmed = true;
-    v._charmUntil = this.time + CHARM_DURATION_SECONDS;
-    this.pushLog(`[${unit.name}]魅惑 ${v.name} → 加入我方（${CHARM_DURATION_SECONDS}秒）`);
+    this.pushLog(`[${unit.name}]魅惑 ${v.name} → 永久加入我方`);
     return true;
   }
 
@@ -2673,7 +2658,8 @@ export class BattleEngine {
       existing.amount = roundBattleAmount(existing.amount + amt);
       return;
     }
-    this.floats.push({ lane, col, amount: amt, life: 1.2, y: 0, targetUid, createdAt: this.time });
+    // 2026-10-12 用户：跳字动画时长延长约 20%（1.2 -> 1.44）
+    this.floats.push({ lane, col, amount: amt, life: 1.44, y: 0, targetUid, createdAt: this.time });
     // 卡牌多时浮字数量上限（超出丢最旧，避免每帧渲染大量伤害数字卡顿）
     if (this.floats.length > 40) this.floats.splice(0, this.floats.length - 40);
   }
