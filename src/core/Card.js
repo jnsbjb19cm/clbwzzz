@@ -66,7 +66,11 @@ export class Card {
 
   /** 是否为可收集的士兵/技能卡 */
   isCollectible() {
-    return this.visible && this.id < 500 && !this.isExperienceCard;
+    // 2026-10-12 用户反馈：补全卡会把「怪物冷萃机」(126) 也补发，
+    // 之后战团又被判定为「有未拥有的卡牌」——因为它是敌方机制卡，服务端不认。
+    // 根因：126 的 show_card=1 让它通过了 visible 判定（Card.js 里还给它硬编码 quality=6）。
+    // 规则统一为：**只有 1~5 级才是玩家可拥有的卡**（与 constants.js / ResetForgeView 的写法一致）。
+    return this.visible && this.id < 500 && !this.isExperienceCard && this.quality <= 5;
   }
 
   /** 背包可以保存普通卡牌和经验材料卡，但经验材料卡不能出战。 */
