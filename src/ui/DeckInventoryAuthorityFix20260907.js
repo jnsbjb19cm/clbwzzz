@@ -110,10 +110,30 @@ function updateSnapshotDeck(deckNo, cardIds) {
   deck.cards = cardIds.map((cardId, slotIndex) => ({ slotIndex, cardId }));
 }
 
+// 2026-10-12：服务端玩家快照里的权威卡表（player.js 保存战团时就是按它校验的）
+// 拿不到时返回 null —— 此时不过滤，保持原行为，避免误删合法卡。
+function ownedCardIdSet() {
+  const cards = authStore?.snapshot?.cardInventory?.cards;
+  if (!Array.isArray(cards)) return null;
+  const set = new Set();
+  for (const entry of cards) {
+    const id = Number(entry?.cardId ?? entry);
+    if (Number.isInteger(id) && id > 0) set.add(id);
+  }
+  return set;
+}
+
 function queueDeckSave(deckNo, cardIds, entries = null) {
   if (!authStore?.isLoggedIn?.() || deckNo < 0 || deckNo > 3) return Promise.resolve();
   const key = deckCacheKey(deckNo);
-  const requestedIds = [...cardIds];
+  // 2026-10-12：只发"服务端确实拥有"的卡 —— 否则服务端会 403（player.js:160）
+  // （客户端本地库存可能比服务端多，比如本地补卡/未同步时；这里做最后一道收口）
+  const ownedIds = ownedCardIdSet();
+  const requestedIds = ownedIds ? [...cardIds].filter((id) => ownedIds.has(Number(id))) : [...cardIds];
+  if (ownedIds && requestedIds.length !== cardIds.length) {
+    const dropped = [...cardIds].filter((id) => !ownedIds.has(Number(id)));
+    console.warn('[deck] 保存前过滤掉未拥有的卡：' + dropped.join(',') + '（原 ' + cardIds.length + ' 张 → 现 ' + requestedIds.length + ' 张）');
+  }
   const signature = requestedIds.join(',');
   // 2026-10-11：把实例（品质/星级）一起发给服务端入库；没有 entries 时按纯 id 兜底。
   const requestedEntries = Array.isArray(entries) && entries.length
