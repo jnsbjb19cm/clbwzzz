@@ -52,10 +52,13 @@ export function installBattleAttackTimingCalibrationFinal() {
   const oldAttackRelease = unitAnimPlayer.resolveAttackReleaseDelay.bind(unitAnimPlayer);
 
   unitAnimPlayer.resolveAttackDuration = function calibratedAttackDuration(unit, explicitDuration) {
-    if (explicitDuration != null) return explicitDuration;
-    const state = pickAttackState(this, unit);
-    const anim = state ? this.ready.get(String(unit?.res))?.meta?.animations?.[state] : null;
-    return anim?.frames?.length ? attackDuration(anim, 3.5) : oldAttackDuration(unit, explicitDuration);
+    // 2026-10-13 修复"攻击动画抽搐"：原来这里**自己又选一次攻击动画键**（pickAttackState，
+    // 按血量选 attacking_XX）并自己算时长，与播放器实际的 pickAnimState/effectiveFrameRate
+    // 可能选出不同的动画 → 引擎以为的时长 ≠ 真实播放时长 → _attackAnimUntil 提前到期 →
+    // 动画播一半被切回 default（末帧→首帧回弹）= 抽搐。
+    // 现在**统一交给播放器**的原实现（它内部已按同一套 effectiveFrameRate 计算，
+    // 并且攻击动画同样会被提升到 >=24fps），保证"引擎时长 == 播放时长"。
+    return oldAttackDuration(unit, explicitDuration);
   };
 
   unitAnimPlayer.resolveAnimationDuration = function calibratedAnimationDuration(unit, state, fallback = 1.5) {
