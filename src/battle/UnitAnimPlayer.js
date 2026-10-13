@@ -1,4 +1,5 @@
 const metaCache = new Map();
+import { loadSharedImage, loadSharedAssetJson } from '../core/SharedImageAssets20261013.js';
 import { presentationFrame } from './UnitFramePresentation.js';
 /** loadAnimPack 完成后立即可用，避免 preload 判定过严导致 ready 为空 */
 const resolvedPacks = new Map();
@@ -113,23 +114,17 @@ function compactRuntimeStateSheetUrl(res, state) {
 }
 
 function loadImage(url) {
-  return new Promise((resolve) => {
-    const image = new Image();
-    image.onload = () => resolve(image);
-    image.onerror = () => resolve(null);
-    image.src = url;
-  });
+  return loadSharedImage(url);
 }
 
 async function loadTunnelStateSheet(res) {
   if (!TUNNEL_RUNTIME_SHEET_RES.has(String(res))) return null;
   try {
-    const [response, sheet] = await Promise.all([
-      fetch(tunnelStateMetaUrl(res)),
+    const [runtime, sheet] = await Promise.all([
+      loadSharedAssetJson(tunnelStateMetaUrl(res)),
       loadImage(tunnelStateSheetUrl(res)),
     ]);
-    if (!response.ok || !sheet) return null;
-    const runtime = await response.json();
+    if (!runtime || !sheet) return null;
     if (!runtime?.animation?.frames?.length) return null;
     return {
       sheet,
@@ -147,9 +142,8 @@ async function loadTunnelStateSheet(res) {
 async function loadCompactRuntimeStateSheets(res) {
   if (!COMPACT_RUNTIME_STATE_SHEET_RES.has(String(res))) return null;
   try {
-    const response = await fetch(compactRuntimeMetaUrl(res));
-    if (!response.ok) return null;
-    const runtime = await response.json();
+    const runtime = await loadSharedAssetJson(compactRuntimeMetaUrl(res));
+    if (!runtime) return null;
     const entries = Object.entries(runtime?.animations ?? {})
       .filter(([, animation]) => animation?.frames?.length);
     if (!entries.length) return null;
@@ -244,9 +238,8 @@ async function loadAnimPack(res) {
 
   const promise = (async () => {
     try {
-      const resp = await fetch(animUrl(key));
-      if (!resp.ok) return null;
-      const meta = await resp.json();
+      const meta = await loadSharedAssetJson(animUrl(key));
+      if (!meta) return null;
       const [tunnelStateSheet, compactRuntime] = await Promise.all([
         loadTunnelStateSheet(key),
         loadCompactRuntimeStateSheets(key),
@@ -279,6 +272,7 @@ async function loadAnimPack(res) {
   })();
 
   metaCache.set(key, promise);
+  promise.then(pack => { if (!pack) metaCache.delete(key); });
   return promise;
 }
 
@@ -895,7 +889,14 @@ export class UnitAnimPlayer {
 
     const frameDur = 1 / effectiveFrameRate(anim, state);
     const effFrames = getEffectiveAnimFrames(anim);
-    let fi = shouldLoopUnitAnimation(state, anim)
+    // 2026-10-13 修复"攻击动画回弹"：攻击类动画**不循环**。
+    // 原因：帧号用 clock/frameDur 取模，只要攻击窗口(_attackAnimUntil)略长于动画本身，
+    // 帧号就会绕回 0（末帧→首帧）—— 这就是肉眼看到的"明显回弹"。
+    // 攻击/特殊动作播完应停在末帧（下面那个 Math.min(effFrames-1, ...) 分支就是为此）。
+    const isAttackAnim = state === 'attacking'
+      || state === 'secondAttackStatus'
+      || String(state ?? '').startsWith('attack_');
+    let fi = (shouldLoopUnitAnimation(state, anim) && !isAttackAnim)
       ? (Math.floor(clock / frameDur) % effFrames)
       : Math.min(effFrames - 1, Math.max(0, Math.floor(clock / frameDur)));
     // 2026-10-10（玩家反馈「以前好久版本前蘑菇仙人下面的小蘑菇还会不灵不灵地动」）：
