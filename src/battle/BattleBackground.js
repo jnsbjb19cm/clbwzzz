@@ -135,7 +135,12 @@ export function resolveBattleBackground(
   // 冒险关也会被 mapBg_res / 房间 roll 留下的全局 window.__pvpMapScene 改掉场景
   // （典型症状：刚在房间 roll 到冰川，接着打冒险 4-2 就变成冰背景 ✗）。
   // 现在只在**真 PVP/房间**里才采用地图指定场景；冒险/普通 PVE 一律走默认（草原）。
-  const explicitScene = pvpMode
+  // 2026-10-13 铁闸：只要关卡是冒险关（stage.adventure 存在），就**绝不**采用 PVP/房间的场景覆盖。
+  // 根因：有调用方传的是宽松的 pvpMode（如 BattlefieldFullscreenRepair 的 Boolean(view?.pvp)），
+  // 从房间回到冒险后残留的 pvp 对象会被当成 PVP → 冒险关跟着房间最后 roll 的地图跑
+  //（症状：4-1~4-4 全是冰川、最终关火焰、怪物线 4-3 远古密林）。
+  const sceneOverrideAllowed = Boolean(pvpMode) && !stage?.adventure;
+  const explicitScene = sceneOverrideAllowed
     ? ((typeof window !== 'undefined' && window.__pvpMapScene)
         ? String(window.__pvpMapScene)
         : MAP_BG_RES_TO_SCENE[Number(stage?.mapBg_res)])

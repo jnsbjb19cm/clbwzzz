@@ -70,7 +70,9 @@ function installGeometry(root, view) {
   );
   const bossScene = bossId
     ? resolveBattleBackground(view?.engine?.stage, {
-        pvpMode: Boolean(view?.pvp),
+        // 2026-10-13：原来这里缺 mode 判断，冒险战斗里残留的 pvp 对象会被当成 PVP
+        // （配合 BattleBackground 的铁闸双保险）
+        pvpMode: Boolean(view?.pvp) && view?.pvp?.mode !== 'pve',
         bossId,
       })
     : null;
