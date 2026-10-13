@@ -1519,6 +1519,11 @@ export class BattleView {
     // 2026-10-13：暴露引擎句柄，便于用控制台诊断战斗数值（攻击间隔等）。
     // 用法：__clbwzAtkInfo() 会打印每个单位：攻速档位 -> 冷却 / 攻击动画时长 / 最终间隔
     if (typeof globalThis !== 'undefined') globalThis.__clbwzEngine = this.engine;
+    // 2026-10-13：非 PVP 战斗开始时清掉上一局房间/PVP 留下的场景标记，
+    // 否则冒险关会继承上一局 PVP 的地图（症状：冒险 4-2 变成冰川）。
+    if (!this.pvpMode && !this.trainingMode && typeof window !== 'undefined') {
+      try { delete window.__pvpMapScene; } catch { /* 忽略 */ }
+    }
     this.lastTs = performance.now();
     this.lastWallClockMs = Date.now();
     void guardBattlePromise('pve.preload', {

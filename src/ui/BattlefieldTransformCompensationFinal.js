@@ -106,7 +106,15 @@ const SCENE_COLUMN_PAIR = {
   beach: '/battle/background/leftbeach.png',
   temple: '/battle/background/lefttemple.png',
 };
+// 2026-10-13 用户：冒险/普通 PVE 一律草原，不能吃 PVP 残留。
+// 本文件的柱子在非 PVP 战斗里也会跑，之前直接读 window.__pvpMapScene（房间 roll 后不会清）
+// 与 [data-round3-scene]（PVP 绘制器写进 DOM 的属性）—— 于是打完 PVP 再打冒险，
+// 冒险关的左右基地柱会变成上一局 PVP 的地图（典型：4-2 变冰川）。
+function isPvpBattleActive() {
+  try { return document?.body?.classList?.contains('pvp-battle-active') === true; } catch { return false; }
+}
 function currentColumnScene() {
+  if (!isPvpBattleActive()) return null;   // 非 PVP：不使用 PVP 残留场景 ✔
   const dom = document?.querySelector?.('[data-round3-scene]')?.dataset?.round3Scene ?? null;
   if (dom && SCENE_COLUMN_PAIR[dom]) return dom;
   const g = String(window?.__pvpMapScene || '');
