@@ -1,8 +1,10 @@
 import { normalizeCraftQuality } from '../core/constants.js';
+import { gameSettings } from '../core/GameSettingsStore20260910.js';
 import { BattleRenderer } from '../battle/BattleRenderer.js';
+import { QUALITY_DISC_WIDTH } from '../battle/unitDisplayTuning.js';
 
 const INSTALL_FLAG = Symbol.for('clbwz.battleQualityHaloFix20260908');
-const DISPLAY_WIDTH = 112;
+const DISPLAY_WIDTH = QUALITY_DISC_WIDTH;
 const CACHE_WIDTH = 448;
 // Literal URLs let Vite include and fingerprint all five original PNGs.
 const QUALITY_IMAGES = {
@@ -54,7 +56,12 @@ export function preloadQualityDiscMaterial() {
 }
 
 export function paintQualityDisc(ctx, cx, cy, quality) {
-  const sprite = bakedPedestals.get(normalizeCraftQuality(quality));
+  // 2026-10-13 用户：开关默认关闭 -> 劣质(1)/普通(2) 不画品质底座；精品(3)及以上照常显示。
+  // 放在这里是因为本函数是**唯一收口**：BattleQualityHaloFix(本文件) 与 BattleUnitHaloFinal
+  // 两个绘制点都调用它 —— 在这里拦一次，任何新增绘制点也自动受控。
+  const __quality = normalizeCraftQuality(quality);
+  if (!(gameSettings.get('showLowQualityPedestal') === true) && __quality <= 2) return;
+  const sprite = bakedPedestals.get(__quality);
   if (sprite) {
     ctx.drawImage(sprite.image, cx - sprite.width / 2, cy - sprite.height / 2,
       sprite.width, sprite.height);
