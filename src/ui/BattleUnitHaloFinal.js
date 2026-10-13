@@ -8,6 +8,7 @@ import { scheduleBattleAttackTimingCalibrationFinal } from './BattleAttackTiming
 import { scheduleProjectileLaunchOwnershipFinal } from './ProjectileLaunchOwnershipFinal.js';
 import { reassertBattleStatusFxPerformanceFinal } from './BattleStatusFxPerformanceFinal.js';
 import { paintQualityDisc } from './BattleQualityHaloFix20260908.js';
+import { gameSettings } from '../core/GameSettingsStore20260910.js';
 
 const PATCH_FLAG = Symbol.for('clbwzzz.battleUnitHaloFinal');
 
@@ -30,9 +31,14 @@ export function drawCraftQualityPedestal(ctx, unit, layout) {
   // 会把 bootstrap 阶段 installBattleQualityHaloFix20260908 设的 drawUnitHalo（那个才是
   // 画**真图** resources/img/quality-*.png 的实现）覆盖掉 —— 所以玩家一直看不到品质圆盘图。
   // 现在在这里先把真图画上（居中于 (cx, footY+1)，尺寸 112x84），下面的几何图形退化为底层光晕。
-  try {
-    paintQualityDisc(ctx, Number(layout.cx) || 0, (Number(layout.footY) || 0) + 1, unit?.craftQuality ?? 1);
-  } catch { /* 真图还没加载好：下面的几何底座先顶上 */ }
+  // 2026-10-13 用户：开关默认关闭 -> 劣质(1)/普通(2) 不画品质底座；精品及以上照常。
+  const _qualityForPedestal = Number(unit?.craftQuality) || 1;
+  const _showLowPedestal = gameSettings.get('showLowQualityPedestal') === true;
+  if (_showLowPedestal || _qualityForPedestal > 2) {
+    try {
+      paintQualityDisc(ctx, Number(layout.cx) || 0, (Number(layout.footY) || 0) + 1, _qualityForPedestal);
+    } catch { /* 真图还没加载好：下面的几何底座先顶上 */ }
+  }
   const quality = normalizeCraftQuality(unit?.craftQuality);
   const color = resolveCraftQuality(quality).color;
   const { r, g, b } = parseHexColor(color);

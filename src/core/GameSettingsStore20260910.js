@@ -18,6 +18,11 @@ export const GAME_SETTINGS_DEFAULTS = Object.freeze({
   graphicsQuality: 'medium',
   /** 战斗内飘出伤害数字。默认关（与改动前的观感一致）。 */
   showDamageNumbers: false,
+  /**
+   * 2026-10-13 用户：是否显示「普通 / 劣质」品质底座。
+   * 默认关（= 不画）：劣质(1) / 普通(2) 的单位不画品质圆盘；精品(3) 及以上照常显示。
+   */
+  showLowQualityPedestal: false,
   /** 战斗内显示单位血条。默认开。 */
   showUnitHp: true,
   /** FPS / 性能面板。默认关。 */

@@ -42,6 +42,7 @@ export class SettingsView {
     const settings = authStore.snapshot?.settings ?? {};
     const showCardName = settings.showCardName === false ? false : true;
     const silhouette = gameSettings.get('gallerySilhouetteUnowned') === true;
+    const showLowPedestal = gameSettings.get('showLowQualityPedestal') === true;
     const fxScale = Number(gameSettings.get('fullscreenFxScale')) || GAME_SETTINGS_DEFAULTS.fullscreenFxScale;
     const unitNames = readUnitNameFlag();
     const bagAuto = readBagAutoOrganizeFlag();
@@ -86,6 +87,7 @@ export class SettingsView {
             <h3>界面</h3>
             <label class="gset-row gset-row-check">显示卡牌名称<input id="setting-names" type="checkbox" ${showCardName ? 'checked' : ''} /></label>
             <label class="gset-row gset-row-check">图鉴：未获得的卡显示为剪影<input id="setting-gallery-silhouette" type="checkbox" ${silhouette ? 'checked' : ''} /></label>
+            <label class="gset-row gset-row-check">显示普通/劣质品质底座<input id="setting-low-pedestal" type="checkbox" ${showLowPedestal ? 'checked' : ''} /></label>
             <label class="gset-row gset-row-check">背包自动整理<input id="setting-bag-auto" type="checkbox" ${bagAuto ? 'checked' : ''} /></label>
             <p class="gset-hint">关闭剪影时（默认）未获得的卡也正常显示立绘；背包自动整理会在打开背包时按品质/等级排序。</p>
           </div>
@@ -205,6 +207,9 @@ export class SettingsView {
 
     root.querySelector('#setting-gallery-silhouette').addEventListener('change', (e) => {
       gameSettings.set('gallerySilhouetteUnowned', e.target.checked);
+    });
+    root.querySelector('#setting-low-pedestal')?.addEventListener('change', (e) => {
+      gameSettings.set('showLowQualityPedestal', e.target.checked);
     });
 
     root.querySelector('#setting-bag-auto').addEventListener('change', (e) => {

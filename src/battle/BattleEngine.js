@@ -2739,7 +2739,15 @@ export class BattleEngine {
   initUnitSpawnFade(unit, { preload = true } = {}) {
     if (unit.atk > 0) {
       unit.firstAttackReadyAt = this.time + (unit.isRanged() ? 1 : 0);
-      unit.atkTimer = 0;
+      // 2026-10-13（用户 ④）：保留"瞬发首攻"，但**原版的首次攻击计时器不再重复触发**。
+      // 原来这里每次调用都 atkTimer = 0 —— 只要 initUnitSpawnFade 被重复调用
+      //（预加载路径 preload=true 也会走到这里），冷却就会被反复清零，
+      // 于是两套机制各打一枪 -> 单位攻击抽搐。
+      // 现在只在**首次真正出生**时清零一次（_spawnFadeInitialized 记账）。
+      if (!unit._spawnFadeInitialized) {
+        unit._spawnFadeInitialized = true;
+        unit.atkTimer = 0;
+      }
     }
     unit._spawnFadeDur = 0.28;
     unit._spawnFadeStart = null;
