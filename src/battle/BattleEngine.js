@@ -807,6 +807,17 @@ export class BattleEngine {
   }
 
   placeEnemyUnit(card, lane, isBoss = false, preferredCol = null) {
+    // 2026-10-13 用户：蘑菇仙人(58) "最大存在 3 个"没生效 —— 查代码发现
+    // spawnEnemy() 里那份上限只覆盖"波次/滴灌"那条路，而这里是**另一条**出怪路径
+    //（new BattleUnit 直接入队，没有任何上限判定）→ 从这里出的怪能绕过上限。
+    // 现在把上限判定下沉到本函数（所有敌方出怪的底层入口），任何路径都不可能再超上限。
+    if (this.stage?.adventure && !isBoss) {
+      const cap = adventureReinforceAliveCap(this.stage, card?.id);
+      if (cap != null) {
+        const aliveCount = this.units.filter((u) => u.alive && u.team === 'enemy' && Number(u.cardId) === Number(card.id)).length;
+        if (aliveCount >= cap) return false;
+      }
+    }
     const isMovable = card.moveSpeed > 0;
     // 不可移动(防御/放置型)单位：优先放配置列(如核桃卫兵在敌方最前排 col 7)，
     // 指定列被占则就近找空位；可移动单位忽略配置列，从后排出生。

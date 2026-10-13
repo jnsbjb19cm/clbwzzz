@@ -1516,7 +1516,7 @@ body.battle-immersive .top-ui {
 
 .deck-slot.unavailable {
   opacity: 0.72;
-  filter: grayscale(0.25);
+  filter: brightness(0.62) saturate(0.9);
 }
 
 .deck-slot .slot-meta {
