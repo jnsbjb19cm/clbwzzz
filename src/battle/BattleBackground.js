@@ -131,9 +131,15 @@ export function resolveBattleBackground(
   // 优先级：BOSS 指定 > 关卡/房间自带的地图 id > PVP 随机
   // （2026-10-11：新增中间这一档，房间 roll 出来的地图才会真正生效 ✔）
   let sceneKey = 'grass';
-  const explicitScene = (typeof window !== 'undefined' && window.__pvpMapScene)
-    ? String(window.__pvpMapScene)
-    : MAP_BG_RES_TO_SCENE[Number(stage?.mapBg_res)];
+  // 2026-10-13 用户："冒险模式统一草原不动" —— 之前这里没区分玩法，
+  // 冒险关也会被 mapBg_res / 房间 roll 留下的全局 window.__pvpMapScene 改掉场景
+  // （典型症状：刚在房间 roll 到冰川，接着打冒险 4-2 就变成冰背景 ✗）。
+  // 现在只在**真 PVP/房间**里才采用地图指定场景；冒险/普通 PVE 一律走默认（草原）。
+  const explicitScene = pvpMode
+    ? ((typeof window !== 'undefined' && window.__pvpMapScene)
+        ? String(window.__pvpMapScene)
+        : MAP_BG_RES_TO_SCENE[Number(stage?.mapBg_res)])
+    : null;
   if (bossId) {
     sceneKey = BOSS_SCENE[bossId] || 'grass';
   } else if (explicitScene && SCENE_SETS[explicitScene]) {

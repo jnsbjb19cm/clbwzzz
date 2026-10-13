@@ -1516,6 +1516,9 @@ export class BattleView {
   }
 
   startLoop() {
+    // 2026-10-13：暴露引擎句柄，便于用控制台诊断战斗数值（攻击间隔等）。
+    // 用法：__clbwzAtkInfo() 会打印每个单位：攻速档位 -> 冷却 / 攻击动画时长 / 最终间隔
+    if (typeof globalThis !== 'undefined') globalThis.__clbwzEngine = this.engine;
     this.lastTs = performance.now();
     this.lastWallClockMs = Date.now();
     void guardBattlePromise('pve.preload', {
