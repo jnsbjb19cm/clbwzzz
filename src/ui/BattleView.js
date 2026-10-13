@@ -41,6 +41,7 @@ import {
   pointerToCol,
   pointerToLane,
   TRAINING_STAGE_VALUE,
+  TICK_INTERVAL,
 } from '../battle/BattleConfig.js';
 import { calculateCardStats } from '../battle/CardStatFormula.js';
 import { resolveBattleBackground, COLUMN_RIGHT_W } from '../battle/BattleBackground.js';
@@ -74,7 +75,11 @@ import { gameSettings } from '../core/GameSettingsStore20260910.js';
 
 const SKILL_HOTKEY_INDEX = { q: 0, w: 1, e: 2, r: 3, t: 4, y: 5 };
 const MAX_SIMULATION_CATCHUP_SECONDS = 2;
-const CATCHUP_STEP_SECONDS = 0.05;
+// 2026-10-13 修复"攻击间隔 bug"：引擎内部一律按固定步长 TICK_INTERVAL(0.155) 扣冷却
+//（tryAttack: unit.atkTimer -= TICK_INTERVAL），而这里原来用的是 0.05 ——
+// 每步只推进 0.05s，却扣掉 0.155s 的冷却 → 冷却速度快 3.1 倍 → 攻击间隔变成 1/3。
+// 现在把模拟步长与引擎的 TICK_INTERVAL 对齐（代码注释里本来就是 @ TICK_INTERVAL=0.155）。
+const CATCHUP_STEP_SECONDS = TICK_INTERVAL;
 
 function advanceCooldownMap(cooldowns, elapsed) {
   if (!cooldowns || elapsed <= 0) return;
@@ -83,13 +88,23 @@ function advanceCooldownMap(cooldowns, elapsed) {
   }
 }
 
+// 2026-10-13：固定步长累加器（修"攻击间隔 bug"）。引擎内部按固定步长 TICK_INTERVAL 扣冷却，
+// 这里必须只喂**整步**，不足一步的余量留到下一帧。
+let battleStepRemainder = 0;
+
 function advanceBattleByWallTime(engine, elapsedSeconds) {
   const elapsed = Math.max(0, Number(elapsedSeconds) || 0);
   let simulated = Math.min(elapsed, MAX_SIMULATION_CATCHUP_SECONDS);
-  while (simulated > 0.000001) {
-    const step = Math.min(CATCHUP_STEP_SECONDS, simulated);
-    engine.tick(step);
-    simulated -= step;
+  // 2026-10-13 修复（攻击间隔 bug）：原来这里最后一次会喂一个"余数步"（例如 0.02s），
+  // 而引擎内部（tryAttack: unit.atkTimer -= TICK_INTERVAL）永远按固定 0.155 扣冷却 ——
+  // 等于每帧白送约 0.135s 冷却，60fps 下每秒多扣 ~8 秒，攻击间隔于是忽快忽慢/抽搐。
+  // 现在用累加器：不足一整步的余量留到下一帧，引擎只会收到 CATCHUP_STEP_SECONDS 的整步。
+  battleStepRemainder = Math.min(battleStepRemainder + simulated, 1);   // 上限 1s，防掉帧后堆积
+  let steps = 0;
+  while (battleStepRemainder >= CATCHUP_STEP_SECONDS && steps < 64) {
+    engine.tick(CATCHUP_STEP_SECONDS);
+    battleStepRemainder -= CATCHUP_STEP_SECONDS;
+    steps += 1;
   }
 
   const passive = Math.max(0, elapsed - MAX_SIMULATION_CATCHUP_SECONDS);
