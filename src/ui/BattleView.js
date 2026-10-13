@@ -1522,7 +1522,38 @@ export class BattleView {
     // 2026-10-13：非 PVP 战斗开始时清掉上一局房间/PVP 留下的场景标记，
     // 否则冒险关会继承上一局 PVP 的地图（症状：冒险 4-2 变成冰川）。
     if (!this.pvpMode && !this.trainingMode && typeof window !== 'undefined') {
+      // 2026-10-13：非 PVP 战斗开战时，把上一局 PVP/房间 留下的**一切场景痕迹**清干净。
+      // 背景的真正落地规则是（src/style.css）：
+      //   body.battle-immersive .battle-game-wrap.battle-scene { background-image: var(--bg-grass); }
+      // 而 PVP 画图器会给--bg-grass 写火焰/冰川图并且**不会清**，于是冒险关一直显示上一局的地图。
       try { delete window.__pvpMapScene; } catch { /* 忽略 */ }
+      try {
+        const bg = resolveBattleBackground(this.engine?.stage, {
+          trainingMode: this.trainingMode,
+          pvpMode: false,
+          bossId: null,
+          trainingMap: this.trainingMap,
+        });
+        const grassUrl = `url('${bg.baseUrl}')`;
+        const roots = [
+          this.viewRoot?.querySelector?.('.battle-game-wrap'),
+          this.viewRoot?.querySelector?.('.game-container'),
+          document.documentElement,
+        ].filter(Boolean);
+        for (const el of roots) {
+          el.removeAttribute?.('data-round3-scene');
+          el.classList?.remove?.('battle-scene', 'ice-reference-preview');
+          el.style?.removeProperty?.('--bg-map');
+          el.style?.removeProperty?.('--bg-left');
+          el.style?.removeProperty?.('--bg-right');
+          el.style?.removeProperty?.('--ice-back-url');
+          el.style?.removeProperty?.('--ice-left-url');
+          el.style?.removeProperty?.('--ice-right-url');
+          // 关键：把草地图写回"真正被 CSS 读的那个变量"
+          el.style?.setProperty?.('--bg-grass', grassUrl);
+          el.style?.setProperty?.('--bg-base', grassUrl);
+        }
+      } catch { /* 清理失败不影响开战 */ }
     }
     this.lastTs = performance.now();
     this.lastWallClockMs = Date.now();
