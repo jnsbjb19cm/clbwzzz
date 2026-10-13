@@ -194,6 +194,14 @@ body:is(.battle-immersive, .pvp-battle-active) .game-container #hand.reference-b
 }
 body:is(.battle-immersive, .pvp-battle-active) .game-container #hand.reference-battle-hand .deck-slot.state-cooling .slot-state-badge,
 body:is(.battle-immersive, .pvp-battle-active) .game-container #hand.reference-battle-hand .deck-slot.state-cooling .slot-cd { display: none !important; }
+/* 2026-10-13 用户：冷却中的卡牌**不应变灰，只应压暗**。
+   原来这里是 grayscale(1)（完全去色），而且本文件是最后一个加载的 CSS(#55)，
+   它的 !important 覆盖了其它文件里所有同类规则 —— 这就是"改了没生效"的原因。 */
+body:is(.battle-immersive, .pvp-battle-active) .game-container #hand.reference-battle-hand .deck-slot.state-cooling:not(.locked) {
+  filter: brightness(.62) !important;   /* 只压暗，不去色 ✔ */
+  opacity: 1 !important;
+  transition-property: transform, border-color, box-shadow !important;
+}
 body:is(.battle-immersive, .pvp-battle-active) .game-container #hand.reference-battle-hand .deck-slot.state-cooling .slot-cd-mask {
   display: block !important; position: absolute !important;
   left: 0 !important; right: 0 !important; top: 0 !important; bottom: auto !important;
