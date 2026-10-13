@@ -75,6 +75,10 @@ export class BattleUnit {
     this.attackingBase = false;
     this.renderX = col;
     this.renderY = lane;
+    // Only the first attack changes; subsequent attacks retain their own cadence.
+    if (this.atk > 0) {
+      this.atkTimer = this.isRanged() ? 1 : 0;
+    }
   }
 
   isMovable() {
@@ -159,7 +163,10 @@ export class BattleUnit {
   }
 
   isParabola() {
-    return this.atkStyle === 3 || this.cardId === 72 || this.name.includes('椰子');
+    // 2026-10-13：atkStyle 5（弱对空，玉米炮手/幼小玉米专用档）与 3 一样是**抛物线**弹道，
+    // 区别只在"是否无脑优先打空中"（见 BattleEngine.chooseTarget）。
+    // （之前漏了这一条，导致玉米炮手/幼小玉米的子弹从抛物线变成了直线 ✗）
+    return this.atkStyle === 3 || this.atkStyle === 5 || this.cardId === 72 || this.name.includes('椰子');
   }
 
   takeDamage(amount, now = 0) {
