@@ -139,13 +139,18 @@ export function resolveBattleBackground(
   // 根因：有调用方传的是宽松的 pvpMode（如 BattlefieldFullscreenRepair 的 Boolean(view?.pvp)），
   // 从房间回到冒险后残留的 pvp 对象会被当成 PVP → 冒险关跟着房间最后 roll 的地图跑
   //（症状：4-1~4-4 全是冰川、最终关火焰、怪物线 4-3 远古密林）。
-  const sceneOverrideAllowed = Boolean(pvpMode) && !stage?.adventure;
+  // 2026-10-13 用户（明确要求）：冒险大陆**没有 BOSS**，而且**固定是草地地图**。
+  // 所以冒险关在这里**直接短路成草地** —— 不看 bossId、不看 mapBg_res、不看窗口残留。
+  const isAdventureStage = Boolean(stage?.adventure);
+  const sceneOverrideAllowed = Boolean(pvpMode) && !isAdventureStage;
   const explicitScene = sceneOverrideAllowed
     ? ((typeof window !== 'undefined' && window.__pvpMapScene)
         ? String(window.__pvpMapScene)
         : MAP_BG_RES_TO_SCENE[Number(stage?.mapBg_res)])
     : null;
-  if (bossId) {
+  if (isAdventureStage) {
+    sceneKey = 'grass';
+  } else if (bossId) {
     sceneKey = BOSS_SCENE[bossId] || 'grass';
   } else if (explicitScene && SCENE_SETS[explicitScene]) {
     sceneKey = explicitScene;
@@ -170,9 +175,9 @@ export function resolveBattleBackground(
     leftColumnUrl: `/battle/background/${scene.left}`,
     rightColumnUrl: `/battle/background/${scene.right}`,
     showLeftColumn: true,
-    showRightColumn: !isBoss,
+    showRightColumn: isAdventureStage ? true : !isBoss,   // 冒险关固定草地：右侧柱子照常显示
     columnRightW: COLUMN_RIGHT_W,
     mapIndex: 1,
-    isBoss,
+    isBoss: isAdventureStage ? false : isBoss,   // 冒险大陆没有 BOSS
   };
 }

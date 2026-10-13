@@ -170,6 +170,8 @@ function resolveCurrentBossId(view) {
 }
 
 function lockBossBattlefieldBackground(view, root) {
+  // 2026-10-13 用户：冒险大陆没有 BOSS，且固定草地 —— 冒险关绝不允许被 BOSS 背景覆盖。
+  if (view?.engine?.stage?.adventure) return;
   const bossId = resolveCurrentBossId(view);
   if (!bossId) return;
   const bg = resolveBattleBackground(view?.engine?.stage, {
