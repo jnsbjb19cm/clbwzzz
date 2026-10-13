@@ -170,7 +170,13 @@ function setBackgroundImage(element, url) {
 }
 
 function applyScene(view, snapshot = null, { force = false } = {}) {
-  if (!view?.pvp) return null;
+  // 2026-10-13 用户：冒险大陆固定草地。原来这里只判断 view.pvp —— 从房间回到冒险时
+  // 残留的 pvp 对象也会让它重画场景（写 data-round3-scene 与 --bg-grass = 上一局的地图），
+  // 而且它是在 BattleView 的清理**之后**跑的 → 界面永远变不回来。
+  const inRealPvp = Boolean(view?.pvp)
+    && view.pvp?.mode !== 'pve'
+    && !view?.engine?.stage?.adventure;
+  if (!inRealPvp) return null;
   const wrap = view.viewRoot?.querySelector?.('.battle-game-wrap');
   const game = view.viewRoot?.querySelector?.('.game-container');
   if (!(wrap instanceof HTMLElement) || !(game instanceof HTMLElement)) return null;
