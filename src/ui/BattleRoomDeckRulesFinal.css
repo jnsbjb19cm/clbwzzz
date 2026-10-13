@@ -186,7 +186,7 @@
 
 .game-room.room-deck-rules-final .drawer-card.same-name-disabled {
   cursor: not-allowed !important;
-  filter: grayscale(1) brightness(.54) !important;
+  filter: brightness(.52) !important;
   opacity: .72 !important;
 }
 

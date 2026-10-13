@@ -374,7 +374,7 @@
 
 .game-room.room-deck-ui-v3 .v3-drawer-card.same-name-disabled {
   opacity: .72 !important;
-  filter: grayscale(.72) saturate(.42) brightness(.67) !important;
+  filter: brightness(.64) !important;
   cursor: not-allowed !important;
 }
 

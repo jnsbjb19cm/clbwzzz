@@ -47,6 +47,6 @@
 
 /* 同名卡禁用只加灰膜，不能抹掉等级底色。 */
 .game-room.room-deck-ui-v3 .v3-card-grade-atlas.same-name-disabled {
-  filter: grayscale(.52) brightness(.72) !important;
+  filter: brightness(.68) !important;
   opacity: .86 !important;
 }
