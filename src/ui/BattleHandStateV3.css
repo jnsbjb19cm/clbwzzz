@@ -3,7 +3,7 @@
 /* 资源不足：明显变灰，但保留品质色、立绘轮廓、资源图标和功能信息。 */
 body.battle-immersive #hand .deck-slot.state-resource-low:not(.locked) {
   opacity: .96 !important;
-  filter: grayscale(.48) saturate(.68) brightness(.70) contrast(.98) !important;
+  filter: saturate(1) brightness(.66) contrast(1.02) !important;
 }
 
 body.battle-immersive #hand .deck-slot.state-resource-low:not(.locked)::after {
@@ -18,8 +18,8 @@ body.battle-immersive #hand .deck-slot.state-cooling:not(.locked) {
 }
 
 body.battle-immersive #hand .deck-slot.state-cooling .slot-cd-mask {
-  background: linear-gradient(180deg, rgba(220,231,235,.48), rgba(88,106,115,.60)) !important;
-  backdrop-filter: brightness(.84) saturate(.88) !important;
+  background: linear-gradient(180deg, rgba(10,14,18,.32), rgba(4,6,9,.56)) !important;
+  backdrop-filter: brightness(.76) saturate(1) !important;
 }
 
 body.battle-immersive #hand .deck-slot.state-cooling .slot-portrait,

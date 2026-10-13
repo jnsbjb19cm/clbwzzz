@@ -219,7 +219,7 @@ body.battle-immersive .top-ui .slots-container {
 
 #hand.video-battle-hand .deck-slot.unavailable:not(.locked) {
   opacity: 1;
-  filter: grayscale(.58) brightness(.72);
+  filter: brightness(.68);
 }
 
 #hand.video-battle-hand .slot-face {

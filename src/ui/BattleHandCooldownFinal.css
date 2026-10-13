@@ -80,11 +80,11 @@ body.battle-immersive #hand .deck-slot.state-cooling .slot-cd-mask {
   z-index: 12 !important;
   border-top: 1px solid rgba(225, 244, 252, .94) !important;
   background:
-    linear-gradient(180deg, rgba(231, 239, 241, .52), rgba(92, 117, 127, .62)) !important;
+    linear-gradient(180deg, rgba(10, 14, 18, .34), rgba(4, 6, 9, .58)) !important;
   box-shadow:
     inset 0 2px 4px rgba(255,255,255,.26),
     0 -1px 2px rgba(31, 76, 96, .35) !important;
-  backdrop-filter: brightness(.82) saturate(.84) !important;
+  backdrop-filter: brightness(.74) saturate(1) !important;
   mix-blend-mode: normal !important;
   transition: height .06s linear !important;
 }
@@ -121,7 +121,7 @@ body.battle-immersive #hand .deck-slot .slot-state-badge {
 /* 资源不足：整张卡压暗变灰，但仍保留轮廓、消耗与功能图标。 */
 body.battle-immersive #hand .deck-slot.state-resource-low:not(.locked) {
   opacity: .93 !important;
-  filter: grayscale(.86) saturate(.38) brightness(.58) contrast(.96) !important;
+  filter: saturate(1) brightness(.56) contrast(1.02) !important;
 }
 
 body.battle-immersive #hand .deck-slot.state-resource-low:not(.locked)::after {
