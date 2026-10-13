@@ -1083,6 +1083,15 @@ export class BattleEngine {
     if (traits.preferFlying || Number(unit.atkStyle) === 3) {
       const flying = enemies.filter((e) => e.unit.isFlying());
       if (flying.length) candidates = flying;
+    } else if (Number(unit.atkStyle) === 5) {
+      // 2026-10-12 用户：玉米炮手/幼小玉米的对空**削弱** —— 单独一档(5=弱对空)：
+      // 不再"有空中单位就优先打"，只有**空中目标本来就是最近目标**时才让它优先。
+      // 这样它们仍能对空（atk_style 3/5 是唯一能打到空中的方式），但不再无脑集火空中。
+      const flying = enemies.filter((e) => e.unit.isFlying());
+      if (flying.length) {
+        const nearest = candidates.reduce ? candidates.reduce((a, b) => (a && a.dist <= b.dist ? a : b), null) : null;
+        if (nearest && nearest.unit?.isFlying?.()) candidates = flying;
+      }
     }
     // 黑暗精灵/暗影法师：直接攻击同行最远的1个敌方单位
     let best;
@@ -1454,6 +1463,7 @@ export class BattleEngine {
   }
 
   tryAttack(unit) {
+    if (this.time + 1e-9 < (unit.firstAttackReadyAt ?? -Infinity)) return false;
     if ((unit.resetBlindUntil || 0) > this.time && unit.isRanged?.()) return false;
     if (unit.cardId === COLD_BREW_CARD_ID) return attackColdBrew(this, unit, TICK_INTERVAL);
     if (unit.atk <= 0) return false;
@@ -2716,6 +2726,10 @@ export class BattleEngine {
   }
 
   initUnitSpawnFade(unit, { preload = true } = {}) {
+    if (unit.atk > 0) {
+      unit.firstAttackReadyAt = this.time + (unit.isRanged() ? 1 : 0);
+      unit.atkTimer = 0;
+    }
     unit._spawnFadeDur = 0.28;
     unit._spawnFadeStart = null;
     if (!preload) {
