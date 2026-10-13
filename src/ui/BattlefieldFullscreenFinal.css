@@ -36,7 +36,7 @@ body.battle-immersive .battle-game-wrap.battle-fullscreen-final {
   position: fixed !important;
   inset: 0 !important;
   isolation: isolate !important;
-  background-color: #9fd4ec !important;
+  background-color: var(--ice-back-color, #9fd4ec) !important;
   background-image: var(--ice-back-url) !important;
   background-repeat: no-repeat !important;
   background-position: 50% 50% !important;

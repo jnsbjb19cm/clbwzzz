@@ -79,8 +79,15 @@ function installGeometry(root, view) {
 
   // 背景/柱子按场景（PVP dice 随机 / 默认黄沙）：grass=草地+蘑菇柱，ice=冰川+冰柱，rock=黄沙+岩柱
   // BOSS 的稳定身份优先于普通 PVP 随机场景，避免晚到的布局刷新把多特覆盖回黄沙。
-  const scene = bossScene?.sceneKey
-    || (mapScene === 'ice' ? 'ice' : mapScene === 'grass' ? 'grass' : 'rock');
+  // 2026-10-13 用户要求：**冒险大陆固定草地**。本模块自带场景表，之前不看冒险规则，
+  // 而且会读 view.pvp.mapScene / viewport.dataset.bossId 这些**上一局残留**，
+  // 于是从房间回来后冒险关被画成冰川/黄沙（而且它是用 !important 的 CSS 变量落地，
+  // 所以别处改了也看不出来 —— 这就是"界面还是没变"的原因）。
+  const isAdventureStage = Boolean(view?.engine?.stage?.adventure);
+  const scene = isAdventureStage
+    ? 'grass'
+    : (bossScene?.sceneKey
+      || (mapScene === 'ice' ? 'ice' : mapScene === 'grass' ? 'grass' : 'rock'));
   const back = scene === 'ice' ? 'backice' : scene === 'grass' ? 'grassbg' : 'backrock';
   const left = scene === 'ice' ? 'leftice' : scene === 'grass' ? 'mushroomleft' : 'leftrock';
   const right = scene === 'ice' ? 'rightice' : scene === 'grass' ? 'mushroomright' : 'rightrock';
@@ -90,6 +97,8 @@ function installGeometry(root, view) {
   const rightUrl = bossScene?.rightColumnUrl || `/battle/background/${right}.png`;
   viewport.classList.add('ice-reference-preview');
   viewport.style.setProperty('--ice-back-url', `url(${backUrl})`);
+  // 兜底色跟着场景走：草地时用草绿，避免图未加载时露出冰蓝 (#9fd4ec)
+  viewport.style.setProperty('--ice-back-color', scene === 'grass' ? '#7bbf5a' : (scene === 'ice' ? '#9fd4ec' : '#cbb17a'));
   viewport.style.setProperty('--ice-left-url', `url(${leftUrl})`);
   viewport.style.setProperty('--ice-right-url', `url(${rightUrl})`);
 
