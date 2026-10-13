@@ -173,7 +173,8 @@ export class WaveManager {
 
   appendAdventureCycle() {
     // 2026-10-09：2-4 / 3-4 波次稍微延后（关卡级覆盖，其它关仍是 WAVE_INTERVAL）
-    const interval = adventureWaveInterval(this.stage) ?? WAVE_INTERVAL;
+    const interval = (adventureWaveInterval(this.stage) ?? WAVE_INTERVAL)
+      * (isSimpleStage(this.stage) ? SIMPLE_WAVE_STRETCH : 1);   // 简单难度 ×1.3
     // 2026-10-09：4-2 把一波拆成小波（每小波最多 N 个，小波之间 gapSec 秒）
     const subwave = adventureSubwavePlan(this.stage);
     for (const [index, entries] of this.adventureTemplate.entries()) {
