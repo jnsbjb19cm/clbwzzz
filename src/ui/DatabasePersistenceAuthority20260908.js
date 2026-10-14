@@ -3,6 +3,7 @@ import { BagView } from './BagView.js';
 import { ShopView } from './ShopView.js';
 import { audio } from '../core/AudioManager.js';
 import { emitQuestEvent } from '../core/QuestEventBus.js';
+import { cardInstanceIdentity } from '../core/CardInstanceIdentity.js';
 
 const PATCH_FLAG = Symbol.for('clbwz.databasePersistenceAuthority20260908');
 const FUNCTIONAL_CARD_ITEMS = new Set([80,81,82,83,84,85,86,87,88,89,90,91]);
@@ -208,29 +209,72 @@ function installBagAuthority() {
 
   // 80~91 功能道具的卡牌效果和道具扣除必须在一个服务器事务中完成。
   BagView.prototype._applyCardEffect = function applyCardEffectDatabaseAuthority20260908(itemId, itemSlotIndex, slot, card, extra) {
-    const targetSlotIndex = this.cardInventory?.getSlots?.().indexOf(slot) ?? -1;
-    const sourceSlotIndex = extra?.sourceSlot
+    const store = this.cardInventory;
+    if (store?._cardActionPending) return '卡牌正在保存，请勿重复使用';
+    let targetSlotIndex = this.cardInventory?.getSlots?.().indexOf(slot) ?? -1;
+    let sourceSlotIndex = extra?.sourceSlot
       ? this.cardInventory?.getSlots?.().indexOf(extra.sourceSlot) ?? -1
       : -1;
     const itemSlot = this.inventory?.getSlots?.()[itemSlotIndex];
     if (!FUNCTIONAL_CARD_ITEMS.has(Number(itemId))) return '该功能道具暂不支持';
+    if (targetSlotIndex < 0) return '卡牌列表已更新，请重新选择';
     if (Number(itemId) === 90 && !String(extra?.name || '').trim()) return '请输入新名称';
     if (Number(itemId) === 89 && (sourceSlotIndex < 0 || sourceSlotIndex === targetSlotIndex)) return '请选择两张不同的卡牌';
 
     const root = this.__databaseAuthorityRoot;
-    void authStore.api.post('/player/cards/use-functional-item', {
+    const expectedTarget = cardInstanceIdentity(slot);
+    const expectedSource = extra?.sourceSlot ? cardInstanceIdentity(extra.sourceSlot) : null;
+    const token = authStore.token;
+    store._cardActionPending = true;
+    const pending = store._remoteCardInventoryQueue ?? Promise.resolve();
+    store._remoteCardInventoryQueue = pending.then(async () => {
+      if (store._remoteCardInventoryError) throw store._remoteCardInventoryError;
+      if (token !== authStore.token) throw new Error('账号已切换，请重新选择卡牌');
+      // 2026-10-14 修复（用户：升阶/洗练报 400、还洗到别的卡）:
+      // 服务端会按【槽位号】读行，并用 expectedTarget（卡牌实例身份）比对；
+      // 只要客户端卡表与服务端不一致（补卡/排序后尤其常见），槽位就会指到别的卡上 -> 400。
+      // 这里先拉一次服务端权威卡表并应用，然后**按身份**重新定位目标槽位（不再靠旧下标）。
+      try {
+        const fresh = await authStore.api.get('/player/card-inventory');
+        if (fresh && typeof store.applyServerSnapshot === 'function') store.applyServerSnapshot(fresh);
+        if (globalThis.__clbwzAuthStore && globalThis.__clbwzAuthStore.snapshot) {
+          globalThis.__clbwzAuthStore.snapshot.cardInventory = fresh;
+        }
+      } catch { /* 刷新失败就继续按本地走，服务端仍会校验 */ }
+      {
+        const slotsNow = store.getSlots() || [];
+        const hit = slotsNow.findIndex((s) => s && cardInstanceIdentity(s) === expectedTarget);
+        if (hit < 0) throw new Error('卡牌列表已更新，请重新选择，未消耗道具');
+        targetSlotIndex = hit;
+        if (expectedSource) {
+          const hitSrc = slotsNow.findIndex((s) => s && cardInstanceIdentity(s) === expectedSource);
+          if (hitSrc < 0) throw new Error('用于转移的卡牌已变化，请重新选择');
+          sourceSlotIndex = hitSrc;
+        }
+      }
+      if (cardInstanceIdentity(store.getSlots()[targetSlotIndex]) !== expectedTarget
+        || (expectedSource && cardInstanceIdentity(store.getSlots()[sourceSlotIndex]) !== expectedSource)) {
+        throw new Error('卡牌列表已更新，请重新选择，未消耗道具');
+      }
+      return authStore.api.post('/player/cards/use-functional-item', {
       itemId: Number(itemId),
       targetSlotIndex,
       sourceSlotIndex,
+      expectedTarget,
+      expectedSource,
       name: String(extra?.name || '').trim(),
       bound: Boolean(itemSlot?.bound),
+      });
     }).then((data) => {
+      if (token !== authStore.token) return;
       applyServerData(this, data);
       this.selectedIndex = -1;
       if (root?.isConnected) this.refresh(root);
       if (root?.isConnected) this.toast(root, data.message || '功能道具使用成功');
     }).catch((error) => {
       if (root?.isConnected) this.toast(root, error?.message || '功能道具使用失败');
+    }).finally(() => {
+      store._cardActionPending = false;
     });
     return '正在保存…';
   };
