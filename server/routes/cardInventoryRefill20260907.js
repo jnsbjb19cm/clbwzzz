@@ -1,4 +1,7 @@
 import { withTransaction } from '../database.js';
+// 未开放卡（与服务端一致）：126 = 怪物冷萃机，以后才上线
+const UNRELEASED_CARD_IDS = new Set([126]);
+
 import { getPvpCardDb } from '../battle/PvpCardDb.js';
 import { readCardInventory } from './cardInventoryPersistence20260906.js';
 
@@ -22,7 +25,13 @@ export async function refillCollectibleCardsHandler(req, res) {
 
   const collectibleIds = getPvpCardDb().cards
     // “补全卡”只补白~金卡；红卡（原始 card_quality=6）保留为正常获取内容。
-    .filter((card) => card?.isCollectible?.() && Number(card.card_quality ?? card.quality) < 6)
+    // 2026-10-14 用户反馈"补完卡再改品质，补的卡没了"：
+    // 根因是本过滤与服务端/客户端不一致 —— 原来按 < 6 排除，于是 55(战争古树)/118(狂暴法师)
+    // 这类 quality=6 的卡**只有客户端有**；一旦某次服务端同步（改品质那条路）回写卡表，
+    // 本地这几张就被覆盖没了。
+    // 现在改为与客户端同一套规则：可收藏 && **不在未开放名单**（其它一律补），
+    // 这样两边卡表完全一致，任何同步都不会再"吃掉"卡。
+    .filter((card) => card?.isCollectible?.() && !UNRELEASED_CARD_IDS.has(Number(card.id)))
     .map((card) => Number(card.id))
     .filter((id) => Number.isInteger(id) && id > 0);
 
