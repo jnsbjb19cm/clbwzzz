@@ -78,6 +78,8 @@ if (typeof document !== 'undefined' && !document.querySelector('#smithy-craft-pr
  * 以及最后的 import(main.js) 全都没执行，整个游戏起不来。
  * 现在每个补丁单独 try/catch：坏的只坏它自己，并在控制台留下带名字的报错。
  */
+import { installDiamondRechargeQuiz } from './ui/DiamondRechargeQuiz20261014.js';
+
 function installSafely(label, install) {
   try {
     install();
@@ -104,6 +106,8 @@ globalThis.__clbwzIconOf = (card) => {
 installSafely('installPlayerStorageScope', () => installPlayerStorageScope());
 // 2026-10-10：资源预加载（登录页预热轻量资源 + 进房间的精灵动画加载界面）。
 installSafely('installAssetPreloadUi20261010', () => installAssetPreloadUi20261010());
+// 2026-10-14：大厅「钻石充值」→ 一键充值（免费提示）/ 做题充值（11408 题库，周上限 600）
+installSafely('installDiamondRechargeQuiz', () => installDiamondRechargeQuiz());
 
 installSafely('installTrainingBaseThreatFix20260905', () => installTrainingBaseThreatFix20260905());
 installSafely('installEconomyInventoryRules20260905', () => installEconomyInventoryRules20260905());
