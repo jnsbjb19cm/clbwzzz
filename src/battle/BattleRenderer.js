@@ -21,6 +21,7 @@ import {
   resolveCraftQuality,
 } from '../core/constants.js';
 import { SpriteAtlas, calcFootAnchor } from '../core/SpriteAtlas.js';
+import { loadSharedImage, loadSharedAssetJson } from '../core/SharedImageAssets20261013.js';
 import { isEffectivelyFlying, unitAnimPlayer } from './UnitAnimPlayer.js';
 import { drawFullScreenSkillFx, skillAnimPlayer } from './SkillAnimPlayer.js';
 import { shouldDrawUnitHpBar } from '../core/BattleClientFlags20260910.js';
@@ -472,18 +473,11 @@ export class BattleRenderer {
     if (this.bulletAnimLoading.has(key)) return this.bulletAnimLoading.get(key);
     const bust = 'bullet-20260802b';
     const pending = Promise.all([
-      fetch(`/sprites/bullets/anim/${key}.json?v=${bust}`)
-        .then((r) => (r.ok ? r.json() : null))
-        .catch(() => null),
-      new Promise((resolve) => {
-        const image = new Image();
-        image.onload = () => resolve(image);
-        image.onerror = () => resolve(null);
-        image.src = `/sprites/bullets/anim/${key}.png?v=${bust}`;
-      }),
+      loadSharedAssetJson(`/sprites/bullets/anim/${key}.json?v=${bust}`),
+      loadSharedImage(`/sprites/bullets/anim/${key}.png?v=${bust}`),
     ]).then(([meta, sheet]) => {
       const pack = meta && sheet ? { meta, sheet } : null;
-      this.bulletAnims.set(key, pack);
+      if (pack) this.bulletAnims.set(key, pack);
       this.bulletAnimLoading.delete(key);
       return pack;
     });
@@ -529,18 +523,11 @@ export class BattleRenderer {
     if (this.fxLoading.has(name)) return this.fxLoading.get(name);
     const bust = 'fx-20260802';
     const pending = Promise.all([
-      fetch(`/sprites/unit_anim/${name}.json?v=${bust}`)
-        .then((r) => (r.ok ? r.json() : null))
-        .catch(() => null),
-      new Promise((resolve) => {
-        const image = new Image();
-        image.onload = () => resolve(image);
-        image.onerror = () => resolve(null);
-        image.src = `/sprites/unit_anim/${name}.png?v=${bust}`;
-      }),
+      loadSharedAssetJson(`/sprites/unit_anim/${name}.json?v=${bust}`),
+      loadSharedImage(`/sprites/unit_anim/${name}.png?v=${bust}`),
     ]).then(([meta, sheet]) => {
       const pack = meta && sheet ? { meta, sheet } : null;
-      this.fxPacks.set(name, pack);
+      if (pack) this.fxPacks.set(name, pack);
       this.fxLoading.delete(name);
       return pack;
     });
@@ -562,21 +549,25 @@ export class BattleRenderer {
 
   requestSprite(res) {
     const key = String(res);
-    if (this.spriteCache.has(key) || this.loadingRes.has(key)) return;
+    if (this.spriteCache.get(key)) return Promise.resolve(this.spriteCache.get(key));
+    if (this.loadingRes.has(key)) return SpriteAtlas.loadUnit(key);
     this.loadingRes.add(key);
-    SpriteAtlas.loadUnit(key).then((img) => {
-      this.spriteCache.set(key, img);
+    return SpriteAtlas.loadUnit(key).then((img) => {
+      if (img) this.spriteCache.set(key, img);
       this.loadingRes.delete(key);
+      return img;
     });
   }
 
   requestBullet(res) {
     const key = String(res);
-    if (this.bulletCache.has(key) || this.loadingBullets.has(key)) return;
+    if (this.bulletCache.get(key)) return Promise.resolve(this.bulletCache.get(key));
+    if (this.loadingBullets.has(key)) return SpriteAtlas.loadBullet(key);
     this.loadingBullets.add(key);
-    SpriteAtlas.loadBullet(key).then((img) => {
-      this.bulletCache.set(key, img);
+    return SpriteAtlas.loadBullet(key).then((img) => {
+      if (img) this.bulletCache.set(key, img);
       this.loadingBullets.delete(key);
+      return img;
     });
   }
 
@@ -613,7 +604,8 @@ export class BattleRenderer {
     await Promise.all(
       PART_SPRITES.map(async (name) => {
         if (!this.partsCache.has(name)) {
-          this.partsCache.set(name, await SpriteAtlas.loadPart(name));
+          const image = await SpriteAtlas.loadPart(name);
+          if (image) this.partsCache.set(name, image);
         }
       }),
     );
@@ -635,17 +627,17 @@ export class BattleRenderer {
     ]);
     if (!this.bulletCache.has('default')) {
       const defaultBullet = await SpriteAtlas.loadBullet('default');
-      this.bulletCache.set('default', defaultBullet);
+      if (defaultBullet) this.bulletCache.set('default', defaultBullet);
     }
     await Promise.all(
       [...resSet].map(async (res) => {
         const key = String(res);
         if (!this.spriteCache.has(key)) {
-          this.spriteCache.set(key, await SpriteAtlas.loadUnit(key));
+          await this.requestSprite(key);
           this.loadingRes.delete(key);
         }
         if (!this.bulletCache.has(key)) {
-          this.bulletCache.set(key, await SpriteAtlas.loadBullet(key));
+          await this.requestBullet(key);
           this.loadingBullets.delete(key);
         }
         if (CARD_FACE_OVERLAY[Number(key)] && !this.cardCache.has(key)) {

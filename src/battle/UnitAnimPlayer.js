@@ -343,6 +343,7 @@ export function isEffectivelyFlying(unit) {
 }
 
 export function shouldLoopUnitAnimation(state, anim) {
+  if (state === 'toGround' || state === 'jump') return false;
   return Boolean(anim?.loop || state === 'underMoving');
 }
 
@@ -409,8 +410,8 @@ export function resolveUnitAnimState(unit, engine) {
   if (unit._burrowTargetCol != null) return 'underMoving';
   // attackingBase 只锁定战斗位置，不代表整段攻击冷却都处于攻击动画。
   // 仅真正出手的动画窗口进入 attacking，避免 PVE/PVP 两侧基地攻击时末帧→首帧反复“回弹”。
-  if (unit._attackAnimUntil && engine.time < unit._attackAnimUntil) return 'attacking';
   if (unit._jumpUntil && engine.time < unit._jumpUntil) return 'jump';
+  if (unit._attackAnimUntil && engine.time < unit._attackAnimUntil) return 'attacking';
   if (unit.isMovable?.()) {
     const prev = unit._prevRenderX ?? unit.col;
     // 减速单位每帧位移很小，但仍应继续播放 moving，不能退回静态 default。
@@ -624,7 +625,7 @@ export class UnitAnimPlayer {
         const clockKey = `${unit.uid}:toGround`;
         const clock = this.clocks.get(clockKey) ?? 0;
         const frameDur = 1 / effectiveFrameRate(anim, 'toGround');
-        if (!anim.loop && clock >= getEffectiveAnimFrames(anim) * frameDur) {
+        if (!unit._aerialLandingRequested && clock >= getEffectiveAnimFrames(anim) * frameDur) {
           unit._aerialLanded = true;
           const ground = pickAnimState(pack, unit, resolveUnitAnimState(unit, engine));
           return { requested: 'default', state: ground ?? 'default' };
@@ -874,6 +875,13 @@ export class UnitAnimPlayer {
         frameDelta *= sourceDuration / visibleDuration;
       }
       clock += frameDelta;
+      if (state === 'toGround' && Number.isFinite(unit._aerialLandingStartedAt)
+        && unit._aerialLandingUntil > unit._aerialLandingStartedAt
+        && !(unit.frozenUntil && engine.time < unit.frozenUntil)) {
+        const progress = Math.max(0,Math.min(1,(engine.time-unit._aerialLandingStartedAt)
+          /(unit._aerialLandingUntil-unit._aerialLandingStartedAt)));
+        clock = progress * animationDuration(anim,0.72,'toGround');
+      }
       this.clocks.set(clockKey, clock);
     }
 

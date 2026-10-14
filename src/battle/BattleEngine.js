@@ -384,12 +384,14 @@ export class BattleEngine {
 
   requestAerialLanding(unit, { atBase = false } = {}) {
     if (!unit?.alive || unit.viewType !== 6 || unit._aerialLanded) return false;
+    if (atBase) unit._baseLandingRequested = true;
+    if (unit._aerialLandingRequested) return false;
     unit._aerialWasFlying = true;
     unit._aerialLandingRequested = true;
-    if (atBase) unit._baseLandingRequested = true;
+    unit._aerialLandingStartedAt = this.time;
     const duration = Math.max(
       0.45,
-      Math.min(1.2, unitAnimPlayer.resolveAnimationDuration(unit, 'toGround', 0.72)),
+      unitAnimPlayer.resolveAnimationDuration(unit, 'toGround', 0.72),
     );
     unit._aerialLandingUntil = Math.max(
       Number(unit._aerialLandingUntil) || 0,
@@ -403,6 +405,8 @@ export class BattleEngine {
     if (this.time + 1e-9 < (Number(unit._aerialLandingUntil) || 0)) return false;
     unit._aerialLanded = true;
     unit._aerialLandingRequested = false;
+    unit._baseLandingRequested = false;
+    unit._aerialWasFlying = false;
     if (Number(unit.cardId) === 45 && !unit._phantomSplitDone) {
       unit._phantomSplitDone = true;
       this.spawnPhantomCrossSplit(unit);
@@ -989,13 +993,13 @@ export class BattleEngine {
       if (unit.isFrozen(this.time) || unit.isStunned(this.time)) continue;
 
       // 蒲公英医生/精灵：常态化攻击就是治疗。
-      // battleTick 每 TICK_INTERVAL(0.155s) 走一格：32 格 = 4.96s ≈ 图鉴写的"每5秒"。
-      // 原来写 >50（=51×0.155 = 7.9 秒）和描述对不上，2026-10-07 修正。
       if (unit.cardId === 22 || unit.cardId === 36) {
-        if (this.battleTick - unit.lastHealTick > 31) {
+        unit.nextDandelionHealAt ??= this.time + 5;
+        if (this.time + 1e-9 >= unit.nextDandelionHealAt) {
+          unit.nextDandelionHealAt += 5;
           unit.lastHealTick = this.battleTick;
           const radius = unit.cardId === 22 ? 1 : 12;
-          const healed = this.doAreaHeal(unit.lane, unit.col, unit.team, 10, radius);
+          const healed = this.doAreaHeal(unit.lane, unit.col, unit.team, 5, radius);
           // 治疗即攻击：播放治疗音(addHP.mp3)+ 攻击动画
           if (healed > 0) audio.playHeal(unit);
           unitAnimPlayer.triggerAttack(unit, this);
@@ -1473,7 +1477,43 @@ export class BattleEngine {
     return true;
   }
 
+  tryStartFirstJump(unit) {
+    if (!unit?.alive || unit.specialEffect !== 5 || unit._jumpedOnce || unit.attackingBase
+      || unit.isFrozen(this.time) || unit.isStunned(this.time)
+      || this.time < (unit._attackAnimUntil || 0)) return false;
+    const dir = this.getMoveDir(unit);
+    const gridCol = this.getUnitGridCol(unit);
+    const target = this.units.find(other => other.lane === unit.lane
+      && this.blocksMovement(other, unit)
+      && (other.col - unit.col) * dir >= -0.05
+      && [gridCol, gridCol + dir].includes(this.getUnitGridCol(other)));
+    if (!target) return false;
+    const jumpCol = Math.max(0, Math.min(COLS - 1, this.getUnitGridCol(target) + dir));
+    if (jumpCol === gridCol) return false;
+    unit._jumpedOnce = true;
+    unit._jumpFromCol = unit.col;
+    unit._jumpToCol = jumpCol;
+    unit._jumpStart = this.time;
+    unit._jumpUntil = this.time + 0.9;
+    unit.renderX = unit.col;
+    unit.renderY = unit.lane;
+    audio.playSfx('jump_31', { tier: 'subtle' });
+    return true;
+  }
+
+  isNormalAttackBlockedBySpecial(unit) {
+    if (unit._jumpUntil && this.time >= unit._jumpUntil && Number.isFinite(unit._jumpToCol)) {
+      unit.col = unit._jumpToCol;
+      unit.renderX = unit.col;
+      unit._jumpUntil = 0;
+    }
+    return Boolean(unit._aerialLandingRequested || unit._baseLandingRequested
+      || (unit._jumpUntil && this.time < unit._jumpUntil)
+      || this.tryStartFirstJump(unit));
+  }
+
   tryAttack(unit) {
+    if (this.isNormalAttackBlockedBySpecial(unit)) return false;
     if (this.time + 1e-9 < (unit.firstAttackReadyAt ?? -Infinity)) return false;
     if ((unit.resetBlindUntil || 0) > this.time && unit.isRanged?.()) return false;
     if (unit.cardId === COLD_BREW_CARD_ID) return attackColdBrew(this, unit, TICK_INTERVAL);
@@ -1486,7 +1526,7 @@ export class BattleEngine {
     // 减速：攻速减半(冷却计时器递减减半)
     const slowMult = (unit.slowedUntil && this.time < unit.slowedUntil) || (unit.resetTorrentUntil || 0) > this.time ? 0.5 : 1;
     unit.atkTimer -= TICK_INTERVAL * slowMult;
-    if (unit.atkTimer > 0) return false;
+    if (unit.atkTimer > 0 || this.time < (unit._attackAnimUntil || 0)) return false;
 
     if (unit.cardId === 58) return this.tryMushroomAttack(unit);
     if (unit.cardId === 77) return this.tryInstantFrostAttack(unit);
@@ -1909,24 +1949,11 @@ export class BattleEngine {
 
       // 跳跃大耳怪(special 5)：前方一格有阻挡敌人 → 跳过一格越过首个单位(仅一次)；
       // 若落点超出战场(后面是基地)，直接跳到最后一格(COLS-1)打基地
-      if (unit.specialEffect === 5 && !unit._jumpedOnce) {
-        const aheadCol = gridCol + dir;
-        if (aheadCol >= 0 && aheadCol < COLS && this.hasBlockingEnemyInCell(unit, aheadCol)) {
-          const jumpCol = Math.max(0, Math.min(COLS - 1, aheadCol + dir));
-          if (jumpCol !== gridCol) {
-            unit._jumpedOnce = true;
-            unit._jumpFromCol = unit.col;
-            unit._jumpToCol = jumpCol;
-            unit._jumpStart = this.time;
-            unit._jumpUntil = this.time + 0.9;
-            unit.renderX = unit.col;
-            unit.renderY = unit.lane;
-            // 跳跃大耳怪：跳跃音效(jump_31.mp3)
-            audio.playSfx('jump_31', { tier: 'subtle' });
-            continue;
-          }
-        }
+      if (unit._jumpUntil && this.time >= unit._jumpUntil) {
+        unit.col = unit._jumpToCol;
+        unit._jumpUntil = 0;
       }
+      if (this.tryStartFirstJump(unit)) continue;
 
       // 停止移动判定：
       //  - 近战(射程1)：必须「接触」前方格才有敌人阻挡才停 → 走到敌人面前才攻击（修复"距离没到就攻击"）
@@ -2737,8 +2764,9 @@ export class BattleEngine {
   }
 
   initUnitSpawnFade(unit, { preload = true } = {}) {
+    if (unit.cardId === 22 || unit.cardId === 36) unit.nextDandelionHealAt ??= this.time + 5;
     if (unit.atk > 0) {
-      unit.firstAttackReadyAt = this.time + (unit.isRanged() ? 1 : 0);
+      unit.firstAttackReadyAt ??= this.time + (unit.isRanged() ? 1 : 0);
       // 2026-10-13（用户 ④）：保留"瞬发首攻"，但**原版的首次攻击计时器不再重复触发**。
       // 原来这里每次调用都 atkTimer = 0 —— 只要 initUnitSpawnFade 被重复调用
       //（预加载路径 preload=true 也会走到这里），冷却就会被反复清零，

@@ -1,0 +1,34 @@
+body .talent-tree-v2 { background: #13241c; color: #e6e9d2; padding: 18px; }
+body .talent-tree-v2 .talent-header { background: linear-gradient(100deg,#223a29,#162a20); border: 1px solid #688062; border-radius: 10px; padding: 15px 20px; color: #f3df9e; }
+body .talent-tree-v2 .talent-header h1 { color: #f3df9e; margin: 0 0 6px; font-size: 26px; }
+body .talent-tree-v2 .talent-header p { color: #aebfa6; }
+body .talent-tree-v2 .talent-tree-panel { margin-top: 12px; padding: 12px; background: #14271e; border: 1px solid #5e7657; border-radius: 10px; }
+body .talent-tree-v2 .talent-tree-viewport { height: min(76vh,850px); min-height: 430px; border: 1px solid #425b43; border-radius: 8px; background: radial-gradient(ellipse at center,#2a4530,#0c1b15 72%); overflow: hidden; }
+body .talent-tree-v2 .talent-tree-board { width: 1200px !important; height: 1200px !important; background: radial-gradient(circle at center,transparent 13%,#b7c99409 13.2%,transparent 13.5%,transparent 32%,#b7c99409 32.2%,transparent 32.5%),radial-gradient(#bed8aa16 1px,transparent 1px); background-size: auto,24px 24px; border: none !important; box-shadow: none !important; }
+body .talent-tree-v2 .talent-main-rail,body .talent-tree-v2 .talent-zone-passive,body .talent-tree-v2 .talent-legend-item.passive { display: none !important; }
+body .talent-tree-v2 .classic-talent-node { width: 62px !important; height: 62px !important; min-width: 0; padding: 5px !important; border-radius: 50% !important; border: 2px solid #829179 !important; background: radial-gradient(circle at 35% 25%,#5f7154,#14241a 80%) !important; box-shadow: 0 3px 8px #0008,inset 0 0 0 3px #111b13 !important; }
+body .talent-tree-v2 .classic-talent-node.minor { width: 38px !important; height: 38px !important; padding: 4px !important; }
+body .talent-tree-v2 .classic-talent-node > span { width: 100% !important; height: 100% !important; display: grid; place-items: center; }
+body .talent-tree-v2 .classic-talent-node > span img { max-width:100%; max-height:100%; object-fit: contain; }
+body .talent-tree-v2 .classic-talent-node strong { top: calc(100% + 5px) !important; left: 50% !important; transform: translateX(-50%); width: 105px !important; color: #c2cbb8 !important; font: 14px/18px SimSun,serif !important; text-shadow: 1px 1px 2px #000; background: none !important; }
+body .talent-tree-v2 .classic-talent-node.locked { opacity: .55; filter: saturate(.25); }
+body .talent-tree-v2 .classic-talent-node.available { opacity: 1; border-color: #8cd9a5 !important; box-shadow: 0 0 0 3px #7ed49b25,inset 0 0 0 3px #15281b !important; }
+body .talent-tree-v2 .classic-talent-node.unlocked { border-color:#f1ce79 !important; background:radial-gradient(circle at 35% 25%,#a89552,#3f4727 85%) !important; }
+body .talent-tree-v2 .classic-talent-node.unlocked strong { color: #ffe2a0 !important; }
+body .talent-tree-v2 .talent-link { stroke:#62735b !important; stroke-width:2.5 !important; opacity:.55; fill:none; }
+body .talent-tree-v2 .talent-link.unlocked { stroke:#ddc37e !important; opacity:1; }
+body .talent-tree-v2 .talent-zone-label { color:#c4d4b0 !important; background:none !important; font:20px SimSun,serif; letter-spacing:3px; opacity:.65; }
+body .talent-tree-v2 .talent-zone-north { left:50%;top:1%; }
+body .talent-tree-v2 .talent-zone-south { left:50%;top:96%; }
+body .talent-tree-v2 .talent-zone-east { left:86%;top:34%; }
+body .talent-tree-v2 .talent-zone-west { left:14%;top:34%; }
+body .talent-tree-v2 .talent-hover-card { background:#0d1a14f5 !important; border:1px solid #899977 !important; color:#eee5c9 !important; border-radius:8px; padding:14px; max-width:280px; }
+body .talent-tree-v2 .talent-tip { color:#b9c9ad; }
+body .talent-tree-v2 .talent-equipped,body .talent-tree-v2 .talent-pool { background:#1b3023; border:1px solid #4d664b; border-radius:8px; padding:14px; }
+body .talent-tree-v2 .talent-equipped h2,body .talent-tree-v2 .talent-pool h2 { color:#dfd19a; }
+body .talent-tree-v2 .talent-tree-board { background-color:#13261b !important; }
+body .talent-tree-v2 .talent-tree-board::before,
+body .talent-tree-v2 .talent-tree-board::after { display:none !important; }
+body .talent-tree-v2 .classic-talent-node strong { font-size:16px !important; width:96px !important; }
+body .talent-tree-v2 .classic-talent-node.locked { opacity:.75; }
+body .talent-tree-v2 .talent-tree-viewport { background:#101f17 !important; }

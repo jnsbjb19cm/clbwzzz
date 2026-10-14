@@ -1,9 +1,12 @@
+import levelRows from '../data/levelConfig.json' with { type: 'json' };
 export const PLAYER_LEVEL_CAP = 50;
 
 export function getExpToNextLevel(level) {
   const safeLevel = Math.max(1, Math.min(PLAYER_LEVEL_CAP, Number(level) || 1));
   if (safeLevel >= PLAYER_LEVEL_CAP) return 0;
-  return 200 + safeLevel * 100;
+  // Only the first 28 transitions are rebalanced; preserve later progression.
+  if (safeLevel > 28) return 200 + safeLevel * 100;
+  return Math.max(1, Number(levelRows.find(row => row.hero_level === safeLevel + 1)?.lvup_exp) || 200 + safeLevel * 100);
 }
 
 export function grantPlayerExp(player, amount) {

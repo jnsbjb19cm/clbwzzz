@@ -177,7 +177,7 @@ export class CardCraftSystem {
       resultCardId = this.pickRandomCard(level, target.id);
     }
 
-    const craftQuality = target.isExperienceCard ? 1 : this.rollCraftQuality(useCharm);
+    const craftQuality = target.isExperienceCard ? 2 : this.rollCraftQuality(useCharm);
     const addRes = cardInventory.addCard(resultCardId, 0, { craftQuality, strengthLv: 0 });
     if (!addRes.ok) {
       inventory.addItem(cfg.parchment, need.parchment);
@@ -265,7 +265,7 @@ export class CardCraftSystem {
       r -= w.weight;
       if (r <= 0) return w.id;
     }
-    return 1;
+    return 2;
   }
 
   getCraftQualityWeights(useCharm = false) {

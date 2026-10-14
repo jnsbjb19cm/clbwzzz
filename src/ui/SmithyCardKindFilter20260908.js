@@ -86,7 +86,7 @@ function filterCraftButtons(view, body) {
   // The old explanatory copy was left behind when the names were swapped.
   const qualityCopy = body.querySelector('.smithy-craft-quality-panel .smithy-meta');
   if (qualityCopy && qualityCopy.textContent.includes('灰·劣质')) {
-    qualityCopy.textContent = `灰·劣质 / 白·普通 / 绿·精良 / 蓝·优秀 / 紫·完美${view.useCharm ? ' · 保护符已提升高品质权重' : ''}`;
+    qualityCopy.textContent = `白·普通 / 绿·精良 / 蓝·优秀 / 紫·完美${view.useCharm ? ' · 保护符已提升高品质权重' : ''}`;
   }
   bindToolbar(view, view.root ?? body.closest?.('.page') ?? document, catalogue);
 }

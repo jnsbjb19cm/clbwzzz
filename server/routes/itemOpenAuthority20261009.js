@@ -210,7 +210,7 @@ async function freeCardSlots(conn, userId, need) {
 async function addCardInstance(conn, userId, slotIndex, cardId, expiresAt = 0) {
   await conn.run(
     'INSERT INTO player_cards(user_id,slot_index,card_id,star,craft_quality) VALUES(?,?,?,?,?)',
-    [userId, slotIndex, cardId, 0, 1],
+    [userId, slotIndex, cardId, 0, 2],
   );
   await conn.run('DELETE FROM player_card_instance_state WHERE user_id=? AND slot_index=?', [userId, slotIndex]);
   await conn.run(

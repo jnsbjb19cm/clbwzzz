@@ -1,5 +1,5 @@
 import { STARTER_DECK } from '../battle/BattleConfig.js';
-import { isCraftableCard, sanitizeCustomCardName } from './constants.js';
+import { isCraftableCard, sanitizeCustomCardName, normalizeCraftQuality } from './constants.js';
 
 const DEFAULT_SLOT_COUNT = 200;
 export const CARD_INVENTORY_STORAGE_KEY = 'clbwz_card_inventory_v1';
@@ -45,7 +45,7 @@ function normalizeSlot(slot) {
     cardId,
     star,
     strengthLv: star,
-    craftQuality: cq === 0 || cq ? Math.max(1, Math.min(5, Number(cq) || 1)) : 1,
+    craftQuality: normalizeCraftQuality(cq),
     exp: Math.max(0, Math.floor(Number(slot.exp) || 0)),
     customName: customName || null,
     awakened: Boolean(slot.awakened),
@@ -342,6 +342,9 @@ export class CardInventoryStore {
   }
 
   organize(mode = 'level') {
+    if (this._cardActionPending || this._cardRefillPending) {
+      return { ok: false, error: '卡牌正在保存，请稍后再整理' };
+    }
     // 2026-10-11：整理会重排 slots，任何"背包下标"都会错位（用户报告的「选 a 进 b」）
     // → 先留一份旧顺序，末尾据此算出「旧下标 → 新下标」映射。
     this._slotsBeforeOrganize = [...this.state.slots];
@@ -387,7 +390,7 @@ export class CardInventoryStore {
     }
     this.lastOrganizeRemap = remap;
     this.state.slots = [...filled, ...Array(Math.max(0, n - filled.length)).fill(null)];
-    this.save();
+    this.save({ slotOrder: [...remap].map(([fromSlotIndex, toSlotIndex]) => ({ fromSlotIndex, toSlotIndex })) });
     try {
       globalThis.dispatchEvent?.(new CustomEvent('clbwz:card-slots-reordered', { detail: { remap, mode } }));
     } catch { /* 非浏览器环境忽略 */ }

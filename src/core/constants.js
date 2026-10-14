@@ -1,6 +1,5 @@
-/** 制作品质 1–5；0 仅兼容旧存档并按劣质处理。 */
+/** 制作品质 2–5；旧存档 0/1 统一升级为普通，不重排其它品质编号。 */
 export const CRAFT_QUALITY = {
-  1: { id: 0, name: '劣质', color: '#757575', baseLabel: '灰', legacy: true },
   2: { id: 1, name: '普通', color: '#fefefe', baseLabel: '白' },
   3: { id: 2, name: '精良', color: '#4caf50', baseLabel: '绿' },
   4: { id: 3, name: '优秀', color: '#2196f3', baseLabel: '蓝' },
@@ -9,7 +8,7 @@ export const CRAFT_QUALITY = {
 
 /** 品质倍率 P(基础品质 0/1 对齐 card.json，1:1)。 */
 export const CRAFT_QUALITY_MULT = Object.freeze({
-  1: 0.8,
+  1: 1.0,
   2: 1.0,
   3: 1.0,
   4: 1.22,
@@ -19,7 +18,7 @@ export const CRAFT_QUALITY_MULT = Object.freeze({
 
 export function normalizeCraftQuality(craftQuality) {
   const value = Number(craftQuality);
-  if (value === 0) return 1;
+  if (value === 0 || value === 1) return 2;
   return Object.hasOwn(CRAFT_QUALITY_MULT, value) ? value : 2;
 }
 

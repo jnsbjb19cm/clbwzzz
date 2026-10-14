@@ -1,4 +1,4 @@
-import levelRows20261011 from '../data/levelConfig.json';
+import { getExpToNextLevel } from '../core/PlayerProgression.js';
 // 2026-10-11 用户：血量 = 我方基地血量 = 玩家等级决定的战场英雄生命（1级200，每级+30）
 import { calcPlayerHeroHp } from '../battle/BattleConfig.js';
 
@@ -29,10 +29,7 @@ function realStatText20261011(value) {
 function expInfo20261011(player) {
   const level = Math.max(1, Number(player?.level) || 1);
   const current = Math.max(0, Number(player?.exp) || 0);
-  const rows = Array.isArray(levelRows20261011) ? levelRows20261011 : [];
-  const row = rows.find((r) => Number(r?.hero_level) === level);
-  const nextRow = rows.find((r) => Number(r?.hero_level) === level + 1);
-  const need = Math.max(0, Number(row?.lvup_exp ?? nextRow?.lvup_exp ?? 0) || 0);
+  const need = getExpToNextLevel(level);
   const remain = Math.max(0, need - current);
   const pct = need > 0 ? Math.min(100, Math.round((current / need) * 1000) / 10) : 100;
   return { current, next: need, tip: `还需 ${remain} 经验升级 · 当前进度 ${pct}%` };
@@ -399,8 +396,15 @@ export class BagView {
     toolbar.querySelector('#bag-auto-organize')?.addEventListener('click', () => this.toggleAutoOrganize(root));
     toolbar.querySelector('#bag-expand').addEventListener('click', () => this.handleExpand(root));
     toolbar.querySelector('#bag-test-gem')?.addEventListener('click', () => this.handleTestGem(root));
-    toolbar.querySelector('#bag-grant-all')?.addEventListener('click', () => {
-      const res = this.cardInventory.grantAllCollectibleCards();
+    toolbar.querySelector('#bag-grant-all')?.addEventListener('click', async () => {
+      let res = this.cardInventory.grantAllCollectibleCards();
+      if (!res.ok) { this.toast(root, res.error); return; }
+      if (res.pending) {
+        this.toast(root, '正在补卡，请稍候…');
+        res = await res.completion;
+        if (!root.isConnected) return;
+        if (!res) { this.refresh(root); this.toast(root, '补卡失败，请稍后重试'); return; }
+      }
       this.refresh(root);
       const skipNote = res.skipped ? '，背包已满部分未领取' : '';
       this.toast(root, `已补全 ${res.added} 张卡，共 ${res.total} 张${skipNote}`);
@@ -428,6 +432,7 @@ export class BagView {
       modeLabel = mode === 'level' ? '等级排序' : mode === 'star' ? '星级排序' : '默认ID排序';
     }
     const res = store.organize(mode);
+    if (!res.ok) { this.toast(root, res.error); return; }
     this.selectedIndex = -1;
     this.refresh(root);
     const unit = this.mode === 'card' ? '张卡牌' : '格物品';
@@ -964,7 +969,7 @@ export class BagView {
     const tierColor = {1:'#959565',2:'#238A1A',3:'#106198',4:'#7B368E',5:'#BE6C3C',6:'#CC0033'};
     const maxStars = {1:5,2:7,3:9,4:11,5:13,6:15};
     const isStarItem = itemId === 81;
-    const descMap = {80:'随机改变品质(劣质/普通/优秀/精良/完美各有概率)',81:'随机升1-2星或降1星(满星不可选)',88:'重置为0星并返还强化粉',90:'为卡牌重新命名'};
+    const descMap = {80:'随机改变品质(普通/精良/优秀/完美各有概率)',81:'随机升1-2星或降1星(满星不可选)',88:'重置为0星并返还强化粉',90:'为卡牌重新命名'};
 
     const cardGrid = slots.map((s,i)=>{
       const card = this.cardDb.getById(s.cardId);

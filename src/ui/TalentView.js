@@ -1,4 +1,5 @@
 import { audio } from '../core/AudioManager.js';
+import './TalentTree20261013.css';
 import { emitQuestEvent } from '../core/QuestEventBus.js';
 import { TALENT_NODE_MAP, TALENT_NODES } from '../core/TalentRegistry.js';
 import {
@@ -56,13 +57,13 @@ export class TalentView {
     const available = this.heroSkills.getAvailableTalentPoints(this.player.level, extra);
     const spent = this.heroSkills.getSpentTalentPoints?.() ?? 0;
     root.innerHTML = `
-      <div class="page talent-page classic-talent-screen">
+      <div class="page talent-page classic-talent-screen talent-tree-v2">
         <header class="talent-header">
           <nav class="classic-talent-tabs" aria-label="角色页面">
             <button type="button" id="talent-profile-tab">资料</button>
             <button type="button" class="active">天赋</button>
           </nav>
-          <div><h1>天赋树</h1><p>沿路线逐步解锁技能与属性，被动成长位于下方。</p></div>
+          <div><h1>四境天赋</h1><p>四个方向 · 十二条成长支路 · 属性与技能逐步解锁</p></div>
           <div class="talent-header-actions">
             <div class="talent-points" aria-label="天赋点数">
               <span><b class="talent-points-remaining">${available}</b><small>剩余天赋点</small></span>
@@ -102,7 +103,7 @@ export class TalentView {
               <strong>天赋说明</strong><p>悬浮圆形节点查看消耗、前置条件和效果。</p><small>拖动画布浏览整棵技能树。</small>
             </aside>
           </div>
-          <p id="talent-tip" class="talent-tip">每提升1级获得1点天赋，当前最高50级。</p>
+          <p id="talent-tip" class="talent-tip">新版天赋已返还旧加点。每升1级获得1点；小节点提升HP/MP，大节点解锁技能与被动。</p>
         </section>
         <section class="talent-equipped"><h2>战斗技能栏</h2><div class="talent-slots" id="talent-slots"></div></section>
         <section class="talent-pool"><h2>已解锁主动技能</h2><div class="talent-pool-grid" id="talent-pool"></div></section>

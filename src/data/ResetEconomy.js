@@ -24,7 +24,7 @@ export function resetMaterialDefs(cards) {
   for(const c of cards) {
     const id=Number(c.card_id??c.id);
     if(id<=0||id>=500||Number(c.show_card??(c.visible?1:0))!==1||[122,123,124].includes(id))continue;
-    // 2026-10-10（用户反馈）：文案用原话「…必定为<卡名>」；图标不能再用 item_img:1 这个通用图，
+    // 2026-10-10…必定为<卡名>」；图标不能再用 item_img:1 这个通用图，
     // 有数据库专属 DNA 条目（如 30001 花生神射手DNA）就用它自己的 item_img，否则回退 50030+品质。
     const dnaName=String(c.card_name??c.name);
     const dbDna=DB_DNA_BY_NAME.get(dnaName);

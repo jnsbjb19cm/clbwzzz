@@ -262,7 +262,7 @@ CREATE TABLE IF NOT EXISTS player_cards (
   slot_index INTEGER NOT NULL,
   card_id INTEGER NOT NULL,
   star INTEGER NOT NULL DEFAULT 0 CHECK(star >= 0),
-  craft_quality INTEGER NOT NULL DEFAULT 1 CHECK(craft_quality >= 0),
+  craft_quality INTEGER NOT NULL DEFAULT 2 CHECK(craft_quality >= 0),
   UNIQUE(user_id, slot_index),
   FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE
 );
@@ -289,7 +289,7 @@ CREATE TABLE IF NOT EXISTS deck_cards (
   card_id INTEGER NOT NULL,
   -- 2026-10-11：只存 card_id 会丢"品质/星级"，任何一次同步都会把玩家选的实例换成
   -- "第一张同 id 的卡"（用户反复报的「选 a 进 b」）。这两列就是实例身份。
-  craft_quality INTEGER NOT NULL DEFAULT 1,
+  craft_quality INTEGER NOT NULL DEFAULT 2,
   strength_lv INTEGER NOT NULL DEFAULT 0,
   PRIMARY KEY(deck_id, slot_index),
   FOREIGN KEY(deck_id) REFERENCES player_decks(id) ON DELETE CASCADE
@@ -487,7 +487,7 @@ const MYSQL_TABLES = [
     slot_index INT NOT NULL,
     card_id INT NOT NULL,
     star INT NOT NULL DEFAULT 0,
-    craft_quality INT NOT NULL DEFAULT 1,
+    craft_quality INT NOT NULL DEFAULT 2,
     UNIQUE KEY uk_player_cards_user_slot(user_id, slot_index),
     KEY idx_player_cards_user_card(user_id, card_id),
     CONSTRAINT fk_cards_user FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE
@@ -509,7 +509,7 @@ const MYSQL_TABLES = [
     deck_id BIGINT NOT NULL,
     slot_index INT NOT NULL,
     card_id INT NOT NULL,
-    craft_quality INT NOT NULL DEFAULT 1,
+    craft_quality INT NOT NULL DEFAULT 2,
     strength_lv INT NOT NULL DEFAULT 0,
     PRIMARY KEY(deck_id, slot_index),
     CONSTRAINT fk_deckcards_deck FOREIGN KEY(deck_id) REFERENCES player_decks(id) ON DELETE CASCADE
@@ -688,13 +688,17 @@ function migrateSqlite() {
   // 2026-10-11：deck_cards 缺少 craft_quality / strength_lv（实例身份）→ 老库补列
   const deckCols = tableColumns('deck_cards');
   if (!deckCols.has('craft_quality')) {
-    sqlite.exec('ALTER TABLE deck_cards ADD COLUMN craft_quality INTEGER NOT NULL DEFAULT 1');
+    sqlite.exec('ALTER TABLE deck_cards ADD COLUMN craft_quality INTEGER NOT NULL DEFAULT 2');
   }
   if (!deckCols.has('strength_lv')) {
     sqlite.exec('ALTER TABLE deck_cards ADD COLUMN strength_lv INTEGER NOT NULL DEFAULT 0');
   }
 
   // 旧 player_profiles 缺少 selected_deck_group（4 个组的选择）
+  // Idempotent upgrade: retain instances, stars and all attached state.
+  sqlite.exec('UPDATE player_cards SET craft_quality=2 WHERE craft_quality IN (0,1)');
+  sqlite.exec('UPDATE deck_cards SET craft_quality=2 WHERE craft_quality IN (0,1)');
+
   const profileCols = tableColumns('player_profiles');
   if (!profileCols.has('selected_deck_group')) {
     sqlite.exec("ALTER TABLE player_profiles ADD COLUMN selected_deck_group TEXT NOT NULL DEFAULT 'default'");
@@ -745,11 +749,13 @@ function migrateSqlite() {
         deck_id INTEGER NOT NULL,
         slot_index INTEGER NOT NULL CHECK(slot_index BETWEEN 0 AND 9),
         card_id INTEGER NOT NULL,
+        craft_quality INTEGER NOT NULL DEFAULT 2,
+        strength_lv INTEGER NOT NULL DEFAULT 0,
         PRIMARY KEY(deck_id, slot_index),
         FOREIGN KEY(deck_id) REFERENCES player_decks(id) ON DELETE CASCADE
       );
-      INSERT INTO deck_cards_new(deck_id,slot_index,card_id)
-        SELECT deck_id,slot_index,card_id FROM deck_cards;
+      INSERT INTO deck_cards_new(deck_id,slot_index,card_id,craft_quality,strength_lv)
+        SELECT deck_id,slot_index,card_id,craft_quality,strength_lv FROM deck_cards;
       DROP TABLE deck_cards;
       ALTER TABLE deck_cards_new RENAME TO deck_cards;
       COMMIT;
@@ -765,8 +771,8 @@ function migrateSqlite() {
     WHERE NOT EXISTS (SELECT 1 FROM player_decks d WHERE d.user_id=u.id AND d.deck_no=0);
   `);
   sqlite.exec(`
-    INSERT INTO deck_cards(deck_id, slot_index, card_id)
-    SELECT d0.id, dc.slot_index, dc.card_id
+    INSERT INTO deck_cards(deck_id, slot_index, card_id, craft_quality, strength_lv)
+    SELECT d0.id, dc.slot_index, dc.card_id, dc.craft_quality, dc.strength_lv
     FROM player_decks d0
     JOIN player_decks d1 ON d1.user_id=d0.user_id AND d1.deck_no=1
     JOIN deck_cards dc ON dc.deck_id=d1.id
@@ -876,7 +882,7 @@ async function migrateMysql() {
 
   // 2026-10-11：deck_cards 补实例字段（品质/星级），老库也要补
   if (!(await hasColumn('deck_cards', 'craft_quality'))) {
-    await pool.query('ALTER TABLE deck_cards ADD COLUMN craft_quality INT NOT NULL DEFAULT 1');
+    await pool.query('ALTER TABLE deck_cards ADD COLUMN craft_quality INT NOT NULL DEFAULT 2');
   }
   if (!(await hasColumn('deck_cards', 'strength_lv'))) {
     await pool.query('ALTER TABLE deck_cards ADD COLUMN strength_lv INT NOT NULL DEFAULT 0');
@@ -885,14 +891,16 @@ async function migrateMysql() {
   if (!(await hasColumn('player_profiles', 'selected_deck_group'))) {
     await pool.query("ALTER TABLE player_profiles ADD COLUMN selected_deck_group VARCHAR(16) NOT NULL DEFAULT 'default'");
   }
+  await pool.query('UPDATE player_cards SET craft_quality=2 WHERE craft_quality IN (0,1)');
+  await pool.query('UPDATE deck_cards SET craft_quality=2 WHERE craft_quality IN (0,1)');
   await pool.query(`
     INSERT INTO player_decks(user_id, deck_no, name)
     SELECT u.id, 0, '默认' FROM users u
     WHERE NOT EXISTS (SELECT 1 FROM player_decks d WHERE d.user_id=u.id AND d.deck_no=0)
   `);
   await pool.query(`
-    INSERT INTO deck_cards(deck_id, slot_index, card_id)
-    SELECT d0.id, dc.slot_index, dc.card_id
+    INSERT INTO deck_cards(deck_id, slot_index, card_id, craft_quality, strength_lv)
+    SELECT d0.id, dc.slot_index, dc.card_id, dc.craft_quality, dc.strength_lv
     FROM player_decks d0
     JOIN player_decks d1 ON d1.user_id=d0.user_id AND d1.deck_no=1
     JOIN deck_cards dc ON dc.deck_id=d1.id
@@ -940,7 +948,7 @@ export async function createPlayerData(userId, nickname) {
       [userId, deckNo, name],
     );
     const insertDeckCard = (deckId, slotIndex, cardId) => conn.run(
-      'INSERT INTO deck_cards(deck_id,slot_index,card_id) VALUES(?,?,?)',
+      'INSERT INTO deck_cards(deck_id,slot_index,card_id,craft_quality) VALUES(?,?,?,2)',
       [deckId, slotIndex, cardId],
     );
     // 2026-09-11：4 个组都入库（0=默认，1~3=战团1~3）。
@@ -957,7 +965,7 @@ export async function createPlayerData(userId, nickname) {
     const allCards = [...new Set([...STARTER_DECK, ...STARTER_EXTRA])];
     const insertCard = (slotIndex, cardId) => conn.run(
       'INSERT INTO player_cards(user_id,slot_index,card_id,star,craft_quality) VALUES(?,?,?,?,?)',
-      [userId, slotIndex, cardId, 0, 1],
+      [userId, slotIndex, cardId, 0, 2],
     );
     for (let index = 0; index < allCards.length; index += 1) {
       await insertCard(index, allCards[index]);

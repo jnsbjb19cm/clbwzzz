@@ -1,5 +1,5 @@
 import { CardInventoryStore } from './CardInventoryStore.js';
-import { sanitizeCustomCardName } from './constants.js';
+import { sanitizeCustomCardName, normalizeCraftQuality } from './constants.js';
 
 const PATCH_FLAG = Symbol.for('clbwz.cardInventoryRemotePatch20260906');
 const AUTH_PATCH_FLAG = Symbol.for('clbwz.cardInventoryRemoteAuthPatch20260906');
@@ -33,7 +33,7 @@ function normalizeRemoteSlot(raw) {
   const cardId = Number(raw.cardId);
   if (!Number.isInteger(cardId) || cardId <= 0) return null;
   const star = Math.max(0, Math.floor(Number(raw.star ?? raw.strengthLv) || 0));
-  const craftQuality = Math.max(1, Math.min(5, Math.floor(Number(raw.craftQuality) || 1)));
+  const craftQuality = normalizeCraftQuality(raw.craftQuality);
   const customName = sanitizeCustomCardName(raw.customName);
   return {
     cardId,
@@ -43,6 +43,7 @@ function normalizeRemoteSlot(raw) {
     exp: Math.max(0, Math.floor(Number(raw.exp) || 0)),
     customName: customName || null,
     awakened: Boolean(raw.awakened),
+    learnedSkill: raw.learnedSkill || null,
     attributeRoll: normalizeAttributeRoll(raw.attributeRoll),
     powderSpent: normalizePowderSpent(raw.powderSpent),
     // Binding is authoritative server state. Keep it when hydrating local stores so
@@ -67,6 +68,7 @@ function buildPayload(store) {
       exp: slot.exp,
       customName: slot.customName,
       awakened: slot.awakened,
+      learnedSkill: slot.learnedSkill,
       attributeRoll: slot.attributeRoll ? { ...slot.attributeRoll } : null,
       powderSpent: { ...slot.powderSpent },
       expiresAt: slot.expiresAt,
@@ -224,6 +226,7 @@ export function installCardInventoryRemotePatch20260906({ authStore = null } = {
       if (options?.remote === false || !this._remoteCardInventorySave) return;
 
       const payload = buildPayload(this);
+      if (Array.isArray(options.slotOrder)) payload.slotOrder = options.slotOrder;
       const saveRemote = this._remoteCardInventorySave;
       this._remoteCardInventoryQueue = (this._remoteCardInventoryQueue ?? Promise.resolve())
         .catch(() => {})

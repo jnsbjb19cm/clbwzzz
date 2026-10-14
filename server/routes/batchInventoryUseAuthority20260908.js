@@ -143,7 +143,7 @@ async function addCards(conn, userId, count, maxQuality, exactTier = null) {
     const card = exactTier ? pickExactTierCard(COLLECTIBLE_CARDS, exactTier) : pickWeightedCard(maxQuality);
     await conn.run(
       'INSERT INTO player_cards(user_id,slot_index,card_id,star,craft_quality) VALUES(?,?,?,?,?)',
-      [userId, free[index], Number(card.card_id), 0, 1],
+      [userId, free[index], Number(card.card_id), 0, 2],
     );
     cards.push({ cardId: Number(card.card_id), cardName: String(card.card_name || card.card_id) });
   }

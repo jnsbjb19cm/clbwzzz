@@ -4,6 +4,7 @@
  */
 export const LANES = 5;
 export const COLS = 12;
+export const MELEE_CONTACT_COL_DISTANCE = 0.75;
 
 export const PLAYER_PLACE_MIN = 0;
 export const PLAYER_PLACE_MAX = 4;

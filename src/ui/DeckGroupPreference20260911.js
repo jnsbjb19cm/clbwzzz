@@ -15,6 +15,7 @@
  *    这样房间、开打用的卡组和界面上的页签三者一致。
  */
 import { authStore } from '../core/AuthStore.js';
+import { normalizeCraftQuality } from '../core/constants.js';
 import { SocketClient } from '../network/SocketClient.js';
 import { DeckSelectView } from './DeckSelectView.js';
 import {
@@ -340,7 +341,7 @@ function accountDeckIndices20260911(deckNo, cardInventory, localFingerprints = [
     if (wantQuality > 0 || wantStar > 0) {
       index = slots.findIndex((slot, slotIndex) => {
         if (used.has(slotIndex) || Number(slot?.cardId) !== cardId) return false;
-        if (wantQuality > 0 && (slot.craftQuality ?? 1) !== wantQuality) return false;
+        if (wantQuality > 0 && normalizeCraftQuality(slot.craftQuality) !== normalizeCraftQuality(wantQuality)) return false;
         if (wantStar > 0 && (slot.strengthLv ?? 0) !== wantStar) return false;
         return true;
       });
@@ -352,7 +353,7 @@ function accountDeckIndices20260911(deckNo, cardInventory, localFingerprints = [
       if (Number.isInteger(fpIndex) && fpIndex >= 0 && !used.has(fpIndex)) {
         const slot = slots[fpIndex];
         const sameCard = Number(slot?.cardId) === cardId;
-        const sameQuality = (slot?.craftQuality ?? 1) === (fp.craftQuality ?? 1);
+        const sameQuality = normalizeCraftQuality(slot?.craftQuality) === normalizeCraftQuality(fp.craftQuality);
         const sameStar = (slot?.strengthLv ?? 0) === (fp.strengthLv ?? 0);
         if (sameCard && sameQuality && sameStar) index = fpIndex;
       }

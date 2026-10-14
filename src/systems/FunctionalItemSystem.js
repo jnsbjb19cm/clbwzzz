@@ -1,4 +1,4 @@
-import { sanitizeCustomCardName } from '../core/constants.js';
+import { sanitizeCustomCardName, normalizeCraftQuality } from '../core/constants.js';
 
 export const CARD_PICKER_FUNCTIONAL_ITEMS = new Set([80, 81, 82, 83, 88, 89, 90]);
 export const DIRECT_FUNCTIONAL_ITEMS = new Set([84, 85, 86, 87, 91, 92]);
@@ -10,11 +10,10 @@ const _BOOK_KIND = Object.freeze({
 });
 
 const CRAFT_QUALITY_NAMES = Object.freeze({
-  1: '劣质',
   2: '普通',
   3: '精良',
-  4: '完美',
-  5: '传说',
+  4: '优秀',
+  5: '完美',
 });
 
 function finite(value, fallback = 0) {
@@ -68,7 +67,7 @@ export function applyFunctionalCardItem({
   let message = '';
   if (id === 80) {
     const r = random();
-    slot.craftQuality = r < 0.08 ? 5 : r < 0.23 ? 4 : r < 0.43 ? 3 : r < 0.68 ? 2 : 1;
+    slot.craftQuality = r < 0.08 ? 5 : r < 0.23 ? 4 : r < 0.43 ? 3 : 2;
     message = `「${slot.customName || card.name}」制作品质洗练为 ${CRAFT_QUALITY_NAMES[slot.craftQuality]}`;
   } else if (id === 81) {
     slot.attributeRoll = randomAttributeRoll(random);
@@ -76,7 +75,7 @@ export function applyFunctionalCardItem({
     message = `属性洗练完成：攻击 ${roll.atk >= 0 ? '+' : ''}${roll.atk}% / 生命 ${roll.hp >= 0 ? '+' : ''}${roll.hp}% / 冷却优化 ${roll.cd >= 0 ? '+' : ''}${roll.cd}%`;
   } else if (id === 82) {
     if ((slot.craftQuality ?? 1) >= 5) return { ok: false, error: '该卡牌制作品质已达最高' };
-    slot.craftQuality = Math.min(5, (slot.craftQuality ?? 1) + 1);
+    slot.craftQuality = Math.min(5, normalizeCraftQuality(slot.craftQuality) + 1);
     message = `「${slot.customName || card.name}」制作品质提升为 ${CRAFT_QUALITY_NAMES[slot.craftQuality]}`;
   } else if (id === 83) {
     slot.craftQuality = 5;

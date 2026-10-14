@@ -1,4 +1,6 @@
 import { BattleView } from './BattleView.js';
+import './BattleSkillDock20261013.css';
+const MANA_BOTTLE = new URL('../../resources/img/魔瓶.png', import.meta.url).href;
 
 const PATCH_FLAG = Symbol.for('clbwzzz.referenceSkillDock');
 
@@ -14,18 +16,23 @@ function syncMpBar(view, root) {
     mp = document.createElement('div');
     mp.className = 'reference-skill-mp';
     mp.innerHTML = `
-      <button type="button" class="skill-dock-arrow skill-dock-arrow-up" aria-label="上一组技能">▲</button>
-      <div class="skill-dock-mp-track" aria-label="英雄技能能量">
-        <i></i>
-      </div>
-      <button type="button" class="skill-dock-arrow skill-dock-arrow-down" aria-label="下一组技能">▼</button>
+      <img class="skill-dock-bottle" src="${MANA_BOTTLE}" alt="魔力" draggable="false" />
+      <b class="skill-dock-mp-value"></b>
     `;
-    panel.appendChild(mp);
+    panel.prepend(mp);
+    const controls = document.createElement('div');
+    controls.className = 'skill-dock-controls';
+    controls.innerHTML = '<button type="button" aria-label="展开技能栏">▲</button><button type="button" aria-label="收起技能栏">▼</button>';
+    controls.children[0].onclick = () => panel.classList.remove('dock-collapsed');
+    controls.children[1].onclick = () => panel.classList.add('dock-collapsed');
+    panel.append(controls);
   }
 
   const current = Math.max(0, Number(view.engine.heroMp) || 0);
   const maximum = Math.max(1, Number(view.engine.heroMpMax) || 1);
   const ratio = Math.max(0, Math.min(1, current / maximum));
+  mp.querySelector('.skill-dock-mp-value').textContent = String(Math.floor(current));
+  panel.style.setProperty('--mana-ratio', String(ratio));
   const fill = mp.querySelector('.skill-dock-mp-track > i');
   if (fill) fill.style.width = `${(ratio * 100).toFixed(2)}%`;
   mp.title = `技能能量 ${Math.round(current)}/${Math.round(maximum)}`;

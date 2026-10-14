@@ -1,4 +1,5 @@
 import { db, getPlayerSnapshot, withTransaction, whenDatabaseReady } from '../database.js';
+import { normalizeCraftQuality } from '../../src/core/constants.js';
 
 const MIN_SLOTS = 200;
 const MAX_SLOTS = 500;
@@ -59,7 +60,7 @@ function normalizeCard(raw, slotCount) {
     slotIndex,
     cardId,
     star: Math.max(0, Math.min(14, Math.floor(Number(raw?.star) || 0))),
-    craftQuality: Math.max(1, Math.min(5, Math.floor(Number(raw?.craftQuality) || 1))),
+    craftQuality: normalizeCraftQuality(raw?.craftQuality),
     exp: Math.max(0, Math.min(2147483647, Math.floor(Number(raw?.exp) || 0))),
     customName: String(raw?.customName || '').trim().slice(0, 24) || null,
     awakened: Boolean(raw?.awakened),
@@ -86,8 +87,8 @@ function sameCardCollection(left, right) {
   return true;
 }
 
-async function readInstanceRows(userId) {
-  const rows = await db.all(`
+async function readInstanceRows(userId, conn = db) {
+  const rows = await conn.all(`
     SELECT pc.slot_index AS slotIndex, pc.card_id AS cardId, pc.star,
            pc.craft_quality AS craftQuality, ps.state_json AS stateJson
     FROM player_cards pc
@@ -100,7 +101,7 @@ async function readInstanceRows(userId) {
     slotIndex: Number(row.slotIndex),
     cardId: Number(row.cardId),
     star: Math.max(0, Math.floor(Number(row.star) || 0)),
-    craftQuality: Math.max(1, Math.min(5, Math.floor(Number(row.craftQuality) || 1))),
+    craftQuality: normalizeCraftQuality(row.craftQuality),
     extra: safeJsonParse(row.stateJson),
   }));
 }
@@ -149,13 +150,35 @@ export async function putCardInventoryHandler(req, res) {
     return res.status(400).json({ message: '卡牌槽位重复' });
   }
 
-  const currentInstances = await readInstanceRows(req.user.id);
+  const slotOrder = req.body?.slotOrder;
+  if (slotOrder !== undefined && (!Array.isArray(slotOrder) || slotOrder.length !== cards.length
+    || new Set(slotOrder.map(entry => entry?.fromSlotIndex)).size !== cards.length
+    || new Set(slotOrder.map(entry => entry?.toSlotIndex)).size !== cards.length
+    || slotOrder.some(entry => !Number.isInteger(entry?.fromSlotIndex) || entry.fromSlotIndex < 0 || entry.fromSlotIndex >= MAX_SLOTS
+      || !cards.some(card => card.slotIndex === entry?.toSlotIndex)))) {
+    return res.status(400).json({ message: '卡牌排序映射无效，请刷新后重试' });
+  }
+  const sourceByDestination = new Map((slotOrder ?? []).map(entry => [entry.toSlotIndex, entry.fromSlotIndex]));
+  try {
+  await withTransaction(async (conn) => {
+  // Read and validate within the write transaction: a concurrent refill must
+  // never be erased by a snapshot captured before the transaction started.
+  const currentInstances = await readInstanceRows(req.user.id, conn);
   if (!sameCardCollection(currentInstances.map((row) => row.cardId), cards.map((card) => card.cardId))) {
-    return res.status(409).json({ message: '卡牌新增或移除必须通过掉落、打造或合成系统完成' });
+    throw new Error('卡牌列表已变化，请刷新后重试；新增或移除必须通过掉落、打造或合成系统完成');
   }
 
   const unused = new Set(currentInstances.map((_, index) => index));
   const authoritativeCards = cards.map((card) => {
+    if (slotOrder) {
+      const server = currentInstances.find(row => row.slotIndex === sourceByDestination.get(card.slotIndex));
+      if (!server || server.cardId !== card.cardId) throw new Error('卡牌位置已变化，请刷新后重新排序');
+      return {
+        ...normalizeCard({ ...server.extra, ...server, slotIndex: card.slotIndex }, slotCount),
+        bound: Boolean(server.extra.bound),
+        extraState: server.extra,
+      };
+    }
     let matchIndex = currentInstances.findIndex((row, index) => (
       unused.has(index) && row.slotIndex === card.slotIndex && row.cardId === card.cardId
     ));
@@ -173,11 +196,10 @@ export async function putCardInventoryHandler(req, res) {
       powderSpent: normalizePowderSpent(server.extra.powderSpent),
       bound: Boolean(server.extra.bound),
       // 2026-10-09：体验卡到期时间以服务端存的为准（客户端漏传也不会变成永久卡）。
-      expiresAt: Math.max(0, Math.floor(Number(card?.expiresAt ?? server.extra.expiresAt) || 0)),
+      expiresAt: Math.max(0, Math.floor(Number(server.extra.expiresAt) || 0)),
     };
   });
 
-  await withTransaction(async (conn) => {
     await conn.run('DELETE FROM player_cards WHERE user_id=?', [req.user.id]);
     await conn.run('DELETE FROM player_card_instance_state WHERE user_id=?', [req.user.id]);
     for (const card of authoritativeCards) {
@@ -188,6 +210,7 @@ export async function putCardInventoryHandler(req, res) {
       await conn.run(
         'INSERT INTO player_card_instance_state(user_id,slot_index,state_json) VALUES(?,?,?)',
         [req.user.id, card.slotIndex, JSON.stringify({
+          ...card.extraState,
           exp: card.exp,
           customName: card.customName,
           awakened: card.awakened,
@@ -202,6 +225,9 @@ export async function putCardInventoryHandler(req, res) {
     }
     await conn.run('UPDATE player_card_bags SET slot_count=? WHERE user_id=?', [slotCount, req.user.id]);
   });
+  } catch (error) {
+    return res.status(409).json({ message: error?.message || '卡牌保存失败，请刷新后重试' });
+  }
 
   return res.json(await readCardInventory(req.user.id));
 }

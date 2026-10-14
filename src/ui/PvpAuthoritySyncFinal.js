@@ -191,11 +191,13 @@ function updateUnitFromSnapshot(view, unit, data, immediate) {
   unit.renderY = unit.lane;
 
   unit.attackingBase = Boolean(data.attackingBase);
+  if (data.jumpedOnce || state === 'jump') unit._jumpedOnce = true;
   if ('aerialLandingRequested' in data || state === 'toGround') {
     unit._aerialWasFlying = Boolean(data.aerialWasFlying || data.aerialLandingRequested || state === 'toGround');
-    unit._aerialLandingRequested = Boolean(data.aerialLandingRequested || state === 'toGround');
-    unit._baseLandingRequested = Boolean(data.baseLandingRequested);
-    unit._aerialLanded = Boolean(data.aerialLanded);
+    unit._aerialLanded = Boolean(unit._aerialLanded || data.aerialLanded);
+    unit._aerialLandingRequested = !unit._aerialLanded && Boolean(data.aerialLandingRequested || state === 'toGround');
+    unit._baseLandingRequested = !unit._aerialLanded && Boolean(data.baseLandingRequested);
+    if (Number.isFinite(data.aerialLandingStartedAt)) unit._aerialLandingStartedAt = data.aerialLandingStartedAt + timeOffset;
     unit._aerialLandingUntil = Math.max(
       engine.time + 0.02,
       finite(data.aerialLandingUntil, engine.time) + timeOffset,

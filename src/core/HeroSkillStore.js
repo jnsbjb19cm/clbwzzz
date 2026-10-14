@@ -1,4 +1,6 @@
 import { DEFAULT_SKILL_LOADOUT, SKILL_SLOT_COUNT, getSkillEffect } from './SkillRegistry.js';
+import { migrateTalentState } from './TalentTreeMigration20261013.js';
+import { TALENT_TREE_REVISION } from './TalentRegistry.js';
 import {
   TALENT_NODE_MAP,
   TALENT_NODES,
@@ -28,11 +30,14 @@ export class HeroSkillStore {
     const state = this.load();
     this.unlockedTalents = new Set(state.unlockedTalents);
     this.consumedExtra = Number(state.consumedExtra) || 0;
+    this.talentPointCredit = Math.max(0, Number(state.talentPointCredit) || 0);
+    this.previousTalents = state.previousTalents ?? [];
     this.loadout = state.loadout.map((skillId) => (
       // 已解锁 + 仍然有效果声明（被禁用/隐藏的技能会自动从技能栏卸下，避免出现放不出的空槽）
       skillId == null || (this.isSkillUnlocked(skillId) && getSkillEffect(skillId)) ? skillId : null
     ));
     for (const defaultSkill of DEFAULT_SKILL_LOADOUT.filter(Boolean)) {
+      if (!this.isSkillUnlocked(defaultSkill)) continue;
       if (this.loadout.includes(defaultSkill)) continue;
       const empty = this.loadout.indexOf(null);
       if (empty >= 0) this.loadout[empty] = defaultSkill;
@@ -43,12 +48,13 @@ export class HeroSkillStore {
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
       if (raw) {
-        const parsed = JSON.parse(raw);
+        const parsed = migrateTalentState(JSON.parse(raw));
         const unlocked = Array.isArray(parsed.unlockedTalents)
           ? parsed.unlockedTalents.filter((id) => TALENT_NODE_MAP.has(id))
           : ['core'];
         if (!unlocked.includes('core')) unlocked.unshift('core');
         return {
+          ...parsed,
           loadout: normalizeLoadout(parsed.loadout),
           unlockedTalents: unlocked,
         };
@@ -67,6 +73,9 @@ export class HeroSkillStore {
       loadout: this.loadout,
       unlockedTalents: [...this.unlockedTalents],
       consumedExtra: this.consumedExtra ?? 0,
+      talentRevision: TALENT_TREE_REVISION,
+      talentPointCredit: this.talentPointCredit ?? 0,
+      previousTalents: this.previousTalents ?? [],
     }));
   }
 
@@ -86,7 +95,7 @@ export class HeroSkillStore {
   }
 
   reset() {
-    this.loadout = [...DEFAULT_SKILL_LOADOUT];
+    this.loadout = DEFAULT_SKILL_LOADOUT.map(id => this.isSkillUnlocked(id) ? id : null);
     this.save();
   }
 
@@ -112,7 +121,7 @@ export class HeroSkillStore {
   }
 
   getAvailableTalentPoints(playerLevel, extraTalentPoints = 0) {
-    return Math.max(0, getTalentPointBudget(playerLevel) - this.getSpentTalentPoints() + (extraTalentPoints || 0));
+    return Math.max(0, getTalentPointBudget(playerLevel) + (this.talentPointCredit || 0) - this.getSpentTalentPoints() + (extraTalentPoints || 0));
   }
 
   canUnlockTalent(nodeId, playerLevel, extraTalentPoints = 0) {
@@ -125,16 +134,7 @@ export class HeroSkillStore {
   unlockTalent(nodeId, playerLevel, extraTalentPointsRef) {
     const extra = extraTalentPointsRef?.value || 0;
     if (!this.canUnlockTalent(nodeId, playerLevel, extra)) return false;
-    // Consume extra points first
-    if (extraTalentPointsRef && extra > 0) {
-      const budget = getTalentPointBudget(playerLevel);
-      const spent = this.getSpentTalentPoints();
-      const regular = budget - spent;
-      const needed = Number(TALENT_NODE_MAP.get(nodeId).cost || 0);
-      const fromExtra = Math.min(extra, Math.max(0, needed - regular));
-      extraTalentPointsRef.value = Math.max(0, extra - fromExtra);
-      this.consumedExtra = (this.consumedExtra || 0) + fromExtra;
-    }
+    // Extra points are a permanent budget; spent nodes already deduct their cost.
     this.unlockedTalents.add(nodeId);
     this.save();
     return true;
@@ -143,7 +143,7 @@ export class HeroSkillStore {
   resetTalents() {
     const refund = this.consumedExtra || 0;
     this.unlockedTalents = new Set(['core']);
-    this.loadout = [...DEFAULT_SKILL_LOADOUT];
+    this.loadout = DEFAULT_SKILL_LOADOUT.map(id => this.isSkillUnlocked(id) ? id : null);
     this.consumedExtra = 0;
     this.save();
     return refund;

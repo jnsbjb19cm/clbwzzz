@@ -1,3 +1,4 @@
+import { drawStatusSpriteFrame } from '../battle/StatusSpriteFrameCache20261013.js';
 import {
   isEffectivelyFlying,
   unitAnimPlayer,
@@ -260,12 +261,12 @@ function drawFullSourceFrame(player, ctx, unit, engine, pack, state, boxX, boxY,
   if (flipX) {
     ctx.translate(dx + dw, dy);
     ctx.scale(-1, 1);
-    ctx.drawImage(
+    drawStatusSpriteFrame(ctx,
       source.sheet, srcX, srcY, sourceW, sourceH,
       sourceDestX, sourceDestY, sourceW * scale, sourceH * scale,
     );
   } else {
-    ctx.drawImage(
+    drawStatusSpriteFrame(ctx,
       source.sheet, srcX, srcY, sourceW, sourceH,
       dx + sourceDestX, dy + sourceDestY, sourceW * scale, sourceH * scale,
     );

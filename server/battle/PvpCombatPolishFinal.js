@@ -177,6 +177,8 @@ function decorateSnapshot(battle, snapshot) {
     data.baseLandingRequested = Boolean(unit?._baseLandingRequested);
     data.aerialLanded = Boolean(unit?._aerialLanded);
     data.aerialLandingUntil = round2(unit?._aerialLandingUntil);
+    data.aerialLandingStartedAt = round2(unit?._aerialLandingStartedAt);
+    data.jumpedOnce = Boolean(unit?._jumpedOnce);
     data.attackPattern = getAttackPattern(data.cardId) ?? null;
     data.traits = getCardTraits(data.cardId);
     nextTrack.set(Number(data.uid), {
@@ -278,6 +280,8 @@ export function installPvpCombatPolishFinal() {
       baseLandingRequested: Boolean(unit._baseLandingRequested),
       aerialLanded: Boolean(unit._aerialLanded),
       aerialLandingUntil: round2(unit._aerialLandingUntil),
+      aerialLandingStartedAt: round2(unit._aerialLandingStartedAt),
+      jumpedOnce: Boolean(unit._jumpedOnce),
       moveSpeed: Number(unit.moveSpeed) || 0,
       viewType: Number(unit.viewType) || 0,
       atkStyle: Number(unit.atkStyle) || 0,

@@ -34,8 +34,7 @@ export function drawUnitFootHp(ctx, unit, layout) {
   const ratio = Math.max(0, Math.min(1, (Number(unit.hp) || 0) / Math.max(1, Number(unit.maxHp) || 1)));
   ctx.save();
   ctx.fillStyle = 'rgba(8,18,10,.8)';ctx.fillRect(bar.x - 1, bar.y, bar.width + 2, bar.height + 1);
-  ctx.fillStyle = '#f1ffe8';ctx.fillRect(bar.x, bar.y, bar.width, bar.height);
-  ctx.fillStyle = '#18251a';ctx.fillRect(bar.x + 1, bar.y + 1, bar.width - 2, bar.height - 2);
+  ctx.fillStyle = '#ffffff';ctx.fillRect(bar.x, bar.y, bar.width, bar.height);
   ctx.fillStyle = unit.team === 'player' ? '#73ff39' : unit.team === 'enemy' ? '#ff3838' : '#ffe04f';
   ctx.fillRect(bar.x + 1, bar.y + 1, (bar.width - 2) * ratio, bar.height - 2);
   ctx.restore();

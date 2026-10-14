@@ -1,4 +1,5 @@
 import { unitAnimPlayer } from '../battle/UnitAnimPlayer.js';
+import { MELEE_CONTACT_COL_DISTANCE } from '../battle/BattleConfig.js';
 import { BattleView } from './BattleView.js';
 /*客户端预测动画*/
 const PATCH_FLAG = Symbol.for('clbwzzz.pvpClientPredictionFinal');
@@ -46,14 +47,18 @@ function contactEnemy(view, unit) {
   ) ?? null;
 }
 
-function attackTargetInRange(view, unit) {
+export function attackTargetInRange(view, unit) {
   const direction = unit.team === 'enemy' ? -1 : 1;
   const range = Math.max(1, finite(unit.range, 1));
   return (view.engine?.units ?? [])
     .filter((target) => {
       if (!isEnemy(unit, target) || target.isLowTarget?.()) return false;
       if (Math.abs(finite(target.lane) - finite(unit.lane)) > 0.01) return false;
+      if (view.engine.canUnitHitTargetLayer?.(unit,target) === false) return false;
       const ahead = direction * (finite(target.col) - finite(unit.col));
+      if (unit.isMovable?.() && !unit.isRanged?.() && range <= 1) {
+        return Math.abs(ahead) < MELEE_CONTACT_COL_DISTANCE;
+      }
       return ahead >= -0.05 && ahead <= range + 0.55;
     })
     .sort((a, b) => Math.abs(finite(a.col) - finite(unit.col)) - Math.abs(finite(b.col) - finite(unit.col)))[0] ?? null;
@@ -104,6 +109,8 @@ function predictFlyShoe(view, unit, data, now) {
 }
 
 function predictNormalAttack(view, unit, data, now) {
+  if (unit.specialEffect === 5 && !unit._jumpedOnce && !data?.jumpedOnce && !unit.attackingBase) return false;
+  if (unit._aerialLandingRequested || unit._baseLandingRequested) return false;
   if (!data || Number(unit.cardId) === FLY_SHOE_CARD_ID) return false;
   if (unit.isBoss || unit.pvpBoss || unit.pvpNeutral) return false;
   if (!(Number(data.attackReadyAt) > 0)) return false;
@@ -177,6 +184,8 @@ function reconcilePredictions(view, byUid, now) {
     if (!prediction) continue;
     const data = byUid.get(Number(unit.__authorityUid ?? unit.uid));
     if (confirmedByAuthority(prediction, data)) {
+      // Keep the visual start until the snapshot animation layer has consumed it.
+      unit.__pvpConfirmedPrediction = { ...prediction, attackToken: Number(data.attackToken) };
       unit.__pvpPrediction = null;
       if (prediction.kind === 'fly-shoe') unit.__pvpPredictedFirstContact = true;
       ensureAudit(view).confirmed += 1;

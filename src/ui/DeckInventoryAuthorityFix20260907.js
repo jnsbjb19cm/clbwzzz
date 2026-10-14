@@ -226,6 +226,7 @@ function installDeckServerPersistence() {
 }
 
 function queueAuthoritativeRefill(store) {
+  store._cardRefillPending = true;
   store._remoteCardInventoryQueue = (store._remoteCardInventoryQueue ?? Promise.resolve())
     .catch(() => {})
     .then(async () => {
@@ -236,6 +237,7 @@ function queueAuthoritativeRefill(store) {
           if (authStore.snapshot) authStore.snapshot.cardInventory = snapshot;
         }
         store._remoteCardInventoryError = null;
+        return snapshot;
       } catch (error) {
         store._remoteCardInventoryError = error;
         // 回到服务器权威状态，避免补卡请求失败后本地仍显示不存在的卡。
@@ -248,7 +250,8 @@ function queueAuthoritativeRefill(store) {
         } catch {}
         console.warn('[card-inventory] 补全卡保存失败', error);
       }
-    });
+    }).finally(() => { store._cardRefillPending = false; });
+  return store._remoteCardInventoryQueue;
 }
 
 function installCollectibleRefillAuthority() {
@@ -262,18 +265,13 @@ function installCollectibleRefillAuthority() {
       return originalGrantAllCollectibleCards.apply(this, args);
     }
 
-    // 原实现会每补一张卡都调用 save()。临时关闭普通远程保存，避免把合法补卡
-    // 误发成受保护的 PUT /card-inventory，从而连续触发 409。
-    const remoteSave = this._remoteCardInventorySave;
-    this._remoteCardInventorySave = null;
-    let result;
-    try {
-      result = originalGrantAllCollectibleCards.apply(this, args);
-    } finally {
-      this._remoteCardInventorySave = remoteSave;
+    if (this._cardRefillPending || this._cardActionPending) {
+      return { ok: false, error: '卡牌正在保存，请稍后再补卡' };
     }
-    queueAuthoritativeRefill(this);
-    return { ...result, pending: true };
+    // Only show cards actually granted by the server. Optimistic local grants
+    // could be selected for an upgrade before they existed in the database.
+    const completion = queueAuthoritativeRefill(this);
+    return { ok: true, added: 0, total: this.getUsedCount(), pending: true, completion };
   };
 }
 

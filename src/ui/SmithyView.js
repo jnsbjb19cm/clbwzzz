@@ -509,7 +509,7 @@ export class SmithyView {
               </div>` : ''}
             <div class="smithy-craft-quality-panel">
               <h3>成功后底座品质(1~4 级制作均会 roll)</h3>
-              <p class="smithy-meta">灰·劣质 / 白·普通 / 绿·优秀 / 蓝·精良 / 紫·完美${this.useCharm ? ' · 保护符已提升高品质权重' : ''}</p>
+              <p class="smithy-meta">白·普通 / 绿·精良 / 蓝·优秀 / 紫·完美${this.useCharm ? ' · 保护符已提升高品质权重' : ''}</p>
               <ul class="smithy-quality-odds">
                 ${qualityPreview.map((q) => `
                   <li style="--qcolor:${q.color}">

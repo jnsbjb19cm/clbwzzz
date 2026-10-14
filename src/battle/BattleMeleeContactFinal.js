@@ -1,8 +1,9 @@
 import { BattleEngine } from './BattleEngine.js';
+import { MELEE_CONTACT_COL_DISTANCE } from './BattleConfig.js';
 
 const PATCH_FLAG = Symbol.for('clbwzzz.battleMeleeContactFinal');
 // 实际命中盒略放宽：0.62 在单位跨格连续位移时容易让同格近战“概率性”不触发。
-const CONTACT_COL_DISTANCE = 0.75;
+const CONTACT_COL_DISTANCE = MELEE_CONTACT_COL_DISTANCE;
 
 function isRangeOneMovingMelee(unit) {
   return Boolean(

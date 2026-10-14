@@ -828,6 +828,8 @@ export class CoopBossBattle {
       baseLandingRequested: Boolean(unit._baseLandingRequested),
       aerialLanded: Boolean(unit._aerialLanded),
       aerialLandingUntil: round2(unit._aerialLandingUntil),
+      aerialLandingStartedAt: round2(unit._aerialLandingStartedAt),
+      jumpedOnce: Boolean(unit._jumpedOnce),
       attackingBase: Boolean(unit.attackingBase),
       boss: Boolean(unit.isBoss || unit.pvpBoss),
       bossScale: unit.isBoss || unit.pvpBoss ? Math.max(1, Number(unit.bossScale) || Number(this.bossInfo?.displayScale) || 4) : 1,

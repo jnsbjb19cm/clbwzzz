@@ -153,6 +153,14 @@ function restorePhasedUnits(engine) {
     }
     const unit = record.unit;
     if (!unit) continue;
+    const occupiedByFixedUnit = !unit.isMovable() && (engine.units ?? []).some(other =>
+      other !== unit && other.alive && !other.isMovable()
+      && other.lane === record.lane
+      && engine.getUnitGridCol(other) === engine.getUnitGridCol({ col: record.col }));
+    if (occupiedByFixedUnit) {
+      unit._phaseOutUntil20260830 = 0;
+      continue;
+    }
     unit.lane = record.lane;
     unit.col = record.col;
     unit.renderX = record.col;

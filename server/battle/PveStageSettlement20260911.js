@@ -56,7 +56,7 @@ async function grantCard(conn, userId, cardId) {
   if (slotIndex < 0) return false;
   await conn.run(
     'INSERT INTO player_cards(user_id,slot_index,card_id,star,craft_quality) VALUES(?,?,?,?,?)',
-    [userId, slotIndex, id, 0, 1],
+    [userId, slotIndex, id, 0, 2],
   );
   return true;
 }

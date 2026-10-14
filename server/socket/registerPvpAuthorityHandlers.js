@@ -7,6 +7,8 @@ import { unitAnimPlayer } from '../../src/battle/UnitAnimPlayer.js';
 import { db, withTransaction } from '../database.js';
 import { calculateTalentBonus, TALENT_NODE_MAP } from '../../src/core/TalentRegistry.js';
 import { HERO_MP_MAX } from '../../src/core/SkillRegistry.js';
+import { attackReadyAt } from '../../src/battle/AttackReadiness.js';
+import { migrateTalentState } from '../../src/core/TalentTreeMigration20261013.js';
 
 // 服务端战斗逻辑以30Hz推进；客户端自身用 RAF 插值单位/子弹。
 // 周期世界快照只承担状态校准，不再用30Hz全量 JSON 驱动画面：
@@ -30,7 +32,7 @@ async function loadPlayerTalentProfile(userId) {
       'SELECT state_json AS stateJson FROM player_state_documents WHERE user_id=? AND state_key=?',
       [Number(userId), 'hero_skills'],
     );
-    const state = row?.stateJson ? JSON.parse(String(row.stateJson)) : {};
+    const state = migrateTalentState(row?.stateJson ? JSON.parse(String(row.stateJson)) : {});
     const unlocked = new Set(
       (Array.isArray(state?.unlockedTalents) ? state.unlockedTalents : ['core'])
         .filter((id) => TALENT_NODE_MAP.has(id)),
@@ -276,7 +278,7 @@ function unitSnapshot(battle, unit) {
     animState: base.animState || state,
     animUntil,
     animStartedAt: activeAnimationStart(battle, unit, base.animState || state, animUntil),
-    attackReadyAt: Number(time) + Math.max(0, Number(unit.atkTimer) || 0),
+    attackReadyAt: attackReadyAt(unit, time),
     firstContactStun: Boolean(unit._firstContactStun),
     attackingBase: Boolean(unit.attackingBase),
   };

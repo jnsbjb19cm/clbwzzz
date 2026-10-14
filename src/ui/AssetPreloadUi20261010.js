@@ -6,7 +6,6 @@ import {
   LIGHT_GROUPS,
   assetTotalBytes,
   isGroupPreloaded,
-  onPreloadProgress,
   preloadAssetGroups,
 } from '../core/AssetPreloader20261010.js';
 
@@ -42,22 +41,22 @@ function startLoginPreloadBadge() {
     document.body.append(badge);
   }
   const totalBytes = assetTotalBytes(LIGHT_GROUPS);
-  const stop = onPreloadProgress((progress) => {
-    if (!badge.isConnected) { stop(); return; }
-    if (progress.active === false && progress.percent >= 100) {
-      badge.textContent = `资源就绪（${mb(totalBytes)}）`;
-      setTimeout(() => badge.remove(), 1500);
-      stop();
-      return;
-    }
+  const onProgress = (progress) => {
+    if (!badge.isConnected) return;
     badge.textContent = `正在预加载资源 ${progress.percent}%（${progress.loaded + progress.failed}/${progress.total} · ${mb(totalBytes)}）`;
-  });
-  preloadAssetGroups(LIGHT_GROUPS, { concurrency: 6 }).then(() => {
+  };
+  const load = () => preloadAssetGroups(LIGHT_GROUPS, { concurrency: 4, onProgress }).then(progress => {
     if (badge.isConnected) {
+      if (progress.failed) {
+        badge.textContent = `${progress.failed} 项资源未加载成功，点击重试`;
+        badge.onclick = () => { badge.onclick = null; void load(); };
+        return;
+      }
       badge.textContent = `资源就绪（${mb(totalBytes)}）`;
       setTimeout(() => { if (badge.isConnected) badge.remove(); }, 1500);
     }
   });
+  void load();
 }
 
 /* ---------------------------------- 房间加载界面 ---------------------------------- */
@@ -66,6 +65,7 @@ function ensureRoomAnimLoading() {
   if (typeof document === 'undefined') return;
   if (isGroupPreloaded('unitAnim') && isGroupPreloaded('skillAnim')) return;
   let overlay = document.getElementById(OVERLAY_ID);
+  if (overlay) return;
   if (!overlay) {
     overlay = document.createElement('section');
     overlay.id = OVERLAY_ID;
@@ -87,20 +87,29 @@ function ensureRoomAnimLoading() {
   overlay.querySelector('.asset-anim-loading__skip')?.addEventListener('click', close);
 
   const totalBytes = assetTotalBytes(ANIM_GROUPS);
-  const stop = onPreloadProgress((progress) => {
-    if (!overlay.isConnected) { stop(); return; }
+  const onProgress = (progress) => {
+    if (!overlay.isConnected) return;
     percent.textContent = `${progress.percent}%`;
     bar.style.width = `${progress.percent}%`;
-    hint.textContent = `精灵动画与技能特效约 ${mb(totalBytes)}，加载一次之后本机就有缓存了。`;
-  });
+    hint.textContent = `精灵动画与技能特效约 ${mb(totalBytes)}，正在加载并解码。`;
+  };
 
-  preloadAssetGroups(ANIM_GROUPS, { concurrency: 8 }).then(() => {
-    stop();
+  const load = () => preloadAssetGroups(ANIM_GROUPS, { concurrency: 4, onProgress }).then(progress => {
     if (overlay.isConnected) {
+      if (progress.failed) {
+        hint.textContent = `${progress.failed} 项资源未加载成功，可重试或先进入房间。`;
+        const retry = document.createElement('button');
+        retry.type = 'button';
+        retry.textContent = '重试未完成资源';
+        retry.onclick = () => { retry.remove(); void load(); };
+        overlay.querySelector('.asset-anim-loading__card').append(retry);
+        return;
+      }
       overlay.querySelector('.asset-anim-loading__card')?.classList.add('done');
       setTimeout(close, 320);
     }
   });
+  void load();
 }
 
 /* ---------------------------------- 安装 ---------------------------------- */

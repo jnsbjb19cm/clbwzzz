@@ -467,6 +467,21 @@ const SIDE_ROWS = [
   }],
   // 2026-10-09（用户要求）：原来的「等级奖励 10 档金币」从等级页挪到支线，等级页恢复成每级一份成长补给。
   ...LEVEL_TIER_GOLD_SIDE_ROWS,
+  ['前线补员 · 花生射手', 2, 'battle_complete', {
+    desc: '完成2场战斗，领取一张普通花生射手。', requiresMain: 'mq01', gold: 150, exp: 150, cards: [['花生射手', 2]],
+  }],
+  ['巡逻搭档 · 大耳怪', 3, 'adventure_complete', {
+    desc: '完成3次野外冒险，领取一张普通大耳怪。', requiresMain: 'mq03', gold: 200, exp: 240, cards: [['大耳怪', 2]],
+  }],
+  ['园艺练习 · 地刺', 3, 'card_craft', {
+    desc: '完成3次卡牌制作，领取一张普通地刺。', requiresMain: 'mq02', gold: 200, exp: 300, cards: [['地刺', 2]],
+  }],
+  ['救护补给 · 蒲公英医生', 5, 'battle_win', {
+    desc: '获得5场战斗胜利，领取一张普通蒲公英医生。', requiresMain: 'mq03', gold: 250, exp: 400, cards: [['蒲公英医生', 2]],
+  }],
+  ['扎稳阵脚 · 寒冰椰子', 6, 'card_strengthen', {
+    desc: '完成6次卡牌强化，领取一张普通寒冰椰子。', requiresMain: 'mq05', gold: 300, exp: 500, cards: [['寒冰椰子', 2]],
+  }],
 ];
 
 const SIDE_QUESTS = SIDE_ROWS.map(([name, goal, event, extra], index) => {
@@ -572,9 +587,9 @@ const CATEGORIES=[
 ];
 
 /**
- * 2026-10-09（用户要求，第二轮）：
+ * 2026-10-09（二轮）：
  *  - 等级奖励**恢复到之前的「每级一份成长补给」**（QuestRewardBalance.levelReward，Lv1~50）。
- *  - 但**去掉技能书**：用户明确「不要给技能」，所以过滤 skillBook* 类道具（Lv.40 原本发技能书·攻击）。
+ *  - 但**去掉技能书**：明确「不要给技能」，所以过滤 skillBook* 类道具（Lv.40 原本发技能书·攻击）。
  *  - 曾经短暂上线的「10 档固定金币」已改为支线委托（LEVEL_TIER_GOLD_SIDE_ROWS）。
  */
 const SKILL_ITEM_IDS = new Set([

@@ -141,7 +141,7 @@ async function grantCard(conn, userId, cardId, star, craftQuality) {
   if (slotIndex < 0) throw new Error('卡牌背包已满，先清理再来抽');
   await conn.run(
     'INSERT INTO player_cards(user_id,slot_index,card_id,star,craft_quality) VALUES(?,?,?,?,?)',
-    [userId, slotIndex, Number(cardId), Math.max(0, Number(star) || 0), Math.max(1, Math.min(5, Number(craftQuality) || 1))],
+    [userId, slotIndex, Number(cardId), Math.max(0, Number(star) || 0), Math.max(2, Math.min(5, Number(craftQuality) || 2))],
   );
 }
 

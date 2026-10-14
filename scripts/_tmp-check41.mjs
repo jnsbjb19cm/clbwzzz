@@ -1,0 +1,10 @@
+import * as dbmod from '../server/database.js';
+const mod = dbmod.default ?? dbmod; const db = mod.db ?? mod;
+const all = (sql, p = []) => (typeof db.all === 'function' ? db.all(sql, p) : db.query(sql, p).then((r) => r[0]));
+const rows = await all('SELECT slot_index AS si, card_id AS cid FROM player_cards WHERE user_id=41 ORDER BY slot_index');
+console.log('  #41 卡牌总数:', rows.length, '| 最大槽位:', rows.at(-1)?.si);
+console.log('  有 55 ?', rows.some((r) => Number(r.cid) === 55) ? '有 ✔' : '没有 ✗');
+console.log('  有 126 ?', rows.some((r) => Number(r.cid) === 126) ? '有' : '没有');
+const bag = await all('SELECT slot_count AS sc FROM player_card_bags WHERE user_id=41');
+console.log('  背包容量 slotCount:', bag[0]?.sc ?? '(无记录)');
+process.exit(0);

@@ -87,7 +87,7 @@ export class SettingsView {
             <h3>界面</h3>
             <label class="gset-row gset-row-check">显示卡牌名称<input id="setting-names" type="checkbox" ${showCardName ? 'checked' : ''} /></label>
             <label class="gset-row gset-row-check">图鉴：未获得的卡显示为剪影<input id="setting-gallery-silhouette" type="checkbox" ${silhouette ? 'checked' : ''} /></label>
-            <label class="gset-row gset-row-check">显示普通/劣质品质底座<input id="setting-low-pedestal" type="checkbox" ${showLowPedestal ? 'checked' : ''} /></label>
+            <label class="gset-row gset-row-check">显示普通品质底座<input id="setting-low-pedestal" type="checkbox" ${showLowPedestal ? 'checked' : ''} /></label>
             <label class="gset-row gset-row-check">背包自动整理<input id="setting-bag-auto" type="checkbox" ${bagAuto ? 'checked' : ''} /></label>
             <p class="gset-hint">关闭剪影时（默认）未获得的卡也正常显示立绘；背包自动整理会在打开背包时按品质/等级排序。</p>
           </div>

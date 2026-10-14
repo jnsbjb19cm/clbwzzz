@@ -2,6 +2,7 @@ import {
   formatCraftCardName,
   getInstanceStatMultiplier,
   resolveCraftQuality,
+  normalizeCraftQuality,
 } from '../core/constants.js';
 import {
   HAND_SLOT_COUNT, STARTER_DECK, TRAINING_STAGE_VALUE,
@@ -37,7 +38,7 @@ function saveRoomSettings(s) {
 }
 
 function slotFingerprint(i, s) { return s ? { index: i, cardId: s.cardId, craftQuality: s.craftQuality ?? 1, strengthLv: s.strengthLv ?? 0 } : null; }
-function matchesFingerprint(s, fp) { return s && fp && s.cardId === fp.cardId && (s.craftQuality ?? 1) === (fp.craftQuality ?? 1) && (s.strengthLv ?? 0) === (fp.strengthLv ?? 0); }
+function matchesFingerprint(s, fp) { return s && fp && s.cardId === fp.cardId && normalizeCraftQuality(s.craftQuality) === normalizeCraftQuality(fp.craftQuality) && (s.strengthLv ?? 0) === (fp.strengthLv ?? 0); }
 function isBattleSlot(db, slot) { return Boolean(slot && db?.getById(slot.cardId)?.battleUsable !== false); }
 
 const byCh = {};
@@ -67,9 +68,9 @@ export class DeckSelectView {
       const slotHasQuality = slot.craftQuality != null || slot.craft_quality != null;
       const slotHasStar = slot.strengthLv != null || slot.strength_lv != null || slot.star != null;
       if (!slotHasQuality && !slotHasStar) return true;          // ② 槽位没有实例信息 → 认卡片
-      const slotQuality = Number(slot.craftQuality ?? slot.craft_quality ?? 1);
+      const slotQuality = normalizeCraftQuality(slot.craftQuality ?? slot.craft_quality);
       const slotStar = Number(slot.strengthLv ?? slot.strength_lv ?? slot.star ?? 0);
-      const fpQuality = Number(fp.craftQuality ?? fp.craft_quality ?? 1);
+      const fpQuality = normalizeCraftQuality(fp.craftQuality ?? fp.craft_quality);
       const fpStar = Number(fp.strengthLv ?? fp.strength_lv ?? fp.star ?? 0);
       return slotQuality === fpQuality && slotStar === fpStar;    // ③ 有信息 → 必须相等
     };

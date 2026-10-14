@@ -211,7 +211,8 @@ async function writeCardExtra(conn, userId, slot) {
   else await conn.run('INSERT INTO player_card_instance_state(user_id,slot_index,state_json) VALUES(?,?,?)', [userId, slot.slotIndex, payload]);
 }
 
-async function insertCard(conn, userId, { cardId, star = 0, craftQuality = 1, ...extra }) {
+async function insertCard(conn, userId, { cardId, star = 0, craftQuality = 2, ...extra }) {
+  craftQuality = Math.max(2, Math.min(5, Number(craftQuality) || 2));
   const slotIndex = await nextCardSlot(conn, userId);
   if (slotIndex < 0) throw new Error('卡牌背包已满');
   const card = CARD_BY_ID.get(int(cardId));
@@ -284,7 +285,7 @@ function rollCraftQuality(useCharm) {
   const mult = useCharm ? 1 + (Number(craftRules.charmBonus?.qualityWeight) || 0) : 1;
   const weights = craftRules.craftQualityWeights.map((entry) => ({
     id: Math.max(1, Math.min(5, int(entry.id, 0) + 1)),
-    weight: Number(entry.weight) * (int(entry.id) >= 2 ? mult : 1),
+    weight: Number(entry.weight) * (int(entry.id) >= 3 ? mult : 1),
   }));
   const total = weights.reduce((sum, entry) => sum + entry.weight, 0);
   let roll = Math.random() * total;
@@ -292,7 +293,7 @@ function rollCraftQuality(useCharm) {
     roll -= entry.weight;
     if (roll <= 0) return entry.id;
   }
-  return 1;
+  return 2;
 }
 
 function craftQualityName(quality) {

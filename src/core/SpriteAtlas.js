@@ -1,4 +1,5 @@
 const cache = new Map();
+import { loadSharedImage } from './SharedImageAssets20261013.js';
 const SPRITE_CACHE_BUST = '20260625f';
 
 /** 卡牌立绘(UI 用) */
@@ -22,12 +23,7 @@ export function partSpriteUrl(name) {
 }
 
 function loadImage(src) {
-  return new Promise((resolve) => {
-    const img = new Image();
-    img.onload = () => resolve(img);
-    img.onerror = () => resolve(null);
-    img.src = src;
-  });
+  return loadSharedImage(src);
 }
 
 /** soldier 图集多为动画小帧，小于此尺寸则战场用卡牌立绘 */
@@ -187,6 +183,7 @@ export class SpriteAtlas {
 
     const promise = loadImage(cardSpriteUrl(res));
     cache.set(key, promise);
+    promise.then(image => { if (!image) cache.delete(key); });
     return promise;
   }
 
@@ -197,6 +194,7 @@ export class SpriteAtlas {
 
     const promise = loadImage(unitSpriteUrl(res));
     cache.set(key, promise);
+    promise.then(image => { if (!image) cache.delete(key); });
     return promise;
   }
 
@@ -213,6 +211,7 @@ export class SpriteAtlas {
     })();
 
     cache.set(key, promise);
+    promise.then(image => { if (!image) cache.delete(key); });
     return promise;
   }
 
@@ -222,6 +221,7 @@ export class SpriteAtlas {
 
     const promise = loadImage(partSpriteUrl(name));
     cache.set(key, promise);
+    promise.then(image => { if (!image) cache.delete(key); });
     return promise;
   }
 
@@ -236,6 +236,7 @@ export class SpriteAtlas {
     })();
 
     cache.set(key, promise);
+    promise.then(image => { if (!image) cache.delete(key); });
     return promise;
   }
 

@@ -5,15 +5,15 @@
   },
   {
     "hero_level": 2,
-    "lvup_exp": 180
+    "lvup_exp": 410
   },
   {
     "hero_level": 3,
-    "lvup_exp": 350
+    "lvup_exp": 540
   },
   {
     "hero_level": 4,
-    "lvup_exp": 550
+    "lvup_exp": 660
   },
   {
     "hero_level": 5,
@@ -21,99 +21,99 @@
   },
   {
     "hero_level": 6,
-    "lvup_exp": 1050
+    "lvup_exp": 910
   },
   {
     "hero_level": 7,
-    "lvup_exp": 1350
+    "lvup_exp": 1030
   },
   {
     "hero_level": 8,
-    "lvup_exp": 1670
+    "lvup_exp": 1150
   },
   {
     "hero_level": 9,
-    "lvup_exp": 2020
+    "lvup_exp": 1260
   },
   {
     "hero_level": 10,
-    "lvup_exp": 2390
+    "lvup_exp": 1380
   },
   {
     "hero_level": 11,
-    "lvup_exp": 2780
+    "lvup_exp": 1490
   },
   {
     "hero_level": 12,
-    "lvup_exp": 3200
+    "lvup_exp": 1600
   },
   {
     "hero_level": 13,
-    "lvup_exp": 3630
+    "lvup_exp": 1700
   },
   {
     "hero_level": 14,
-    "lvup_exp": 4090
+    "lvup_exp": 1810
   },
   {
     "hero_level": 15,
-    "lvup_exp": 4570
+    "lvup_exp": 1910
   },
   {
     "hero_level": 16,
-    "lvup_exp": 5070
+    "lvup_exp": 2000
   },
   {
     "hero_level": 17,
-    "lvup_exp": 5580
+    "lvup_exp": 2100
   },
   {
     "hero_level": 18,
-    "lvup_exp": 6120
+    "lvup_exp": 2190
   },
   {
     "hero_level": 19,
-    "lvup_exp": 6670
+    "lvup_exp": 2280
   },
   {
     "hero_level": 20,
-    "lvup_exp": 7240
+    "lvup_exp": 2370
   },
   {
     "hero_level": 21,
-    "lvup_exp": 7830
+    "lvup_exp": 2460
   },
   {
     "hero_level": 22,
-    "lvup_exp": 8430
+    "lvup_exp": 2540
   },
   {
     "hero_level": 23,
-    "lvup_exp": 9060
+    "lvup_exp": 2620
   },
   {
     "hero_level": 24,
-    "lvup_exp": 9690
+    "lvup_exp": 2700
   },
   {
     "hero_level": 25,
-    "lvup_exp": 10350
+    "lvup_exp": 2780
   },
   {
     "hero_level": 26,
-    "lvup_exp": 11020
+    "lvup_exp": 2850
   },
   {
     "hero_level": 27,
-    "lvup_exp": 11700
+    "lvup_exp": 2920
   },
   {
     "hero_level": 28,
-    "lvup_exp": 12410
+    "lvup_exp": 2990
   },
   {
     "hero_level": 29,
-    "lvup_exp": 13120
+    "lvup_exp": 3060
   },
   {
     "hero_level": 30,

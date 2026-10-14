@@ -309,7 +309,7 @@ if (typeof window !== 'undefined') {
  * 说明：这里**不再**用 circleSize 去近似（那是我早期按几何猜的，跟真图对不上），
  * circleSize 参数保留兼容；craftQuality 用于匹配对应原图的可见边界。
  */
-export const QUALITY_DISC_WIDTH = 112;      // 与 BattleQualityHaloFix20260908.DISPLAY_WIDTH 一致
+export const QUALITY_DISC_WIDTH = 112 * 0.85; // 品质图缩小 15%；星星与相切血条同步使用这份几何。
 export const QUALITY_DISC_ASPECT = 0.75;    // 五张 quality-*.png 实测 1448x1086
 
 // Visible alpha bounds (alpha >= 32) of the five original 1448x1086 textures.

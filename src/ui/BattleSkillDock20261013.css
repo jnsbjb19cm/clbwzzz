@@ -1,0 +1,34 @@
+body.battle-immersive .game-container #skill-panel.reference-skill-dock {
+  height: 90px !important; min-height: 90px !important; gap: 0 !important;
+  padding: 0 20px 0 0 !important; bottom: 10px !important;
+  isolation: isolate; max-width: 95% !important;
+}
+body.battle-immersive #skill-panel.reference-skill-dock::before {
+  content: ''; position: absolute; z-index: -1; left: 38px; right: 0; top: 43%; height: 35%;
+  border-top: 4px solid #c7cbc3; border-bottom: 3px solid #565c50; border-radius: 18px;
+  background: linear-gradient(#798375,rgba(38,46,33,.9) 38%,rgba(11,18,9,.8));
+  box-shadow: 0 -2px 2px #30372d, inset 0 2px 3px #f4f6ec;
+}
+body.battle-immersive #skill-panel.reference-skill-dock .reference-skill-mp {
+  position: relative !important; flex: 0 0 124px !important; width: 124px !important; height: 90px !important;
+  border: 0 !important; padding: 0 !important; background: none !important; box-shadow: none !important;
+}
+body.battle-immersive #skill-panel .skill-dock-bottle { width: 83px; height: 99px; object-fit: contain; align-self: flex-end; filter: drop-shadow(1px 2px 1px #111); }
+body.battle-immersive #skill-panel .skill-dock-mp-value { position: absolute; right: 4px; top: 43%; color: #fff; font: bold 22px/1 SimSun,serif; -webkit-text-stroke: .5px #000; text-shadow: -1px -1px #000,1px 1px #000,1px -1px #000,-1px 1px #000; }
+body.battle-immersive #skill-panel.reference-skill-dock .skill-slots { gap: 0 !important; height: 82px !important; }
+body.battle-immersive #skill-panel.reference-skill-dock .skill-slot {
+  width: 78px !important; min-width: 78px !important; max-width: 78px !important; height: 78px !important; min-height: 78px !important;
+  border: 3px solid #acb3a6 !important; border-top-color: #e6e9df !important; border-bottom-color: #626e61 !important;
+  background: linear-gradient(145deg,rgba(139,150,133,.65),rgba(29,38,27,.86) 54%,rgba(13,23,12,.92)) !important;
+  box-shadow: inset 0 2px 3px #ffffff70,inset 0 -2px 4px #000,0 -2px 1px #44533c !important;
+}
+body.battle-immersive #skill-panel.reference-skill-dock .skill-slot.empty { opacity: 1 !important; filter: none !important; }
+body.battle-immersive #skill-panel.reference-skill-dock .skill-slot.empty > span { display: none; }
+body.battle-immersive #skill-panel.reference-skill-dock .skill-slot > em { left: 7px !important; top: 3px !important; border: 0 !important; background: transparent !important; opacity: .6; font-size: 9px !important; }
+body.battle-immersive #skill-panel.reference-skill-dock .skill-slot-icon { width: 59px !important; height: 59px !important; }
+body.battle-immersive #skill-panel.reference-skill-dock .skill-slot-icon img { width: 100%; height: 100%; object-fit: contain; }
+body.battle-immersive #skill-panel.reference-skill-dock .skill-slot > small { bottom: 7px !important; background: transparent !important; padding: 0 !important; color: #fff !important; font: bold 17px/1 SimSun,serif !important; text-shadow: 1px 1px #000,-1px -1px #000,1px -1px #000,-1px 1px #000 !important; }
+body.battle-immersive #skill-panel .skill-dock-controls { margin-left: 3px; display: grid; gap: 1px; }
+body.battle-immersive #skill-panel .skill-dock-controls button { padding: 0; width: 22px; height: 25px; border: 2px solid #bdc8ac; border-radius: 10px; color: #79c5ff; background: linear-gradient(#305487,#152338); text-shadow: 0 1px #000; cursor: pointer; font-size: 16px; }
+body.battle-immersive #skill-panel.dock-collapsed .skill-slots { display: none !important; }
+@media(max-width:900px) { body.battle-immersive .game-container #skill-panel.reference-skill-dock { transform:translateX(-50%) scale(.72) !important; max-width:none !important; transform-origin:center bottom; } }

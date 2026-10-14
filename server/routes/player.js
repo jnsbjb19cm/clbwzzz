@@ -1,4 +1,5 @@
 import { Router } from 'express';
+import { normalizeCraftQuality } from '../../src/core/constants.js';
 import { db, getPlayerSnapshot, withTransaction } from '../database.js';
 import { requireAuth } from '../middleware/auth.js';
 import { getCardInventoryHandler, putCardInventoryHandler } from './cardInventoryPersistence20260906.js';
@@ -143,7 +144,7 @@ playerRouter.put('/decks/:deckNo', async (req, res) => {
   // 现在接受 {cardId, craftQuality, strengthLv}（也兼容纯 id），把实例一起入库。
   const entries = rawCards.map((raw) => ({
     cardId: Number(raw?.cardId ?? raw),
-    craftQuality: Math.max(1, Math.min(9, Number(raw?.craftQuality ?? raw?.craft_quality ?? 1) || 1)),
+    craftQuality: normalizeCraftQuality(raw?.craftQuality ?? raw?.craft_quality),
     strengthLv: Math.max(0, Number(raw?.strengthLv ?? raw?.strength_lv ?? raw?.star ?? 0) || 0),
   })).filter((entry) => Number.isInteger(entry.cardId) && entry.cardId > 0);
   const cards = entries.map((entry) => entry.cardId);
@@ -166,10 +167,10 @@ playerRouter.put('/decks/:deckNo', async (req, res) => {
   await withTransaction(async (conn) => {
     await conn.run('DELETE FROM deck_cards WHERE deck_id=?', [deck.id]);
     for (let index = 0; index < cards.length; index += 1) {
-      const entry = entries[index] ?? { cardId: cards[index], craftQuality: 1, strengthLv: 0 };
+      const entry = entries[index] ?? { cardId: cards[index], craftQuality: 2, strengthLv: 0 };
       await conn.run(
         'INSERT INTO deck_cards(deck_id,slot_index,card_id,craft_quality,strength_lv) VALUES(?,?,?,?,?)',
-        [deck.id, index, entry.cardId, entry.craftQuality ?? 1, entry.strengthLv ?? 0],
+        [deck.id, index, entry.cardId, normalizeCraftQuality(entry.craftQuality), entry.strengthLv ?? 0],
       );
     }
   });
@@ -295,7 +296,7 @@ playerRouter.post('/migration/local-snapshot', async (req, res) => {
             slotIndex,
             cardId,
             clampInt(card.star ?? card.strengthLv, 0, 99),
-            clampInt(card.craftQuality, 0, 99),
+            normalizeCraftQuality(card.craftQuality),
           ],
         );
       }
@@ -312,7 +313,7 @@ playerRouter.post('/migration/local-snapshot', async (req, res) => {
       const deckEntries = Array.isArray(entry.cards)
         ? entry.cards.map((c) => ({
           cardId: Number(c?.cardId ?? c),
-          craftQuality: Math.max(1, Math.min(9, Number(c?.craftQuality ?? c?.craft_quality ?? 1) || 1)),
+          craftQuality: normalizeCraftQuality(c?.craftQuality ?? c?.craft_quality),
           strengthLv: Math.max(0, Number(c?.strengthLv ?? c?.strength_lv ?? c?.star ?? 0) || 0),
         })).filter((e) => Number.isInteger(e.cardId) && e.cardId > 0)
         : [];

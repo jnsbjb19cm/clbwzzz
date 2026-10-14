@@ -10,6 +10,7 @@ import {
 } from './SkillAnimationConfig.js';
 
 const SKILL_ANIM_CACHE_BUST = '20260801-animation-sync';
+import { loadSharedImage, loadSharedAssetJson } from '../core/SharedImageAssets20261013.js';
 // 技能骨骼需要看清完整过程；仅改变播放速度，不改变技能结算数值。
 const SKILL_PLAYBACK_RATE = 0.72;
 /**
@@ -148,15 +149,8 @@ class SkillAnimPlayer {
     if (this.packs.has(id)) return Promise.resolve(this.packs.get(id));
     if (this.loading.has(id)) return this.loading.get(id);
     const pending = Promise.all([
-      fetch(`/sprites/skill_anim/${id}.json?v=${SKILL_ANIM_CACHE_BUST}`)
-        .then((response) => response.ok ? response.json().catch(() => null) : null)
-        .catch(() => null),
-      new Promise((resolve) => {
-        const image = new Image();
-        image.onload = () => resolve(image);
-        image.onerror = () => resolve(null);
-        image.src = `/sprites/skill_anim/${id}.png?v=${SKILL_ANIM_CACHE_BUST}`;
-      }),
+      loadSharedAssetJson(`/sprites/skill_anim/${id}.json?v=${SKILL_ANIM_CACHE_BUST}`),
+      loadSharedImage(`/sprites/skill_anim/${id}.png?v=${SKILL_ANIM_CACHE_BUST}`),
     ]).then(([meta, sheet]) => {
       const pack = meta && sheet ? { meta, sheet } : null;
       if (pack) this.packs.set(id, pack);

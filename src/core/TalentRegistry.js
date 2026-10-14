@@ -1,4 +1,4 @@
-export const TALENT_NODES = [
+const LEGACY_TALENT_NODES = [
   { id: 'core', name: '勇者之心', branch: 'center', x: 50, y: 50, cost: 0, prerequisites: [], hpBonus: 0, desc: '这是你启航的起点，梦开始的地方。' },
 
   { id: 'north_vitality', name: '生命锻炼', branch: 'north', x: 50, y: 40, cost: 1, prerequisites: ['core'], hpBonus: 100, desc: '点亮后，我方基地生命上限 +100。' },
@@ -65,6 +65,52 @@ export const TALENT_NODES = [
   { id: 'illusion', name: '幻之境', branch: 'west', x: 10, y: 28, cost: 1, prerequisites: ['fatal_curse'], skillId: 550, desc: '令敌方的3-5张卡牌暂时消失10秒,技能结束后回归原位置，但同时恢复至血量最大值（主动技能）。' },
   { id: 'iron_body', name: '铁壳功', branch: 'west', x: 10, y: 72, cost: 1, prerequisites: ['guardian_shield'], skillId: 547, desc: '使己方基地在10秒内不受到任何伤害（主动技能）' },
 ];
+
+export const TALENT_TREE_REVISION = 20261013;
+// Three paths per direction: small attributes are actual prerequisites, not decoration.
+const TALENT_BRANCH_PATHS = {
+  north: { root: 'north_vitality', paths: [
+    ['north_bark', 'passive_strong', 'north_vigor', 'passive_endure'],
+    ['medical', 'north_breath', 'holy_light', 'sacred_revival'],
+    ['north_mana2', 'passive_sacred', 'passive_gift', 'passive_god'],
+  ] },
+  east: { root: 'east_power', paths: [
+    ['east_focus', 'east_guard', 'east_might', 'stone', 'ice_arrow'],
+    ['passive_will', 'tomato_bomb', 'meteor_rain', 'rock_break'],
+    ['east_mana2', 'fire_wall', 'passive_slay', 'firebird', 'war_cry'],
+  ] },
+  south: { root: 'south_mana', paths: [
+    ['south_well', 'thunderbolt', 'thunder_arrow'],
+    ['passive_focus', 'south_mana2', 'thunderstorm', 'passive_wisdom'],
+    ['south_anchor', 'lightning_hammer', 'south_might', 'magic_arrow'],
+  ] },
+  west: { root: 'west_resolve', paths: [
+    ['west_antidote', 'poison_mist', 'west_mana2', 'fatal_curse', 'illusion'],
+    ['west_reserve', 'passive_tough', 'west_might', 'guardian_shield', 'iron_body'],
+    ['battle_roar', 'west_bastion', 'passive_gamble', 'passive_war'],
+  ] },
+};
+const legacyNodes = new Map(LEGACY_TALENT_NODES.map(node => [node.id, node]));
+legacyNodes.set('west_bastion', { id:'west_bastion', name:'稳守', kind:'minor', hpBonus:25, cost:1 });
+function branchNode(id, branch, lane, depth, parent) {
+  const node = { ...legacyNodes.get(id), branch, prerequisites:[parent] };
+  const distance = depth === 0 ? 8 : 16 + (depth - 1) * 7;
+  const across = lane * 8;
+  const positions = { north:[50+across,50-distance], east:[50+distance,50+across], south:[50+across,50+distance], west:[50-distance,50+across] };
+  [node.x,node.y] = positions[branch];
+  if (node.kind === 'minor') {
+    if (node.hpBonus) node.hpBonus = 25;
+    if (node.mpBonus) node.mpBonus = 5;
+    node.desc = node.hpBonus ? '基地生命上限 +25。继续沿此分支解锁后续天赋。' : '魔力上限 +5。继续沿此分支解锁后续天赋。';
+  }
+  if (id === 'passive_war') node.desc = '稻草人系卡牌攻击力 +5%。';
+  if (id === 'passive_gift') node.desc = '蒲公英系生命 +5%，治疗效果 +50%。';
+  return node;
+}
+export const TALENT_NODES = [legacyNodes.get('core'), ...Object.entries(TALENT_BRANCH_PATHS).flatMap(([branch, group]) => [
+  branchNode(group.root,branch,0,0,'core'),
+  ...group.paths.flatMap((path,lane) => path.map((id,index) => branchNode(id,branch,lane-1,index+1,index ? path[index-1] : group.root))),
+])];
 
 function finite(value, fallback = 0) {
   const number = Number(value);

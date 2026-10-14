@@ -24,7 +24,7 @@ function authoritativeStart(data, now, duration, serverUntil) {
   return now;
 }
 
-function seedAnimationClock(unit, state, elapsed, now) {
+function seedAnimationClock(unit, state, elapsed, now, preservePrediction = false) {
   // 2026-09-11：冰冻 = 精灵图暂停。冻结期间不允许重置/重播动画时钟，
   // 否则服务端状态同步会把已经停住的单位又从头播一遍。
   if (unit?.frozenUntil && now < unit.frozenUntil) return;
@@ -42,6 +42,7 @@ function seedAnimationClock(unit, state, elapsed, now) {
   }
   if (!pack.meta?.animations?.[drawState]?.frames?.length) return;
 
+  if (preservePrediction) elapsed = Math.max(elapsed, unitAnimPlayer.clocks.get(`${unit.uid}:${drawState}`) ?? 0);
   unitAnimPlayer.resetClock(unit);
   unitAnimPlayer.clocks.set(`${unit.uid}:${drawState}`, Math.max(0, elapsed));
   unitAnimPlayer.lastDrawTimes.set(unit.uid, now);
@@ -65,7 +66,13 @@ function beginAttackWindow(unit, data, now) {
     unit._attackAnimUntil = serverUntil > now
       ? serverUntil
       : Math.max(now + 0.02, startedAt + duration);
-    seedAnimationClock(unit, 'attacking', elapsed, now);
+    const prediction = unit.__pvpPrediction
+      ?? (unit.__pvpConfirmedPrediction?.attackToken === token ? unit.__pvpConfirmedPrediction : null);
+    const confirmsPrediction = prediction?.kind === 'attack'
+      && token !== Number(prediction.baselineAttackToken)
+      && Math.abs(startedAt - prediction.startedAt) <= 0.25;
+    seedAnimationClock(unit, 'attacking', elapsed, now, confirmsPrediction);
+    unit.__pvpConfirmedPrediction = null;
     return;
   }
 

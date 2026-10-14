@@ -631,7 +631,7 @@ export class BattleView {
             <em>${hotkey}</em>
             <span class="skill-slot-icon">${getSkillIcon(card)}</span>
             <strong>${card.name}</strong>
-            <small>MP ${mp}</small>
+            <small>${mp}</small>
             ${cd > 0 ? `<span class="skill-slot-cd">${cd.toFixed(0)}</span>` : ''}
           </button>`;
       })

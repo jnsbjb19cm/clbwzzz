@@ -1,6 +1,8 @@
 import { Router } from 'express';
 import { db, withTransaction } from '../database.js';
 import { requireAuth } from '../middleware/auth.js';
+import { migrateTalentState } from '../../src/core/TalentTreeMigration20261013.js';
+import { TALENT_TREE_REVISION } from '../../src/core/TalentRegistry.js';
 
 export const playerStateDocumentRouter20260908 = Router();
 playerStateDocumentRouter20260908.use(requireAuth);
@@ -58,7 +60,19 @@ playerStateDocumentRouter20260908.get('/state/:key', async (req, res) => {
   );
   if (!row) return res.json({ ok: true, key, state: null, updatedAt: null });
   try {
-    return res.json({ ok: true, key, state: JSON.parse(String(row.stateJson || '{}')), updatedAt: row.updatedAt });
+    const oldState = JSON.parse(String(row.stateJson || '{}'));
+    let state = key === 'hero_skills' ? migrateTalentState(oldState) : oldState;
+    if (state !== oldState) {
+      await db.run(
+        'UPDATE player_state_documents SET state_json=?, updated_at=CURRENT_TIMESTAMP WHERE user_id=? AND state_key=? AND state_json=?',
+        [JSON.stringify(state), Number(req.user.id), key, row.stateJson],
+      );
+      // Another tab may already have migrated and spent points. Return the saved
+      // winner instead of a stale, empty tree that could erase its new choices.
+      const current = await db.get('SELECT state_json AS stateJson FROM player_state_documents WHERE user_id=? AND state_key=?', [Number(req.user.id), key]);
+      if (current?.stateJson) state = migrateTalentState(JSON.parse(current.stateJson));
+    }
+    return res.json({ ok: true, key, state, updatedAt: row.updatedAt });
   } catch {
     return res.status(500).json({ message: '数据库状态损坏' });
   }
@@ -68,9 +82,19 @@ playerStateDocumentRouter20260908.put('/state/:key', async (req, res) => {
   const key = validKey(req.params.key);
   if (!key) return res.status(400).json({ message: '状态类型无效' });
   try {
-    const json = normalizeState(req.body?.state);
+    let json = normalizeState(req.body?.state);
     await ensureTable();
     await withTransaction(async (conn) => {
+      if (key === 'hero_skills') {
+        const previous = await conn.get('SELECT state_json AS stateJson FROM player_state_documents WHERE user_id=? AND state_key=?', [Number(req.user.id),key]);
+        const stored = previous?.stateJson ? JSON.parse(previous.stateJson) : null;
+        if (Number(stored?.talentRevision) >= TALENT_TREE_REVISION && Number(req.body.state.talentRevision || 0) < TALENT_TREE_REVISION) {
+          throw new Error('天赋树已升级，请刷新后重新分配天赋。');
+        }
+        const state = migrateTalentState(req.body.state);
+        if (stored) state.talentPointCredit = migrateTalentState(stored).talentPointCredit ?? 0;
+        json = normalizeState(state);
+      }
       await conn.run('DELETE FROM player_state_documents WHERE user_id=? AND state_key=?', [Number(req.user.id), key]);
       await conn.run(
         'INSERT INTO player_state_documents(user_id,state_key,state_json,updated_at) VALUES(?,?,?,CURRENT_TIMESTAMP)',

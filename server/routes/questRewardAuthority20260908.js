@@ -102,7 +102,7 @@ async function addCard(conn, userId, cardId, craftQuality = 1) {
   if (slotIndex < 0) throw new Error('卡牌背包已满，任务奖励未领取');
   await conn.run(
     'INSERT INTO player_cards(user_id,slot_index,card_id,star,craft_quality) VALUES(?,?,?,?,?)',
-    [userId, slotIndex, cardId, 0, clampInt(craftQuality, 1, 5)],
+    [userId, slotIndex, cardId, 0, clampInt(craftQuality, 2, 5)],
   );
 }
 

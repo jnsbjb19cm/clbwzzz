@@ -173,7 +173,7 @@ async function addCard(conn, userId, cardId) {
   if (slotIndex < 0) throw new Error('卡牌背包已满');
   await conn.run(
     'INSERT INTO player_cards(user_id,slot_index,card_id,star,craft_quality) VALUES(?,?,?,?,?)',
-    [userId, slotIndex, id, 0, 1],
+    [userId, slotIndex, id, 0, 2],
   );
   return slotIndex;
 }

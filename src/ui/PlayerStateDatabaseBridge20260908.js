@@ -1,6 +1,7 @@
 import { authStore } from '../core/AuthStore.js';
 import { HeroSkillStore } from '../core/HeroSkillStore.js';
 import { DEFAULT_SKILL_LOADOUT } from '../core/SkillRegistry.js';
+import { migrateTalentState } from '../core/TalentTreeMigration20261013.js';
 import { App } from './App.js';
 
 const PATCH_FLAG = Symbol.for('clbwz.playerStateDatabaseBridge20260908');
@@ -26,6 +27,9 @@ function parseStored(raw) {
 
 function applyHeroState(store, state) {
   if (!store || !state || typeof state !== 'object') return;
+  state = migrateTalentState(state);
+  store.talentPointCredit = Math.max(0, Number(state.talentPointCredit) || 0);
+  store.previousTalents = state.previousTalents ?? [];
   const unlocked = Array.isArray(state.unlockedTalents)
     ? state.unlockedTalents.filter((id) => typeof id === 'string')
     : ['core'];
@@ -44,6 +48,8 @@ function resetHeroState(store) {
   if (!store) return;
   store.unlockedTalents = new Set(['core']);
   store.consumedExtra = 0;
+  store.talentPointCredit = 0;
+  store.previousTalents = [];
   store.loadout = [...DEFAULT_SKILL_LOADOUT];
 }
 

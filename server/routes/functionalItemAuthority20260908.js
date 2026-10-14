@@ -5,6 +5,7 @@ import { requireAuth } from '../middleware/auth.js';
 import { readPlayerItems20260908 } from '../domain/playerInventoryAuthority20260908.js';
 import { readCardInventory } from './cardInventoryPersistence20260906.js';
 import { resolveCraftQuality } from '../../src/core/constants.js';
+import { cardInstanceIdentity } from '../../src/core/CardInstanceIdentity.js';
 
 /** 制作品质名（与客户端 core/constants.js 同源）。 */
 const craftQualityLabel = (craftQuality) => resolveCraftQuality(craftQuality).name;
@@ -105,17 +106,20 @@ functionalItemAuthorityRouter20260908.post('/cards/use-functional-item', async (
       const target = await readCardRow(conn, userId, targetSlotIndex);
       if (!target) throw new Error('目标卡牌不存在，请刷新后重试');
       const targetState = parseState(target.stateJson);
+      if (req.body.expectedTarget && cardInstanceIdentity({ ...targetState, ...target }) !== req.body.expectedTarget) {
+        throw new Error('目标卡牌已变化，请刷新后重新选择，未消耗道具');
+      }
       const quality = baseQuality(target.cardId);
       const maxStar = MAX_STARS[quality] || 5;
       let star = Math.max(0, Number(target.star) || 0);
-      let craftQuality = Math.max(1, Math.min(5, Number(target.craftQuality) || 1));
+      let craftQuality = Math.max(2, Math.min(5, Number(target.craftQuality) || 2));
       let message = '已使用';
       // 卡牌显示名：自定义名优先，其次配置表里的卡名
       const displayName = String(targetState.customName || CARD_BY_ID.get(Number(target.cardId))?.card_name || '卡牌');
 
       if (itemId === 80) {
         const roll = Math.random();
-        craftQuality = roll < 0.08 ? 5 : roll < 0.23 ? 4 : roll < 0.43 ? 3 : roll < 0.68 ? 2 : 1;
+        craftQuality = roll < 0.08 ? 5 : roll < 0.23 ? 4 : roll < 0.43 ? 3 : 2;
         message = `成功将${displayName}洗练为${craftQualityLabel(craftQuality)}的`;
       } else if (itemId === 81) {
         const first = Math.random();
@@ -161,6 +165,9 @@ functionalItemAuthorityRouter20260908.post('/cards/use-functional-item', async (
         }
         const source = await readCardRow(conn, userId, sourceSlotIndex);
         if (!source) throw new Error('经验来源卡牌不存在');
+        if (req.body.expectedSource && cardInstanceIdentity({ ...parseState(source.stateJson), ...source }) !== req.body.expectedSource) {
+          throw new Error('经验来源卡牌已变化，请重新选择，未消耗道具');
+        }
         const moved = Math.max(0, Number(source.star) || 0);
         star = Math.min(maxStar, star + moved);
         await conn.run('UPDATE player_cards SET star=0 WHERE user_id=? AND slot_index=?', [userId, sourceSlotIndex]);
