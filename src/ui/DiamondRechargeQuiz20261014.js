@@ -10,7 +10,9 @@
 import { authStore } from '../core/AuthStore.js';
 
 const PATCH_FLAG = Symbol.for('clbwz.diamondRechargeQuiz20261014');
-const API = '/api/player/quiz';
+// 注意：authStore.api 已经自带 /api 前缀（其它模块都用 '/player/xxx'），
+// 这里写 /api/player/quiz 会变成 /api/api/player/... → 404（用户反馈：接口不存在）
+const API = '/player/quiz';
 
 function el(html) {
   const box = document.createElement('div');
