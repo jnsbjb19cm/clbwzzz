@@ -1,6 +1,5 @@
 import {
   formatCraftCardName,
-  getInstanceStatMultiplier,
   resolveCraftQuality,
 } from '../core/constants.js';
 import { CraftStateStore } from '../core/CraftStateStore.js';

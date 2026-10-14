@@ -89,8 +89,20 @@ export function isCraftableCard(card) {
 export function getInstanceStatMultiplier(craftQuality = 2, strengthLv = 0) {
   const quality = normalizeCraftQuality(craftQuality);
   const P = CRAFT_QUALITY_MULT[quality];
-  const Q = Math.max(0, Number(strengthLv) || 0);
-  return P + 0.08 * Q;
+  return P + getStarGrowthBonus(strengthLv, 0.08, 0.06);
+}
+
+/** 前5星收益不变；第6星起小幅收紧成长，不改星级、品质和强化成本。 */
+function getStarGrowthBonus(stars, earlyRate, lateRate) {
+  const value = Math.max(0, Number(stars) || 0);
+  return earlyRate * Math.min(5, value) + lateRate * Math.max(0, value - 5);
+}
+
+export function getInstanceHpMultiplier(craftQuality, stars, defense = false, defenseBonus = 0) {
+  const P = CRAFT_QUALITY_MULT[normalizeCraftQuality(craftQuality)];
+  return defense
+    ? P + getStarGrowthBonus(stars, 0.08, 0.06) + 0.08 * defenseBonus
+    : P + getStarGrowthBonus(stars, 0.05, 0.04);
 }
 
 export function getStarAtkBonus(stars) {
@@ -128,27 +140,24 @@ export const DEFENSE_CARD_IDS = new Set([2, 11, 21, 34, 88, 90]);
 
 /**
  * 核心公式：
- * mult = P + 0.08Q
+ * mult = P + 0.08×min(Q,5) + 0.06×max(Q−5,0)
  * atk  = (card_atk + R) × mult
- * hp   = card_hp × (防御卡 ? P + 0.08Q + 0.08V : P + 0.05Q)
- *        （2026-10-11 用户调整：普通卡生命每星 8%→5%，防御卡 16%→8%，额外防御同步减半；
- *          注意攻击仍用 mult = P + 0.08Q，**未被削弱**）
+ * hp   = card_hp × getInstanceHpMultiplier(品质,Q,防御卡,V)
+ *        前5星：普通生命每星5%，防御生命8%；之后分别为4%、6%。
  * cd   = max(6, card_cooldown − M)
  */
 export function calcCardStats(card, craftQuality, stars) {
   const Q = Math.max(0, Number(stars) || 0);
   const quality = normalizeCraftQuality(craftQuality);
   const P = CRAFT_QUALITY_MULT[quality];
-  const R = getStarAtkBonus(Q);
+  const baseAtk = Math.max(0, Number(card?.atk ?? card?.card_atk) || 0);
+  const R = baseAtk > 0 ? getStarAtkBonus(Q) : 0;
   const baseCd = Math.max(0, Number(card?.cooldown ?? card?.card_cd) || 0);
   const M = getStarCdReduce(baseCd, Q);
-  const mult = P + 0.08 * Q;
+  const mult = getInstanceStatMultiplier(quality, Q);
   const isDef = Number(card?.atkStyle ?? card?.atk_style) === 1;
   const V = isDef && baseCd <= 6 ? getStarDefBonus(Q) : 0;
-  // 2026-10-11 用户：普通卡每星生命 8% -> 5%；防御卡 16% -> 8%（额外防御项 V 同步减半）
-  // 攻击不变（仍用上面的 mult = P + 0.08 * Q）
-  const hpMult = isDef ? P + 0.08 * Q + 0.08 * V : P + 0.05 * Q;
-  const baseAtk = Math.max(0, Number(card?.atk ?? card?.card_atk) || 0);
+  const hpMult = getInstanceHpMultiplier(quality, Q, isDef, V);
   const baseHp = Math.max(0, Number(card?.hp ?? card?.card_hp) || 0);
   return {
     atk: Math.round((baseAtk + R) * mult * 100) / 100,

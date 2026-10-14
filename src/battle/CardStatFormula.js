@@ -1,6 +1,8 @@
 import {
   CRAFT_QUALITY_MULT,
   normalizeCraftQuality,
+  getInstanceStatMultiplier,
+  getInstanceHpMultiplier,
 } from '../core/constants.js';
 
 // 战斗属性必须直接使用项目统一的制作品质倍率。
@@ -69,9 +71,8 @@ export function calculateCardStats(card, craftQuality = 2, stars = 0, attributeR
   const M = getStarCooldownReduction(baseCooldown, Q);
   const defense = isDefenseBattleCard(card);
   const V = defense && baseCooldown <= 6 ? getStarDefenseBonus(Q) : 0;
-  const mult = P + 0.08 * Q;
-  // 2026-10-11 用户：普通卡每星生命 8% -> 5%；防御卡 16% -> 8%（V 项同步减半）；攻击不变
-  const hpMult = defense ? P + 0.08 * Q + 0.08 * V : P + 0.05 * Q;
+  const mult = getInstanceStatMultiplier(quality, Q);
+  const hpMult = getInstanceHpMultiplier(quality, Q, defense, V);
   const roll = normalizeAttributeRoll(attributeRoll);
   const atkRollMult = 1 + roll.atk / 100;
   const hpRollMult = 1 + roll.hp / 100;

@@ -1,5 +1,5 @@
 import smithyJson from '../data/smithy.json';
-import { getInstanceStatMultiplier } from '../core/constants.js';
+import { calculateCardStats } from '../battle/CardStatFormula.js';
 
 const POWDER_IDS = [10001, 10002, 10003, 10004, 10005];
 // Keep the client preview in lock-step with the authoritative
@@ -62,12 +62,12 @@ export class CardStrengthenSystem {
       slot.strengthLv = lv + 1;
       slot.star = slot.strengthLv;
       cardInventory.save();
-      const mult = getInstanceStatMultiplier(slot.craftQuality ?? 1, slot.strengthLv);
+      const stats = calculateCardStats(card, slot.craftQuality, slot.strengthLv, slot.attributeRoll);
       return {
         ok: true,
         success: true,
         strengthLv: slot.strengthLv,
-        message: `强化成功！+${slot.strengthLv}(属性 x${mult.toFixed(2)})`,
+        message: `强化成功！+${slot.strengthLv}（攻击 ${stats.atk}，生命 ${stats.hp}）`,
       };
     }
 

@@ -1,6 +1,5 @@
 import {
   formatCraftCardName,
-  getInstanceStatMultiplier,
   resolveCraftQuality,
   normalizeCraftQuality,
 } from '../core/constants.js';
@@ -9,6 +8,7 @@ import {
   roundBattleAmount,
 } from '../battle/BattleConfig.js';
 import { audio } from '../core/AudioManager.js';
+import { calculateCardStats } from '../battle/CardStatFormula.js';
 import stageInfoData from '../data/stageInfo.json';
 import worldMapData from '../data/worldMap.json';
 
@@ -744,7 +744,7 @@ export class DeckSelectView {
       const c = s ? this._db.getById(s.cardId) : null;
       if (c && s) {
         const cq = resolveCraftQuality(s.craftQuality);
-        const mult = getInstanceStatMultiplier(s.craftQuality, s.strengthLv);
+        const stats = calculateCardStats(c, s.craftQuality, s.star ?? s.strengthLv, s.attributeRoll);
         return `
           <div class="deck-slot-item filled" data-slot-idx="${i}" data-bag-idx="${bi}">
             <div class="slot-card-img">
@@ -752,7 +752,7 @@ export class DeckSelectView {
               ${(s.strengthLv ?? 0) > 0 ? `<span class="slot-star">+${s.strengthLv}</span>` : ''}
             </div>
             <span class="slot-card-name" style="color:${cq.color}">${formatCraftCardName(s.craftQuality, c.name)}</span>
-            <span class="slot-card-stats">⚔${roundBattleAmount(c.atk * mult)} ❤${Math.round(c.hp * mult)}</span>
+            <span class="slot-card-stats">⚔${roundBattleAmount(stats.atk)} ❤${roundBattleAmount(stats.hp)}</span>
           </div>
         `;
       }
@@ -788,13 +788,13 @@ export class DeckSelectView {
           const c = this._db.getById(slot.cardId);
           if (!c) return '';
           const cq = resolveCraftQuality(slot.craftQuality);
-          const mult = getInstanceStatMultiplier(slot.craftQuality, slot.strengthLv);
+          const stats = calculateCardStats(c, slot.craftQuality, slot.star ?? slot.strengthLv, slot.attributeRoll);
           const on = isPicked(index);
           return `
             <button type="button" class="drawer-card ${on ? 'selected' : ''}" data-idx="${index}" style="--quality:${cq.color};${on ? `border-color:${cq.color}` : ''}">
               <img src="/sprites/cards/${c.spriteRes}.png" alt="" draggable="false" />
               <strong style="color:${cq.color}">${formatCraftCardName(slot.craftQuality, c.name)}</strong>
-              <span>⚔${roundBattleAmount(c.atk * mult)} ❤${Math.round(c.hp * mult)}</span>
+              <span>⚔${roundBattleAmount(stats.atk)} ❤${roundBattleAmount(stats.hp)}</span>
               <em>${c.typeLabel ?? ''}${(slot.strengthLv ?? 0) > 0 ? ` +${slot.strengthLv}` : ''}${on ? ' · 已选' : ''}</em>
             </button>
           `;

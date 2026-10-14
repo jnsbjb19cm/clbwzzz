@@ -1,8 +1,8 @@
 import { HAND_SLOT_COUNT, roundBattleAmount } from '../battle/BattleConfig.js';
 import { audio } from '../core/AudioManager.js';
+import { calculateCardStats } from '../battle/CardStatFormula.js';
 import {
   formatCraftCardName,
-  getInstanceStatMultiplier,
   resolveCraftQuality,
 } from '../core/constants.js';
 import { App } from './App.js';
@@ -145,7 +145,7 @@ function renderDeckSlotsStable(root) {
     }
 
     const quality = resolveCraftQuality(instance.craftQuality);
-    const multiplier = getInstanceStatMultiplier(instance.craftQuality, instance.strengthLv);
+    const stats = calculateCardStats(card, instance.craftQuality, instance.star ?? instance.strengthLv, instance.attributeRoll);
     return `
       <button type="button" class="deck-slot-item filled" data-slot-idx="${slotIndex}" data-bag-idx="${bagIndex}" aria-label="更换${card.name}">
         <span class="slot-card-img">
@@ -153,7 +153,7 @@ function renderDeckSlotsStable(root) {
           ${(instance.strengthLv ?? 0) > 0 ? `<span class="slot-star">+${instance.strengthLv}</span>` : ''}
         </span>
         <span class="slot-card-name" style="color:${quality.color}">${formatCraftCardName(instance.craftQuality, card.name)}</span>
-        <span class="slot-card-stats">⚔${roundBattleAmount(card.atk * multiplier)} ❤${Math.round(card.hp * multiplier)}</span>
+        <span class="slot-card-stats">⚔${roundBattleAmount(stats.atk)} ❤${roundBattleAmount(stats.hp)}</span>
       </button>
     `;
   }).join('');
@@ -169,13 +169,13 @@ function renderDrawerStable(root) {
         const card = this._db?.getById(slot.cardId);
         if (!card) return '';
         const quality = resolveCraftQuality(slot.craftQuality);
-        const multiplier = getInstanceStatMultiplier(slot.craftQuality, slot.strengthLv);
+        const stats = calculateCardStats(card, slot.craftQuality, slot.star ?? slot.strengthLv, slot.attributeRoll);
         const selected = picked.has(index);
         return `
           <button type="button" class="drawer-card${selected ? ' selected' : ''}" data-idx="${index}" style="--quality:${quality.color};${selected ? `border-color:${quality.color}` : ''}">
             <img src="/sprites/cards/${card.spriteRes}.png" alt="" draggable="false" />
             <strong style="color:${quality.color}">${formatCraftCardName(slot.craftQuality, card.name)}</strong>
-            <span>⚔${roundBattleAmount(card.atk * multiplier)} ❤${Math.round(card.hp * multiplier)}</span>
+            <span>⚔${roundBattleAmount(stats.atk)} ❤${roundBattleAmount(stats.hp)}</span>
             <em>${card.typeLabel ?? ''}${(slot.strengthLv ?? 0) > 0 ? ` +${slot.strengthLv}` : ''}${selected ? ' · 已选' : ''}</em>
           </button>
         `;

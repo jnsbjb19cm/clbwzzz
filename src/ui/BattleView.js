@@ -34,9 +34,7 @@ import {
   cellCenterY,
   cellX,
   cellY,
-  adjustMeleeAtk,
   formatBattleDelta,
-  isMeleeCard,
   usesFoodCost,
   pointerToCol,
   pointerToLane,
@@ -54,7 +52,6 @@ import {
 import {
   formatCraftCardName,
   getCardQualityBgPart,
-  getInstanceStatMultiplier,
   getStrengthStarPart,
   resolveCraftQuality,
 } from '../core/constants.js';
@@ -712,10 +709,9 @@ export class BattleView {
     const instance = entry.instance;
     const cq = resolveCraftQuality(instance?.craftQuality);
     const displayName = formatCraftCardName(instance?.craftQuality, card.name);
-    const mult = getInstanceStatMultiplier(instance?.craftQuality, instance?.strengthLv);
-    const atkBase = isMeleeCard(card) ? adjustMeleeAtk(card.atk) : card.atk;
-    const atk = Math.round(atkBase * mult);
-    const hp = Math.round(card.hp * mult);
+    const stats = calculateCardStats(card, instance?.craftQuality, instance?.star ?? instance?.strengthLv, instance?.attributeRoll);
+    const atk = roundBattleAmount(stats.atk);
+    const hp = roundBattleAmount(stats.hp);
     const cost = this.engine.getDeployCost(card);
     const costLabel = usesFoodCost(card) ? `🍖${card.cost}` : `☀${card.cost}`;
     const handIndex = this.engine.selectedHandIndex;

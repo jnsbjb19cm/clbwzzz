@@ -1,4 +1,5 @@
 import { getExpToNextLevel } from '../core/PlayerProgression.js';
+import { calculateCardStats } from '../battle/CardStatFormula.js';
 // 2026-10-11 用户：血量 = 我方基地血量 = 玩家等级决定的战场英雄生命（1级200，每级+30）
 import { calcPlayerHeroHp } from '../battle/BattleConfig.js';
 
@@ -39,7 +40,6 @@ import {
   CARD_QUALITY,
   CARD_TYPE,
   formatCraftCardName,
-  getInstanceStatMultiplier,
   normalizeCraftQuality,
   resolveCraftQuality,
   sanitizeCustomCardName,
@@ -853,9 +853,9 @@ export class BagView {
     const displayName = card.isExperienceCard
       ? card.name
       : formatCraftCardName(slot.craftQuality, card.name, slot.customName);
-    const statMult = getInstanceStatMultiplier(slot.craftQuality, slot.strengthLv);
-    const atk = roundBattleAmount(card.atk * statMult);
-    const hp = Math.round(card.hp * statMult);
+    const stats = calculateCardStats(card, slot.craftQuality, slot.star ?? slot.strengthLv, slot.attributeRoll);
+    const atk = roundBattleAmount(stats.atk);
+    const hp = roundBattleAmount(stats.hp);
     const owned = this.cardInventory.getOwnershipMap().get(card.id) ?? 1;
     const noCraft = card.isExperienceCard
       ? ' · 经验材料 · 不可出战'
@@ -867,12 +867,12 @@ export class BagView {
         <img src="/sprites/cards/${card.spriteRes}.png" alt="" />
       </div>
       <h2 style="color:${cq.color}">${displayName}</h2>
-      <p class="bag-detail-meta">#${card.id} · ${card.typeLabel} · 卡牌品质 ${q.name} · ${cq.baseLabel}底座(${cq.name}) · 属性 x${statMult.toFixed(2)}${noCraft}${slot.star > 0 ? ` · ${slot.star}星` : ''}${(slot.strengthLv ?? 0) > 0 ? ` · 强化+${slot.strengthLv}` : ''}</p>
+      <p class="bag-detail-meta">#${card.id} · ${card.typeLabel} · 卡牌品质 ${q.name} · ${cq.baseLabel}底座(${cq.name})${noCraft}${slot.star > 0 ? ` · ${slot.star}星` : ''}${(slot.strengthLv ?? 0) > 0 ? ` · 强化+${slot.strengthLv}` : ''}</p>
       <dl class="bag-card-stats">
         <div><dt>攻击</dt><dd>${atk}</dd></div>
         <div><dt>生命</dt><dd>${hp}</dd></div>
         <div><dt>费用</dt><dd>${card.cost}</dd></div>
-        <div><dt>冷却</dt><dd>${card.cooldown}s</dd></div>
+        <div><dt>冷却</dt><dd>${stats.cd}s</dd></div>
       </dl>
       <p class="bag-detail-desc">${card.desc || '暂无描述'}</p>
       <p class="bag-detail-count">背包内拥有 <b>${owned}</b> 张</p>
@@ -1036,16 +1036,16 @@ export class BagView {
         // 更新右侧卡牌详情
         const info=overlay.querySelector('#picker-card-info'),s2=slots[Number(btn.dataset.idx)],c2=this.cardDb.getById(s2.cardId);
         if(info&&c2){const cq2=s2.craftQuality||1,ss2=s2.strengthLv||0,cc=craftQColors[cq2]||'#aaa';
-          const m = getInstanceStatMultiplier(cq2, ss2);
-          const a = roundBattleAmount(c2.atk * m);
-          const h = Math.round(c2.hp * m);
+          const stats = calculateCardStats(c2, cq2, s2.star ?? ss2, s2.attributeRoll);
+          const a = roundBattleAmount(stats.atk);
+          const h = roundBattleAmount(stats.hp);
           info.innerHTML='<div style="text-align:center;"><img src="/sprites/cards/'+c2.spriteRes+'.png" style="width:80px;height:80px;object-fit:contain;border:2px solid '+cc+';border-radius:6px;"></div>'
             +'<p style="color:'+cc+';font-weight:700;font-size:14px;text-align:center;margin:6px 0 2px;">'+(craftQualityLabel(cq2))+'的'+ (c2.name||'卡牌') +'</p>'
             +'<p style="color:#ffd700;text-align:center;font-size:12px;margin:2px 0;">'+ ('★'.repeat(Math.min(5,ss2))+(ss2>5?'+'+ (ss2-5):'0★'))+' / '+(maxStars[c2.quality||1]||5)+'★</p>'
             +'<div style="margin-top:8px;border-top:1px solid #333;padding-top:6px;">'
             +'<div style="display:flex;justify-content:space-between;"><span>攻击</span><span style="color:#f66;">'+ a +'</span></div>'
             +'<div style="display:flex;justify-content:space-between;"><span>生命</span><span style="color:#6f6;">'+ h +'</span></div>'
-            +'<div style="display:flex;justify-content:space-between;"><span>冷却</span><span style="color:#6bf;">'+ (c2.cooldown||0) +'s</span></div>'
+            +'<div style="display:flex;justify-content:space-between;"><span>冷却</span><span style="color:#6bf;">'+ stats.cd +'s</span></div>'
             +'<div style="display:flex;justify-content:space-between;"><span>费用</span><span>'+ (c2.cost||0) +'</span></div></div>'
             +'<p style="margin-top:8px;color:#aaa;font-size:11px;">'+ (c2.desc||'暂无简介') +'</p>'
             +(c2.flavor?'<p style="color:#777;font-size:11px;font-style:italic;">「'+c2.flavor+'」</p>':'');
