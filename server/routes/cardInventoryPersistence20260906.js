@@ -161,6 +161,9 @@ export async function putCardInventoryHandler(req, res) {
   const sourceByDestination = new Map((slotOrder ?? []).map(entry => [entry.toSlotIndex, entry.fromSlotIndex]));
   try {
   await withTransaction(async (conn) => {
+  // Serialize inventory reorder/refill/item mutations for this account on MySQL
+  // too; a transaction alone does not lock a preceding ordinary SELECT.
+  await conn.run('UPDATE player_card_bags SET slot_count=slot_count WHERE user_id=?', [req.user.id]);
   // Read and validate within the write transaction: a concurrent refill must
   // never be erased by a snapshot captured before the transaction started.
   const currentInstances = await readInstanceRows(req.user.id, conn);

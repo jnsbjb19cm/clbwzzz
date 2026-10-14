@@ -103,6 +103,7 @@ functionalItemAuthorityRouter20260908.post('/cards/use-functional-item', async (
 
   try {
     const result = await withTransaction(async (conn) => {
+      await conn.run('UPDATE player_card_bags SET slot_count=slot_count WHERE user_id=?', [userId]);
       const target = await readCardRow(conn, userId, targetSlotIndex);
       if (!target) throw new Error('目标卡牌不存在，请刷新后重试');
       const targetState = parseState(target.stateJson);

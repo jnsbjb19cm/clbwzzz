@@ -261,12 +261,17 @@ function installCollectibleRefillAuthority() {
 
   const originalGrantAllCollectibleCards = proto.grantAllCollectibleCards;
   proto.grantAllCollectibleCards = function grantAllCollectibleCardsAuthoritatively20260907(...args) {
-    if (!authStore?.isLoggedIn?.() || !this._remoteCardInventorySave) {
+    if (!authStore?.isLoggedIn?.()) {
       return originalGrantAllCollectibleCards.apply(this, args);
     }
 
     if (this._cardRefillPending || this._cardActionPending) {
       return { ok: false, error: '卡牌正在保存，请稍后再补卡' };
+    }
+    // Login can precede inventory hydration. Missing persistence binding must
+    // not turn an authenticated grant into a local-only (non-owned) card.
+    if (!this._remoteCardInventorySave) {
+      this.bindRemotePersistence?.(payload => authStore.api.put('/player/card-inventory', payload));
     }
     // Only show cards actually granted by the server. Optimistic local grants
     // could be selected for an upgrade before they existed in the database.

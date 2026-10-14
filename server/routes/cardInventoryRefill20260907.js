@@ -39,6 +39,7 @@ export async function refillCollectibleCardsHandler(req, res) {
   let skipped = 0;
 
   await withTransaction(async (conn) => {
+    await conn.run('UPDATE player_card_bags SET slot_count=slot_count WHERE user_id=?', [userId]);
     const bag = await conn.get('SELECT slot_count AS slotCount FROM player_card_bags WHERE user_id=?', [userId]);
     const slotCount = clampSlotCount(bag?.slotCount);
     const rows = await conn.all(

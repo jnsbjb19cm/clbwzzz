@@ -298,7 +298,7 @@ export class CardInventoryStore {
     for (const card of this.cardDb.getCollectibleCards()) {
       const copies = owned.has(card.id) ? 0 : 1;
       for (let i = 0; i < copies; i++) {
-        const res = this.addCard(card.id, 0, { craftQuality: 5, strengthLv: 2 });
+        const res = this.addCard(card.id, 2, { craftQuality: 5 });
         if (res.ok) {
           added++;
           owned.add(card.id);

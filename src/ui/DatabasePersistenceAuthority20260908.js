@@ -3,7 +3,7 @@ import { BagView } from './BagView.js';
 import { ShopView } from './ShopView.js';
 import { audio } from '../core/AudioManager.js';
 import { emitQuestEvent } from '../core/QuestEventBus.js';
-import { cardInstanceIdentity } from '../core/CardInstanceIdentity.js';
+import { cardInstanceIdentity, findCardInstanceSlot } from '../core/CardInstanceIdentity.js';
 
 const PATCH_FLAG = Symbol.for('clbwz.databasePersistenceAuthority20260908');
 const FUNCTIONAL_CARD_ITEMS = new Set([80,81,82,83,84,85,86,87,88,89,90,91]);
@@ -211,10 +211,12 @@ function installBagAuthority() {
   BagView.prototype._applyCardEffect = function applyCardEffectDatabaseAuthority20260908(itemId, itemSlotIndex, slot, card, extra) {
     const store = this.cardInventory;
     if (store?._cardActionPending) return '卡牌正在保存，请勿重复使用';
-    let targetSlotIndex = this.cardInventory?.getSlots?.().indexOf(slot) ?? -1;
-    let sourceSlotIndex = extra?.sourceSlot
-      ? this.cardInventory?.getSlots?.().indexOf(extra.sourceSlot) ?? -1
-      : -1;
+    const expectedTarget = cardInstanceIdentity(slot);
+    const expectedSource = extra?.sourceSlot ? cardInstanceIdentity(extra.sourceSlot) : null;
+    const slots = store?.getSlots?.() ?? [];
+    let targetSlotIndex = findCardInstanceSlot(slots, expectedTarget, slots.indexOf(slot));
+    let sourceSlotIndex = expectedSource
+      ? findCardInstanceSlot(slots, expectedSource, slots.indexOf(extra.sourceSlot), targetSlotIndex) : -1;
     const itemSlot = this.inventory?.getSlots?.()[itemSlotIndex];
     if (!FUNCTIONAL_CARD_ITEMS.has(Number(itemId))) return '该功能道具暂不支持';
     if (targetSlotIndex < 0) return '卡牌列表已更新，请重新选择';
@@ -222,8 +224,6 @@ function installBagAuthority() {
     if (Number(itemId) === 89 && (sourceSlotIndex < 0 || sourceSlotIndex === targetSlotIndex)) return '请选择两张不同的卡牌';
 
     const root = this.__databaseAuthorityRoot;
-    const expectedTarget = cardInstanceIdentity(slot);
-    const expectedSource = extra?.sourceSlot ? cardInstanceIdentity(extra.sourceSlot) : null;
     const token = authStore.token;
     store._cardActionPending = true;
     const pending = store._remoteCardInventoryQueue ?? Promise.resolve();
@@ -236,18 +236,19 @@ function installBagAuthority() {
       // 这里先拉一次服务端权威卡表并应用，然后**按身份**重新定位目标槽位（不再靠旧下标）。
       try {
         const fresh = await authStore.api.get('/player/card-inventory');
-        if (fresh && typeof store.applyServerSnapshot === 'function') store.applyServerSnapshot(fresh);
-        if (globalThis.__clbwzAuthStore && globalThis.__clbwzAuthStore.snapshot) {
-          globalThis.__clbwzAuthStore.snapshot.cardInventory = fresh;
+        if (token === authStore.token && Array.isArray(fresh?.cards)) {
+          store.applyServerSnapshot?.(fresh);
+          if (authStore.snapshot) authStore.snapshot.cardInventory = fresh;
         }
       } catch { /* 刷新失败就继续按本地走，服务端仍会校验 */ }
+      if (token !== authStore.token) throw new Error('账号已切换，请重新选择卡牌');
       {
         const slotsNow = store.getSlots() || [];
-        const hit = slotsNow.findIndex((s) => s && cardInstanceIdentity(s) === expectedTarget);
+        const hit = findCardInstanceSlot(slotsNow, expectedTarget, targetSlotIndex);
         if (hit < 0) throw new Error('卡牌列表已更新，请重新选择，未消耗道具');
         targetSlotIndex = hit;
         if (expectedSource) {
-          const hitSrc = slotsNow.findIndex((s) => s && cardInstanceIdentity(s) === expectedSource);
+          const hitSrc = findCardInstanceSlot(slotsNow, expectedSource, sourceSlotIndex, targetSlotIndex);
           if (hitSrc < 0) throw new Error('用于转移的卡牌已变化，请重新选择');
           sourceSlotIndex = hitSrc;
         }
@@ -257,13 +258,13 @@ function installBagAuthority() {
         throw new Error('卡牌列表已更新，请重新选择，未消耗道具');
       }
       return authStore.api.post('/player/cards/use-functional-item', {
-      itemId: Number(itemId),
-      targetSlotIndex,
-      sourceSlotIndex,
-      expectedTarget,
-      expectedSource,
-      name: String(extra?.name || '').trim(),
-      bound: Boolean(itemSlot?.bound),
+        itemId: Number(itemId),
+        targetSlotIndex,
+        sourceSlotIndex,
+        expectedTarget,
+        expectedSource,
+        name: String(extra?.name || '').trim(),
+        bound: Boolean(itemSlot?.bound),
       });
     }).then((data) => {
       if (token !== authStore.token) return;
