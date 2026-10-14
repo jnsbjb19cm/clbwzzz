@@ -29,6 +29,7 @@ import { functionalItemAuthorityRouter20260908 } from './routes/functionalItemAu
 import { playerStateDocumentRouter20260908 } from './routes/playerStateDocument20260908.js';
 import { questRewardAuthorityRouter20260908 } from './routes/questRewardAuthority20260908.js';
 import { luckyWheelAuthorityRouter20261006 } from './routes/luckyWheelAuthority20261006.js';
+import { quizAuthorityRouter20261014 } from './routes/quizAuthority20261014.js';
 import { installProcessGuards } from './processGuards.js';
 import { databaseStatus } from './database.js';
 import { questPinPersistenceRouter20260908 } from './routes/questPinPersistence20260908.js';
@@ -125,6 +126,7 @@ app.use('/api/player', functionalItemAuthorityRouter20260908);
 app.use('/api/player', playerStateDocumentRouter20260908);
 app.use('/api/player', questRewardAuthorityRouter20260908);
 app.use('/api/player', luckyWheelAuthorityRouter20261006);
+app.use('/api/player', quizAuthorityRouter20261014);   // 2026-10-14 做题充值（判分 + 周上限 600）
 app.use('/api/player', questPinPersistenceRouter20260908);
 // 2026-10-09：储藏室（容量 2000，背包 ↔ 储藏室互转）。
 app.use('/api/player', storageAuthorityRouter20261009);
