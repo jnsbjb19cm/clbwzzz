@@ -282,9 +282,13 @@ export function roundBattleAmount(n) {
 
 /** 飘字显示：整数不带小数，否则最多两位并去掉末尾 0 */
 export function formatBattleAmount(n) {
+  // 2026-10-15 用户定案：不取整；整数不带小数，有小数则**保留 1 位（四舍五入）**。
+  // 例：10 -> "10"、10.08 -> "10.1"、5.5 -> "5.5"、12.96 -> "13"、0.4 -> "0.4"。
   const v = roundBattleAmount(n);
+  if (!Number.isFinite(v)) return '0';
   if (Number.isInteger(v)) return String(v);
-  return v.toFixed(2).replace(/\.?0+$/, '');
+  const one = Math.round(v * 10) / 10;
+  return Number.isInteger(one) ? String(one) : one.toFixed(1);
 }
 
 /** 带符号的伤害/治疗飘字(+治疗 / -伤害) */
@@ -341,7 +345,7 @@ export function getAttackCooldown(atkSpeed) {
     6: 3.0,
   };
   const speed = Math.max(0, Number(atkSpeed) || 0);
-  if (speed >= 6) return 2.0; // 特殊攻速(18/20/50)按最高档
+  if (speed > 6) return 2.0; // 特殊攻速(18/20/50)，普通 6 档仍按表取 3 秒
   return map[speed] ?? 2.1;
 }
 
