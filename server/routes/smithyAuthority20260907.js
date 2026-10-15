@@ -678,8 +678,10 @@ smithyAuthorityRouter20260907.post('/decompose', async (req, res) => {
         const { index, slot, card } = entry;
         const quality = cardQuality(card);
         const base = craftRules.decomposeBase[String(quality)] ?? craftRules.decomposeBase['1'];
-        // 2026-10-09（用户要求）：制作品质 ≥3 的额外 +1 宝石改为 50% 概率
-        const craftBonus = Number(slot.craftQuality ?? 1) >= 3 && Math.random() < 0.5 ? 1 : 0;
+        // 2026-10-15 用户定案（与客户端 CardDecomposeSystem 对齐）：
+        //   保底 base.gem（现在 1 个）+ gemExtraChance 概率额外 +1；不再按底座品质无条件/固定 50% 加。
+        const extraChance = Math.max(0, Math.min(0.5, Number(base.gemExtraChance) || 0));
+        const craftBonus = Math.random() < extraChance ? 1 : 0;
         const materialLevel = Math.min(4, Math.max(1, quality));
         const material = LEVEL_CONFIG.get(materialLevel);
         const piece = PIECE_BY_CARD.get(slot.cardId);

@@ -49,7 +49,11 @@ export class CardDecomposeSystem {
       return CardDecomposeSystem.level5PowderReward(1);
     }
     const base = this.rules[String(card.quality)] ?? this.rules['1'];
-    const craftBonus = (slot.craftQuality ?? 1) >= 3 ? 1 : 0;
+    // 2026-10-15 用户定案（分解宝石方案乙）：
+    //   保底 1 个宝石；底座品质越高，额外 +1 的概率略高（但不再无条件 +1）。
+    //   羊皮纸概率保持不变（0.5）。
+    const extraChance = Math.max(0, Math.min(0.5, Number(base.gemExtraChance) || 0));
+    const craftBonus = Math.random() < extraChance ? 1 : 0;
     const piece = this.db.pieceTable.find((p) => p.card_id === card.id);
     const matLevel = Math.min(4, Math.max(1, card.quality));
     const gemId = this.materials.getMaterialId(matLevel, 'gem');

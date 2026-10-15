@@ -1,13 +1,13 @@
 {
   "tierRules": {
-    "1": {"successRate": 0.9, "targetRate": 0.82, "ascendRate": 0.08, "wrongRate": 0.1},
-    "2": {"successRate": 0.8, "targetRate": 0.75, "ascendRate": 0.1, "wrongRate": 0.15},
-    "3": {"successRate": 0.7, "targetRate": 0.7, "ascendRate": 0.12, "wrongRate": 0.18},
-    "4": {"successRate": 0.6, "targetRate": 0.65, "ascendRate": 0.15, "wrongRate": 0.2}
+    "1": {"successRate": 0.9, "targetRate": 0.84, "ascendRate": 0.06, "wrongRate": 0.1},
+    "2": {"successRate": 0.85, "targetRate": 0.78, "ascendRate": 0.07, "wrongRate": 0.15},
+    "3": {"successRate": 0.82, "targetRate": 0.73, "ascendRate": 0.09, "wrongRate": 0.18},
+    "4": {"successRate": 0.8, "targetRate": 0.7, "ascendRate": 0.1, "wrongRate": 0.2}
   },
   "materialsPerCraft": {"parchment": 1, "gem": 2},
   "charmBonus": {"successRate": 0.1, "qualityWeight": 0.35},
-  "cloverBonus": {"ascendRate": 0.05, "itemBaseId": 60109},
+  "cloverBonus": {"ascendRate": 0.02, "itemBaseId": 60109},
   "failureCompensate": 1,
   "craftQualityWeights": [
     {"id":1,"name":"普通","weight":65,"color":"#f5f5f5"},
@@ -16,10 +16,10 @@
     {"id":4,"name":"完美","weight":3,"color":"#9c27b0"}
   ],
   "decomposeBase": {
-    "1": {"gem": 2, "parchmentChance": 0.5},
-    "2": {"gem": 2, "parchmentChance": 0.5},
-    "3": {"gem": 2, "parchmentChance": 0.5},
-    "4": {"gem": 2, "parchmentChance": 0.5},
+    "1": {"gem": 1, "gemExtraChance": 0.05, "parchmentChance": 0.5},
+    "2": {"gem": 1, "gemExtraChance": 0.1, "parchmentChance": 0.5},
+    "3": {"gem": 1, "gemExtraChance": 0.15, "parchmentChance": 0.5},
+    "4": {"gem": 1, "gemExtraChance": 0.2, "parchmentChance": 0.5},
     "5": {"gem": 2, "parchmentChance": 0.5},
     "6": {"gem": 2, "parchmentChance": 0.5}
   }
