@@ -158,7 +158,7 @@ export class TalentView {
       const hotkey = SKILL_HOTKEYS[index] ?? '';
       if (!card) return `<button type="button" class="talent-slot empty${index === this.pickSlot ? ' picking' : ''}" data-slot="${index}"><em>${hotkey}</em><span>空</span></button>`;
       const effect = getSkillEffect(card.id);
-      return `<button type="button" class="talent-slot filled${index === this.pickSlot ? ' picking' : ''}" data-slot="${index}" title="${card.desc ?? ''}"><em>${hotkey}</em><span class="talent-skill-icon">${getSkillIcon(card)}</span><strong>${card.name}</strong><small>MP ${getSkillMpCost(card)} · CD ${getSkillCooldownSec(card)}s</small><small class="talent-fx">${effect?.label ?? ''}</small></button>`;
+      return `<button type="button" class="talent-slot filled${index === this.pickSlot ? ' picking' : ''}" data-slot="${index}" title="${card.desc ?? ''}"><em>${hotkey}</em><span class="talent-skill-icon">${getSkillIcon(card)}</span><strong>${card.name}</strong><small>MP ${getSkillMpCost(card)} · CD ${getSkillCooldownSec(card)}s</small><small class="talent-fx">${effect?.label ?? ''}</small><span class="talent-unequip" data-unequip="${index}" title="卸下这个技能">×</span></button>`;
     }).join('');
   }
 
@@ -359,8 +359,13 @@ export class TalentView {
       const id = Number(button.dataset.id);
       const loadout = this.heroSkills.getLoadout();
       const existing = loadout.indexOf(id);
-      if (existing >= 0 && existing !== this.pickSlot) {
-        tip.textContent = '该技能已装备在其他槽位。';
+      // 2026-10-15 用户要求：可装备技能要能卸下来 → 再点一次已装备的技能即卸下
+      if (existing >= 0) {
+        const card = this.heroSkills.getSkillCards().find((c) => Number(c.id) === id);
+        this.heroSkills.setSlot(existing, 0);
+        audio.playSfx('click');
+        this.refreshSkills(root);
+        tip.textContent = `已卸下「${card?.name ?? '技能'}」`;
         return;
       }
       if (!this.heroSkills.setSlot(this.pickSlot, id)) {
@@ -369,6 +374,20 @@ export class TalentView {
       }
       audio.playClickCard();
       this.refreshSkills(root);
+    });
+
+    // 2026-10-15：槽位上的「×」→ 卸下该槽技能（只响应 [data-unequip]，不会干扰其它点击）
+    root.querySelector('#talent-slots')?.addEventListener('click', (event) => {
+      const btn = event.target?.closest?.('[data-unequip]');
+      if (!btn) return;
+      event.preventDefault();
+      event.stopPropagation();
+      const slot = Number(btn.dataset.unequip);
+      if (!Number.isInteger(slot)) return;
+      if (!this.heroSkills.setSlot(slot, 0)) return;
+      audio.playSfx('click');
+      this.refreshSkills(root);
+      tip.textContent = `已卸下第 ${slot + 1} 个技能`;
     });
 
     root.querySelector('#talent-reset')?.addEventListener('click', () => {

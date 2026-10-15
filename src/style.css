@@ -5422,3 +5422,14 @@ html, body { margin:0; padding:0; width:100%; height:100%; overflow:hidden; }
 /* 2026-10-11：战斗内手牌卡槽的覆盖**已移到** src/ui/GlassBattleCards20261010.css
    （那是 main.js 里最后一个加载的 CSS）。写在 style.css 会被它覆盖，所以这里不再重复定义，
    避免两个地方互相干扰、谁生效说不清。 */
+
+/* 2026-10-15 用户：可装备技能要能卸下来 → 槽位右上角「×」卸下热点 */
+.talent-slot.filled { position: relative; }
+.talent-unequip {
+  position: absolute; top: 4px; right: 4px;
+  width: 22px; height: 22px; line-height: 20px; text-align: center;
+  border-radius: 50%; border: 1px solid rgba(255, 255, 255, .45);
+  background: rgba(0, 0, 0, .55); color: #ffd7d7;
+  font-size: 15px; font-weight: 700; cursor: pointer; user-select: none;
+}
+.talent-unequip:hover { background: #a33; color: #fff; }
