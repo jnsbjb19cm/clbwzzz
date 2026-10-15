@@ -56,6 +56,7 @@ import { adventureReinforceAliveCap, adventureFieldSchedule } from '../data/Adve
 import { getCardTraits, getAttackPattern, isSuicideCard } from '../core/CardTraitRegistry.js';
 import { collectSelfCenteredTargets } from './SelfCenteredTargeting.js';
 import { TALENT_NODE_MAP } from '../core/TalentRegistry.js';
+import { recordBattleKill } from './BattleKillStats.js';
 
 /**
  * 怪物吸尘器(34)（2026-09-12 用户要求）：
@@ -498,12 +499,21 @@ export class BattleEngine {
 
   getAuraBonus(unit) {
     let bonus = 0;
+    // 2026-10-15 花生队长(127)：周围 3x3 内的花生射手(1)/花生神射手(18) 攻击 +1；
+    // 同类增益不可叠加（多个队长也只 +1）→ 用一次性开关。
+    let captainApplied = false;
     for (const u of this.units) {
       if (!u.alive || u.team !== unit.team) continue;
       if (u.cardId === 19) {
         const dr = Math.abs(u.lane - unit.lane);
         const dc = Math.abs(u.col - unit.col);
         if (dr <= 1 && dc <= 1) bonus += 4;
+      }
+      if (!captainApplied && u.cardId === 127) {
+        const isPeanut = unit.cardId === 1 || unit.cardId === 18;
+        const dr = Math.abs(u.lane - unit.lane);
+        const dc = Math.abs(u.col - unit.col);
+        if (isPeanut && dr <= 1 && dc <= 1) { bonus += 1; captainApplied = true; }
       }
       if (u.cardId === 32) {
         // 嗜血稻草人：全屏 +4 攻击
@@ -535,6 +545,13 @@ export class BattleEngine {
     if (unit.tempAsMsUntil && this.time < unit.tempAsMsUntil) mult = Math.min(mult, unit.asMsAtkMult ?? 0.65);
     for (const u of this.units) {
       if (!u.alive || u.team !== unit.team || u === unit) continue;
+      if (u.cardId === 127) {
+        // 花生队长：周围 3x3 内花生单位攻击间隔 -15%（取最优，不叠加）
+        const isPeanut = unit.cardId === 1 || unit.cardId === 18;
+        const dr = Math.abs(u.lane - unit.lane);
+        const dc = Math.abs(u.col - unit.col);
+        if (isPeanut && dr <= 1 && dc <= 1) mult = Math.min(mult, 0.85);
+      }
       if (u.cardId === 51) {
         mult = Math.min(mult, 2 / 3);
       } else if (u.cardId === 26) {
@@ -2191,17 +2208,7 @@ export class BattleEngine {
 
     unitAnimPlayer.markDeath(unit, this);
     // 击杀计数（任务/成就上报）
-    if (unit.team !== 'player') {
-      this.killsThisBattle = (this.killsThisBattle || 0) + 1;
-      this.totalKills = (this.totalKills || 0) + 1;
-      // 2026-10-09：按卡 id 累计本场击杀 —— 战斗结束时一次性上报（避免每死一只就写一次任务存档）。
-      // 供「累计击败 N 个西瓜太郎」这类指定卡任务使用。
-      const killedId = Number(unit.cardId) || 0;
-      if (killedId) {
-        this.killedCardCounts = this.killedCardCounts || {};
-        this.killedCardCounts[killedId] = (this.killedCardCounts[killedId] || 0) + 1;
-      }
-    }
+    recordBattleKill(this, unit);
     if (unit.team === 'player') unit._diedThisBattle = true;
     // 2026-09-12：死亡必须能看到"结算数字"。多数伤害路径会先调 spawnDamageFloat
     // （本帧飘过就不再补），但反射/吞噬/吞噬结算等路径是直接 takeDamage + onUnitDeath，
@@ -2374,7 +2381,7 @@ export class BattleEngine {
       res: res != null ? String(res) : null,
       boomRes: boomRes != null ? String(boomRes) : null,
       t: 0,
-      life: 2,
+      life: Number(res) === 77 ? 0.8 : 2,
     });
   }
 
@@ -2564,6 +2571,7 @@ export class BattleEngine {
       const selfL = proj.attackerLane ?? proj.lane;
       const es = engine.units.filter((u) => engine.isProjectileCollisionTarget(proj, u));
       const check = (u) => {
+        if (pat?.splashGroundOnly && u.uid !== primary.uid && u.isFlying?.()) return false;
         const c = Math.round(u.col);
         const dl = Math.abs(u.lane - primary.lane);
         const dc = Math.abs(c - ctr);

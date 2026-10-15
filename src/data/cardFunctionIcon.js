@@ -65,7 +65,7 @@ export const SUPPORT_BUFF_CARD_IDS = Object.freeze([
   51,  // 太古巫婆
   24,  // 部落野人（用户：「部落野人和太古野人的图标应是鼓」）
   39,  // 太古野人
-]);
+, 127]);   // 127 花生队长（支援/鼓）;
 
 /** 特殊机制卡（非纯增益、也非靠普攻输出）→ 特殊效果(火焰) */
 export const SPECIAL_MECHANIC_CARD_IDS = Object.freeze([
