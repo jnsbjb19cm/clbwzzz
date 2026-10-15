@@ -1,5 +1,6 @@
 import {
   CRAFT_QUALITY_MULT,
+  isDefenseGrowthCard,
   normalizeCraftQuality,
   getInstanceStatMultiplier,
   getInstanceHpMultiplier,
@@ -19,10 +20,11 @@ export function getBattleQualityMultiplier(value) {
 
 export function getStarAttackBonus(stars) {
   const value = Math.max(0, Number(stars) || 0);
-  if (value >= 14) return 6;
-  if (value >= 13) return 5;
-  if (value >= 12) return 4;
-  if (value >= 10) return 3;
+  // 2026-10-15《强化削弱.md》第一轮：10星+2、12星+3、13星+4、14星起+5（原为 +3/+4/+5/+6）
+  if (value >= 14) return 5;
+  if (value >= 13) return 4;
+  if (value >= 12) return 3;
+  if (value >= 10) return 2;
   if (value >= 6) return 1;
   return 0;
 }
@@ -69,7 +71,7 @@ export function calculateCardStats(card, craftQuality = 2, stars = 0, attributeR
   const baseHp = Math.max(0, Number(card?.hp ?? card?.card_hp) || 0);
   const baseCooldown = Math.max(0, Number(card?.cooldown ?? card?.card_cd) || 0);
   const M = getStarCooldownReduction(baseCooldown, Q);
-  const defense = isDefenseBattleCard(card);
+  const defense = isDefenseGrowthCard(card);   // 2026-10-15：按「0 攻 + 血厚」判真肉盾
   const V = defense && baseCooldown <= 6 ? getStarDefenseBonus(Q) : 0;
   const mult = getInstanceStatMultiplier(quality, Q);
   const hpMult = getInstanceHpMultiplier(quality, Q, defense, V);

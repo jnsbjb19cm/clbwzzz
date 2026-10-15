@@ -95,20 +95,39 @@ export function isCraftableCard(card) {
 export function getInstanceStatMultiplier(craftQuality = 2, strengthLv = 0) {
   const quality = normalizeCraftQuality(craftQuality);
   const P = CRAFT_QUALITY_MULT[normalizeCraftQuality(quality)];
-  return P + getStarGrowthBonus(strengthLv, 0.08, 0.06);
+  // 攻击成长（第一轮）：+1~5 每星 10%、+6~10 每星 6%、+11~15 每星 4%
+  return P + getStarGrowthBonus(strengthLv, 0.1, 0.06, 0.04);
 }
 
 /** 前5星收益不变；第6星起小幅收紧成长，不改星级、品质和强化成本。 */
-function getStarGrowthBonus(stars, earlyRate, lateRate) {
-  const value = Math.max(0, Number(stars) || 0);
-  return earlyRate * Math.min(5, value) + lateRate * Math.max(0, value - 5);
+/**
+ * 三段式星级成长（2026-10-15 用户《强化削弱.md》第一轮方案）：
+ *   +1~+5 用 rate1、+6~+10 用 rate2、+11~+15 用 rate3，全部按**原始属性**加算，不复利。
+ */
+function getStarGrowthBonus(stars, rate1, rate2, rate3) {
+  const q = Math.max(0, Number(stars) || 0);
+  return rate1 * Math.min(5, q)
+    + rate2 * Math.min(5, Math.max(0, q - 5))
+    + rate3 * Math.max(0, q - 10);
+}
+
+/**
+ * 是否是"真正的肉盾/防御卡"（吃防御类生命成长 8%/6%/6%）。
+ * 2026-10-15：原来用 atk_style===1 判断，会把稻草人/树精守卫这类 0 攻光环辅助也算进去；
+ * 现在改成「攻为 0 且血厚」的实际判定（0 攻辅助血量都远低于肉盾）。
+ */
+export function isDefenseGrowthCard(card) {
+  const atk = Math.max(0, Number(card?.atk ?? card?.card_atk) || 0);
+  const hp = Math.max(0, Number(card?.hp ?? card?.card_hp) || 0);
+  return atk === 0 && hp >= 60;
 }
 
 export function getInstanceHpMultiplier(craftQuality, stars, defense = false, defenseBonus = 0) {
   const P = CRAFT_QUALITY_MULT[normalizeCraftQuality(craftQuality)];
+  // 生命成长（第一轮）：普通 7/5/2%；防御卡 8/6/6%（不再额外叠加 defenseBonus）
   return defense
-    ? P + getStarGrowthBonus(stars, 0.08, 0.06) + 0.08 * defenseBonus
-    : P + getStarGrowthBonus(stars, 0.05, 0.04);
+    ? P + getStarGrowthBonus(stars, 0.08, 0.06, 0.06)
+    : P + getStarGrowthBonus(stars, 0.07, 0.05, 0.02);
 }
 
 export function getStarAtkBonus(stars) {
