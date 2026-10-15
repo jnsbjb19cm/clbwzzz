@@ -6,22 +6,25 @@ export const CRAFT_QUALITY = {
   5: { id: 4, name: '完美', color: '#9c27b0', baseLabel: '紫' },
 };
 
-/** 品质倍率 P(基础品质 0/1 对齐 card.json，1:1)。 */
+/**
+ * 品质倍率 P。编号与 CRAFT_QUALITY 一致：2=普通 / 3=精良 / 4=优秀 / 5=完美。
+ * 2026-10-15 用户定案（先试试）：1.00 / 1.08 / 1.20 / 1.40，并删掉旧的 1（兼容档）与 6（预留档）。
+ * 注意：这张表同时被 CardStatFormula（战斗属性）与 AdventureCampaign（冒险敌方血量）使用 ——
+ * 所以调它会让敌我一起变，不是单方面增强玩家。
+ */
 export const CRAFT_QUALITY_MULT = Object.freeze({
-  // 2026-10-15 用户定案（先试试）：普通/精良/优秀/完美 = 1.00 / 1.08 / 1.20 / 1.40；5、6 档保持原值。
-  // 注意：这张表同时被 CardStatFormula（战斗属性）与 AdventureCampaign（冒险敌方血量）使用 ——
-  // 所以调它会让敌我一起变，不是单方面增强玩家。
-  1: 1.0,
-  2: 1.08,
-  3: 1.2,
-  4: 1.4,
-  5: 1.5,
-  6: 1.8,
+  2: 1.0,   // 普通
+  3: 1.08,  // 精良
+  4: 1.2,   // 优秀
+  5: 1.4,   // 完美
 });
 
 export function normalizeCraftQuality(craftQuality) {
   const value = Number(craftQuality);
-  if (value === 0 || value === 1) return 2;
+  // 旧存档 0/1（原「劣质」）统一按普通处理
+  if (!Number.isFinite(value) || value <= 1) return 2;
+  // 6 及以上（红卡）没有独立倍率了 → 按「完美」封顶
+  if (value >= 6) return 5;
   return Object.hasOwn(CRAFT_QUALITY_MULT, value) ? value : 2;
 }
 
@@ -91,7 +94,7 @@ export function isCraftableCard(card) {
 
 export function getInstanceStatMultiplier(craftQuality = 2, strengthLv = 0) {
   const quality = normalizeCraftQuality(craftQuality);
-  const P = CRAFT_QUALITY_MULT[quality];
+  const P = CRAFT_QUALITY_MULT[normalizeCraftQuality(quality)];
   return P + getStarGrowthBonus(strengthLv, 0.08, 0.06);
 }
 
@@ -152,7 +155,7 @@ export const DEFENSE_CARD_IDS = new Set([2, 11, 21, 34, 88, 90]);
 export function calcCardStats(card, craftQuality, stars) {
   const Q = Math.max(0, Number(stars) || 0);
   const quality = normalizeCraftQuality(craftQuality);
-  const P = CRAFT_QUALITY_MULT[quality];
+  const P = CRAFT_QUALITY_MULT[normalizeCraftQuality(quality)];
   const baseAtk = Math.max(0, Number(card?.atk ?? card?.card_atk) || 0);
   const R = baseAtk > 0 ? getStarAtkBonus(Q) : 0;
   const baseCd = Math.max(0, Number(card?.cooldown ?? card?.card_cd) || 0);
