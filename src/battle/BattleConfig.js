@@ -287,7 +287,8 @@ export function formatBattleAmount(n) {
   const v = roundBattleAmount(n);
   if (!Number.isFinite(v)) return '0';
   if (Number.isInteger(v)) return String(v);
-  const one = Math.round(v * 10) / 10;
+  // 用户追加要求：**不四舍五入，直接进位（向上取整到 1 位小数）** —— 否则精良/普通这种小差距会被磨平。
+  const one = Math.ceil(v * 10) / 10;
   return Number.isInteger(one) ? String(one) : one.toFixed(1);
 }
 
