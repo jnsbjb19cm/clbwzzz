@@ -71,19 +71,22 @@ export function calculateCardStats(card, craftQuality = 2, stars = 0, attributeR
   const baseHp = Math.max(0, Number(card?.hp ?? card?.card_hp) || 0);
   const baseCooldown = Math.max(0, Number(card?.cooldown ?? card?.card_cd) || 0);
   const M = getStarCooldownReduction(baseCooldown, Q);
-  const defense = isDefenseGrowthCard(card);   // 2026-10-15：按「0 攻 + 血厚」判真肉盾
-  const V = defense && baseCooldown <= 6 ? getStarDefenseBonus(Q) : 0;
+  const defense = isDefenseGrowthCard(card); // 仅明确的防御单位使用防御生命成长
+  const V = defense && baseCooldown <= 6 ? getStarDefenseBonus(Q) : 0; // 兼容旧返回字段，现不参与生命计算
   const mult = getInstanceStatMultiplier(quality, Q);
-  const hpMult = getInstanceHpMultiplier(quality, Q, defense, V);
+  const hpMult = getInstanceHpMultiplier(quality, Q, defense);
   const roll = normalizeAttributeRoll(attributeRoll);
   const atkRollMult = 1 + roll.atk / 100;
   const hpRollMult = 1 + roll.hp / 100;
   const cdRollMult = 1 - roll.cd / 100;
 
   // 原始攻击为0的辅助/治疗卡，即使品质、星级、属性洗练都很高，也必须保持0攻击。
+  // 固定攻击奖励 R 在品质、强化及洗练全部倍率之后相加，永不被放大。
   const attack = baseAtk > 0
-    ? Math.round((baseAtk + R) * mult * atkRollMult * 100) / 100
+    ? Math.round((baseAtk * mult * atkRollMult + R) * 100) / 100
     : 0;
+  // 当前没有固定生命里程碑奖励；生命仅放大基础血量，旧 V 不再进入倍率。
+  // 将来若增加固定生命奖励，应在此表达式末尾另行相加（洗练之后）。
   const hp = Math.round(baseHp * hpMult * hpRollMult * 100) / 100;
   const cooldown = Math.max(6, Math.round(Math.max(0, baseCooldown - M) * cdRollMult * 100) / 100);
 

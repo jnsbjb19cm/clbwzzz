@@ -112,24 +112,20 @@ function getStarGrowthBonus(stars, rate1, rate2, rate3) {
 }
 
 /**
- * 是否是"真正的肉盾/防御卡"（吃防御类生命成长 8%/6%/6%）。
- * 2026-10-15：原来用 atk_style===1 判断，会把稻草人/树精守卫这类 0 攻光环辅助也算进去；
- * 现在改成「攻为 0 且血厚」的实际判定（0 攻辅助血量都远低于肉盾）。
+ * 防御生命成长只按卡牌职责/明确 ID 判定；不能根据 0 攻/血厚猜测。
+ * #2 核桃卫兵、#11 松果战士、#21 巨盾核桃卫兵、#88 魔法冰盾、#90 火图腾。
+ * 不包含攻击型的 #34 怪物吸尘器、光环/召唤建筑、技能体、中立场景障碍。
+ * 本集合仅控制生命成长，不改变攻击方式与卡面功能图标。
  */
+export const DEFENSE_GROWTH_CARD_IDS = new Set([2, 11, 21, 88, 90]);
 export function isDefenseGrowthCard(card) {
-  const atk = Math.max(0, Number(card?.atk ?? card?.card_atk) || 0);
-  const hp = Math.max(0, Number(card?.hp ?? card?.card_hp) || 0);
-  // 《修正.md》第 5 条：0 攻 + 血厚 会把树精守卫/巨型树精守卫/怪物作坊/外星哨兵这类
-  // **光环辅助/召唤物**误判成肉盾 → 这里额外排除已知的辅助卡（按 id 白名单）。
-  const ASSIST_IDS = new Set([19, 22, 24, 26, 32, 36, 38, 39, 51, 68, 93, 103, 127]);
-  const id = Math.max(0, Number(card?.id ?? card?.card_id) || 0);
-  if (ASSIST_IDS.has(id)) return false;
-  return atk === 0 && hp >= 60;
+  const id = Number(card?.card_id ?? card?.cardId ?? card?.id);
+  return Number.isInteger(id) && DEFENSE_GROWTH_CARD_IDS.has(id);
 }
 
 export function getInstanceHpMultiplier(craftQuality, stars, defense = false, defenseBonus = 0) {
   const P = CRAFT_QUALITY_MULT[normalizeCraftQuality(craftQuality)];
-  // 生命成长（第一轮）：普通 7/5/2%；防御卡 8/6/6%（不再额外叠加 defenseBonus）
+  // 生命成长：普通 7/5/2%，指定防御单位 8/6/6%；旧 defenseBonus 不再进入倍率。
   return defense
     ? P + getStarGrowthBonus(stars, 0.08, 0.06, 0.06)
     : P + getStarGrowthBonus(stars, 0.07, 0.05, 0.02);
@@ -170,12 +166,12 @@ export function getStarDefBonus(stars) {
 export const DEFENSE_CARD_IDS = new Set([2, 11, 21, 34, 88, 90]);
 
 /**
- * 核心公式：
- * mult = P + 0.08×min(Q,5) + 0.06×max(Q−5,0)
- * atk  = (card_atk + R) × mult
- * hp   = card_hp × getInstanceHpMultiplier(品质,Q,防御卡,V)
- *        前5星：普通生命每星5%，防御生命8%；之后分别为4%、6%。
- * cd   = max(6, card_cooldown − M)
+ * 核心公式（不含洗练）：
+ * GA = 10%×min(Q,5) + 6%×min(max(Q−5,0),5) + 4%×max(Q−10,0)
+ * atk = card_atk × (P + GA) + R ；R 是不参与任何倍率的固定攻击奖励。
+ * hp  = card_hp × (P + GH)；目前没有固定生命奖励，旧防御 V 不再叠加。
+ * GH：普通 7%/5%/2%；指定防御卡 8%/6%/6%。
+ * cd = max(6, card_cooldown − M)
  */
 export function calcCardStats(card, craftQuality, stars) {
   const Q = Math.max(0, Number(stars) || 0);
@@ -191,7 +187,7 @@ export function calcCardStats(card, craftQuality, stars) {
   const hpMult = getInstanceHpMultiplier(quality, Q, isDef, 0);
   const baseHp = Math.max(0, Number(card?.hp ?? card?.card_hp) || 0);
   return {
-    atk: Math.round((baseAtk + R) * mult * 100) / 100,
+    atk: Math.round((baseAtk * mult + R) * 100) / 100,
     hp: Math.round(baseHp * hpMult * 100) / 100,
     cd: Math.max(6, baseCd - M),
     atkBase: baseAtk,
