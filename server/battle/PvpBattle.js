@@ -1,4 +1,5 @@
 import { sanitizeCustomCardName } from '../../src/core/constants.js';
+import { snapshotBattleKills } from '../../src/battle/BattleKillStats.js';
 import { resetSkillError } from '../../src/systems/ResetSkillEffects.js';
 
 /**
@@ -525,6 +526,7 @@ export class PvpBattle {
       },
       resourcesByUser,
       skillsByUser,
+      killCountsByTeam: snapshotBattleKills(engine),
       units: engine.units
         .filter((unit) => unit.alive || (unit._deathUntil && engine.time < unit._deathUntil))
         .map((unit) => this.publicUnit(unit)),

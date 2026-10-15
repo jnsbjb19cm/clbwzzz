@@ -5,6 +5,7 @@ import { Projectile } from '../battle/Projectile.js';
 import { calculateCardStats } from '../battle/CardStatFormula.js';
 import { unitAnimPlayer } from '../battle/UnitAnimPlayer.js';
 import { sanitizeCustomCardName } from '../core/constants.js';
+import { syncBattleKills } from '../battle/BattleKillStats.js';
 
 const PATCH_FLAG = Symbol.for('clbwzzz.pvpAuthoritySyncFinal');
 const COLS = 12;
@@ -291,6 +292,7 @@ function applySnapshot(view, snapshot, { force = false } = {}) {
 
   const engine = view.engine;
   const previousSnapshotTime = finite(view.__pvpAuthoritySnapshotTime, finite(snapshot.t));
+  syncBattleKills(engine, snapshot.killCountsByTeam, isRedPerspective(view) ? 'enemy' : 'player');
   const nextSnapshotTime = finite(snapshot.t, previousSnapshotTime);
   const snapshotDt = Math.max(0.001, nextSnapshotTime - previousSnapshotTime || 0.05);
   view.__pvpAuthoritySnapshotTime = nextSnapshotTime;

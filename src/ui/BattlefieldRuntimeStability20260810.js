@@ -6,6 +6,7 @@ import { getProjectileArcHeight } from '../battle/Projectile.js';
 import { projectileVisualSize } from '../battle/ProjectileVisualSize.js';
 import { SpriteAtlas } from '../core/SpriteAtlas.js';
 import { installBattlefieldVisibleGridMapFinal } from './BattlefieldVisibleGridMapFinal.js';
+import { drawFrostImpact } from '../battle/FrostImpactVisual.js';
 
 const PATCH_FLAG = Symbol.for('clbwzzz.battlefieldRuntimeStability20260810');
 const GRID_PATCH_FLAG = Symbol.for('clbwzzz.battlefieldVisibleGridMapFinal');
@@ -424,13 +425,16 @@ function installFinalRenderer() {
   };
 
   BattleRenderer.prototype.drawImpactFx = function drawNativeSpeedImpacts(ctx, engine) {
+    this._impactSafetyAudit = [];
     const cellW = this.battleGridCellWidth?.() ?? 78;
     for (const fx of engine?.impactFx ?? []) {
       const x = this.battleGridX?.(fx.col);
       const y = this.battleGridY?.(clamp(Math.round(finite(fx.lane)), 0, 4));
       if (!Number.isFinite(x) || !Number.isFinite(y)) continue;
       let drawn = false;
-      if (fx.res != null) {
+      if (Number(fx.res) === 77) {
+        drawn = drawFrostImpact(this, ctx, fx, x, y, cellW);
+      } else if (fx.res != null) {
         const pack = this.bulletAnims.get(String(fx.res));
         // Lightning is emitted directly on the farthest enemy. Its native
         // yidong strip intentionally reaches the top edge of the source frame;
@@ -467,6 +471,7 @@ function installFinalRenderer() {
         }
       }
       // 不再合成 fallback 光圈；缺少源爆炸动画时直接不绘制命中圈。
+      this._impactSafetyAudit.push({res:Number(fx.res), lane:fx.lane, col:fx.col, usedSourceAnimation:drawn});
     }
   };
 

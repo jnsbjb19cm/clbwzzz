@@ -221,6 +221,8 @@ export function installPvpCombatPolishFinal() {
     if (team !== 'red') return previousWithTeamPerspective.call(this, team, callback);
     const engine = this.engine;
     for (const unit of engine.units) unit.team = swapBattleTeam(unit.team);
+    const previousQuestPerspective = engine.__questPerspectiveTeam;
+    engine.__questPerspectiveTeam = 'red';
 
     const blueHp = engine.heroHp;
     const redHp = engine.enemyHeroHp;
@@ -243,6 +245,7 @@ export function installPvpCombatPolishFinal() {
       engine.heroMaxHp = nextBlueMaxHp;
       engine.enemyHeroMaxHp = nextRedMaxHp;
       for (const unit of engine.units) unit.team = swapBattleTeam(unit.team);
+      engine.__questPerspectiveTeam = previousQuestPerspective;
     }
   };
 

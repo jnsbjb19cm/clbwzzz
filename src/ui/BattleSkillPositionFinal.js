@@ -3,11 +3,15 @@ import {
   CELL_W,
   COLS,
   FIELD_W,
+  GRID_BODY_W,
+  GRID_ORIGIN_X,
   LANES,
   cellCenterX,
   cellCenterY,
 } from '../battle/BattleConfig.js';
 import { BattleRenderer } from '../battle/BattleRenderer.js';
+import { getSkillEffect } from '../core/SkillRegistry.js';
+import { drawRowSkillVisual } from '../battle/RowSkillVisual.js';
 import { drawFullScreenSkillFx, skillAnimPlayer } from '../battle/SkillAnimPlayer.js';
 import skillPosData from '../data/skillPosition.json' with { type: 'json' };
 
@@ -70,6 +74,17 @@ function drawSkillFxWithOriginalPositions(ctx, engine) {
     const remain = 1 - elapsed / duration;
     if (remain <= 0) continue;
     const alpha = elapsed < 0.05 ? elapsed / 0.05 : Math.min(1, remain * 4);
+    const kind = effect.kind ?? getSkillEffect(skillId)?.kind;
+    if (kind === 'row_damage') {
+      // Damage is the entire selected lane, independent of clicked column.
+      // Map the original strip to exactly that lane, not two point-sized copies.
+      const left = GRID_ORIGIN_X;
+      const top = targetY - CELL_H / 2;
+      drawRowSkillVisual(ctx, effect, {left,top,width:GRID_BODY_W,height:CELL_H}, elapsed, duration, alpha);
+      this._runtimeCoordinateSkillAudit.push({skillId, kind, targetLane:target.lane, targetCol:target.col,
+        drawX:left + GRID_BODY_W / 2, drawY:targetY, width:GRID_BODY_W, height:CELL_H});
+      continue;
+    }
     const fullScreen = effect.fullScreen === true || positionType === 2;
 
     if (fullScreen) {

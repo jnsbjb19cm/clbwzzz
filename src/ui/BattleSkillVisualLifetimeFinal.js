@@ -1,4 +1,4 @@
-import { getSkillAnimationDuration } from '../battle/SkillAnimationConfig.js';
+import { getSkillAnimationDuration, getSkillVisualDuration } from '../battle/SkillAnimationConfig.js';
 import { BattleSkillSystem } from '../systems/BattleSkillSystem.js';
 
 const PATCH_FLAG = Symbol.for('clbwzzz.battleSkillVisualLifetimeFinal');
@@ -35,7 +35,7 @@ export function installBattleSkillVisualLifetimeFinal() {
       target,
       effect.radius ?? 0,
       skillId,
-      onePass,
+      getSkillVisualDuration(skillId, 0.9),
       false,
     );
   };

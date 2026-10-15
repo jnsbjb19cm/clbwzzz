@@ -269,7 +269,8 @@ class SkillAnimPlayer {
     const cacheHeight = Math.max(1, Math.ceil(height));
     // Interpolation and overlapping DOT casts request different frames in the same RAF.
     // Key by frame as well: one mutable canvas otherwise rerasterizes A/B/A/B forever.
-    const cacheKey = `${id}:${frameIndex}:${cacheWidth}x${cacheHeight}`;
+    const contain = options?.fit === 'contain';
+    const cacheKey = `${id}:${frameIndex}:${cacheWidth}x${cacheHeight}:${contain ? 'contain' : 'cover'}`;
     let cached = this.coverFrames.get(cacheKey);
     if (typeof OffscreenCanvas !== 'undefined') {
       if (!cached) {
@@ -311,7 +312,7 @@ class SkillAnimPlayer {
         this.coverFrames.set(cacheKey, cached);
       }
       if (cached.context && cached.frameIndex !== frameIndex) {
-        const coverScale = Math.max(cacheWidth / Math.max(1, sourceW), cacheHeight / Math.max(1, sourceH));
+        const coverScale = (contain ? Math.min : Math.max)(cacheWidth / Math.max(1, sourceW), cacheHeight / Math.max(1, sourceH));
         const coverW = sourceW * coverScale;
         const coverH = sourceH * coverScale;
         cached.context.clearRect(0, 0, cacheWidth, cacheHeight);
@@ -336,7 +337,7 @@ class SkillAnimPlayer {
         return true;
       }
     }
-    const scale = Math.max(width / Math.max(1, sourceW), height / Math.max(1, sourceH));
+    const scale = (contain ? Math.min : Math.max)(width / Math.max(1, sourceW), height / Math.max(1, sourceH));
     const drawW = sourceW * scale;
     const drawH = sourceH * scale;
     const drawX = x + (width - drawW) / 2;

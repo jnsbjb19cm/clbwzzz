@@ -202,6 +202,9 @@ body:is(.battle-immersive, .pvp-battle-active) .game-container #hand.reference-b
   opacity: 1 !important;
   transition-property: transform, border-color, box-shadow !important;
 }
+body:is(.battle-immersive, .pvp-battle-active) .game-container #hand.reference-battle-hand .deck-slot.state-cooling.cooldown-resource-ready:not(.locked) {
+  filter: brightness(.92) !important;
+}
 body:is(.battle-immersive, .pvp-battle-active) .game-container #hand.reference-battle-hand .deck-slot.state-cooling .slot-cd-mask {
   display: block !important; position: absolute !important;
   left: 0 !important; right: 0 !important; top: 0 !important; bottom: auto !important;

@@ -1,5 +1,6 @@
 import { CELL_W, LANES, cellCenterY, colFracToX } from '../battle/BattleConfig.js';
 import { BattleRenderer } from '../battle/BattleRenderer.js';
+import { drawFrostImpact } from '../battle/FrostImpactVisual.js';
 
 const PATCH_FLAG = Symbol.for('clbwzzz.battleImpactSafetyFinal');
 
@@ -40,7 +41,9 @@ export function installBattleImpactSafetyFinal() {
       let usedSourceAnimation = false;
       let unsafeSourceAnimation = false;
 
-      if (fx.res != null) {
+      if (Number(fx.res) === 77) {
+        usedSourceAnimation = drawFrostImpact(this, ctx, fx, cx, cy, CELL_W);
+      } else if (fx.res != null) {
         const pack = this.bulletAnims.get(String(fx.res));
         // These spells originate on the victim. Their original lightning strip
         // intentionally touches the top edge; it is not a clipped explosion.

@@ -24,6 +24,7 @@ function applyHandAvailability(view, root) {
     }
 
     button.classList.toggle('state-cooling', cooling);
+    button.classList.toggle('cooldown-resource-ready', cooling && !resourceLow);
     button.classList.toggle('state-resource-low', !cooling && resourceLow);
     button.classList.toggle('state-ready', !blocked);
     button.classList.toggle('unavailable', blocked);

@@ -1,6 +1,7 @@
 import { drawUnitFootStars, drawUnitFootHp } from './BattleUnitFootUi.js';
 import { drawBattleFloatText } from './BattleFloatText.js';
-import { drawSummonVisuals } from './BattleSummonVisual.js';
+import { drawSummonVisuals, preloadSummonVisual } from './BattleSummonVisual.js';
+import { preloadIceWheelAtlas } from './OriginalAtlasEffects.js';
 import {
   CELL_H,
   CELL_W,
@@ -613,9 +614,13 @@ export class BattleRenderer {
 
   async preloadForEngine(engine) {
     const resSet = engine.getBattleSpriteRes();
+    const summonReady = preloadSummonVisual();
     await this.preloadParts();
     await unitAnimPlayer.preload(resSet);
     await Promise.all([
+      summonReady,
+      preloadIceWheelAtlas(),
+      loadSharedImage('/sprites/bullets/77.png'),
       this.requestEffectAtlas(),
       this.requestItemAtlas(),
       skillAnimPlayer.preload((engine.skillLoadout ?? []).filter(Boolean)),

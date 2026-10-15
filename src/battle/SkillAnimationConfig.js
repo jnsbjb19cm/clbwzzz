@@ -3,6 +3,7 @@ import { getGameSetting } from '../core/GameSettingsStore20260910.js';
 export const SKILL_RESOURCE_ID = Object.freeze({
   527: 506,
   538: 502,
+  560: 533, // 雷弹共用已有雷弹冲击素材，项目没有独立的 560 动画包。
 });
 
 export const SKILL_ANIMATION_DURATION = Object.freeze({
@@ -39,6 +40,7 @@ export function resolveSkillResourceId(skillId) {
 }
 
 export const SKILL_PLAYBACK_RATE = 0.72;
+export const ICE_WHEEL_TRAIL_SECONDS = 2;
 
 export function getSkillAnimationDuration(skillId, fallback = 0.9) {
   const sourceDuration = SKILL_ANIMATION_DURATION[resolveSkillResourceId(skillId)] ?? fallback;
@@ -52,6 +54,7 @@ export function getSkillAnimationDuration(skillId, fallback = 0.9) {
 export function getSkillVisualDuration(skillId, fallback = 0.9) {
   const id = Number(skillId);
   const onePass = getSkillAnimationDuration(id, fallback);
+  if (id === 535) return onePass + ICE_WHEEL_TRAIL_SECONDS;
   if (id === 517) return Math.max(1.2, onePass * 2);
   return onePass;
 }

@@ -9,7 +9,7 @@ export const ATTACK_PATTERNS = new Map([
   [16, { kind: 'forward', cells: 2 }],
   [18, { kind: 'row_splash', radius: 1 }],
   [48, { kind: 'forward', cells: 6 }],
-  [54, { kind: 'square', radius: 1 }],
+  [54, { kind: 'square', radius: 1, splashFactor: 0.5, splashGroundOnly: true }],
   [55, { kind: 'forward', cells: 2 }],
   [56, { kind: 'forward', cells: 3, addResources: true }],
   [57, { kind: 'forward', cells: 2 }],

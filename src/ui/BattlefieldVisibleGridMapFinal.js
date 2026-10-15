@@ -1,6 +1,9 @@
 import { BattleRenderer } from '../battle/BattleRenderer.js';
 import { BattleView } from './BattleView.js';
 import { SpriteAtlas } from '../core/SpriteAtlas.js';
+import { getSkillEffect } from '../core/SkillRegistry.js';
+import { drawFrostImpact } from '../battle/FrostImpactVisual.js';
+import { drawRowSkillVisual } from '../battle/RowSkillVisual.js';
 import { drawFullScreenSkillFx, skillAnimPlayer } from '../battle/SkillAnimPlayer.js';
 import skillPosData from '../data/skillPosition.json' with { type: 'json' };
 
@@ -375,7 +378,9 @@ export function installBattlefieldVisibleGridMapFinal() {
       const point = gridPoint(this, fx.col, clamp(Math.round(finite(fx.lane)), 0, LANES - 1));
       let usedSourceAnimation = false;
       let unsafeSourceAnimation = false;
-      if (fx.res != null) {
+      if (Number(fx.res) === 77) {
+        usedSourceAnimation = drawFrostImpact(this, ctx, fx, point.x, point.y, g.cellW);
+      } else if (fx.res != null) {
         const pack = this.bulletAnims.get(String(fx.res));
         const hasImpact = Boolean(pack?.meta?.animations?.baoza);
         const safe = hasImpact && safeImpactPack(pack);
@@ -434,6 +439,16 @@ export function installBattlefieldVisibleGridMapFinal() {
       const remain = 1 - elapsed / duration;
       if (remain <= 0) continue;
       const alpha = elapsed < 0.05 ? elapsed / 0.05 : Math.min(1, remain * 4);
+      const kind = effect.kind ?? getSkillEffect(skillId)?.kind;
+      if (kind === 'row_damage') {
+        const left = g.x0 - g.cellW / 2;
+        const width = g.stepX * (COLS - 1) + g.cellW;
+        const top = targetPoint.y - g.cellH / 2;
+        drawRowSkillVisual(ctx, effect, {left,top,width,height:g.cellH}, elapsed, duration, alpha);
+        this._runtimeCoordinateSkillAudit.push({skillId, kind, targetLane:target.lane, targetCol:target.col,
+          drawX:left + width / 2, drawY:targetPoint.y, cellX:targetPoint.x, cellY:targetPoint.y, width, height:g.cellH});
+        continue;
+      }
       const fullScreen = effect.fullScreen === true || positionType === 2;
 
       if (fullScreen) {

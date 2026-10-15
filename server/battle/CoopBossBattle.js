@@ -1,5 +1,6 @@
 // 先建立无头浏览器环境，再动态载入客户端共用战斗引擎。
 import { PvpBattle } from './PvpBattle.js';
+import { snapshotBattleKills } from '../../src/battle/BattleKillStats.js';
 import { resetSkillError } from '../../src/systems/ResetSkillEffects.js';
 import { sanitizeCustomCardName } from '../../src/core/constants.js';
 
@@ -858,6 +859,7 @@ export class CoopBossBattle {
     const stage = this.engine.stage ?? {};
     return {
       mode: 'pve',
+      killCountsByTeam: snapshotBattleKills(this.engine),
       t: round2(now),
       status: this.status,
       winner: this.winner,
@@ -901,6 +903,7 @@ export class CoopBossBattle {
     if (this.mode === 'pve') return this.pveSnapshot(now);
     return {
       mode: 'boss',
+      killCountsByTeam: snapshotBattleKills(this.engine),
       t: round2(now),
       status: this.status,
       winner: this.winner,
