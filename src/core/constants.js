@@ -119,6 +119,11 @@ function getStarGrowthBonus(stars, rate1, rate2, rate3) {
 export function isDefenseGrowthCard(card) {
   const atk = Math.max(0, Number(card?.atk ?? card?.card_atk) || 0);
   const hp = Math.max(0, Number(card?.hp ?? card?.card_hp) || 0);
+  // 《修正.md》第 5 条：0 攻 + 血厚 会把树精守卫/巨型树精守卫/怪物作坊/外星哨兵这类
+  // **光环辅助/召唤物**误判成肉盾 → 这里额外排除已知的辅助卡（按 id 白名单）。
+  const ASSIST_IDS = new Set([19, 22, 24, 26, 32, 36, 38, 39, 51, 68, 93, 103, 127]);
+  const id = Math.max(0, Number(card?.id ?? card?.card_id) || 0);
+  if (ASSIST_IDS.has(id)) return false;
   return atk === 0 && hp >= 60;
 }
 

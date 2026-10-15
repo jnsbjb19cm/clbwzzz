@@ -126,6 +126,10 @@ functionalItemAuthorityRouter20260908.post('/cards/use-functional-item', async (
       } else if (itemId === 81) {
         const first = Math.random();
         const delta = first < 0.35 ? 2 : Math.random() < 0.70 ? 1 : -1;
+        // 2026-10-15《修正.md》3a：老卡可能已超过新上限，这里若直接 clamp 会把它**压回上限**（甚至转移时清零来源）
+        if (star > maxStar) {
+          throw new Error(`该卡当前 ${star} 星已超过 ${maxStar} 星上限，使用本道具会把它压回上限，已拒绝（未消耗道具）`);
+        }
         star = Math.max(0, Math.min(maxStar, star + delta));
         message = delta > 0
           ? `成功将${displayName}升星${delta}，当前为${star}`
@@ -171,6 +175,9 @@ functionalItemAuthorityRouter20260908.post('/cards/use-functional-item', async (
           throw new Error('经验来源卡牌已变化，请重新选择，未消耗道具');
         }
         const moved = Math.max(0, Number(source.star) || 0);
+        if (star > maxStar) {
+          throw new Error(`该卡当前 ${star} 星已超过 ${maxStar} 星上限，转移会把它压回上限，已拒绝（未消耗道具）`);
+        }
         star = Math.min(maxStar, star + moved);
         await conn.run('UPDATE player_cards SET star=0 WHERE user_id=? AND slot_index=?', [userId, sourceSlotIndex]);
         message = `已转移 ${moved} 点强化经验`;
