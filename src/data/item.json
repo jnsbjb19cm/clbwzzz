@@ -547,7 +547,7 @@
     "card_atk2": 0,
     "card_hp2": 0,
     "ability_add": 0,
-    "sell_price": 100,
+    "sell_price": 40,
     "naijiu": 0
   },
   {
@@ -576,7 +576,7 @@
     "card_atk2": 0,
     "card_hp2": 0,
     "ability_add": 0,
-    "sell_price": 300,
+    "sell_price": 120,
     "naijiu": 0
   },
   {
@@ -605,7 +605,7 @@
     "card_atk2": 0,
     "card_hp2": 0,
     "ability_add": 0,
-    "sell_price": 800,
+    "sell_price": 300,
     "naijiu": 0
   },
   {
@@ -634,7 +634,7 @@
     "card_atk2": 0,
     "card_hp2": 0,
     "ability_add": 0,
-    "sell_price": 2000,
+    "sell_price": 600,
     "naijiu": 0
   },
   {
@@ -663,7 +663,7 @@
     "card_atk2": 0,
     "card_hp2": 0,
     "ability_add": 0,
-    "sell_price": 5000,
+    "sell_price": 1000,
     "naijiu": 0
   },
   {
