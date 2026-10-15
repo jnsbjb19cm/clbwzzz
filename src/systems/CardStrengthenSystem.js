@@ -9,6 +9,17 @@ const POWDER_IDS = [10001, 10002, 10003, 10004, 10005];
 // into the strengthen slot.
 const BASE_STRENGTH_RATES = [100, 45, 40, 35, 30, 25, 20, 18, 16, 14, 12, 10, 9, 8, 7];
 
+/**
+ * 各原始等级的强化星级硬上限（2026-10-15 用户《强化削弱.md》第一轮方案）：
+ *   1级 4星 · 2级 7星 · 3级 10星 · 4级 13星 · 5级 15星（6级/红卡按 5 级档处理）
+ * 注意：**只拦新的升星**，已经超过上限的老卡保留现状、不会被清退。
+ */
+const MAX_STARS_BY_LEVEL = Object.freeze({ 1: 4, 2: 7, 3: 10, 4: 13, 5: 15, 6: 15 });
+export function maxStarsForCard(card) {
+  const level = Math.max(1, Math.min(6, Number(card?.quality ?? card?.card_quality) || 1));
+  return MAX_STARS_BY_LEVEL[level] ?? 15;
+}
+
 export class CardStrengthenSystem {
   constructor(db) {
     this.db = db;
@@ -33,7 +44,11 @@ export class CardStrengthenSystem {
 
   canStrengthen(slot, card) {
     if (!slot || !card) return { ok: false, error: '未选择卡牌' };
-    if ((slot.strengthLv ?? 0) >= 14) return { ok: false, error: '已达最高强化等级' };
+    // 2026-10-15：改为按卡牌原始等级的上限（原来是统一 14 → 15 星）
+    const cap = maxStarsForCard(card);
+    if ((slot.strengthLv ?? 0) >= cap) {
+      return { ok: false, error: `已达 ${cap} 星上限（${card.quality} 级卡）` };
+    }
     const need = this.getPowderNeed(card.quality, slot.strengthLv ?? 0);
     if (!need) return { ok: false, error: '该品质无法继续强化' };
     return { ok: true, need, rate: this.getSuccessRate(slot.strengthLv ?? 0) };

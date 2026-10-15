@@ -18,7 +18,8 @@ export const functionalItemAuthorityRouter20260908 = Router();
 functionalItemAuthorityRouter20260908.use(requireAuth);
 
 const FUNCTIONAL_IDS = new Set([80,81,82,83,84,85,86,87,88,89,90,91]);
-const MAX_STARS = { 1:5, 2:7, 3:9, 4:11, 5:13, 6:15 };
+// 2026-10-15 与《强化削弱.md》对齐：1级4星 / 2级7星 / 3级10星 / 4级13星 / 5级15星（红卡按 5 级）
+const MAX_STARS = { 1: 4, 2: 7, 3: 10, 4: 13, 5: 15, 6: 15 };
 
 function parseState(raw) {
   try {
