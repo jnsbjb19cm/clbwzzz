@@ -1,7 +1,14 @@
 const STORAGE_KEY = 'clbwz_star_upgrade_v2';
 const DAY_MS = 24 * 60 * 60 * 1000;
 export const REVERSE_CARD_ID = 50041;
-export const MAX_CARD_STAR = 15;
+export const MAX_CARD_STAR = 15;   // 兜底值（真正上限按卡牌原始等级：1级4 / 2级7 / 3级10 / 4级13 / 5级15）
+
+/** 2026-10-15《修正.md》第 1 条：同卡升星也要按等级上限（原来是统一 15）。 */
+const MAX_STARS_BY_LEVEL = Object.freeze({ 1: 4, 2: 7, 3: 10, 4: 13, 5: 15, 6: 15 });
+function starCapFor(system, cardId) {
+  const level = Number(system?.db?.getById?.(cardId)?.quality) || 5;
+  return MAX_STARS_BY_LEVEL[level] ?? MAX_CARD_STAR;
+}
 
 const BASE_RATES = [100, 45, 40, 35, 30, 25, 20, 18, 16, 14, 12, 10, 9, 8, 7];
 
@@ -53,7 +60,8 @@ export class StarUpgradeSystem {
     const main = slots[mainIndex];
     if (!main) return { ok: false, error: '请先放入主卡。' };
     const star = Math.max(0, Number(main.star ?? main.strengthLv) || 0);
-    if (star >= MAX_CARD_STAR) return { ok: false, error: `已达到${MAX_CARD_STAR}星上限。` };
+    const cap = starCapFor(this, main.cardId);
+    if (star >= cap) return { ok: false, error: `已达到${cap}星上限（${this?.db?.getById?.(main.cardId)?.quality ?? 5} 级卡）。` };
     const indices = [...new Set(subIndices)].filter((index) => index !== mainIndex);
     if (requireSub && !indices.length) return { ok: false, error: '必须放入至少一张同卡、同星级副卡。' };
     const subs = indices.map((index) => ({ index, slot: slots[index] })).filter((entry) => entry.slot);
@@ -132,7 +140,7 @@ export class StarUpgradeSystem {
     if (success) {
       const double = preview.doubleRate > 0 && this.random() * 100 < preview.doubleRate;
       const gain = double ? 2 : 1;
-      const nextStar = Math.min(MAX_CARD_STAR, preview.star + gain);
+      const nextStar = Math.min(starCapFor(this, preview.main?.cardId ?? preview.cardId), preview.star + gain);
       this.cardInventory.updateSlot(mainTargetIndex, { star: nextStar, strengthLv: nextStar });
       this.state.failures[preview.key] = 0;
       this.state.pity[preview.key] = false;

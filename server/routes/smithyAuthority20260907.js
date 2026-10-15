@@ -22,7 +22,12 @@ smithyAuthorityRouter20260907.use(requireAuth);
 
 const EXPERIENCE_CARD_IDS = new Set([122, 123, 124]);
 const REVERSE_CARD_ID = 50041;
-const MAX_STAR = 15;
+const MAX_STAR = 15;   // 兜底；真正上限按卡牌原始等级（2026-10-15《修正.md》第 2 条）
+const MAX_STARS_BY_LEVEL = Object.freeze({ 1: 4, 2: 7, 3: 10, 4: 13, 5: 15, 6: 15 });
+function maxStarForCard(card) {
+  const level = Math.max(1, Math.min(6, int(card?.card_quality ?? card?.quality) || 5));
+  return MAX_STARS_BY_LEVEL[level] ?? MAX_STAR;
+}
 const MAX_CARD_SLOTS = 500;
 const BASE_STAR_RATES = [100, 45, 40, 35, 30, 25, 20, 18, 16, 14, 12, 10, 9, 8, 7];
 const CARD_BY_ID = new Map(cardJson.map((raw) => [Number(raw.card_id), raw]));
@@ -508,7 +513,8 @@ smithyAuthorityRouter20260907.post('/star-upgrade', async (req, res) => {
       const card = CARD_BY_ID.get(main.cardId);
       if (!card) throw new Error('主卡无效');
       const star = Math.max(0, int(main.star));
-      if (star >= MAX_STAR) throw new Error(`已达到${MAX_STAR}星上限`);
+      const starCap = maxStarForCard(card);
+      if (star >= starCap) throw new Error(`已达到${starCap}星上限（${card?.card_quality ?? card?.quality} 级卡）`);
 
       const subs = [];
       if (route === 'duplicate') {
@@ -571,7 +577,7 @@ smithyAuthorityRouter20260907.post('/star-upgrade', async (req, res) => {
       if (success) {
         const double = doubleRate > 0 && Math.random() * 100 < doubleRate;
         const gain = double ? 2 : 1;
-        const nextStar = Math.min(MAX_STAR, star + gain);
+        const nextStar = Math.min(starCap, star + gain);   // 双星奖励同样不越级
         state.star.failures[key] = 0;
         state.star.pity[key] = false;
         const protection = state.star.protections[key];

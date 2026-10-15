@@ -136,11 +136,12 @@ export function getInstanceHpMultiplier(craftQuality, stars, defense = false, de
 }
 
 export function getStarAtkBonus(stars) {
+  // 2026-10-15《修正.md》第 4 条：与 CardStatFormula 的固定奖励对齐（10星+2、12星+3、13星+4、14星起+5）
   const value = Math.max(0, Number(stars) || 0);
-  if (value >= 14) return 6;
-  if (value >= 13) return 5;
-  if (value >= 12) return 4;
-  if (value >= 10) return 3;
+  if (value >= 14) return 5;
+  if (value >= 13) return 4;
+  if (value >= 12) return 3;
+  if (value >= 10) return 2;
   if (value >= 6) return 1;
   return 0;
 }
@@ -185,9 +186,9 @@ export function calcCardStats(card, craftQuality, stars) {
   const baseCd = Math.max(0, Number(card?.cooldown ?? card?.card_cd) || 0);
   const M = getStarCdReduce(baseCd, Q);
   const mult = getInstanceStatMultiplier(quality, Q);
-  const isDef = Number(card?.atkStyle ?? card?.atk_style) === 1;
-  const V = isDef && baseCd <= 6 ? getStarDefBonus(Q) : 0;
-  const hpMult = getInstanceHpMultiplier(quality, Q, isDef, V);
+  // 2026-10-15《修正.md》第 4 条：防御判定与 CardStatFormula 统一（0 攻 + 血厚才是肉盾），不再用 atk_style
+  const isDef = isDefenseGrowthCard(card);
+  const hpMult = getInstanceHpMultiplier(quality, Q, isDef, 0);
   const baseHp = Math.max(0, Number(card?.hp ?? card?.card_hp) || 0);
   return {
     atk: Math.round((baseAtk + R) * mult * 100) / 100,
@@ -200,7 +201,7 @@ export function calcCardStats(card, craftQuality, stars) {
     stars: Q,
     atkBonus: R,
     cdReduce: M,
-    defV: V,
+    defV: 0,   // 2026-10-15：不再有额外防御加成项（防御成长已并入 HP 倍率）
     hpMult,
     mult,
   };
