@@ -8,10 +8,13 @@ export const CRAFT_QUALITY = {
 
 /** 品质倍率 P(基础品质 0/1 对齐 card.json，1:1)。 */
 export const CRAFT_QUALITY_MULT = Object.freeze({
+  // 2026-10-15 用户定案（先试试）：普通/精良/优秀/完美 = 1.00 / 1.08 / 1.20 / 1.40；5、6 档保持原值。
+  // 注意：这张表同时被 CardStatFormula（战斗属性）与 AdventureCampaign（冒险敌方血量）使用 ——
+  // 所以调它会让敌我一起变，不是单方面增强玩家。
   1: 1.0,
-  2: 1.0,
-  3: 1.0,
-  4: 1.22,
+  2: 1.08,
+  3: 1.2,
+  4: 1.4,
   5: 1.5,
   6: 1.8,
 });
