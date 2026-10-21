@@ -3,6 +3,7 @@ import { BagView } from './BagView.js';
 import { ShopView } from './ShopView.js';
 import { audio } from '../core/AudioManager.js';
 import { emitQuestEvent } from '../core/QuestEventBus.js';
+import { recordCardObtainReceipt } from '../core/CardObtainReceipt.js';
 import { cardInstanceIdentity, findCardInstanceSlot } from '../core/CardInstanceIdentity.js';
 
 const PATCH_FLAG = Symbol.for('clbwz.databasePersistenceAuthority20260908');
@@ -112,6 +113,7 @@ function installBagAuthority() {
             bound: Boolean(slot.bound),
           });
           applyServerData(this, data);
+          recordCardObtainReceipt(data);
           this.selectedIndex = -1;
           this.refresh(root);
           this.toast(root, data.message || '使用成功');

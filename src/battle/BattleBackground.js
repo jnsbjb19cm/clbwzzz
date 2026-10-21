@@ -142,13 +142,16 @@ export function resolveBattleBackground(
   // 2026-10-13 用户（明确要求）：冒险大陆**没有 BOSS**，而且**固定是草地地图**。
   // 所以冒险关在这里**直接短路成草地** —— 不看 bossId、不看 mapBg_res、不看窗口残留。
   const isAdventureStage = Boolean(stage?.adventure);
-  const sceneOverrideAllowed = Boolean(pvpMode) && !isAdventureStage;
+  const isEndlessStage = Boolean(stage?.endless);
+  const sceneOverrideAllowed = Boolean(pvpMode) && !isAdventureStage && !isEndlessStage;
   const explicitScene = sceneOverrideAllowed
     ? ((typeof window !== 'undefined' && window.__pvpMapScene)
         ? String(window.__pvpMapScene)
         : MAP_BG_RES_TO_SCENE[Number(stage?.mapBg_res)])
     : null;
-  if (isAdventureStage) {
+  if (isEndlessStage) {
+    sceneKey = SCENE_SETS[stage.endless.scene] ? stage.endless.scene : 'grass';
+  } else if (isAdventureStage) {
     sceneKey = 'grass';
   } else if (bossId) {
     sceneKey = BOSS_SCENE[bossId] || 'grass';
@@ -159,6 +162,11 @@ export function resolveBattleBackground(
   }
 
   const scene = SCENE_SETS[sceneKey];
+  // 2026-10-21 用户：双无尽模式必须用 **PVE 的草地地图**，不要用新手教程那张。
+  // 之前这里给无尽单独写了 /battle/background/grassbg.jpg，本意是"和无尽以外区分开"，
+  // 但这张图和 PVE 草地其实是同一张，而且训练营/教程/无尽的画面当年被
+  // BattlefieldFullscreenRepair 的 rock 兜底画成了黄沙图 —— 真正的差异不在 URL 上。
+  // 现在无尽和冒险关一样直接走 PROVIDED_GRASS_BACKGROUND_URL（= PVE 草地）。
   const baseUrl = sceneKey === 'grass'
     ? PROVIDED_GRASS_BACKGROUND_URL
     : `/battle/background/${scene.base}`;

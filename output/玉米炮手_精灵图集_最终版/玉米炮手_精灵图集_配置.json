@@ -1,0 +1,1345 @@
+{
+  "generated_at": "2026-10-21 16:52:53",
+  "source_video": "W:\\.gd\\玉米炮手动画.mp4",
+  "source_width": 3840,
+  "source_height": 2160,
+  "source_fps": 60,
+  "source_total_frames": 874,
+  "attack": {
+    "name": "攻击",
+    "sheet": "玉米炮手_攻击_精灵图集_透明.png",
+    "frame_count": 60,
+    "columns": 10,
+    "rows": 6,
+    "cell_width": 640,
+    "cell_height": 640,
+    "cell_anchor": {
+      "x": 320,
+      "y": 628
+    },
+    "transparent": true,
+    "fps": 60,
+    "loop": false,
+    "source_video_fps": 60,
+    "source_frame_range": [
+      96,
+      179
+    ],
+    "source_time_range_sec": [
+      1.6,
+      3.0
+    ],
+    "source_frames": [
+      96,
+      97,
+      98,
+      99,
+      100,
+      101,
+      102,
+      103,
+      104,
+      105,
+      106,
+      107,
+      108,
+      109,
+      110,
+      111,
+      112,
+      113,
+      114,
+      115,
+      116,
+      117,
+      118,
+      119,
+      120,
+      121,
+      122,
+      123,
+      124,
+      125,
+      126,
+      127,
+      128,
+      129,
+      130,
+      131,
+      132,
+      133,
+      134,
+      135,
+      136,
+      137,
+      162,
+      163,
+      164,
+      165,
+      166,
+      167,
+      168,
+      169,
+      170,
+      171,
+      172,
+      173,
+      174,
+      175,
+      176,
+      177,
+      178,
+      179
+    ],
+    "frames": [
+      {
+        "index": 0,
+        "file": "attack_000_src0096.png",
+        "source_frame": 96,
+        "source_time_sec": 1.6
+      },
+      {
+        "index": 1,
+        "file": "attack_001_src0097.png",
+        "source_frame": 97,
+        "source_time_sec": 1.6167
+      },
+      {
+        "index": 2,
+        "file": "attack_002_src0098.png",
+        "source_frame": 98,
+        "source_time_sec": 1.6333
+      },
+      {
+        "index": 3,
+        "file": "attack_003_src0099.png",
+        "source_frame": 99,
+        "source_time_sec": 1.65
+      },
+      {
+        "index": 4,
+        "file": "attack_004_src0100.png",
+        "source_frame": 100,
+        "source_time_sec": 1.6667
+      },
+      {
+        "index": 5,
+        "file": "attack_005_src0101.png",
+        "source_frame": 101,
+        "source_time_sec": 1.6833
+      },
+      {
+        "index": 6,
+        "file": "attack_006_src0102.png",
+        "source_frame": 102,
+        "source_time_sec": 1.7
+      },
+      {
+        "index": 7,
+        "file": "attack_007_src0103.png",
+        "source_frame": 103,
+        "source_time_sec": 1.7167
+      },
+      {
+        "index": 8,
+        "file": "attack_008_src0104.png",
+        "source_frame": 104,
+        "source_time_sec": 1.7333
+      },
+      {
+        "index": 9,
+        "file": "attack_009_src0105.png",
+        "source_frame": 105,
+        "source_time_sec": 1.75
+      },
+      {
+        "index": 10,
+        "file": "attack_010_src0106.png",
+        "source_frame": 106,
+        "source_time_sec": 1.7667
+      },
+      {
+        "index": 11,
+        "file": "attack_011_src0107.png",
+        "source_frame": 107,
+        "source_time_sec": 1.7833
+      },
+      {
+        "index": 12,
+        "file": "attack_012_src0108.png",
+        "source_frame": 108,
+        "source_time_sec": 1.8
+      },
+      {
+        "index": 13,
+        "file": "attack_013_src0109.png",
+        "source_frame": 109,
+        "source_time_sec": 1.8167
+      },
+      {
+        "index": 14,
+        "file": "attack_014_src0110.png",
+        "source_frame": 110,
+        "source_time_sec": 1.8333
+      },
+      {
+        "index": 15,
+        "file": "attack_015_src0111.png",
+        "source_frame": 111,
+        "source_time_sec": 1.85
+      },
+      {
+        "index": 16,
+        "file": "attack_016_src0112.png",
+        "source_frame": 112,
+        "source_time_sec": 1.8667
+      },
+      {
+        "index": 17,
+        "file": "attack_017_src0113.png",
+        "source_frame": 113,
+        "source_time_sec": 1.8833
+      },
+      {
+        "index": 18,
+        "file": "attack_018_src0114.png",
+        "source_frame": 114,
+        "source_time_sec": 1.9
+      },
+      {
+        "index": 19,
+        "file": "attack_019_src0115.png",
+        "source_frame": 115,
+        "source_time_sec": 1.9167
+      },
+      {
+        "index": 20,
+        "file": "attack_020_src0116.png",
+        "source_frame": 116,
+        "source_time_sec": 1.9333
+      },
+      {
+        "index": 21,
+        "file": "attack_021_src0117.png",
+        "source_frame": 117,
+        "source_time_sec": 1.95
+      },
+      {
+        "index": 22,
+        "file": "attack_022_src0118.png",
+        "source_frame": 118,
+        "source_time_sec": 1.9667
+      },
+      {
+        "index": 23,
+        "file": "attack_023_src0119.png",
+        "source_frame": 119,
+        "source_time_sec": 1.9833
+      },
+      {
+        "index": 24,
+        "file": "attack_024_src0120.png",
+        "source_frame": 120,
+        "source_time_sec": 2.0
+      },
+      {
+        "index": 25,
+        "file": "attack_025_src0121.png",
+        "source_frame": 121,
+        "source_time_sec": 2.0167
+      },
+      {
+        "index": 26,
+        "file": "attack_026_src0122.png",
+        "source_frame": 122,
+        "source_time_sec": 2.0333
+      },
+      {
+        "index": 27,
+        "file": "attack_027_src0123.png",
+        "source_frame": 123,
+        "source_time_sec": 2.05
+      },
+      {
+        "index": 28,
+        "file": "attack_028_src0124.png",
+        "source_frame": 124,
+        "source_time_sec": 2.0667
+      },
+      {
+        "index": 29,
+        "file": "attack_029_src0125.png",
+        "source_frame": 125,
+        "source_time_sec": 2.0833
+      },
+      {
+        "index": 30,
+        "file": "attack_030_src0126.png",
+        "source_frame": 126,
+        "source_time_sec": 2.1
+      },
+      {
+        "index": 31,
+        "file": "attack_031_src0127.png",
+        "source_frame": 127,
+        "source_time_sec": 2.1167
+      },
+      {
+        "index": 32,
+        "file": "attack_032_src0128.png",
+        "source_frame": 128,
+        "source_time_sec": 2.1333
+      },
+      {
+        "index": 33,
+        "file": "attack_033_src0129.png",
+        "source_frame": 129,
+        "source_time_sec": 2.15
+      },
+      {
+        "index": 34,
+        "file": "attack_034_src0130.png",
+        "source_frame": 130,
+        "source_time_sec": 2.1667
+      },
+      {
+        "index": 35,
+        "file": "attack_035_src0131.png",
+        "source_frame": 131,
+        "source_time_sec": 2.1833
+      },
+      {
+        "index": 36,
+        "file": "attack_036_src0132.png",
+        "source_frame": 132,
+        "source_time_sec": 2.2
+      },
+      {
+        "index": 37,
+        "file": "attack_037_src0133.png",
+        "source_frame": 133,
+        "source_time_sec": 2.2167
+      },
+      {
+        "index": 38,
+        "file": "attack_038_src0134.png",
+        "source_frame": 134,
+        "source_time_sec": 2.2333
+      },
+      {
+        "index": 39,
+        "file": "attack_039_src0135.png",
+        "source_frame": 135,
+        "source_time_sec": 2.25
+      },
+      {
+        "index": 40,
+        "file": "attack_040_src0136.png",
+        "source_frame": 136,
+        "source_time_sec": 2.2667
+      },
+      {
+        "index": 41,
+        "file": "attack_041_src0137.png",
+        "source_frame": 137,
+        "source_time_sec": 2.2833
+      },
+      {
+        "index": 42,
+        "file": "attack_042_src0162.png",
+        "source_frame": 162,
+        "source_time_sec": 2.7
+      },
+      {
+        "index": 43,
+        "file": "attack_043_src0163.png",
+        "source_frame": 163,
+        "source_time_sec": 2.7167
+      },
+      {
+        "index": 44,
+        "file": "attack_044_src0164.png",
+        "source_frame": 164,
+        "source_time_sec": 2.7333
+      },
+      {
+        "index": 45,
+        "file": "attack_045_src0165.png",
+        "source_frame": 165,
+        "source_time_sec": 2.75
+      },
+      {
+        "index": 46,
+        "file": "attack_046_src0166.png",
+        "source_frame": 166,
+        "source_time_sec": 2.7667
+      },
+      {
+        "index": 47,
+        "file": "attack_047_src0167.png",
+        "source_frame": 167,
+        "source_time_sec": 2.7833
+      },
+      {
+        "index": 48,
+        "file": "attack_048_src0168.png",
+        "source_frame": 168,
+        "source_time_sec": 2.8
+      },
+      {
+        "index": 49,
+        "file": "attack_049_src0169.png",
+        "source_frame": 169,
+        "source_time_sec": 2.8167
+      },
+      {
+        "index": 50,
+        "file": "attack_050_src0170.png",
+        "source_frame": 170,
+        "source_time_sec": 2.8333
+      },
+      {
+        "index": 51,
+        "file": "attack_051_src0171.png",
+        "source_frame": 171,
+        "source_time_sec": 2.85
+      },
+      {
+        "index": 52,
+        "file": "attack_052_src0172.png",
+        "source_frame": 172,
+        "source_time_sec": 2.8667
+      },
+      {
+        "index": 53,
+        "file": "attack_053_src0173.png",
+        "source_frame": 173,
+        "source_time_sec": 2.8833
+      },
+      {
+        "index": 54,
+        "file": "attack_054_src0174.png",
+        "source_frame": 174,
+        "source_time_sec": 2.9
+      },
+      {
+        "index": 55,
+        "file": "attack_055_src0175.png",
+        "source_frame": 175,
+        "source_time_sec": 2.9167
+      },
+      {
+        "index": 56,
+        "file": "attack_056_src0176.png",
+        "source_frame": 176,
+        "source_time_sec": 2.9333
+      },
+      {
+        "index": 57,
+        "file": "attack_057_src0177.png",
+        "source_frame": 177,
+        "source_time_sec": 2.95
+      },
+      {
+        "index": 58,
+        "file": "attack_058_src0178.png",
+        "source_frame": 178,
+        "source_time_sec": 2.9667
+      },
+      {
+        "index": 59,
+        "file": "attack_059_src0179.png",
+        "source_frame": 179,
+        "source_time_sec": 2.9833
+      }
+    ],
+    "preview_apng": "预览\\玉米炮手_攻击_透明动态预览.apng.png",
+    "preview_gif": "预览\\玉米炮手_攻击_棋盘预览.gif",
+    "index_preview": "预览\\玉米炮手_攻击_逐帧索引.png",
+    "sheet_dimensions": [
+      6400,
+      3840
+    ],
+    "notes": "仅保留主体：脚下三片玉米叶、身上两片高叶、玉米果实、眼睛；去除背景、青绿色底座/水花、炮弹和场景杂物。"
+  },
+  "idle": {
+    "name": "待机",
+    "sheet": "玉米炮手_待机_精灵图集_透明.png",
+    "frame_count": 120,
+    "columns": 10,
+    "rows": 12,
+    "cell_width": 640,
+    "cell_height": 640,
+    "cell_anchor": {
+      "x": 320,
+      "y": 628
+    },
+    "transparent": true,
+    "fps": 60,
+    "loop": true,
+    "source_video_fps": 60,
+    "source_frame_range": [
+      474,
+      593
+    ],
+    "source_time_range_sec": [
+      7.9,
+      9.9
+    ],
+    "source_frames": [
+      474,
+      475,
+      476,
+      477,
+      478,
+      479,
+      480,
+      481,
+      482,
+      483,
+      484,
+      485,
+      486,
+      487,
+      488,
+      489,
+      490,
+      491,
+      492,
+      493,
+      494,
+      495,
+      496,
+      497,
+      498,
+      499,
+      500,
+      501,
+      502,
+      503,
+      504,
+      505,
+      506,
+      507,
+      508,
+      509,
+      510,
+      511,
+      512,
+      513,
+      514,
+      515,
+      516,
+      517,
+      518,
+      519,
+      520,
+      521,
+      522,
+      523,
+      524,
+      525,
+      526,
+      527,
+      528,
+      529,
+      530,
+      531,
+      532,
+      533,
+      534,
+      535,
+      536,
+      537,
+      538,
+      539,
+      540,
+      541,
+      542,
+      543,
+      544,
+      545,
+      546,
+      547,
+      548,
+      549,
+      550,
+      551,
+      552,
+      553,
+      554,
+      555,
+      556,
+      557,
+      558,
+      559,
+      560,
+      561,
+      562,
+      563,
+      564,
+      565,
+      566,
+      567,
+      568,
+      569,
+      570,
+      571,
+      572,
+      573,
+      574,
+      575,
+      576,
+      577,
+      578,
+      579,
+      580,
+      581,
+      582,
+      583,
+      584,
+      585,
+      586,
+      587,
+      588,
+      589,
+      590,
+      591,
+      592,
+      593
+    ],
+    "frames": [
+      {
+        "index": 0,
+        "file": "idle_000_src0474.png",
+        "source_frame": 474,
+        "source_time_sec": 7.9
+      },
+      {
+        "index": 1,
+        "file": "idle_001_src0475.png",
+        "source_frame": 475,
+        "source_time_sec": 7.9167
+      },
+      {
+        "index": 2,
+        "file": "idle_002_src0476.png",
+        "source_frame": 476,
+        "source_time_sec": 7.9333
+      },
+      {
+        "index": 3,
+        "file": "idle_003_src0477.png",
+        "source_frame": 477,
+        "source_time_sec": 7.95
+      },
+      {
+        "index": 4,
+        "file": "idle_004_src0478.png",
+        "source_frame": 478,
+        "source_time_sec": 7.9667
+      },
+      {
+        "index": 5,
+        "file": "idle_005_src0479.png",
+        "source_frame": 479,
+        "source_time_sec": 7.9833
+      },
+      {
+        "index": 6,
+        "file": "idle_006_src0480.png",
+        "source_frame": 480,
+        "source_time_sec": 8.0
+      },
+      {
+        "index": 7,
+        "file": "idle_007_src0481.png",
+        "source_frame": 481,
+        "source_time_sec": 8.0167
+      },
+      {
+        "index": 8,
+        "file": "idle_008_src0482.png",
+        "source_frame": 482,
+        "source_time_sec": 8.0333
+      },
+      {
+        "index": 9,
+        "file": "idle_009_src0483.png",
+        "source_frame": 483,
+        "source_time_sec": 8.05
+      },
+      {
+        "index": 10,
+        "file": "idle_010_src0484.png",
+        "source_frame": 484,
+        "source_time_sec": 8.0667
+      },
+      {
+        "index": 11,
+        "file": "idle_011_src0485.png",
+        "source_frame": 485,
+        "source_time_sec": 8.0833
+      },
+      {
+        "index": 12,
+        "file": "idle_012_src0486.png",
+        "source_frame": 486,
+        "source_time_sec": 8.1
+      },
+      {
+        "index": 13,
+        "file": "idle_013_src0487.png",
+        "source_frame": 487,
+        "source_time_sec": 8.1167
+      },
+      {
+        "index": 14,
+        "file": "idle_014_src0488.png",
+        "source_frame": 488,
+        "source_time_sec": 8.1333
+      },
+      {
+        "index": 15,
+        "file": "idle_015_src0489.png",
+        "source_frame": 489,
+        "source_time_sec": 8.15
+      },
+      {
+        "index": 16,
+        "file": "idle_016_src0490.png",
+        "source_frame": 490,
+        "source_time_sec": 8.1667
+      },
+      {
+        "index": 17,
+        "file": "idle_017_src0491.png",
+        "source_frame": 491,
+        "source_time_sec": 8.1833
+      },
+      {
+        "index": 18,
+        "file": "idle_018_src0492.png",
+        "source_frame": 492,
+        "source_time_sec": 8.2
+      },
+      {
+        "index": 19,
+        "file": "idle_019_src0493.png",
+        "source_frame": 493,
+        "source_time_sec": 8.2167
+      },
+      {
+        "index": 20,
+        "file": "idle_020_src0494.png",
+        "source_frame": 494,
+        "source_time_sec": 8.2333
+      },
+      {
+        "index": 21,
+        "file": "idle_021_src0495.png",
+        "source_frame": 495,
+        "source_time_sec": 8.25
+      },
+      {
+        "index": 22,
+        "file": "idle_022_src0496.png",
+        "source_frame": 496,
+        "source_time_sec": 8.2667
+      },
+      {
+        "index": 23,
+        "file": "idle_023_src0497.png",
+        "source_frame": 497,
+        "source_time_sec": 8.2833
+      },
+      {
+        "index": 24,
+        "file": "idle_024_src0498.png",
+        "source_frame": 498,
+        "source_time_sec": 8.3
+      },
+      {
+        "index": 25,
+        "file": "idle_025_src0499.png",
+        "source_frame": 499,
+        "source_time_sec": 8.3167
+      },
+      {
+        "index": 26,
+        "file": "idle_026_src0500.png",
+        "source_frame": 500,
+        "source_time_sec": 8.3333
+      },
+      {
+        "index": 27,
+        "file": "idle_027_src0501.png",
+        "source_frame": 501,
+        "source_time_sec": 8.35
+      },
+      {
+        "index": 28,
+        "file": "idle_028_src0502.png",
+        "source_frame": 502,
+        "source_time_sec": 8.3667
+      },
+      {
+        "index": 29,
+        "file": "idle_029_src0503.png",
+        "source_frame": 503,
+        "source_time_sec": 8.3833
+      },
+      {
+        "index": 30,
+        "file": "idle_030_src0504.png",
+        "source_frame": 504,
+        "source_time_sec": 8.4
+      },
+      {
+        "index": 31,
+        "file": "idle_031_src0505.png",
+        "source_frame": 505,
+        "source_time_sec": 8.4167
+      },
+      {
+        "index": 32,
+        "file": "idle_032_src0506.png",
+        "source_frame": 506,
+        "source_time_sec": 8.4333
+      },
+      {
+        "index": 33,
+        "file": "idle_033_src0507.png",
+        "source_frame": 507,
+        "source_time_sec": 8.45
+      },
+      {
+        "index": 34,
+        "file": "idle_034_src0508.png",
+        "source_frame": 508,
+        "source_time_sec": 8.4667
+      },
+      {
+        "index": 35,
+        "file": "idle_035_src0509.png",
+        "source_frame": 509,
+        "source_time_sec": 8.4833
+      },
+      {
+        "index": 36,
+        "file": "idle_036_src0510.png",
+        "source_frame": 510,
+        "source_time_sec": 8.5
+      },
+      {
+        "index": 37,
+        "file": "idle_037_src0511.png",
+        "source_frame": 511,
+        "source_time_sec": 8.5167
+      },
+      {
+        "index": 38,
+        "file": "idle_038_src0512.png",
+        "source_frame": 512,
+        "source_time_sec": 8.5333
+      },
+      {
+        "index": 39,
+        "file": "idle_039_src0513.png",
+        "source_frame": 513,
+        "source_time_sec": 8.55
+      },
+      {
+        "index": 40,
+        "file": "idle_040_src0514.png",
+        "source_frame": 514,
+        "source_time_sec": 8.5667
+      },
+      {
+        "index": 41,
+        "file": "idle_041_src0515.png",
+        "source_frame": 515,
+        "source_time_sec": 8.5833
+      },
+      {
+        "index": 42,
+        "file": "idle_042_src0516.png",
+        "source_frame": 516,
+        "source_time_sec": 8.6
+      },
+      {
+        "index": 43,
+        "file": "idle_043_src0517.png",
+        "source_frame": 517,
+        "source_time_sec": 8.6167
+      },
+      {
+        "index": 44,
+        "file": "idle_044_src0518.png",
+        "source_frame": 518,
+        "source_time_sec": 8.6333
+      },
+      {
+        "index": 45,
+        "file": "idle_045_src0519.png",
+        "source_frame": 519,
+        "source_time_sec": 8.65
+      },
+      {
+        "index": 46,
+        "file": "idle_046_src0520.png",
+        "source_frame": 520,
+        "source_time_sec": 8.6667
+      },
+      {
+        "index": 47,
+        "file": "idle_047_src0521.png",
+        "source_frame": 521,
+        "source_time_sec": 8.6833
+      },
+      {
+        "index": 48,
+        "file": "idle_048_src0522.png",
+        "source_frame": 522,
+        "source_time_sec": 8.7
+      },
+      {
+        "index": 49,
+        "file": "idle_049_src0523.png",
+        "source_frame": 523,
+        "source_time_sec": 8.7167
+      },
+      {
+        "index": 50,
+        "file": "idle_050_src0524.png",
+        "source_frame": 524,
+        "source_time_sec": 8.7333
+      },
+      {
+        "index": 51,
+        "file": "idle_051_src0525.png",
+        "source_frame": 525,
+        "source_time_sec": 8.75
+      },
+      {
+        "index": 52,
+        "file": "idle_052_src0526.png",
+        "source_frame": 526,
+        "source_time_sec": 8.7667
+      },
+      {
+        "index": 53,
+        "file": "idle_053_src0527.png",
+        "source_frame": 527,
+        "source_time_sec": 8.7833
+      },
+      {
+        "index": 54,
+        "file": "idle_054_src0528.png",
+        "source_frame": 528,
+        "source_time_sec": 8.8
+      },
+      {
+        "index": 55,
+        "file": "idle_055_src0529.png",
+        "source_frame": 529,
+        "source_time_sec": 8.8167
+      },
+      {
+        "index": 56,
+        "file": "idle_056_src0530.png",
+        "source_frame": 530,
+        "source_time_sec": 8.8333
+      },
+      {
+        "index": 57,
+        "file": "idle_057_src0531.png",
+        "source_frame": 531,
+        "source_time_sec": 8.85
+      },
+      {
+        "index": 58,
+        "file": "idle_058_src0532.png",
+        "source_frame": 532,
+        "source_time_sec": 8.8667
+      },
+      {
+        "index": 59,
+        "file": "idle_059_src0533.png",
+        "source_frame": 533,
+        "source_time_sec": 8.8833
+      },
+      {
+        "index": 60,
+        "file": "idle_060_src0534.png",
+        "source_frame": 534,
+        "source_time_sec": 8.9
+      },
+      {
+        "index": 61,
+        "file": "idle_061_src0535.png",
+        "source_frame": 535,
+        "source_time_sec": 8.9167
+      },
+      {
+        "index": 62,
+        "file": "idle_062_src0536.png",
+        "source_frame": 536,
+        "source_time_sec": 8.9333
+      },
+      {
+        "index": 63,
+        "file": "idle_063_src0537.png",
+        "source_frame": 537,
+        "source_time_sec": 8.95
+      },
+      {
+        "index": 64,
+        "file": "idle_064_src0538.png",
+        "source_frame": 538,
+        "source_time_sec": 8.9667
+      },
+      {
+        "index": 65,
+        "file": "idle_065_src0539.png",
+        "source_frame": 539,
+        "source_time_sec": 8.9833
+      },
+      {
+        "index": 66,
+        "file": "idle_066_src0540.png",
+        "source_frame": 540,
+        "source_time_sec": 9.0
+      },
+      {
+        "index": 67,
+        "file": "idle_067_src0541.png",
+        "source_frame": 541,
+        "source_time_sec": 9.0167
+      },
+      {
+        "index": 68,
+        "file": "idle_068_src0542.png",
+        "source_frame": 542,
+        "source_time_sec": 9.0333
+      },
+      {
+        "index": 69,
+        "file": "idle_069_src0543.png",
+        "source_frame": 543,
+        "source_time_sec": 9.05
+      },
+      {
+        "index": 70,
+        "file": "idle_070_src0544.png",
+        "source_frame": 544,
+        "source_time_sec": 9.0667
+      },
+      {
+        "index": 71,
+        "file": "idle_071_src0545.png",
+        "source_frame": 545,
+        "source_time_sec": 9.0833
+      },
+      {
+        "index": 72,
+        "file": "idle_072_src0546.png",
+        "source_frame": 546,
+        "source_time_sec": 9.1
+      },
+      {
+        "index": 73,
+        "file": "idle_073_src0547.png",
+        "source_frame": 547,
+        "source_time_sec": 9.1167
+      },
+      {
+        "index": 74,
+        "file": "idle_074_src0548.png",
+        "source_frame": 548,
+        "source_time_sec": 9.1333
+      },
+      {
+        "index": 75,
+        "file": "idle_075_src0549.png",
+        "source_frame": 549,
+        "source_time_sec": 9.15
+      },
+      {
+        "index": 76,
+        "file": "idle_076_src0550.png",
+        "source_frame": 550,
+        "source_time_sec": 9.1667
+      },
+      {
+        "index": 77,
+        "file": "idle_077_src0551.png",
+        "source_frame": 551,
+        "source_time_sec": 9.1833
+      },
+      {
+        "index": 78,
+        "file": "idle_078_src0552.png",
+        "source_frame": 552,
+        "source_time_sec": 9.2
+      },
+      {
+        "index": 79,
+        "file": "idle_079_src0553.png",
+        "source_frame": 553,
+        "source_time_sec": 9.2167
+      },
+      {
+        "index": 80,
+        "file": "idle_080_src0554.png",
+        "source_frame": 554,
+        "source_time_sec": 9.2333
+      },
+      {
+        "index": 81,
+        "file": "idle_081_src0555.png",
+        "source_frame": 555,
+        "source_time_sec": 9.25
+      },
+      {
+        "index": 82,
+        "file": "idle_082_src0556.png",
+        "source_frame": 556,
+        "source_time_sec": 9.2667
+      },
+      {
+        "index": 83,
+        "file": "idle_083_src0557.png",
+        "source_frame": 557,
+        "source_time_sec": 9.2833
+      },
+      {
+        "index": 84,
+        "file": "idle_084_src0558.png",
+        "source_frame": 558,
+        "source_time_sec": 9.3
+      },
+      {
+        "index": 85,
+        "file": "idle_085_src0559.png",
+        "source_frame": 559,
+        "source_time_sec": 9.3167
+      },
+      {
+        "index": 86,
+        "file": "idle_086_src0560.png",
+        "source_frame": 560,
+        "source_time_sec": 9.3333
+      },
+      {
+        "index": 87,
+        "file": "idle_087_src0561.png",
+        "source_frame": 561,
+        "source_time_sec": 9.35
+      },
+      {
+        "index": 88,
+        "file": "idle_088_src0562.png",
+        "source_frame": 562,
+        "source_time_sec": 9.3667
+      },
+      {
+        "index": 89,
+        "file": "idle_089_src0563.png",
+        "source_frame": 563,
+        "source_time_sec": 9.3833
+      },
+      {
+        "index": 90,
+        "file": "idle_090_src0564.png",
+        "source_frame": 564,
+        "source_time_sec": 9.4
+      },
+      {
+        "index": 91,
+        "file": "idle_091_src0565.png",
+        "source_frame": 565,
+        "source_time_sec": 9.4167
+      },
+      {
+        "index": 92,
+        "file": "idle_092_src0566.png",
+        "source_frame": 566,
+        "source_time_sec": 9.4333
+      },
+      {
+        "index": 93,
+        "file": "idle_093_src0567.png",
+        "source_frame": 567,
+        "source_time_sec": 9.45
+      },
+      {
+        "index": 94,
+        "file": "idle_094_src0568.png",
+        "source_frame": 568,
+        "source_time_sec": 9.4667
+      },
+      {
+        "index": 95,
+        "file": "idle_095_src0569.png",
+        "source_frame": 569,
+        "source_time_sec": 9.4833
+      },
+      {
+        "index": 96,
+        "file": "idle_096_src0570.png",
+        "source_frame": 570,
+        "source_time_sec": 9.5
+      },
+      {
+        "index": 97,
+        "file": "idle_097_src0571.png",
+        "source_frame": 571,
+        "source_time_sec": 9.5167
+      },
+      {
+        "index": 98,
+        "file": "idle_098_src0572.png",
+        "source_frame": 572,
+        "source_time_sec": 9.5333
+      },
+      {
+        "index": 99,
+        "file": "idle_099_src0573.png",
+        "source_frame": 573,
+        "source_time_sec": 9.55
+      },
+      {
+        "index": 100,
+        "file": "idle_100_src0574.png",
+        "source_frame": 574,
+        "source_time_sec": 9.5667
+      },
+      {
+        "index": 101,
+        "file": "idle_101_src0575.png",
+        "source_frame": 575,
+        "source_time_sec": 9.5833
+      },
+      {
+        "index": 102,
+        "file": "idle_102_src0576.png",
+        "source_frame": 576,
+        "source_time_sec": 9.6
+      },
+      {
+        "index": 103,
+        "file": "idle_103_src0577.png",
+        "source_frame": 577,
+        "source_time_sec": 9.6167
+      },
+      {
+        "index": 104,
+        "file": "idle_104_src0578.png",
+        "source_frame": 578,
+        "source_time_sec": 9.6333
+      },
+      {
+        "index": 105,
+        "file": "idle_105_src0579.png",
+        "source_frame": 579,
+        "source_time_sec": 9.65
+      },
+      {
+        "index": 106,
+        "file": "idle_106_src0580.png",
+        "source_frame": 580,
+        "source_time_sec": 9.6667
+      },
+      {
+        "index": 107,
+        "file": "idle_107_src0581.png",
+        "source_frame": 581,
+        "source_time_sec": 9.6833
+      },
+      {
+        "index": 108,
+        "file": "idle_108_src0582.png",
+        "source_frame": 582,
+        "source_time_sec": 9.7
+      },
+      {
+        "index": 109,
+        "file": "idle_109_src0583.png",
+        "source_frame": 583,
+        "source_time_sec": 9.7167
+      },
+      {
+        "index": 110,
+        "file": "idle_110_src0584.png",
+        "source_frame": 584,
+        "source_time_sec": 9.7333
+      },
+      {
+        "index": 111,
+        "file": "idle_111_src0585.png",
+        "source_frame": 585,
+        "source_time_sec": 9.75
+      },
+      {
+        "index": 112,
+        "file": "idle_112_src0586.png",
+        "source_frame": 586,
+        "source_time_sec": 9.7667
+      },
+      {
+        "index": 113,
+        "file": "idle_113_src0587.png",
+        "source_frame": 587,
+        "source_time_sec": 9.7833
+      },
+      {
+        "index": 114,
+        "file": "idle_114_src0588.png",
+        "source_frame": 588,
+        "source_time_sec": 9.8
+      },
+      {
+        "index": 115,
+        "file": "idle_115_src0589.png",
+        "source_frame": 589,
+        "source_time_sec": 9.8167
+      },
+      {
+        "index": 116,
+        "file": "idle_116_src0590.png",
+        "source_frame": 590,
+        "source_time_sec": 9.8333
+      },
+      {
+        "index": 117,
+        "file": "idle_117_src0591.png",
+        "source_frame": 591,
+        "source_time_sec": 9.85
+      },
+      {
+        "index": 118,
+        "file": "idle_118_src0592.png",
+        "source_frame": 592,
+        "source_time_sec": 9.8667
+      },
+      {
+        "index": 119,
+        "file": "idle_119_src0593.png",
+        "source_frame": 593,
+        "source_time_sec": 9.8833
+      }
+    ],
+    "preview_apng": "预览\\玉米炮手_待机_透明动态预览.apng.png",
+    "preview_gif": "预览\\玉米炮手_待机_棋盘预览.gif",
+    "index_preview": "预览\\玉米炮手_待机_逐帧索引.png",
+    "sheet_dimensions": [
+      6400,
+      7680
+    ],
+    "notes": "仅保留主体：脚下三片玉米叶、身上两片高叶、玉米果实、眼睛；去除背景、青绿色底座/水花、炮弹和场景杂物。"
+  },
+  "attack_extraction_note": "原片 0-1.6s 为编辑器选择框/空白/青色残影，未纳入；1.6-2.3s 与 2.7-3.0s 主体完整，2.3-2.7s 玉米炮弹遮挡主体，未纳入，避免把炮弹或破损主体带入图集。",
+  "idle_extraction_note": "从 3s 后的干净段中选择一个完整左右摇摆周期（7.90-9.90s，120帧）作为待机循环。",
+  "alpha": "RGBA PNG，背景完全透明；透明像素 RGB 已做边缘扩散，缩放时不易出现黑边。"
+}

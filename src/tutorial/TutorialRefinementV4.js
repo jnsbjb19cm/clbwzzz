@@ -74,13 +74,13 @@ function updateContinueCountdown(controller) {
   if (!continueEl || step?.mode !== 'blank') return;
 
   const left = Math.max(0, finite(controller.__v4BlankUnlockAt, 0) - performance.now());
-  if (left > 0) {
-    continueEl.textContent = `请先观察一下战场……${Math.ceil(left / 1000)} 秒后可点击空白位置继续`;
-    controller.panel?.classList.add('tutorial-buffer-locked');
-  } else {
-    continueEl.textContent = '点击战场任意空白位置继续';
-    controller.panel?.classList.remove('tutorial-buffer-locked');
-  }
+  // monitor 每 100ms 调一次；文本只在倒计时秒数变化时才写，避免无意义的布局/重绘。
+  const text = left > 0
+    ? `请先观察一下战场……${Math.ceil(left / 1000)} 秒后可点击空白位置继续`
+    : '点击战场任意空白位置继续';
+  if (continueEl.textContent !== text) continueEl.textContent = text;
+  if (left > 0) controller.panel?.classList.add('tutorial-buffer-locked');
+  else controller.panel?.classList.remove('tutorial-buffer-locked');
 }
 
 function configureStep(controller, view) {
@@ -261,6 +261,8 @@ function refineController(view, attempt = 0) {
   controller.updateFocus = function updateFocusV4() {
     const step = currentStep(this);
     if (step?.key === 'final' && performance.now() >= finite(this.__v4FinalFocusUntil, 0)) {
+      // 低扰动的最终反攻：高亮和遮罩一起退场，把视线还给战场。
+      this.hideFocus?.();
       if (this.focus) this.focus.style.display = 'none';
       return;
     }

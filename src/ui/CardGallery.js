@@ -1,6 +1,6 @@
 import { audio } from '../core/AudioManager.js';
 import { CARD_QUALITY, CARD_TYPE } from '../core/constants.js';
-import { formatBattleAmount } from '../battle/BattleConfig.js';
+import { formatBattleAmount, getCardMoveSpeedOptions } from '../battle/BattleConfig.js';
 import { gameSettings } from '../core/GameSettingsStore20260910.js';
 import { renderCardRadar } from './CardRadar.js';
 
@@ -26,6 +26,12 @@ const typeLabelOf = (type) => CARD_TYPE[Number(type)] ?? '其他';
 
 const qualityInfoOf = (quality) => CARD_QUALITY[Number(quality)] ?? { name: `${quality} 级卡`, color: '#9e9e9e' };
 
+/** 移速格/秒显示：去掉多余的 0（0.65 / 0.5），非数字兜底。 */
+const fmtColPerSec = (value) => {
+  const number = Number(value);
+  return Number.isFinite(number) ? String(Number(number.toFixed(2))) : '-';
+};
+
 export class CardGallery {
   /**
    * @param {import('../core/CardDatabase.js').CardDatabase} db
@@ -37,6 +43,8 @@ export class CardGallery {
     this.filters = { quality: '', type: '', keyword: '' };
     this.stats = db.getStats();
     this.page = 0;
+    // 双移速卡（飞鞋怪/跳跃大耳怪）图鉴雷达图默认显示「首次攻击前」档，可在详情里切换。
+    this.radarMoveMode = 'beforeFirstAttack';
     this.unsubscribe = gameSettings.subscribe((key) => {
       // 设置里改了「未获得卡剪影」要立刻反映到已经打开的图鉴上。
       if (key === 'gallerySilhouetteUnowned' && this.root) this.renderCardGrid(this.root);
@@ -279,13 +287,18 @@ export class CardGallery {
     })();
     const ownedCount = ownedMap instanceof Map ? (ownedMap.get(Number(card.id)) ?? 0) : null;
     const info = qualityInfoOf(card.quality);
+    const moveOptions = getCardMoveSpeedOptions(card);
+    // 双移速卡的「移速」在详情里直接写出两段（雷达图上可用按钮切换具体显示哪一段）。
+    const moveText = moveOptions
+      ? `${fmtColPerSec(moveOptions[0].colPerSec)} → ${fmtColPerSec(moveOptions[1].colPerSec)} 格/秒（首次攻击前 → 后）`
+      : (card.moveSpeed || '-');
     const stats = [
       ['攻击', formatBattleAmount(card.atk)],
       ['生命', formatBattleAmount(card.hp)],
       ['费用', card.cost],
       ['冷却', `${card.cooldown}s`],
       ['攻速', card.attackInterval ? `${card.attackInterval}s/次` : card.atkSpeed || '-'],
-      ['移速', card.moveSpeed || '-'],
+      ['移速', moveText],
       ['攻击方式', card.atkStyleLabel ?? '-'],
     ];
     panel.innerHTML = `
@@ -301,7 +314,7 @@ export class CardGallery {
           <p class="gallery-detail-owned">${ownedCount === null ? '—' : (ownedCount > 0 ? `已拥有 ×${ownedCount}` : '未获得')}</p>
         </div>
       </div>
-      ${renderCardRadar(card, this.compareCardId === card.id ? null : this.db.getById(this.compareCardId), this.baseCards())}
+      ${renderCardRadar(card, this.compareCardId === card.id ? null : this.db.getById(this.compareCardId), this.baseCards(), { moveMode: this.radarMoveMode })}
       <dl class="gallery-detail-stats">
         ${stats.map(([label, value]) => `<div><dt>${label}</dt><dd>${escapeHtml(value)}</dd></div>`).join('')}
       </dl>
@@ -312,6 +325,18 @@ export class CardGallery {
       this.compareCardId = Number(event.target.value) || null;
       this.renderDetail(root, card);
       panel.scrollTop = scrollTop;
+    });
+    // 双移速卡：切换雷达图「移动」维度显示首次攻击前 / 首次攻击后的速度。
+    panel.querySelectorAll('[data-radar-move]').forEach(button => {
+      button.addEventListener('click', () => {
+        const mode = button.dataset.radarMove;
+        if (!mode || this.radarMoveMode === mode) return;
+        audio.playButton('tab');
+        this.radarMoveMode = mode;
+        const scrollTop = panel.scrollTop;
+        this.renderDetail(root, card);
+        panel.scrollTop = scrollTop;
+      });
     });
     panel.scrollTop = 0;
   }

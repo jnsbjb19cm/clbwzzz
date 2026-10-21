@@ -37,6 +37,7 @@ function cloneRoom(room) {
     allowUnbalanced: room.allowUnbalanced,
     randomMatch: room.randomMatch,
     mode: room.mode,
+    endless: room.endless ?? null,
     size: room.size,
     maxTeamSize: room.maxTeamSize,
     stageId: room.stageId,
@@ -64,7 +65,7 @@ export class RoomManager {
   listRooms() {
     // 大厅列表展示等待/即将开始/进行中的房间：等待房可加入，战斗房可打观战入口。
     return [...this.rooms.values()]
-      .filter((room) => ['waiting', 'starting', 'battling'].includes(room.status))
+      .filter((room) => !room.endless && ['waiting', 'starting', 'battling'].includes(room.status))
       .map(cloneRoom);
   }
 
@@ -157,7 +158,12 @@ export class RoomManager {
     return this.rooms.get(Number(roomId)) ?? null;
   }
 
-  createRoom({ user, mode, stageId, mapId, size = '3v3', name, bossId, difficulty }) {
+  createRoom({ user, mode, stageId, mapId, size = '3v3', name, bossId, difficulty, endless = null }) {
+    const existing = this.getRoomByUser(user.id);
+    if ((endless || existing?.endless) && existing && existing.endless?.attempt !== endless?.attempt) {
+      throw new Error('请先退出原房间，再进入新的无尽挑战');
+    }
+    if (endless) { mode = 'pve'; size = '1v1'; }
     // 2026-09-12：**重连幂等** —— 玩家刷新/换 socket 后再进（野外冒险等）不能报
     // "你已经在其他房间中"，否则客户端会退化成没有邀请按钮的朴素大厅、大厅也看不到自己的房间。
     const resumed = this.resumeMembershipForUser(user, mode);
@@ -186,6 +192,7 @@ export class RoomManager {
       allowUnbalanced: false,
       randomMatch: false,
       mode,
+      endless,
       size,
       maxTeamSize,
       stageId: String(stageId || ''),
@@ -227,6 +234,7 @@ export class RoomManager {
   }
 
   addMember(room, user, team, isHost) {
+    if (room.endless && room.members.size) throw new Error('这是单人无尽房间，暂不支持加入');
     const member = {
       userId: Number(user.id),
       nickname: user.nickname || user.username,

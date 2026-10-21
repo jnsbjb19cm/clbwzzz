@@ -87,7 +87,6 @@ function advanceCooldownMap(cooldowns, elapsed) {
 
 // 2026-10-13：固定步长累加器（修"攻击间隔 bug"）。引擎内部按固定步长 TICK_INTERVAL 扣冷却，
 // 这里必须只喂**整步**，不足一步的余量留到下一帧。
-let battleStepRemainder = 0;
 
 function advanceBattleByWallTime(engine, elapsedSeconds) {
   const elapsed = Math.max(0, Number(elapsedSeconds) || 0);
@@ -96,13 +95,16 @@ function advanceBattleByWallTime(engine, elapsedSeconds) {
   // 而引擎内部（tryAttack: unit.atkTimer -= TICK_INTERVAL）永远按固定 0.155 扣冷却 ——
   // 等于每帧白送约 0.135s 冷却，60fps 下每秒多扣 ~8 秒，攻击间隔于是忽快忽慢/抽搐。
   // 现在用累加器：不足一整步的余量留到下一帧，引擎只会收到 CATCHUP_STEP_SECONDS 的整步。
-  battleStepRemainder = Math.min(battleStepRemainder + simulated, 1);   // 上限 1s，防掉帧后堆积
+  let battleStepRemainder = Math.min((engine._simulationRemainder || 0) + simulated, 1);
   let steps = 0;
   while (battleStepRemainder >= CATCHUP_STEP_SECONDS && steps < 64) {
     engine.tick(CATCHUP_STEP_SECONDS);
     battleStepRemainder -= CATCHUP_STEP_SECONDS;
     steps += 1;
   }
+  engine._simulationRemainder = battleStepRemainder;
+  // Smooth presentation between fixed combat steps without accelerating attacks.
+  engine.animationTime = engine.time + (engine.status === 'playing' ? battleStepRemainder : 0);
 
   const passive = Math.max(0, elapsed - MAX_SIMULATION_CATCHUP_SECONDS);
   if (passive <= 0) return;
@@ -1512,6 +1514,10 @@ export class BattleView {
   }
 
   startLoop() {
+    // Several legacy render wrappers call startLoop again after preload. A token
+    // invalidates even an already-running callback, not just the last RAF handle.
+    this.stopLoop();
+    const loopToken = this._battleLoopToken;
     // 2026-10-13：暴露引擎句柄，便于用控制台诊断战斗数值（攻击间隔等）。
     // 用法：__clbwzAtkInfo() 会打印每个单位：攻速档位 -> 冷却 / 攻击动画时长 / 最终间隔
     if (typeof globalThis !== 'undefined') globalThis.__clbwzEngine = this.engine;
@@ -1558,6 +1564,7 @@ export class BattleView {
       tick: this.engine?.battleTick,
     }, this.renderer.preloadForEngine(this.engine));
     const tick = (ts) => {
+      if (loopToken !== this._battleLoopToken) return;
       const wallClockMs = Date.now();
       const dt = Math.max(0, (wallClockMs - this.lastWallClockMs) / 1000);
       this.lastWallClockMs = wallClockMs;
@@ -1619,7 +1626,7 @@ export class BattleView {
         }
       });
       // 战斗结束后不再续帧(stopLoop 由状态分支触发，这里兜底)
-      if (this.engine.status === 'playing') {
+      if (this.engine.status === 'playing' && loopToken === this._battleLoopToken) {
         this.raf = requestAnimationFrame(tick);
       } else {
         this.raf = null;
@@ -1629,6 +1636,7 @@ export class BattleView {
   }
 
   stopLoop() {
+    this._battleLoopToken = (this._battleLoopToken || 0) + 1;
     if (this.raf) cancelAnimationFrame(this.raf);
     this.raf = null;
   }

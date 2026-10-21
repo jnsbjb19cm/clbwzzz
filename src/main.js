@@ -138,6 +138,8 @@ import { installBattleUserPresentation20260903 } from './ui/BattleUserPresentati
 import { installBattleChatOverlay } from './ui/BattleChatOverlay.js';
 import { installBattleCraftMaterialDrops20260905 } from './battle/BattleCraftMaterialDrops20260905.js';
 import { installBattleRuntimePerformance20260905 } from './battle/BattleRuntimePerformance20260905.js';
+// 2026-10-21：固定步长引擎的运动插值（移动单位/子弹按屏幕帧率平滑渲染）。
+import { installBattlePresentationInterpolation20261021 } from './battle/BattlePresentationInterpolation20261021.js';
 import { installGuildWarehouseGridPatch } from './ui/GuildWarehouseGridPatch.js';
 import { installAuctionGridPatch } from './ui/AuctionGridPatch.js';
 import { installSystemAnnouncementClient } from './ui/SystemAnnouncementClient.js';
@@ -239,6 +241,10 @@ installSystemAnnouncementClient();
 installCardLoreDetailPatch();
 // 最终性能收口必须在全部战斗表现补丁之后：只限制纯视觉队列，不改变伤害/目标/技能语义。
 installBattleRuntimePerformance20260905();
+// 2026-10-21 用户：「只有可移动卡牌本体和子弹的帧率异常」——
+// 固定步长引擎的位置更新只有 6.45 次/秒，这里在渲染层做插值（不改战斗判定），
+// 让移动单位/子弹按屏幕帧率平滑运动。必须在全部渲染补丁之后安装。
+installBattlePresentationInterpolation20261021();
 
 const app = new App(document.getElementById('app'));
 import './ui/UnifiedChat20261003.css';

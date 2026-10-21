@@ -166,15 +166,15 @@ export class WorldMapView {
             <div class="worldmap-destination-info"><span>开放时段：全天</span><span>船票：免费</span></div>
             <button type="button" class="map-go-btn" data-map="temple">立即前往 &gt;&gt;</button>
           </article>
-          <article class="worldmap-destination-row locked" data-destination="locked-1">
-            <span class="map-select-btn">暂未开放</span>
-            <div class="worldmap-destination-info"><span>开放时段：暂未开放</span><span>船票：免费</span></div>
-            <span class="worldmap-map-locked">立即前往 &gt;&gt;</span>
+          <article class="worldmap-destination-row available" data-destination="endless-trial">
+            <button type="button" class="map-select-btn" data-endless="trial">无尽试炼</button>
+            <div class="worldmap-destination-info"><span>单人 · 五层整备</span><span>船票：免费</span></div>
+            <button type="button" class="map-go-btn" data-endless="trial">立即前往 &gt;&gt;</button>
           </article>
-          <article class="worldmap-destination-row locked" data-destination="locked-2">
-            <span class="map-select-btn">暂未开放</span>
-            <div class="worldmap-destination-info"><span>开放时段：暂未开放</span><span>船票：免费</span></div>
-            <span class="worldmap-map-locked">立即前往 &gt;&gt;</span>
+          <article class="worldmap-destination-row available" data-destination="endless-expedition">
+            <button type="button" class="map-select-btn" data-endless="expedition">秘境远征</button>
+            <div class="worldmap-destination-info"><span>单人 · 随机事件</span><span>船票：免费</span></div>
+            <button type="button" class="map-go-btn" data-endless="expedition">立即前往 &gt;&gt;</button>
           </article>
         </div>
       </div>
@@ -188,6 +188,9 @@ export class WorldMapView {
         this.renderMap(root);
       });
     });
+    content.querySelectorAll('[data-endless]').forEach(button => button.addEventListener('click', () => {
+      this.onNavigate?.('endless', { mode: button.dataset.endless });
+    }));
   }
 
   _renderForest(root) {

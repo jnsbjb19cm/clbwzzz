@@ -334,6 +334,46 @@ export function getMoveColPerSec(moveSpeed) {
   return map[Math.min(5, Math.max(1, moveSpeed))] ?? 0.43;
 }
 
+/**
+ * 2026-10-21 用户：飞鞋怪(23) / 跳跃大耳怪(31) 的移速分两段——
+ * 「首次攻击」触发前 0.65 格/秒（移动档位 4），触发后 0.5 格/秒（档位 3 = 卡面现值）。
+ * 卡面 move_speed 仍写 3，避免影响"可移动/不可移动"判定和卡面移速显示；
+ * 实际移动档位由 getUnitMoveBucket 动态取。
+ */
+export const FIRST_ATTACK_MOVE_BUCKETS = Object.freeze({
+  23: Object.freeze({ beforeFirstAttack: 4, afterFirstAttack: 3 }), // 飞鞋怪
+  31: Object.freeze({ beforeFirstAttack: 4, afterFirstAttack: 3 }), // 跳跃大耳怪
+});
+
+/** 单位当前移动档位：仅上面两张卡在首次攻击前用提速档，其余直接取卡面 move_speed。 */
+export function getUnitMoveBucket(unit) {
+  const rule = unit ? FIRST_ATTACK_MOVE_BUCKETS[Number(unit.cardId)] : null;
+  if (!rule) return Number(unit?.moveSpeed) || 0;
+  return unit._firstAttackTriggered ? rule.afterFirstAttack : rule.beforeFirstAttack;
+}
+
+/** 记录"首次攻击已触发"：飞鞋怪的首次接触击晕、跳跃大耳怪的首次跳跃、或普通首次出手都会调用。 */
+export function markFirstAttackTriggered(unit) {
+  if (!unit || unit._firstAttackTriggered) return;
+  if (!FIRST_ATTACK_MOVE_BUCKETS[Number(unit.cardId)]) return;
+  unit._firstAttackTriggered = true;
+}
+
+/**
+ * 图鉴用：卡牌的移速选项。
+ * 双移速卡（飞鞋怪/跳跃大耳怪）返回「首次攻击前 / 首次攻击后」两档，供图鉴雷达图切换；
+ * 普通卡返回 null（直接按卡面 move_speed 显示一档）。
+ */
+export function getCardMoveSpeedOptions(card) {
+  const cardId = Number(card?.id ?? card?.cardId ?? card?.card_id);
+  const rule = Number.isFinite(cardId) ? FIRST_ATTACK_MOVE_BUCKETS[cardId] : null;
+  if (!rule) return null;
+  return [
+    { key: 'beforeFirstAttack', label: '首次攻击前', bucket: rule.beforeFirstAttack, colPerSec: getMoveColPerSec(rule.beforeFirstAttack) },
+    { key: 'afterFirstAttack', label: '首次攻击后', bucket: rule.afterFirstAttack, colPerSec: getMoveColPerSec(rule.afterFirstAttack) },
+  ];
+}
+
 export function getAttackCooldown(atkSpeed) {
   // 攻速等级 → 攻击间隔(秒)，基准至少 2s；0=不攻击，1~6 递增攻速
   const map = {

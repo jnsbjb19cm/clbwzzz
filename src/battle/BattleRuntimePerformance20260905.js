@@ -20,12 +20,14 @@ const HEAVY_LIMITS = Object.freeze({
   skills: 5,
 });
 
-function unitCount(engine) {
-  return (engine?.units ?? []).reduce((count, unit) => count + (unit?.alive ? 1 : 0), 0);
-}
-
 function limitsFor(engine) {
-  return unitCount(engine) >= 24 ? HEAVY_LIMITS : NORMAL_LIMITS;
+  // Only the threshold matters. Group heals/hits call this once per recipient;
+  // counting the whole army each time adds quadratic work to those bursts.
+  let alive = 0;
+  for (const unit of engine?.units ?? []) {
+    if (unit?.alive && ++alive >= 24) return HEAVY_LIMITS;
+  }
+  return NORMAL_LIMITS;
 }
 
 function trimOldest(array, max) {

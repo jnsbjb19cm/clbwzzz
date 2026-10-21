@@ -174,7 +174,9 @@ function enterCoopAdventureBattle(roomView) {
   // 2026-09-11：按"玩家选中的卡组"取卡组，而不是无参调用（无参会落到默认组）。
   // 2026-09-12：组名跟卡组一起带进战斗 —— 保存时按它写回同一组，不靠"当前选中组"猜。
   // 2026-09-12：用"房间里选中的战团"，不要用环境标记/记住的战团（会被重定向到别的战团）
-  const activeDeck = selectedBattleDeck20260912(roomView.cardInventory, roomView.db, roomDeckGroup20260912(roomView));
+  const endless = roomView.room?.endless;
+  const activeDeck = endless ? { group: null, slots: endless.deck.map(uid => endless.roster.findIndex(card => card.uid === uid)) }
+    : selectedBattleDeck20260912(roomView.cardInventory, roomView.db, roomDeckGroup20260912(roomView));
   // 2026-09-12：把"当前战团"标成房间这一套。之前这里只读不写，环境标记会留上一场的值，
   // 于是打完/退出后"选中的战团"变成残留值（用户报告：野外冒险退出后战团变默认）。
   if (roomView.cardInventory) roomView.cardInventory.__activeDeckGroup20260907 = activeDeck.group;
@@ -182,17 +184,18 @@ function enterCoopAdventureBattle(roomView) {
   roomView.roomBattleView?.destroy?.();
   const view = new BattleView(roomView.db, {
     cardInventory: roomView.cardInventory,
-    heroSkills: roomView.heroSkills ?? globalThis.__clbwzHeroSkills ?? null,
+    heroSkills: endless ? { getLoadout: () => [], getMpMax: () => 100 } : roomView.heroSkills ?? globalThis.__clbwzHeroSkills ?? null,
     player: roomView.player,
     stageId,
     pvp: {
       mode: 'pve',
+      endless: Boolean(endless),
       roomId: roomView.room.id,
       room: roomView.room,
       team: 'blue',
       socket: roomView.socket,
       // 2026-09-11：冒险场地统一草地（左蘑菇柱/右蘑菇柱），与单机 PVE 一致。
-      mapScene: 'grass',
+      mapScene: endless ? ({2:'grass',4:'ice',7:'rock',8:'forest',9:'fire',10:'beach',11:'temple'}[roomView.room.mapId] || 'grass') : 'grass',
       deckSlots,
       deckGroup: activeDeck.group,
       mapId: roomView.room.mapId || stageId,
@@ -202,11 +205,12 @@ function enterCoopAdventureBattle(roomView) {
     // 2026-09-11：任务事件必须接上。单机战斗由 BattleView 通过 onQuestEvent 上报
     // 「通关/战斗完成/击杀数/时长/零伤亡」，这里之前没传这个回调，
     // 于是野外冒险联机的战斗打完也不会推进任何任务（累计冒险/击杀/金币等全部不动）。
-    onQuestEvent: (event, data) => QuestView.dispatch(event, data),
+    onQuestEvent: endless ? () => {} : (event, data) => QuestView.dispatch(event, data),
     // 2026-09-11：PVE 联机为「服务端权威结算」——战斗结束时服务端按冒险规则给每名玩家
     // 发好金币/经验/首通/功勋/掉落，客户端只刷新显示、不重复发放。
     // 结算报告是异步回来的：等 settled 报告再提示，避免把结算前的 0 当奖励弹出来。
     onBattleResult: (result) => {
+      if (endless) return; // The room receives the authoritative endless result separately.
       // 本地地图进度（星星/已通关）与服务端 player_stage_progress 对齐；不在此发奖。
       if (result?.won === true) {
         try { markWorldStageCleared(view.pvp?.stageId ?? stageId); } catch { /* optional local storage */ }

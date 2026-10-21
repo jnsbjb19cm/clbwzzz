@@ -4,12 +4,12 @@ const SPRITE_CACHE_BUST = '20260625f';
 
 /** 卡牌立绘(UI 用) */
 export function cardSpriteUrl(res) {
-  return `/sprites/cards/${String(res)}.png?v=${SPRITE_CACHE_BUST}`;
+  return `/sprites/cards/${String(res)}.png?v=${String(res)==='70'?'20261016-corn-original':SPRITE_CACHE_BUST}`;
 }
 
 /** 战场单位精灵 */
 export function unitSpriteUrl(res) {
-  return `/sprites/units/${String(res)}.png?v=${SPRITE_CACHE_BUST}`;
+  return `/sprites/units/${String(res)}.png?v=${String(res)==='70'?'20261016-corn-original':SPRITE_CACHE_BUST}`;
 }
 
 /** 子弹精灵(按 res 裁切) */

@@ -1,0 +1,11 @@
+﻿import { chromium } from 'playwright';
+const exe='C:/Users/佰震/AppData/Local/ms-playwright/chromium_headless_shell-1148/chrome-win/headless_shell.exe';
+console.log('launch',exe);
+const browser = await chromium.launch({headless:true, executablePath:exe, args:['--allow-file-access-from-files','--autoplay-policy=no-user-gesture-required','--no-sandbox','--disable-gpu','--disable-dev-shm-usage']});
+console.log('launched');
+const page = await browser.newPage();
+page.on('console', m => console.log('PAGE', m.type(), m.text()));
+page.on('pageerror', e => console.log('PAGEERR', e.message));
+await page.setContent('<html><body>hello</body></html>');
+console.log(await page.title());
+await browser.close();

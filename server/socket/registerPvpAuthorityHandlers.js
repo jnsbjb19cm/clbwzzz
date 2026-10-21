@@ -2,6 +2,7 @@ import { attachBattleReport, settleBattleReport } from '../battle/AuthorityBattl
 import { recordAuthorityPvpResult } from './SystemAnnouncementService.js';
 import { roomManager } from '../rooms/RoomManager.js';
 import { CoopBossBattle } from '../battle/CoopBossBattle.js';
+import { EndlessRoomBattle } from '../battle/EndlessRoomBattle.js';
 import { PvpBattle } from '../battle/PvpBattle.js';
 import { unitAnimPlayer } from '../../src/battle/UnitAnimPlayer.js';
 import { db, withTransaction } from '../database.js';
@@ -47,6 +48,7 @@ async function loadPlayerTalentProfile(userId) {
 }
 
 async function configurePlayerTalents(battle, userId) {
+  if (battle.endless) return { bonus: {}, maxMp: 100 };
   const profile = await loadPlayerTalentProfile(userId);
   battle.setPlayerTalentBonus?.(userId, profile.bonus);
   return profile;
@@ -421,6 +423,12 @@ function deferBroadcast(io, room, entry, excludeUserId = null) {
 }
 
 function broadcastFinished(io, room, entry) {
+  if (entry.battle.endless) {
+    // Journey rewards are local-only. Never run account economy/quest settlement.
+    entry.battle.battleReport = { ...entry.battle.battleReport, status: 'settled', winner: entry.battle.winner, rows: [] };
+    emitPersonalized(io, room, entry, 'pvp:authority:finished', { includeProjectiles: true });
+    return;
+  }
   if (!entry.finishSettlement) {
     entry.battle.battleReport.status = 'pending';
     entry.battle.battleReport.winner = entry.battle.winner;
@@ -462,6 +470,8 @@ function scheduleFinishedCleanup(roomId, entry) {
 
 function createBattle(teams, cardDb) {
   const { room } = teams;
+  if (room.endless) return new EndlessRoomBattle({ roomId: room.id, members: [...room.members.values()],
+    db: cardDb, run: room.endless, mapId: room.mapId });
   // 2026-09-11：BOSS 联机与野外冒险(PVE)联机共用同一套服务端权威合作战斗，靠 mode 区分。
   if (room.mode === 'boss' || room.mode === 'pve') {
     return new CoopBossBattle({
@@ -616,6 +626,7 @@ export function registerPvpAuthorityHandlers(io, { cardDb }) {
         const roomId = Number(payload.roomId);
         const room = roomManager.getRoom(roomId);
         if (!room) throw new Error('房间不存在');
+        if (room.endless) throw new Error('单人无尽房间暂不开放观战');
         if (!['starting', 'battling', 'finished'].includes(room.status)) {
           throw new Error('战斗尚未开始');
         }
@@ -666,10 +677,10 @@ export function registerPvpAuthorityHandlers(io, { cardDb }) {
       }
     });
 
-    socket.on('pvp:authority:deploy', (payload = {}, ack) => {
+    socket.on('pvp:authority:deploy', async (payload = {}, ack) => {
       try {
         const { room, entry } = currentRoomAndBattle(socket, io, cardDb);
-        const result = entry.battle.deploy(socket.user.id, payload);
+        const result = await entry.battle.deploy(socket.user.id, payload);
         const snapshot = buildSnapshot(entry, socket.user.id, undefined, null, { includeProjectiles: false });
         ackOk(ack, { result, snapshot });
         deferBroadcast(io, room, entry, socket.user.id);

@@ -1,4 +1,4 @@
-﻿# 环境变量和密钥
+# 环境变量和密钥
 .env
 .env.*
 !.env.example
@@ -59,6 +59,18 @@ desktop.ini
 # 测试/验证脚本（服务器部署不需要）
 tests/
 scripts/verify-*.mjs
+!scripts/verify-endless-20261020.mjs
+!scripts/verify-endless-rules-20261021.mjs
+!scripts/verify-endless-ui-20261020.mjs
+!scripts/verify-endless-ui-responsive-20261021.mjs
+!scripts/verify-tutorial-map-animation-20261021.mjs
+!scripts/verify-battle-motion-smoothness-20261021.mjs
+!scripts/verify-presentation-state-20261021.mjs
+!scripts/verify-effect-budget-cost-20261021.mjs
+!scripts/verify-card-speed-hp-20261021.mjs
+!scripts/verify-gallery-radar-movespeed-20261021.mjs
+scripts/output/endless-*.png
+scripts/output/ui-res/
 *.spec.mjs
 *.test.mjs
 *.spec.js
@@ -66,6 +78,7 @@ scripts/verify-*.mjs
 
 # 文档与文本（业务文档不入库）
 *.md
+!docs/endless-modes-20261020.md
 *.txt
 
 # 浏览器自动化配置(不入库)

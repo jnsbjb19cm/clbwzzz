@@ -50,7 +50,8 @@ function applyAuthorityState(view, snapshot) {
       for (let index = 0; index < view.engine.deck.length; index += 1) {
         const cardId = Number(view.engine.deck[index]?.card?.id);
         if (!Number.isFinite(cardId)) continue;
-        view.engine.cooldowns[index] = Math.max(0, finite(skill.deployCooldowns[String(cardId)], 0));
+        view.engine.cooldowns[index] = Math.max(0, finite(
+          view.pvp?.endless && Array.isArray(skill.deploySlotCooldowns) ? skill.deploySlotCooldowns[index] : skill.deployCooldowns[String(cardId)], 0));
       }
     }
   }
@@ -243,6 +244,7 @@ export function installPvpAuthorityResourceFinal() {
         : Number(col);
       const instance = entry.instance ?? {};
       const response = await this.pvpSocket.emitAck('pvp:authority:deploy', {
+        ...(this.pvp?.endless ? { handIndex } : {}),
         cardId: card.id,
         lane: Number(lane),
         col: canonicalCol,

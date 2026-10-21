@@ -11,6 +11,7 @@ import {
 
 const SKILL_ANIM_CACHE_BUST = '20260801-animation-sync';
 import { loadSharedImage, loadSharedAssetJson } from '../core/SharedImageAssets20261013.js';
+import { requestOriginalSongPack, drawOriginalSequenceFrame } from './OriginalSequenceAnimations.js';
 // 技能骨骼需要看清完整过程；仅改变播放速度，不改变技能结算数值。
 const SKILL_PLAYBACK_RATE = 0.72;
 /**
@@ -148,11 +149,11 @@ class SkillAnimPlayer {
     const id = resolveSkillResourceId(skillId);
     if (this.packs.has(id)) return Promise.resolve(this.packs.get(id));
     if (this.loading.has(id)) return this.loading.get(id);
-    const pending = Promise.all([
+    const assets = id === 544 ? requestOriginalSongPack() : Promise.all([
       loadSharedAssetJson(`/sprites/skill_anim/${id}.json?v=${SKILL_ANIM_CACHE_BUST}`),
       loadSharedImage(`/sprites/skill_anim/${id}.png?v=${SKILL_ANIM_CACHE_BUST}`),
-    ]).then(([meta, sheet]) => {
-      const pack = meta && sheet ? { meta, sheet } : null;
+    ]).then(([meta, sheet]) => meta && sheet ? { meta, sheet } : null);
+    const pending = assets.then(pack => {
       if (pack) this.packs.set(id, pack);
       this.loading.delete(id);
       return pack;
@@ -216,6 +217,8 @@ class SkillAnimPlayer {
     const frames = meta.frames ?? [];
     if (!frames.length) return false;
     const frameIndex = SkillAnimPlayer.frameIndexFor(meta, elapsed, { ...options, loop });
+    if (pack.originalSequence) return drawOriginalSequenceFrame(ctx,pack,frameIndex,
+      {x:cx-size/2,y:cy-size/2,width:size,height:size},alpha);
     const frame = frames[frameIndex];
     const bounds = meta.drawBounds ?? {
       left: 0,
@@ -256,6 +259,8 @@ class SkillAnimPlayer {
     const frames = meta.frames ?? [];
     if (!frames.length) return false;
     const frameIndex = SkillAnimPlayer.frameIndexFor(meta, elapsed, { ...options, loop });
+    if (pack.originalSequence) return drawOriginalSequenceFrame(ctx,pack,frameIndex,
+      {x,y,width,height},alpha,options?.fit !== 'contain');
     const frame = frames[frameIndex];
     const bounds = meta.drawBounds ?? {
       left: 0,

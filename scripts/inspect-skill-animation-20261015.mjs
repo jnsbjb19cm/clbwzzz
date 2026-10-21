@@ -4,6 +4,7 @@ import sharp from 'sharp';
 import {XMLParser} from 'fast-xml-parser';
 import {SKILL_EFFECTS} from '../src/core/SkillRegistry.js';
 import {resolveSkillResourceId,getCraterOverlay} from '../src/battle/SkillAnimationConfig.js';
+import {SONG_SEQUENCE} from '../src/battle/OriginalSequenceAnimations.js';
 const cards=JSON.parse(fs.readFileSync('src/data/card.json','utf8'));
 const xml=new XMLParser({ignoreAttributes:false,attributeNamePrefix:''}).parse(fs.readFileSync('assets/assets/dySkeletonXML/skill1_skeleton.xml','utf8'));
 const armatures=xml.dragonBones.armature;
@@ -14,6 +15,15 @@ for(const [key,effect] of Object.entries(SKILL_EFFECTS)){
  const json=`assets/sprites/skill_anim/${resource}.json`,png=`assets/sprites/skill_anim/${resource}.png`;
  const arm=armatures.find(a=>a.name===`Skill${id}`);
  const animations=(Array.isArray(arm?.animation)?arm.animation:arm?.animation?[arm.animation]:[]).map(a=>`${a.name}:${a.duration}`);
+ if(id===544){
+  const hashes=new Set();
+  for(const s of SONG_SEQUENCE){
+   const bytes=await sharp('assets/atlas/skill1.png').extract({left:s.x,top:s.y,width:s.width,height:s.height}).raw().toBuffer();
+   hashes.add(createHash('sha256').update(bytes).digest('hex'));
+  }
+  rows.push({id,name,kind:effect.kind,resource:'skill1 atlas original sequence',status:'animated',frames:14,unique:hashes.size,animations,note:'legacy 544.png is static and bypassed'});
+  continue;
+ }
  if(!fs.existsSync(json)||!fs.existsSync(png)){rows.push({id,name,kind:effect.kind,resource,status:arm?'source skeleton only':'missing',animations});continue;}
  const meta=JSON.parse(fs.readFileSync(json,'utf8'));
  const {data,info}=await sharp(png).ensureAlpha().raw().toBuffer({resolveWithObject:true});

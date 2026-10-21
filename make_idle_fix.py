@@ -1,0 +1,6 @@
+﻿s=open(r"D:\.丛林\battle\build_cutouts_half.py",encoding='utf-8-sig').read()
+s=s.replace('OUT=ROOT/"cutouts_half"','OUT=ROOT/"cutouts_half_fix"')
+s=s.replace("touched=np.unique(alab[ndi.binary_dilation(core,iterations=3)]); touched=touched[touched>0]", "keepseed=ndi.binary_dilation(core,iterations=3)\n    if okeep.any(): keepseed=keepseed|okeep\n    touched=np.unique(alab[keepseed]); touched=touched[touched>0]")
+s=s.replace("process('attack',ATTACK)\nprocess('idle',IDLE)", "process('idle',IDLE)")
+open(r"D:\.丛林\battle\build_idle_fix.py",'w',encoding='utf-8').write(s)
+print('written')

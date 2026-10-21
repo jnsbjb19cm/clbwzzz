@@ -30,6 +30,7 @@ export const PLAYER_SCOPED_BASES = Object.freeze([
   'clbwz_lobby_music_intro_v1',                 // 每个账号只显示一次的音乐提示
   'clbwz_craft_state_v1',                       // 制作状态
   'clbwz_worldmap_v1',                          // 世界地图进度
+  'clbwz_endless_runs_v1',                      // 单人无尽玩法：本机局内进度，按账号隔离
   'clbwz_room_decks_v4',                        // 房间卡组（当前版本）
   'clbwz_room_decks_v3',                        // 房间卡组（旧版本）
   'clbwz_room_deck_bank_v1',                    // 房间卡组库

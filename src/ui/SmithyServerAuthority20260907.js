@@ -103,7 +103,10 @@ function bindServerActions(view, root) {
         displayName: card ? formatCraftCardName(data.craftQuality, card.name) : data.cardName,
         craftQualityInfo: resolveCraftQuality(data.craftQuality),
       };
-      if (!failed) view.onQuestEvent?.('card_craft', { count: 1 });
+      if (!failed) {
+        view.onQuestEvent?.('card_obtain', { cardId: Number(data.cardId), count: 1 });
+        view.onQuestEvent?.('card_craft', { count: 1, craftLevel: Number(card?.quality) || 1 });
+      }
     }
     view.toast(root, data?.message ?? data?.error ?? '制造完成');
     view.renderBody(root);

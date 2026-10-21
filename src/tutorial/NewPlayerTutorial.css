@@ -61,6 +61,23 @@
   pointer-events: none;
 }
 
+/* 2026-10-21 性能：遮罩改成四块纯色矩形（见 NewPlayerTutorial.js updateFocus），
+ * focus 元素只画边框+小光晕；不再用 `0 0 0 9999px` 的巨型 box-shadow（绘制边界会撑到视口外）。 */
+.new-player-tutorial-shade {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  display: none;
+  pointer-events: none;
+}
+
+.new-player-tutorial-shade > i {
+  position: fixed;
+  display: block;
+  background: rgba(4, 12, 15, .52);
+  pointer-events: none;
+}
+
 .new-player-tutorial-focus {
   position: fixed;
   z-index: 1;
@@ -68,8 +85,7 @@
   border: 3px solid #ffe36e;
   border-radius: 12px;
   box-shadow:
-    0 0 0 9999px rgba(4, 12, 15, .52),
-    0 0 18px rgba(255, 229, 91, .98),
+    0 0 18px rgba(255, 229, 91, .9),
     inset 0 0 12px rgba(255, 238, 137, .35);
   transition: left .16s ease, top .16s ease, width .16s ease, height .16s ease;
   pointer-events: none;
@@ -219,9 +235,10 @@
   animation: tutorialDirectPulse .72s ease-in-out infinite alternate;
 }
 
+/* 呼吸高亮只做 transform（合成层动画），不再每帧跑 filter: brightness（会整块重绘）。 */
 @keyframes tutorialDirectPulse {
-  from { filter: brightness(1); transform: scale(1); }
-  to { filter: brightness(1.22); transform: scale(1.04); }
+  from { transform: scale(1); }
+  to { transform: scale(1.04); }
 }
 
 @media (max-width: 720px) {

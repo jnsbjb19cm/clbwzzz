@@ -10,12 +10,13 @@ export function spriteAssetUrl(input) {
   const url = String(input);
   if (/[?&]v=/.test(url)) return url;
   let version;
-  if (/^\/sprites\/(cards|units)\//.test(url)) version = '20260625f';
+  if (/^\/sprites\/(cards|units)\//.test(url)) version = /^\/sprites\/(cards|units)\/70\.png/.test(url) ? '20261016-corn-original' : '20260625f';
   else if (url.startsWith('/sprites/skill_anim/')) version = '20260801-animation-sync';
   else if (url.startsWith('/sprites/unit_anim/')) {
     const res = url.split('/').at(-1).split('.')[0];
     version = ['freeze','vertigo','bump','qualityLightCircle'].includes(res) ? 'fx-20260802'
       : res === '8' ? '20260909-bigear-mouth'
+      : res === '70' ? '20261018-corn-idle'
       : ['31','57'].includes(res) ? '20260909-dark-features' : '20260826a';
   }
   return version ? url + (url.includes('?') ? '&' : '?') + 'v=' + version : url;

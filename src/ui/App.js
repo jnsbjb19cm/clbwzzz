@@ -29,6 +29,7 @@ import { SettingsView } from './SettingsView.js';
 import { enforceNicknameCompliance20260911 } from './ForcedRename20260911.js';
 import { ShopView } from './ShopView.js';
 import { WorldMapView, markWorldStageCleared } from './WorldMapView.js';
+import { EndlessAdventureView } from './EndlessAdventureView.js';
 import { RoomView } from './RoomView.js';
 import { LoginView } from './LoginView.js';
 import { getBattleRewards, grantPlayerExp } from '../core/PlayerProgression.js';
@@ -453,6 +454,8 @@ export class App {
 
   navigate(route, opts = {}) {
     const prevRoute = this.route;
+    this.views.endless?.destroy();
+    this.views.endless = null;
     this.views.guild?.destroy();
     this.views.guild = null;
     if (prevRoute === 'guild' && CITY_OVERLAY_ROUTES.has(route)) this._guildPanelActive = true;
@@ -550,6 +553,13 @@ export class App {
         },
       );
       smithy.render(renderRoot);
+      this.updateResourceDisplay('--', '--');
+    } else if (route === 'endless') {
+      const endless = new EndlessAdventureView(this.db, this.cardInventory, {
+        mode: opts.mode, onNavigate: (r, o) => this.navigate(r, o),
+      });
+      this.views.endless = endless;
+      endless.render(renderRoot);
       this.updateResourceDisplay('--', '--');
     } else if (route === 'worldmap') {
       if (independentAdventure) this.renderAdventureScene(renderRoot);

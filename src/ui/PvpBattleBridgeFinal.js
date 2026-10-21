@@ -126,7 +126,7 @@ export function installPvpBattleBridgeFinal() {
     // 观战不保存/覆盖玩家卡组，也不参与部署。
     // 保存必须显式带组：不带组时 saveDeck 会按"当前选中组"猜，一旦猜到别的战团，
     // 这套卡就会把那个战团覆盖掉（2026-09-12 的卡槽串组就是这样发生的）。
-    if (this.pvp?.spectator !== true) {
+    if (this.pvp?.spectator !== true && !this.pvp?.endless) {
       DeckSelectView.saveDeck(this.deckSlots, this.cardInventory, this.pvp.deckGroup ?? null, { trusted: true });
     }
     this.phase = 'fighting';

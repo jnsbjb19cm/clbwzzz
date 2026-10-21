@@ -402,7 +402,17 @@ class NewPlayerTutorialController {
     document.querySelector('.new-player-tutorial-layer')?.remove();
     const layer = document.createElement('section');
     layer.className = 'new-player-tutorial-layer';
+    // 2026-10-21 性能：原来用 focus 元素的 `box-shadow: 0 0 0 9999px` 做聚光灯，
+    // 这个阴影会把元素的绘制边界撑到视口外几万像素，低端设备/高分屏上每帧重绘代价很高
+    // （测到教程比同单位数的普通战斗更贵）。现在改为四块纯色遮罩矩形围出高亮框，
+    // 绘制面积只有视口本身，focus 元素只负责边框和一圈小光晕。
     layer.innerHTML = `
+      <div class="new-player-tutorial-shade" aria-hidden="true">
+        <i class="tutorial-shade-top"></i>
+        <i class="tutorial-shade-bottom"></i>
+        <i class="tutorial-shade-left"></i>
+        <i class="tutorial-shade-right"></i>
+      </div>
       <div class="new-player-tutorial-focus" aria-hidden="true"></div>
       <div class="new-player-tutorial-panel">
         <div class="new-player-tutorial-progress">
@@ -424,6 +434,14 @@ class NewPlayerTutorialController {
     this.panel = layer.querySelector('.new-player-tutorial-panel');
     this._promptCleanup = installTutorialPromptCard(this.panel);
     this.focus = layer.querySelector('.new-player-tutorial-focus');
+    this.shade = layer.querySelector('.new-player-tutorial-shade');
+    this.shadeParts = {
+      top: this.shade?.querySelector('.tutorial-shade-top') ?? null,
+      bottom: this.shade?.querySelector('.tutorial-shade-bottom') ?? null,
+      left: this.shade?.querySelector('.tutorial-shade-left') ?? null,
+      right: this.shade?.querySelector('.tutorial-shade-right') ?? null,
+    };
+    this._focusKey = '';
     this.nextButton = layer.querySelector('.new-player-tutorial-next');
     this.nextButton.style.display = 'none';
 
@@ -527,21 +545,56 @@ class NewPlayerTutorialController {
     return null;
   }
 
+  hideFocus() {
+    if (this.focus) this.focus.style.display = 'none';
+    if (this.shade) this.shade.style.display = 'none';
+    this._focusKey = '';
+  }
+
   updateFocus() {
     if (!this.focus || this.destroyed) return;
     const target = this.resolveStepTarget();
     if (!(target instanceof Element)) {
-      this.focus.style.display = 'none';
+      this.hideFocus();
       return;
     }
 
     const rect = target.getBoundingClientRect();
     const pad = target.matches?.('#battle-canvas') ? 4 : 7;
+    const viewportW = window.innerWidth || document.documentElement.clientWidth || 0;
+    const viewportH = window.innerHeight || document.documentElement.clientHeight || 0;
+    // monitor 每 100ms 会调用一次；矩形没变就不要再写样式，省掉无意义的重排/重绘。
+    const key = [rect.left, rect.top, rect.width, rect.height, viewportW, viewportH]
+      .map((value) => Math.round(value * 2) / 2).join('|');
+    if (key === this._focusKey) return;
+    this._focusKey = key;
+
+    const left = Math.max(3, rect.left - pad);
+    const top = Math.max(3, rect.top - pad);
+    const width = Math.max(12, rect.width + pad * 2);
+    const height = Math.max(12, rect.height + pad * 2);
     this.focus.style.display = 'block';
-    this.focus.style.left = `${Math.max(3, rect.left - pad)}px`;
-    this.focus.style.top = `${Math.max(3, rect.top - pad)}px`;
-    this.focus.style.width = `${Math.max(12, rect.width + pad * 2)}px`;
-    this.focus.style.height = `${Math.max(12, rect.height + pad * 2)}px`;
+    this.focus.style.left = `${left}px`;
+    this.focus.style.top = `${top}px`;
+    this.focus.style.width = `${width}px`;
+    this.focus.style.height = `${height}px`;
+
+    const shade = this.shade;
+    const parts = this.shadeParts;
+    if (!shade || !parts?.top || !parts.bottom || !parts.left || !parts.right) return;
+    const right = Math.max(left, Math.min(viewportW, left + width));
+    const bottom = Math.max(top, Math.min(viewportH, top + height));
+    shade.style.display = 'block';
+    parts.top.style.cssText = `left:0;right:0;top:0;height:${Math.max(0, top)}px`;
+    parts.bottom.style.cssText = `left:0;right:0;top:${Math.max(0, bottom)}px;bottom:0`;
+    parts.left.style.cssText = `left:0;top:${Math.max(0, top)}px;width:${Math.max(0, left)}px;height:${Math.max(0, bottom - top)}px`;
+    parts.right.style.cssText = `left:${Math.max(0, right)}px;right:0;top:${Math.max(0, top)}px;height:${Math.max(0, bottom - top)}px`;
+    // 刚显示遮罩时先关闭过渡，避免聚光框从 0,0 滑过来。
+    if (!this._shadePrimed) {
+      this._shadePrimed = true;
+      this.focus.style.transition = 'none';
+      requestAnimationFrame(() => { if (this.focus) this.focus.style.transition = ''; });
+    }
   }
 
   clearDirectHighlights() {
@@ -727,7 +780,7 @@ class NewPlayerTutorialController {
     if (!this.panel || this.panel.classList.contains('failure')) return;
     window.clearInterval(this.timer);
     this.engine.tutorialPlacementRule = null;
-    this.focus.style.display = 'none';
+    this.hideFocus();
     this.clearDirectHighlights();
     this.panel.classList.add('failure');
     this.panel.querySelector('.new-player-tutorial-step').textContent = '训练失败';
@@ -754,7 +807,7 @@ class NewPlayerTutorialController {
     emitQuestEvent('tutorial_complete', { count: 1 });
 
     this.root.querySelector('#result-overlay')?.classList.add('hidden');
-    this.focus.style.display = 'none';
+    this.hideFocus();
     this.panel.classList.add('complete');
     this.panel.querySelector('.new-player-tutorial-step').textContent = '完成';
     this.panel.querySelector('.new-player-tutorial-progress-bar i').style.width = '100%';

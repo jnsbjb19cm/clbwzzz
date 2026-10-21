@@ -219,7 +219,7 @@ async function addCardInstance(conn, userId, slotIndex, cardId, expiresAt = 0) {
   );
 }
 
-async function grantGiftRoll(conn, userId, out) {
+async function grantGiftRoll(conn, userId, out, obtainedCards) {
   const names = [];
   const cardEntries = [...out.cards];
   const itemEntries = [...out.items, ...out.extraItems];
@@ -231,6 +231,7 @@ async function grantGiftRoll(conn, userId, out) {
       if (!card) { names.push('（卡池为空）'); continue; }
       if (cursor >= slots.length) { names.push(`卡牌「${cardDisplayName(card.raw)}」（卡牌背包已满）`); continue; }
       await addCardInstance(conn, userId, slots[cursor], card.cardId, 0);
+      obtainedCards.push({ cardId: card.cardId });
       cursor += 1;
       names.push(`卡牌「${cardDisplayName(card.raw)}」`);
     }
@@ -287,13 +288,14 @@ itemOpenAuthorityRouter20261009.post('/inventory/use', async (req, res, next) =>
         const count = isLock ? 1 : requestedCount;
         if (!isLock) await consumeItem(conn, userId, itemId, count, requestedBound);
         const names = [];
+        const cards = [];
         for (let i = 0; i < count; i += 1) {
-          names.push(...await grantGiftRoll(conn, userId, rollGiftPool(pool)));
+          names.push(...await grantGiftRoll(conn, userId, rollGiftPool(pool), cards));
         }
         const message = isLock
           ? `已查看「${def.item_name}」（不消耗）`
           : names.length ? `打开「${def.item_name}」获得：${names.join('、')}` : `打开「${def.item_name}」但没有获得任何物品`;
-        return { message, used: isLock ? 0 : count, granted: names.length };
+        return { message, used: isLock ? 0 : count, granted: names.length, cards };
       }
 
       if (kind === 'trial_card') {
@@ -376,8 +378,8 @@ itemOpenAuthorityRouter20261009.post('/inventory/use', async (req, res, next) =>
       return { message: `获得 ${total} 金币`, used: count };
     });
 
-    const response = await buildResponse(userId, { used: result.used, message: result.message });
-    if (result?.cardId || /卡牌/.test(result.message ?? '')) {
+    const response = await buildResponse(userId, { used: result.used, message: result.message, cards: result.cards ?? [] });
+    if (result?.cardId || result.cards?.length || /卡牌/.test(result.message ?? '')) {
       response.cardInventory = await readCardInventory(userId);
     }
     return res.json(response);

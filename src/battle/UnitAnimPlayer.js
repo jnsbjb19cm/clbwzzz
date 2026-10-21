@@ -12,6 +12,10 @@ const PASSIVE_PLAYBACK_RATE = 1.0;
 // 导致攻击动画只播一半就提前结束（如蘑菇仙人）。保持完整播放。
 const ACTION_PLAYBACK_RATE = 1.0;
 
+export function unitAnimationTime(engine) {
+  return Number.isFinite(engine?.animationTime) ? engine.animationTime : Number(engine?.time) || 0;
+}
+
 function playbackRateForState(state) {
   if (state === 'attacking' || state === 'jump' || state === 'secondAttackStatus') {
     return ACTION_PLAYBACK_RATE;
@@ -78,6 +82,7 @@ const ANIM_CACHE_BUST = '20260826a';
 // 31/57 已重新烘焙黑色面部细节，JSON 与 PNG 必须同时避开修复前的缓存。
 const DARK_FEATURE_ANIM_CACHE_BUST = '20260909-dark-features';
 function animationCacheVersion(res) {
+  if (String(res) === '70') return '20261018-corn-idle';
   if (String(res) === '8') return '20260909-bigear-mouth';
   return ['31', '57'].includes(String(res)) ? DARK_FEATURE_ANIM_CACHE_BUST : ANIM_CACHE_BUST;
 }
@@ -240,6 +245,25 @@ async function loadAnimPack(res) {
     try {
       const meta = await loadSharedAssetJson(animUrl(key));
       if (!meta) return null;
+      // Some supplied animations use one original sheet per state. Load both
+      // before publishing the pack so the first attack cannot show idle pixels.
+      if (meta.stateSheets) {
+        const entries = await Promise.all(Object.entries(meta.stateSheets).map(async ([state,file]) => {
+          if (!/^[a-zA-Z0-9_.-]+\.png$/.test(file)) return null;
+          const image = await loadImage(`/sprites/unit_anim/${file}?v=${animationCacheVersion(key)}`);
+          return image && meta.animations?.[state]?.frames?.length ? [state,{
+            sheet:image,frames:meta.animations[state].frames,originX:0,originY:0,
+            frameW:meta.frameW,frameH:meta.frameH,
+          }] : null;
+        }));
+        if (entries.some(entry=>!entry)) return null;
+        const stateSheets=Object.fromEntries(entries);
+        const sheet=stateSheets.default?.sheet ?? entries[0]?.[1]?.sheet;
+        if (!sheet) return null;
+        const pack={meta,sheet,stateSheets,deferredMain:false,mainSheet:sheet};
+        resolvedPacks.set(key,pack);
+        return pack;
+      }
       const [tunnelStateSheet, compactRuntime] = await Promise.all([
         loadTunnelStateSheet(key),
         loadCompactRuntimeStateSheets(key),
@@ -862,13 +886,13 @@ export class UnitAnimPlayer {
     let clock = this.clocks.get(clockKey) ?? 0;
     let frameDelta = 0;
     if (advanceClock) {
-      const now = Number(engine.time) || 0;
+      const now = unitAnimationTime(engine);
       const previous = this.lastDrawTimes.get(unit.uid);
       frameDelta = previous == null ? 0 : Math.max(0, now - previous);
       this.lastDrawTimes.set(unit.uid, now);
       // 2026-09-11：冰冻时精灵图也停住（停在当前帧）。lastDrawTimes 仍然更新，
       // 这样解冻后的第一帧不会因为把整段冰冻时间累进 frameDelta 而跳帧。
-      if (unit.frozenUntil && now < unit.frozenUntil) frameDelta = 0;
+      if (unit.frozenUntil && engine.time < unit.frozenUntil) frameDelta = 0;
       if (requested === 'death' && unit._deathAnimStartedAt != null && unit._deathUntil) {
         const visibleDuration = Math.max(0.001, unit._deathUntil - unit._deathAnimStartedAt);
         const sourceDuration = animationDuration(anim, DEATH_ANIM_DURATION, 'death');

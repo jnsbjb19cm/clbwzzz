@@ -1,5 +1,6 @@
 import { authStore } from '../core/AuthStore.js';
 import { BagView } from './BagView.js';
+import { recordCardObtainReceipt } from '../core/CardObtainReceipt.js';
 
 const PATCH_FLAG = Symbol.for('clbwz.batchInventoryDatabaseFix20260908');
 
@@ -139,6 +140,7 @@ function installBatchPanelAuthority(view, root) {
         bound,
       });
       applyServerData(view, data);
+      recordCardObtainReceipt(data);
       const nextIndex = findSameBinding(view, itemId, bound);
       view.selectedIndex = nextIndex >= 0 ? nextIndex : -1;
       view.refresh(root);

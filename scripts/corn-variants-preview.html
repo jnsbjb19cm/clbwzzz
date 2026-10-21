@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="zh-CN"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>玉米炮手 · 四版攻击对比</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#111a14;color:#edf1e8;font:16px 'Microsoft YaHei',sans-serif;padding:28px}h1{margin:0 0 10px;font-size:27px}p{color:#adbcae;line-height:1.7}button,select,input{font:inherit}button,select{background:#293c2b;color:#fff;border:1px solid #587355;border-radius:7px;padding:9px 13px;cursor:pointer}.controls{display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:16px 0;position:sticky;top:0;background:#111a14;z-index:1}input[type=range]{width:220px}.grid{display:grid;grid-template-columns:repeat(4,minmax(200px,1fr));gap:16px}article{background:#1c2920;border:1px solid #425541;border-radius:12px;padding:15px}h2{font-size:19px;margin:0 0 6px}.file{color:#bed1b9;font-size:13px}canvas{width:100%;aspect-ratio:1;display:block;background:radial-gradient(ellipse at 50% 78%,#4f6a39,#243a25 65%);border-radius:6px;margin:12px 0}.frame{color:#c0d1bb;font-variant-numeric:tabular-nums;font-size:14px}.idle{max-width:280px;margin-top:22px}small{color:#a6b9a3}#status{color:#f4d36f}@media(max-width:950px){.grid{grid-template-columns:repeat(2,1fr)}}@media(max-width:500px){.grid{grid-template-columns:1fr}}
+</style>
+<h1>玉米炮手 · 四版攻击对比</h1>
+<p>源图原样播放，不改色、不重绘。默认四版都用 1.25 秒播完，方便比较动作；也可切换成统一 24 帧/秒。<br>所有版本均显示完整帧格、按同一高度缩放。下方附本次采用的待机动画。这里的速度仅供预览，攻击版本尚未定稿。</p>
+<div class="controls"><button id="play">暂停</button><button id="restart">从头播放</button><button id="prev">上一帧</button><button id="next">下一帧</button><select id="mode"><option value="duration">同周期 · 1.25 秒</option><option value="fps">原帧顺序 · 24 帧/秒</option></select><select id="speed"><option value="1">正常速度</option><option value="0.5">半速</option><option value="0.25">四分之一速</option></select><input id="progress" aria-label="动作进度" type="range" min="0" max="1" step="0.001" value="0"><span id="status">正在加载素材…</span></div>
+<section class="grid" id="grid"></section><section class="idle" id="idle"></section>
+<p><small>选择时直接告诉我 A、B、C、D 或文件名即可。预览不连接游戏账号，也不修改存档。</small></p>
+<script>
+const variants=/*VARIANT_DATA*/[];
+const $=id=>document.getElementById(id);let playing=true,time=0,last=performance.now(),ready=false,stepped=null;
+const views=variants.map((v,i)=>{const node=document.createElement('article');node.innerHTML='<h2>'+v.label+'</h2><div class="file">'+v.file+'</div><canvas width="400" height="400"></canvas><div class="frame"></div>';$(i?'grid':'idle').append(node);const img=new Image();img.src=v.image;return {...v,img,ctx:node.querySelector('canvas').getContext('2d'),counter:node.querySelector('.frame')};});
+const duration=v=>$('mode').value==='fps'?v.frames.length/24:1.25;
+const cycle=()=>Math.max(...views.slice(1).map(duration));
+function render(){if(!ready)return;for(const [i,v] of views.entries()){
+ const d=i?duration(v):30/8.4;const n=stepped?.[i]??Math.min(v.frames.length-1,Math.floor((time%d)/d*v.frames.length));const f=v.frames[n],ctx=v.ctx;ctx.clearRect(0,0,400,400);
+ const b=f.bounds,w=b.right-b.left+1,h=b.bottom-b.top+1;
+ const maxW=Math.max(...v.frames.map(f=>f.bounds.right-f.bounds.left+1)),maxH=Math.max(...v.frames.map(f=>f.bounds.bottom-f.bounds.top+1));
+ const scale=Math.min(320/maxW,320/maxH);ctx.drawImage(v.img,f.x+b.left,f.y+b.top,w,h,(400-w*scale)/2,376-h*scale,w*scale,h*scale);
+ v.counter.textContent='第 '+(n+1)+' / '+v.frames.length+' 帧 · '+d.toFixed(2)+' 秒/轮';
+ }$('progress').value=(time%cycle())/cycle();}
+function pause(){playing=false;$('play').textContent='播放';}
+$('play').onclick=()=>{playing=!playing;if(playing)stepped=null;$('play').textContent=playing?'暂停':'播放';};
+$('restart').onclick=()=>{time=0;stepped=null;render();};
+$('mode').onchange=()=>{time=0;stepped=null;render();};
+$('progress').oninput=e=>{pause();stepped=null;time=Math.min(.999999,Number(e.target.value))*cycle();render();};
+function step(dir){pause();stepped=views.map((v,i)=>{const d=i?duration(v):30/8.4;const n=stepped?.[i]??Math.floor((time%d)/d*v.frames.length);return Math.max(0,Math.min(v.frames.length-1,n+dir));});render();}
+$('prev').onclick=()=>step(-1);$('next').onclick=()=>step(1);
+Promise.all(views.map(v=>v.img.decode())).then(()=>{ready=true;$('status').textContent='5 张图已加载';render();}).catch(e=>{$('status').textContent='素材加载失败：'+e.message;});
+function tick(now){const dt=Math.min(.1,(now-last)/1000);last=now;if(playing&&ready)time+=dt*Number($('speed').value);render();requestAnimationFrame(tick);}requestAnimationFrame(tick);
+</script></html>

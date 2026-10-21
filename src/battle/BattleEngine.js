@@ -28,6 +28,8 @@ import {
   getAttackCooldown,
   getMoveColPerSec,
   getProjectileHitFrac,
+  getUnitMoveBucket,
+  markFirstAttackTriggered,
 
   roundBattleAmount,
   usesFoodCost,
@@ -1273,6 +1275,8 @@ export class BattleEngine {
     const victims = this.contactEnemies(unit);
     if (!victims.length) return false;
     unit._firstContactStun = true;
+    // 2026-10-21：飞鞋怪的首次接触特殊攻击 = 首次攻击，触发后移速回落到 0.5。
+    markFirstAttackTriggered(unit);
     if (unitAnimPlayer.hasAnimState(unit.res, 'secondAttackStatus')) {
       const dur = unitAnimPlayer.animDurationOf(unit.res, 'secondAttackStatus', 0.85);
       unitAnimPlayer.triggerState(unit, this, 'secondAttackStatus', dur);
@@ -1508,6 +1512,8 @@ export class BattleEngine {
     const jumpCol = Math.max(0, Math.min(COLS - 1, this.getUnitGridCol(target) + dir));
     if (jumpCol === gridCol) return false;
     unit._jumpedOnce = true;
+    // 2026-10-21：跳跃大耳怪首次接敌跳跃 = 首次攻击（首次出手），触发后移速回落到 0.5。
+    markFirstAttackTriggered(unit);
     unit._jumpFromCol = unit.col;
     unit._jumpToCol = jumpCol;
     unit._jumpStart = this.time;
@@ -1554,6 +1560,9 @@ export class BattleEngine {
 
     const target = this.chooseTarget(unit);
     if (!target) return false;
+
+    // 2026-10-21：飞鞋怪/跳跃大耳怪——首次真正出手后移速 0.65 → 0.5（见 getUnitMoveBucket）。
+    markFirstAttackTriggered(unit);
 
     unit.atkTimer = Math.max(
       getAttackCooldown(unit.atkSpeed) * this.getAtkSpeedMult(unit),
@@ -2009,7 +2018,7 @@ export class BattleEngine {
       if ((unit.resetSongUntil || 0) > this.time) slowFactor *= 1.1;
       const moveMult = this.getMoveSpeedMult(unit);
 
-      const speed = getMoveColPerSec(unit.moveSpeed) * slowFactor * moveMult;
+      const speed = getMoveColPerSec(getUnitMoveBucket(unit)) * slowFactor * moveMult;
       if (speed <= 0) continue;
 
       let nextCol = unit.col + dir * speed * dt;

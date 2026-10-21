@@ -83,18 +83,44 @@ function installGeometry(root, view) {
   // 而且会读 view.pvp.mapScene / viewport.dataset.bossId 这些**上一局残留**，
   // 于是从房间回来后冒险关被画成冰川/黄沙（而且它是用 !important 的 CSS 变量落地，
   // 所以别处改了也看不出来 —— 这就是"界面还是没变"的原因）。
-  const isAdventureStage = Boolean(view?.engine?.stage?.adventure);
-  const scene = isAdventureStage
-    ? 'grass'
-    : (bossScene?.sceneKey
-      || (mapScene === 'ice' ? 'ice' : mapScene === 'grass' ? 'grass' : 'rock'));
+  const stage = view?.engine?.stage;
+  const isAdventureStage = Boolean(stage?.adventure);
+  const isEndlessStage = Boolean(stage?.endless);
+  const isTrainingView = Boolean((view?.trainingMode || view?.trainingMap) && !view?.pvp);
+
+  // 2026-10-21 用户：「新手教程地图」和「双无尽模式」都显示成同一张黄沙图。
+  // 真因：这里的场景表只认识 PVP/BOSS 的 mapScene。训练营/新手教程/无尽都不是 PVP，
+  // mapScene 为空 → 落到最后的 'rock' 兜底 → --ice-back-url 被写成 backrock.png（黄沙），
+  // 而且这条变量带 !important，BattleBackground 里给教程/无尽算好的草地被它盖掉。
+  // 修复：非 PVP 的规则型战斗（冒险 / 新手教程·训练营 / 无尽）统一交给
+  // resolveBattleBackground 解析：冒险和无尽=草地（PVE 地图），训练营看 trainingMap，
+  // 新手教程由 TutorialRefinementV4 固定 trainingMap='grass'。PVP/BOSS 保持原逻辑。
+  let scene;
+  let ruleBackground = null;
+  if (isEndlessStage || isAdventureStage || isTrainingView) {
+    ruleBackground = resolveBattleBackground(stage, {
+      trainingMode: Boolean(view?.trainingMode),
+      pvpMode: false,
+      bossId: null,
+      trainingMap: view?.trainingMap ?? null,
+    });
+    scene = ruleBackground.sceneKey;
+  } else {
+    scene = bossScene?.sceneKey
+      || (mapScene === 'ice' ? 'ice' : mapScene === 'grass' ? 'grass' : 'rock');
+  }
   const back = scene === 'ice' ? 'backice' : scene === 'grass' ? 'grassbg' : 'backrock';
   const left = scene === 'ice' ? 'leftice' : scene === 'grass' ? 'mushroomleft' : 'leftrock';
   const right = scene === 'ice' ? 'rightice' : scene === 'grass' ? 'mushroomright' : 'rightrock';
-  const backUrl = bossScene?.baseUrl
+  const backUrl = ruleBackground?.baseUrl
+    || bossScene?.baseUrl
     || (scene === 'grass' ? PROVIDED_GRASS_BACKGROUND_URL : `/battle/background/${back}.png`);
-  const leftUrl = bossScene?.leftColumnUrl || `/battle/background/${left}.png`;
-  const rightUrl = bossScene?.rightColumnUrl || `/battle/background/${right}.png`;
+  const leftUrl = ruleBackground?.leftColumnUrl
+    || bossScene?.leftColumnUrl
+    || `/battle/background/${left}.png`;
+  const rightUrl = ruleBackground?.rightColumnUrl
+    || bossScene?.rightColumnUrl
+    || `/battle/background/${right}.png`;
   viewport.classList.add('ice-reference-preview');
   viewport.style.setProperty('--ice-back-url', `url(${backUrl})`);
   // 兜底色跟着场景走：草地时用草绿，避免图未加载时露出冰蓝 (#9fd4ec)

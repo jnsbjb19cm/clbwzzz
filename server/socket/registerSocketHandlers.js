@@ -1,5 +1,8 @@
 import { getSocketUser, db } from '../database.js';
 import { assertAdventureAccess } from '../domain/AdventureAccess.js';
+import { normalizeEndlessRoomRun } from '../domain/EndlessRoomRun.js';
+import { readCardInventory } from '../routes/cardInventoryPersistence20260906.js';
+import { buildEndlessEncounter } from '../../src/data/EndlessAdventureRules.js';
 import { verifyToken } from '../middleware/auth.js';
 import { roomManager } from '../rooms/RoomManager.js';
 // 2026-10-11: 暴露给战斗模块，让它能取到**活房间**（避免用建战斗时的旧副本 mapId ✗）
@@ -91,6 +94,9 @@ export function registerSocketHandlers(io) {
 
     socket.on('room:create', async (payload = {}, ack) => {
       try {
+        const endless = payload.endless ? normalizeEndlessRoomRun(payload.endless, getPvpCardDb(),
+          (await readCardInventory(userId))?.cards ?? []) : null;
+        const encounter = endless ? buildEndlessEncounter(endless, getPvpCardDb()) : null;
         await assertAdventureAccess(db, userId, payload);
         const previousWatch = watchRooms.get(userId);
         if (previousWatch) {
@@ -106,6 +112,8 @@ export function registerSocketHandlers(io) {
           name: payload.name,
           bossId: payload.bossId,
           difficulty: payload.difficulty,
+          ...(endless ? { endless, mode: 'pve', size: '1v1', stageId: endless.mode === 'trial' ? -20001 : -20002,
+            mapId: encounter.mapId, name: encounter.title } : {}),
         });
         socket.join(`room:${room.id}`);
         io.emit('rooms:list', roomManager.listRooms());
@@ -138,6 +146,7 @@ export function registerSocketHandlers(io) {
         const roomId = Number(payload.roomId);
         const room = roomManager.getRoom(roomId);
         if (!room) throw new Error('房间不存在');
+        if (room.endless) throw new Error('单人无尽房间暂不开放观战');
         if (roomManager.getRoomByUser(userId)) throw new Error('不能边玩边观战');
         const previousWatch = watchRooms.get(userId);
         if (previousWatch) socket.leave(`room:${previousWatch.roomId}`);
