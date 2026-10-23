@@ -1,4 +1,4 @@
-﻿import assert from 'node:assert/strict';
+import assert from 'node:assert/strict';
 import { chromium } from 'playwright';
 
 const browser = await chromium.launch({ channel: 'msedge', headless: true });
@@ -14,6 +14,7 @@ try {
     const { BattleEngine } = await mod('/src/battle/BattleEngine.js');
     const { QUEST_GROUPS } = await mod('/src/data/QuestCatalog.js');
     const { syncCumulativeProgress } = await mod('/src/battle/QuestProgressRules.js');
+    const { recordCardUseForQuest } = await import('/src/battle/QuestBattleSettlement20261023.js');
     const { setPlayerStorageUser } = await import('/src/core/PlayerStorage20261010.js');
     const { authStore } = await import('/src/core/AuthStore.js');
     authStore.user = { id: 'pvp-quest-test', nickname: '测试' };
@@ -50,12 +51,13 @@ try {
     const outcomes = [];
     for (const status of ['win', 'lose']) {
       reset();
+      recordCardUseForQuest(view, 82);
       view.engine.status = status;
       view.updateResultOverlay(panel);
       view.updateResultOverlay(panel);
       handlers.get('pvp:end')({ winner: status === 'win' ? 'blue' : 'red' });
       const state = read();
-      outcomes.push({ status, progress: state.mainProgress?.[quest.id] || 0, battles: state._extra?.totalPvpBattles || 0, wins: state._extra?.totalPvpWins || 0 });
+      outcomes.push({ status, progress: state.mainProgress?.[quest.id] || 0, battles: state._extra?.totalPvpBattles || 0, wins: state._extra?.totalPvpWins || 0, cardUses: state._extra?.cardUsesById?.['82'] || 0 });
     }
     reset([]);
     view.engine.status = 'lose';
@@ -80,6 +82,7 @@ try {
     assert.equal(outcome.progress, 1, `${outcome.status}: 打完一场 PVP 应完成主线任务`);
     assert.equal(outcome.battles, 1, '结算重复渲染不能重复累计');
     assert.equal(outcome.wins, outcome.status === 'win' ? 1 : 0);
+    assert.equal(outcome.cardUses, 1, `${outcome.status}: 出牌次数应在战斗结算时入账且只记一次`);
   }
   assert.equal(results.recovered, 1, '任务解锁后应恢复已记录的 PVP 场次');
   for (const entry of results.excluded) assert.equal(entry.battles, 0, `${entry.kind} 不应算 PVP`);
@@ -87,4 +90,5 @@ try {
 } finally {
   await browser.close();
 }
+
 

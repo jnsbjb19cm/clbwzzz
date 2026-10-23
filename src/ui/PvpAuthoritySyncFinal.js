@@ -6,6 +6,7 @@ import { calculateCardStats } from '../battle/CardStatFormula.js';
 import { unitAnimPlayer } from '../battle/UnitAnimPlayer.js';
 import { sanitizeCustomCardName } from '../core/constants.js';
 import { syncBattleKills } from '../battle/BattleKillStats.js';
+import { recordCardUseForQuest } from '../battle/QuestBattleSettlement20261023.js';
 
 const PATCH_FLAG = Symbol.for('clbwzzz.pvpAuthoritySyncFinal');
 const COLS = 12;
@@ -682,6 +683,10 @@ export function installPvpAuthoritySyncFinal() {
         entry.instance?.attributeRoll ?? null,
       );
       this.engine.cooldowns[handIndex] = Math.max(0, finite(stats.cd));
+      // 2026-10-23（用户要求）：出牌次数先记账，战斗结算时统一上报 card_use。
+      this.questBattleStats?.cardIds?.add?.(Number(entry.card.id));
+      this.questBattleStats?.lanes?.add?.(Number(lane));
+      recordCardUseForQuest(this, entry.card.id);
       this.engine.cancelPlacing();
       this.renderer?.setHover?.(-1, -1);
       this.renderer?.requestSprite?.(entry.card.spriteRes);

@@ -1,5 +1,6 @@
 import { BattleEngine } from '../battle/BattleEngine.js';
 import { shouldReportAdventureComplete } from '../battle/QuestEventRules.js';
+import { recordCardUseForQuest, flushQuestBattleEvents } from '../battle/QuestBattleSettlement20261023.js';
 import { BattleRenderer } from '../battle/BattleRenderer.js';
 import {
   BASE_HP_SLOT_EDGE,
@@ -876,6 +877,9 @@ export class BattleView {
           this.onQuestEvent?.('battle_variety', { ...questMeta, distinctCards });
           this.onQuestEvent?.('battle_lane_spread', { ...questMeta, lanesUsed });
         }
+        // 2026-10-23（用户要求）：出牌/技能计数在**战斗结算**这里统一入账（含失败结算）。
+        // 一次战斗只 flush 一次；_resultReported 保证重复结算不会重复计数。
+        flushQuestBattleEvents(this, questMeta, (event, data) => this.onQuestEvent?.(event, data));
       }
     }
     root.querySelector('#result-desc').textContent = win
@@ -1071,8 +1075,9 @@ export class BattleView {
       if (await this.engine.deploy(lane, col, handIndex)) {
         this.questBattleStats?.cardIds?.add?.(Number(entry?.card?.id));
         this.questBattleStats?.lanes?.add?.(Number(lane));
-        // 2026-10-09：出牌事件 —— 供「使用 N 次幼小玉米」这类任务计数。
-        this.onQuestEvent?.('card_use', { cardId: Number(entry?.card?.id), count: 1 });
+        // 2026-10-23（用户要求）：出牌次数先记账，**战斗结算时**再统一上报任务（card_use），
+        // 不在出牌瞬间就涨任务进度。野外冒险/联机战斗的权威出牌分支同样走这套记账。
+        recordCardUseForQuest(this, entry?.card?.id);
         if (this.pvp) {
           this.pvpSocket?.sendPvpDeploy?.({ cardId: entry.card.id, lane, col });
         }

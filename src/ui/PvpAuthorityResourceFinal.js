@@ -1,6 +1,7 @@
 import { BattleView } from './BattleView.js';
 import { getSkillEffect, getSkillMpCost } from '../core/SkillRegistry.js';
 import { audio } from '../core/AudioManager.js';
+import { recordCardUseForQuest, recordSkillCastForQuest } from '../battle/QuestBattleSettlement20261023.js';
 
 const PATCH_FLAG = Symbol.for('clbwzzz.pvpAuthorityResourceFinal');
 const COLS = 12;
@@ -108,6 +109,8 @@ async function sendSkillCast(view, skillId, target = null) {
     view.engine.skills?.cancelTargeting?.();
     view.engine.skillTargetError = '';
     applyAuthorityState(view, response?.snapshot ?? view.__pvpLatestSnapshot);
+    // 2026-10-23（用户要求）：技能次数先记账，战斗结算时统一上报 skill_cast（失败也计）。
+    recordSkillCastForQuest(view);
     return true;
   } catch (error) {
     view.engine.skillTargetError = error?.message || '技能释放失败';
@@ -256,6 +259,11 @@ export function installPvpAuthorityResourceFinal() {
       });
       // 冷却只采用服务器 snapshot.skill.deployCooldowns；不再由客户端公式自行宣布最终值。
       applyAuthorityState(this, response?.snapshot ?? this.__pvpLatestSnapshot);
+      // 2026-10-23（用户要求）：出牌次数先记账，战斗结算时统一上报 card_use；
+      // 野外冒险全部走权威战斗，之前这里没有任务上报点，主线18「使用 3 次幼小玉米」永远不涨。
+      this.questBattleStats?.cardIds?.add?.(Number(card.id));
+      this.questBattleStats?.lanes?.add?.(Number(lane));
+      recordCardUseForQuest(this, card.id);
       this.engine.cancelPlacing();
       this.renderer?.setHover?.(-1, -1);
       this.renderer?.requestSprite?.(card.spriteRes);

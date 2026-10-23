@@ -1,4 +1,4 @@
-# 环境变量和密钥
+﻿# 环境变量和密钥
 .env
 .env.*
 !.env.example
@@ -84,6 +84,8 @@ scripts/verify-*.mjs
 !scripts/verify-pvp-main-quest-20261011.mjs
 !scripts/verify-coop-pve-quest-events.mjs
 !scripts/verify-quest-material-claim-server-20261023.mjs
+!scripts/verify-authority-deploy-quest-20261023.mjs
+!scripts/verify-battle-quest-settlement-20261023.mjs
 scripts/output/endless-*.png
 scripts/output/ui-res/
 *.spec.mjs
@@ -112,3 +114,4 @@ assets/ucgamesdk/**/*.xml
 assets/xml/**/*.xml
 assets/assets/resources/*.xml
 assets/assets/skeletonXML/*.xml
+

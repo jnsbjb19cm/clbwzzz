@@ -366,7 +366,10 @@ function hasEmitter(event) {
   const names = [event, ...(event === 'card_upgrade' ? [] : [])].map((value) => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
   return names.some((name) => new RegExp(`(?:dispatch|emitQuestEvent)\\s*\\(\\s*['"]${name}['"]`).test(SRC_TEXT)
     || new RegExp(`onQuestEvent\\??\\.?\\s*\\(\\s*['"]${name}['"]`).test(SRC_TEXT)
-    || new RegExp(`onQuestEvent\\s*&&\\s*onQuestEvent\\s*\\(\\s*['"]${name}['"]`).test(SRC_TEXT));
+    || new RegExp(`onQuestEvent\\s*&&\\s*onQuestEvent\\s*\\(\\s*['"]${name}['"]`).test(SRC_TEXT)
+    // 2026-10-23：card_use / skill_cast 改为「战斗结算时统一上报」，发射点在
+    // QuestBattleSettlement20261023.js 里通过回调 emit?.('card_use' / 'skill_cast') 发出。
+    || new RegExp(`emit\\??\\.\\(\\s*['"]${name}['"]`).test(SRC_TEXT));
 }
 // 纯累计/派生事件：不靠事件发射，而是由长期统计或玩家等级/自动完成计算。
 const DERIVED_EVENTS = new Set([
