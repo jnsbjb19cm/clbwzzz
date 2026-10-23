@@ -114,6 +114,7 @@ function publicInvite(invite, room) {
 
 function assertInviterRoom(socket) {
   const room = roomManager.getRoomByUser(Number(socket.user.id));
+  if (room?.endless) throw new Error('单人无尽房间暂不支持邀请玩家');
   if (!room) throw new Error('你当前不在可邀请玩家的房间中');
   if (room.status !== 'waiting') throw new Error('房间已经开始，不能再邀请玩家');
   if (!room.members?.has?.(Number(socket.user.id))) throw new Error('你不是当前房间成员');

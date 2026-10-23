@@ -232,6 +232,7 @@ function serializeState(view, decks = view?._v3Committed) {
 }
 
 function persistCommittedState(view) {
+  if (view._roomState?.endless) return;
   const state = serializeState(view, view._v3Committed);
   try {
     const json = JSON.stringify(state);
@@ -247,6 +248,16 @@ function defaultDeckForView(view) {
 }
 
 function initializeState(view, incomingDeck) {
+  if (view._roomState?.endless) {
+    view._deckTab = 'default';
+    view._v3Decks = cloneDeckMap();
+    view._v3Decks.default = normalizeDeck(view, incomingDeck);
+    view._v3Committed = cloneDeckMap(view._v3Decks);
+    view._selected = cloneDeck(view._v3Decks.default);
+    view._v3Filter = 'all'; view._v3Page = 0; view._activeSwapSlot = null;
+    view._v3SessionSnapshots = null; view._drawerOpen = false; view._deckControllerVersion = 4;
+    return;
+  }
   const stored = loadStoredState(view);
   const incoming = normalizeDeck(view, incomingDeck);
   const decks = cloneDeckMap(stored.decks);
@@ -287,6 +298,7 @@ function syncDraft(view) {
 }
 
 function commitDrafts(view) {
+  if (view._roomState?.endless) return;
   syncDraft(view);
   view._v3Committed = cloneDeckMap(view._v3Decks);
   persistCommittedState(view);
@@ -836,6 +848,15 @@ function bindController(view, root) {
         view._v3Page = 0;
         refresh(view, root);
       } else if (action === 'confirm') {
+        if (view._roomState?.endless) {
+          if (view._endlessSaving) return;
+          view._endlessSaving = true;
+          Promise.resolve().then(() => view._roomState.onSaveRunDeck?.([...view._selected]))
+            .then(() => { closeDrawer(view, root, { restore: false }); view._showToast?.(root, '本局战团已确认，永久战团不变'); })
+            .catch(error => view._showToast?.(root, error.message))
+            .finally(() => { view._endlessSaving = false; });
+          return;
+        }
         commitDrafts(view);
         closeDrawer(view, root, { restore: false });
         view._showToast?.(root, '当前战团已保存');

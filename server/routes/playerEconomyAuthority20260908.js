@@ -260,7 +260,7 @@ playerEconomyAuthorityRouter20260908.post('/inventory/use', async (req, res) => 
         await consumeItem(conn, userId, itemId, 1, requestedBound);
         await addCard(conn, userId, card.card_id);
         // 2026-10-09（用户要求）：开卡蛋要能看出「开出来是什么卡」，带上几级卡。
-        return { message: `获得卡牌「${card.card_name}（${Number(card.card_quality) || 1}级卡）」`, cardId: Number(card.card_id) };
+        return { message: `获得卡牌「${card.card_name}（${Number(card.card_quality) || 1}级卡）」`, cardId: Number(card.card_id), cards: [{ cardId: Number(card.card_id) }] };
       }
 
       if (fn === 1 && /礼盒/.test(showType)) {

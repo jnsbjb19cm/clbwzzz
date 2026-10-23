@@ -484,19 +484,73 @@ const SIDE_ROWS = [
   }],
 ];
 
-const SIDE_QUESTS = SIDE_ROWS.map(([name, goal, event, extra], index) => {
-  const { items, cards, ...rest } = extra || {};
-  return {
-    id: `sq${index + 1}`,
-    name, goal, event,
-    chapter: '支线委托',
-    desc: rest.desc || name,
-    exactReward: true,
-    ...rest,
-    ...(items ? { items: items.map((e) => it(e[0], e[1])) } : {}),
-    ...(cards ? { cards: cards.map((c) => (Array.isArray(c) ? card(c[0], c[1]) : card(c))) } : {}),
-  };
-});
+/**
+ * 2026-10-23（用户要求）：恢复 2026-10-06 的 4 条「秘境材料」支线（10-09 目录重写时被整组替换掉了）。
+ *  - 目标材料由悲伤密林 BOSS 掉落（首次通关 10 个，之后 70% 概率 3~8 个）；
+ *  - 领奖时提交材料（consumeItems，服务端校验数量不足会报错回滚）；
+ *  - 解锁条件用现目录里对应的主线「击败 BOSS」任务（mq53/55/57/59），不再重复加 4 条「讨伐」支线任务；
+ *  - id 追加在现有支线末尾（sq28~sq31），不移动 sq1~sq27，避免旧存档的已领取 id 错位；
+ *  - lifetimeItemId 让进度读「累计获得 + 背包现有」两侧，老玩家不用重新攒。
+ */
+const SIDE_MATERIAL_QUESTS = [
+  {
+    id: 'sq28', name: '以毒攻毒', goal: 50, event: 'item_gain',
+    desc: '收集50个多特的巫蛊。', arc: '秘境材料',
+    story: '我是卡尔医师！多特的毒术果然高明，但也不是无药可医。我们正在研究一种能抵御多特毒术的药物，眼下需要大量毒蛊做试验，想从里面找出以毒攻毒的路子。勇者，你愿意帮我们吗？当然，不会让你白跑一趟。',
+    requiresMain: 'mq53', itemId: QUEST_ITEM_IDS.bossMaterial.dot, lifetimeItemId: QUEST_ITEM_IDS.bossMaterial.dot,
+    consumeItems: [{ id: QUEST_ITEM_IDS.bossMaterial.dot, count: 50 }],
+    rewardProfile: 'side_social', rewardTier: 3, rewardTheme: 'boss', exactReward: true,
+    gold: 1200, exp: 600, cards: [75],
+    items: [{ id: QUEST_ITEM_IDS.dna[3], count: 3 }, { id: QUEST_ITEM_IDS.charm[3], count: 1 }, { id: QUEST_ITEM_IDS.bossMaterial.dot, count: 1 }],
+  },
+  {
+    id: 'sq29', name: '铠甲的研发', goal: 100, event: 'item_gain',
+    desc: '收集100个沃里尔的铠甲。', arc: '秘境材料',
+    story: '你好勇士，我是莱曼将军！据调查，沃里尔的战斗力之所以如此强大，是因为他身穿那件用神秘材料制作的铠甲。据说这种材料不光异常坚硬，还能散发一种神奇的力量，让人变得英勇善战。我们现在需要一批沃里尔的铠甲碎片用来研究，希望你能协助我们。',
+    requiresMain: 'mq55', itemId: QUEST_ITEM_IDS.bossMaterial.gravo, lifetimeItemId: QUEST_ITEM_IDS.bossMaterial.gravo,
+    consumeItems: [{ id: QUEST_ITEM_IDS.bossMaterial.gravo, count: 100 }],
+    rewardProfile: 'side_social', rewardTier: 3, rewardTheme: 'strengthen', exactReward: true,
+    gold: 1500, exp: 800,
+    items: [{ id: QUEST_ITEM_IDS.powder[3], count: 9 }, { id: QUEST_ITEM_IDS.charm[2], count: 1 }, { id: QUEST_ITEM_IDS.rerollStat, count: 1 }],
+  },
+  {
+    id: 'sq30', name: '海德的请求', goal: 100, event: 'item_gain',
+    desc: '收集100个安娜的冰晶。', arc: '秘境材料',
+    story: '年轻人，我是来自遥远国度的商人海德。我的国家正面临一场巨大的灾难，已经沉睡了百年的火山即将喷发，破坏力惊人，甚至将吞噬整个国家。据说这里有位名叫安娜的大魔法师，她提炼出的冰晶有神奇的降温作用，我国国王命我不惜一切代价获得它。',
+    requiresMain: 'mq57', itemId: QUEST_ITEM_IDS.bossMaterial.ice, lifetimeItemId: QUEST_ITEM_IDS.bossMaterial.ice,
+    consumeItems: [{ id: QUEST_ITEM_IDS.bossMaterial.ice, count: 100 }],
+    rewardProfile: 'side_social', rewardTier: 4, rewardTheme: 'boss', exactReward: true,
+    gold: 1500, exp: 800, cards: [77],
+    items: [{ id: QUEST_ITEM_IDS.dna[4], count: 3 }, { id: QUEST_ITEM_IDS.charm[4], count: 1 }],
+  },
+  {
+    id: 'sq31', name: '神秘的魔法', goal: 100, event: 'item_gain',
+    desc: '收集100个树妖的精元。', arc: '秘境材料',
+    story: '我是魔法师麦伦。咳咳，年纪大了，身体也大不如前，想让魔法能力再进一步，实在有些力不从心。我听说从树妖身上可以得到一种精元，不仅能让人重返年轻，还能让魔法功力大增。咳咳，年轻人，能帮我拿来一些吗？作为交换，我会教你一个强大的魔法技能。',
+    requiresMain: 'mq59', itemId: QUEST_ITEM_IDS.bossMaterial.forest, lifetimeItemId: QUEST_ITEM_IDS.bossMaterial.forest,
+    consumeItems: [{ id: QUEST_ITEM_IDS.bossMaterial.forest, count: 100 }],
+    rewardProfile: 'side_social', rewardTier: 5, rewardTheme: 'boss', exactReward: true,
+    gold: 2000, exp: 1000,
+    items: [{ id: QUEST_ITEM_IDS.dna[4], count: 4 }, { id: QUEST_ITEM_IDS.charm[4], count: 1 }, { id: QUEST_ITEM_IDS.bossSkillBook, count: 1 }],
+  },
+];
+
+const SIDE_QUESTS = [
+  ...SIDE_ROWS.map(([name, goal, event, extra], index) => {
+    const { items, cards, ...rest } = extra || {};
+    return {
+      id: `sq${index + 1}`,
+      name, goal, event,
+      chapter: '支线委托',
+      desc: rest.desc || name,
+      exactReward: true,
+      ...rest,
+      ...(items ? { items: items.map((e) => it(e[0], e[1])) } : {}),
+      ...(cards ? { cards: cards.map((c) => (Array.isArray(c) ? card(c[0], c[1]) : card(c))) } : {}),
+    };
+  }),
+  ...SIDE_MATERIAL_QUESTS,
+];
 
 // ==================== 日常 / 周常 / 成就 / 挑战 ====================
 // 2026-10-09：本次只重写主线与支线；日常、周常、成就、挑战沿用原目录。
@@ -557,11 +611,14 @@ const CHALLENGE_QUESTS=[
   q('cq2','愤怒的沃里尔','击败悲伤密林BOSS「愤怒的沃里尔」。','沃里尔的指挥非常出色，尽量多带治疗卡牌，防止他突破防线。',1,'boss_defeated',{requires:'cq1',bossId:'boss_gravo',bossDefeatId:'boss_gravo',...R('challenge_boss',3,'boss')}),
   q('cq3','疯狂的安娜','击败悲伤密林BOSS「疯狂的安娜」。','那些可恶的家伙，居然这么对待安娜……但现在不是哀悼的时候。勇士，请你制止住安娜疯狂的行为。',1,'boss_defeated',{requires:'cq2',bossId:'boss_ice',bossDefeatId:'boss_ice',...R('challenge_boss',4,'boss')}),
   q('cq4','树妖萝莉塔','击败悲伤密林BOSS「树妖萝莉塔」。','萝莉塔的根会缠住你的前排。带一张清场的卡，别让它长起来。',1,'boss_defeated',{requires:'cq3',bossId:'boss_forest',bossDefeatId:'boss_forest',...R('challenge_boss',5,'boss')}),
-  q('cq5','狂暴的刀牙','击败海底神殿BOSS「狂暴的刀牙」。','它能把倒下的兵整队拉回来！别给它复苏的机会，一波压死！',1,'boss_defeated',{requiresMain:'mf01',bossId:'boss_shark',bossDefeatId:'boss_shark',...R('challenge_boss',4,'boss')}),
-  q('cq6','龙虾战士','击败海底神殿BOSS「龙虾战士」。','它一突袭就能咬穿前排！手里留一张卡，随时补位！',1,'boss_defeated',{requiresMain:'mf01',bossId:'boss_lobster',bossDefeatId:'boss_lobster',...R('challenge_boss',4,'boss')}),
-  q('cq7','失控的蓝贝贝','击败海底神殿BOSS“失控的蓝贝贝”。','它会开海之门放小怪，还会布幻境！先堵住门口，别被幻影骗了！',1,'boss_defeated',{requiresMain:'mf01',bossId:'boss_bluebaby',bossDefeatId:'boss_bluebaby',...R('challenge_boss',4,'boss')}),
-  q('cq8','龟老师','击败海底神殿BOSS“龟老师”。','铁壳功一开，输出全白打！等它技能间隙再压上去！',1,'boss_defeated',{requiresMain:'mf01',bossId:'boss_turtle',bossDefeatId:'boss_turtle',...R('challenge_boss',5,'boss')}),
-  q('cq9','琴音','击败海底神殿BOSS“人鱼公主琴音”。','她的歌声会让你的卡停手！关键卡别一次全摆上去！',1,'boss_defeated',{requiresMain:'mf01',bossId:'boss_princess',bossDefeatId:'boss_princess',...R('challenge_boss',5,'boss',{items:[{id:CARD_EGG_IDS[5],count:1}]})}),
+  // 2026-10-23：海底神殿 5 条原先写 requiresMain:'mf01'（旧目录的「主线终章」id，重写后不存在）——
+  // questComplete 对不存在的任务返回 true，导致这 5 条从开局就可见。旧 id 对应现目录的主线终章
+  // 「大混战」mq49，改为 mq49：完成大混战后再解锁海底神殿挑战。
+  q('cq5','狂暴的刀牙','击败海底神殿BOSS「狂暴的刀牙」。','它能把倒下的兵整队拉回来！别给它复苏的机会，一波压死！',1,'boss_defeated',{requiresMain:'mq49',bossId:'boss_shark',bossDefeatId:'boss_shark',...R('challenge_boss',4,'boss')}),
+  q('cq6','龙虾战士','击败海底神殿BOSS「龙虾战士」。','它一突袭就能咬穿前排！手里留一张卡，随时补位！',1,'boss_defeated',{requiresMain:'mq49',bossId:'boss_lobster',bossDefeatId:'boss_lobster',...R('challenge_boss',4,'boss')}),
+  q('cq7','失控的蓝贝贝','击败海底神殿BOSS“失控的蓝贝贝”。','它会开海之门放小怪，还会布幻境！先堵住门口，别被幻影骗了！',1,'boss_defeated',{requiresMain:'mq49',bossId:'boss_bluebaby',bossDefeatId:'boss_bluebaby',...R('challenge_boss',4,'boss')}),
+  q('cq8','龟老师','击败海底神殿BOSS“龟老师”。','铁壳功一开，输出全白打！等它技能间隙再压上去！',1,'boss_defeated',{requiresMain:'mq49',bossId:'boss_turtle',bossDefeatId:'boss_turtle',...R('challenge_boss',5,'boss')}),
+  q('cq9','琴音','击败海底神殿BOSS“人鱼公主琴音”。','她的歌声会让你的卡停手！关键卡别一次全摆上去！',1,'boss_defeated',{requiresMain:'mq49',bossId:'boss_princess',bossDefeatId:'boss_princess',...R('challenge_boss',5,'boss',{items:[{id:CARD_EGG_IDS[5],count:1}]})}),
   q('cq10','战争与和平','累计完成5场零阵亡战斗。','大家都要活下去啊。',5,'battle_nodeath',{cumulativeKey:'totalNoDeath',...R('challenge',3,'adventure')}),
   q('cq11','「闪」击战','完成3场120秒内结束的胜利。','两分钟？！我突破防线都要五分钟，你怎么做到的？？？',3,'battle_duration',{maxDuration:120,...R('challenge',4,'adventure')}),
   q('cq12','首领猎手','累计击败8次BOSS。','今天要「特殊照顾」哪位呢？',8,'boss_defeated',{cumulativeKey:'totalBossDefeats',...R('challenge',5,'boss',{items:[{id:CARD_EGG_IDS[4],count:1},{id:QUEST_ITEM_IDS.reverse,count:2}]})}),
@@ -611,6 +668,25 @@ const LEVEL_REWARDS = Array.from(
 for(const [category,quests] of Object.entries(QUEST_GROUPS)){
   quests.forEach((quest)=>Object.assign(quest,balanceQuestReward(quest,category)));
 }
+
+// 2026-10-23：前置引用体检 —— 2026-10-09 重写时海底神殿挑战写成了旧目录的 'mf01'，
+// questComplete() 对不存在的任务返回 true，导致这 5 条从开局就可见（链路上的静默断点）。
+// 这里在模块加载时把死引用登记进 CATALOG_PROBLEMS，验证脚本断言它为空，以后同类问题会直接报出来。
+const requirementIdsOf = (requires) => (!requires ? [] : (Array.isArray(requires) ? requires : [requires]));
+(()=>{
+  for(const [category,quests] of Object.entries(QUEST_GROUPS)){
+    const owned=new Set(quests.map((quest)=>String(quest.id)));
+    const mainIds=new Set(QUEST_GROUPS.main.map((quest)=>String(quest.id)));
+    for(const quest of quests){
+      for(const id of requirementIdsOf(quest.requires)){
+        if(!owned.has(String(id))) CATALOG_PROBLEMS.push(`requires:${category}:${quest.id}->${id}`);
+      }
+      for(const id of requirementIdsOf(quest.requiresMain)){
+        if(!mainIds.has(String(id))) CATALOG_PROBLEMS.push(`requiresMain:${category}:${quest.id}->${id}`);
+      }
+    }
+  }
+})();
 
 export {QUEST_GROUPS,ACHIEVEMENT_QUESTS,CATEGORIES,LEVEL_REWARDS};
 

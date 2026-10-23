@@ -38,6 +38,30 @@ const THEMES = [
   { name: '纵深火力', plants: [9, 16, 18, 25, 70], monsters: [6, 27, 28, 48, 63] },
   { name: '混编精锐', plants: [17, 21, 36, 54, 58], monsters: [23, 31, 35, 45, 75] },
 ];
+export const RUN_EVENTS = Object.freeze({
+  spring: { kind: 'reward', name: '林间泉水', text: '树根之间涌出清泉。带走补给，或让受损的基地得到休整。', choices: [
+    { id: 'spring-heal', title: '就地休整', detail: '基地恢复 250 生命', heal: 250 },
+    { id: 'spring-gold', title: '收集沿途补给', detail: '获得 45 远征币', gold: 45 }] },
+  cache: { kind: 'reward', name: '失落的军需箱', text: '封条已经松动，里面的物资只能带走一份。', choices: [
+    { id: 'cache-bark', title: '取走古树护符', detail: '本局卡牌基础生命 +15% · 占用 1 个道具位', item: 'bark' },
+    { id: 'cache-gold', title: '取走钱袋', detail: '获得 75 远征币', gold: 75 }] },
+  caravan: { kind: 'neutral', name: '迷途商队', text: '商队愿意用一件货物换取路费，你也可以不做交易。', choices: [
+    { id: 'caravan-pack', title: '购买补给包', detail: '花费 20 币；开战双资源 +6，基础攻击 −5%', cost: 20, item: 'pack' },
+    { id: 'caravan-leave', title: '交换路讯后离开', detail: '不获得奖励，也不损失资产' }] },
+  shrine: { kind: 'neutral', name: '净化石碑', text: '石碑可以抹去一次不利印记。已有的其他道具不受影响。', choices: [
+    { id: 'shrine-cleanse', title: '净化一件负面道具', detail: '花费 30 币；移除最早获得的荆棘诅咒或疲惫印记', cost: 30, cleanse: true },
+    { id: 'shrine-leave', title: '保持现状', detail: '不发生变化' }] },
+  ruins: { kind: 'neutral', name: '回声遗迹', text: '深入遗迹可能找到财富，也可能被落石击中。结果在本节点固定，刷新不会重抽。', choices: [
+    { id: 'ruins-risk', title: '深入搜寻', detail: '60% 获得 90 币；40% 基地损失 120 生命（不致死）', risk: true },
+    { id: 'ruins-safe', title: '只搜寻入口', detail: '稳妥获得 15 远征币', gold: 15 }] },
+  bridge: { kind: 'negative', name: '断裂吊桥', text: '回头的路已被封住。修桥需要材料，强行通过则会损伤基地。', choices: [
+    { id: 'bridge-pay', title: '购买木料修桥', detail: '花费 25 远征币，无其他损失', cost: 25 },
+    { id: 'bridge-cross', title: '强行通过', detail: '基地损失 150 生命（不致死）', damage: 150 }] },
+});
+
+export function runEventPresentation(run) {
+  return RUN_EVENTS[run.event?.variant] || { name: EVENT_LABELS[run.event?.kind], text: '选择一项行动；确认后才会结算收益或代价。' };
+}
 const clamp = (n, a, b) => Math.max(a, Math.min(b, n));
 function requireRule(value, message) { if (!value) throw new Error(message); }
 const copy = value => JSON.parse(JSON.stringify(value));
@@ -208,6 +232,8 @@ export function chooseRunRoute(run, id) {
   let kind = route.kind;
   if (kind === 'random') { const r = random(); kind = r < .45 ? 'reward' : r < .8 ? 'neutral' : 'negative'; }
   next.event = { id, kind, random: route.kind === 'random', bought: [] };
+  const variants = Object.entries(RUN_EVENTS).filter(([, event]) => event.kind === kind).map(([key]) => key);
+  if (variants.length && random() < .75) next.event.variant = pick(variants, random);
   next.phase = kind === 'battle' ? 'ready' : kind === 'swap' ? 'camp' : 'event';
   next.swapsLeft = kind === 'swap' ? 1 : 0;
   log(next, `${route.title}${route.kind === 'random' ? '揭晓：' + EVENT_LABELS[kind] : ''}`);
@@ -217,6 +243,10 @@ function finishEvent(run) { run.step++; run.sinceCombat++; run.event = null; run
 export function runEventChoices(run) {
   requireRule(run.phase === 'event', '当前没有可处理的事件');
   const full = run.items.length >= 12;
+  const variant = RUN_EVENTS[run.event.variant];
+  if (variant) return variant.choices.map(choice => ({ ...choice, disabled:
+    (choice.cost > run.gold) || (choice.item && full) || (choice.heal && run.baseHp >= run.baseMaxHp)
+    || (choice.cleanse && !run.items.some(id => ['thorn','fatigue'].includes(id))) }));
   switch (run.event.kind) {
     case 'reward': return [{ id: 'gold', title: '获得 60 远征币' }, { id: 'flask', title: '获得未知药瓶', disabled: full }, { id: 'card', title: '获得一张本局援军卡', disabled: run.roster.length >= 60 }];
     case 'neutral': return [{ id: 'heal', title: '花 25 远征币，恢复基地 20% 生命', disabled: run.gold < 25 || run.baseHp >= run.baseMaxHp }, { id: 'leave', title: '原路离开（无变化）' }];
@@ -234,6 +264,22 @@ export function runEventChoices(run) {
 export function resolveRunEvent(run, id, availableCards) {
   const choice = runEventChoices(run).find(c => c.id === id); requireRule(choice && !choice.disabled, '该选项不可用');
   const next = copy(run);
+  if (RUN_EVENTS[run.event.variant]) {
+    if (choice.cost) next.gold -= choice.cost;
+    if (choice.gold) next.gold += choice.gold;
+    if (choice.heal) next.baseHp = Math.min(next.baseMaxHp, next.baseHp + choice.heal);
+    if (choice.damage) next.baseHp = Math.max(1, next.baseHp - choice.damage);
+    if (choice.item) addItem(next, choice.item);
+    if (choice.cleanse) next.items.splice(next.items.findIndex(id => ['thorn','fatigue'].includes(id)), 1);
+    if (choice.risk) {
+      const won = runRandom(`${run.seed}:${run.step}:ruins`)() < .6;
+      if (won) next.gold += 90;
+      else next.baseHp = Math.max(1, next.baseHp - 120);
+      log(next, won ? '遗迹搜寻：获得 90 远征币' : '遗迹落石：基地损失 120 生命（保底 1 点）');
+    }
+    log(next, `${RUN_EVENTS[run.event.variant].name} · ${choice.title}：${choice.detail}`);
+    return finishEvent(next);
+  }
   if (choice.cost) next.gold -= choice.cost;
   if (id === 'card') { requireRule(availableCards.length, '暂无援军卡'); addCard(next, pick(availableCards, runRandom(`${next.seed}:card:${next.step}`))); log(next, '援军卡加入储备，可在换卡事件上阵。'); }
   else if (id === 'gold') next.gold += 60;

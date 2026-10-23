@@ -1,5 +1,5 @@
 import { CardDatabase } from '../core/CardDatabase.js';
-import { nightmareGoldExpMult } from '../data/NightmareReward20261011.js';
+import { nightmareGoldExpMult, scaleRewardsForNightmare } from '../data/NightmareReward20261011.js';
 import { installClassicCardTooltip } from './ClassicCardTooltip.js';
 import { ItemDatabase, InventoryStore } from '../core/ItemDatabase.js';
 import { CardInventoryStore } from '../core/CardInventoryStore.js';
@@ -262,6 +262,13 @@ export class App {
     if (goldEl) goldEl.textContent = this.player.gold;
     if (gemEl) gemEl.textContent = this.player.gem;
     if (levelEl) levelEl.textContent = `Lv.${this.player.level}`;
+    // 2026-10-23：等级变化 → 任务系统（主线「升至10级」/支线等级补给/等级成就）。
+    // 放在 updatePlayerDisplay 里，单机结算、服务端快照、任务领奖加经验等所有来源都能覆盖。
+    const level = Math.max(1, Math.floor(Number(this.player.level) || 1));
+    if (level > Number(this._questLevelReported || 0)) {
+      this._questLevelReported = level;
+      try { QuestView.dispatch('level', { level }); } catch (error) { console.warn('[quest] 等级同步失败', error); }
+    }
     this.savePlayer();
   }
 

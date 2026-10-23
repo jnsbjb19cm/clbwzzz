@@ -1,6 +1,6 @@
 import { getSocketUser, db } from '../database.js';
 import { assertAdventureAccess } from '../domain/AdventureAccess.js';
-import { normalizeEndlessRoomRun } from '../domain/EndlessRoomRun.js';
+import { normalizeEndlessRoomRun, updateEndlessRoomDeck } from '../domain/EndlessRoomRun.js';
 import { readCardInventory } from '../routes/cardInventoryPersistence20260906.js';
 import { buildEndlessEncounter } from '../../src/data/EndlessAdventureRules.js';
 import { verifyToken } from '../middleware/auth.js';
@@ -119,6 +119,18 @@ export function registerSocketHandlers(io) {
         io.emit('rooms:list', roomManager.listRooms());
         io.to(`room:${room.id}`).emit('room:snapshot', room);
         ackOk(ack, { room });
+      } catch (error) { ackError(ack, error); }
+    });
+
+    socket.on('room:endless-deck', async (payload = {}, ack) => {
+      try {
+        const room = roomManager.getRoomByUser(userId);
+        if (!room?.endless || room.status !== 'waiting' || room.endless.attempt !== payload.attempt) throw new Error('当前不能调整无尽战团');
+        const cards = (await readCardInventory(userId))?.cards ?? [];
+        // Recheck after asynchronous inventory access: start/leave may have happened meanwhile.
+        if (roomManager.getRoomByUser(userId) !== room || room.status !== 'waiting') throw new Error('房间状态已变化');
+        room.endless = updateEndlessRoomDeck(room.endless, payload.entries, getPvpCardDb(), cards);
+        ackOk(ack, { endless: room.endless });
       } catch (error) { ackError(ack, error); }
     });
 

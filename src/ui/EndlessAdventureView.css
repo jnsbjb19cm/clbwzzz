@@ -153,5 +153,77 @@
   .endless-page button{padding:8px 12px;min-height:36px}
   .endless-page>.endless-bottom aside{max-height:none}
 }
-.endless-room-ready { max-width: 1050px; margin: 40px auto; padding: 28px; }
-.endless-room-ready button { margin: 16px 12px 0 0; }
+#lobby-room-inside[data-endless-preparation] .deck-tab:not([data-tab="default"]),
+#lobby-room-inside[data-endless-preparation] .dice-btn,
+#lobby-room-inside[data-endless-preparation] .team-btn,
+#lobby-room-inside[data-endless-preparation] .skill-btn,
+#lobby-room-inside[data-endless-preparation] .room-lobby-invite-btn-20260906 { display: none !important; }
+/* Dual journeys: same controls, distinct trial / expedition atmosphere. */
+.endless-page{--ink:#263b32;--accent:#638464;--accent-dark:#2e4d3d;--paper:#f6f2e3;background:radial-gradient(ellipse at 85% 0,#afc4a880,transparent 55%),#e9ecdf;color:var(--ink);padding-top:24px}
+.endless-trial{--accent:#5f8096;--accent-dark:#304b60;background:radial-gradient(ellipse at 85% 0,#b8c8d8,transparent 60%),#e8ebeb}
+.endless-header{min-height:116px;border-bottom:1px solid #d9c896;margin-top:-24px;margin-bottom:18px;background:linear-gradient(90deg,#183a2bf5,#183a2b94),url('/battle/background/backforest.png') center 45%/cover}
+.endless-trial .endless-header{background:linear-gradient(95deg,#20394ff5,#20394f95),url('/battle/background/backforest.png') center 45%/cover}
+.endless-header h1{font-size:30px;letter-spacing:5px}
+.endless-tabs{border:0;margin:0 0 12px;padding:0;gap:8px}
+.endless-tabs button{background:#ffffff70;border-color:#b7c1b5}
+.endless-tabs .selected{background:var(--accent-dark);border-color:var(--accent-dark)}
+.endless-meta{display:flex;align-items:center;flex-wrap:wrap;gap:10px;font-size:11px;color:#65756c;margin-bottom:18px}
+.endless-meta>span{border-right:1px solid #a8b5a8;padding-right:10px}
+.endless-meta details{margin-left:auto;max-width:550px}
+.endless-meta summary,.endless-loadout summary{cursor:pointer}
+.endless-meta p{margin:10px 0 0;padding:12px;background:#fff9}
+.endless-journey{display:flex;align-items:center;justify-content:space-between;gap:28px;padding:22px 26px;border:1px solid #fff9;border-radius:12px;background:var(--accent-dark);color:#f6efd7;box-shadow:0 8px 20px #263b3212}
+.endless-journey>div{display:grid;grid-template-columns:auto auto;gap:5px 18px;align-items:center}
+.endless-journey small{grid-column:1/-1;color:#c1d0c9;letter-spacing:2px;font-size:11px}
+.endless-journey strong{font-size:29px;font-weight:600}
+.endless-journey>div>span{font-size:12px;border:1px solid #ffffff40;padding:5px 9px;border-radius:20px}
+.endless-journey ol{display:flex;gap:18px;list-style:none;margin:0;padding:0}
+.endless-journey li{font-size:11px;display:flex;gap:7px;align-items:center;color:#b8c7c2}
+.endless-journey li b{display:grid;place-items:center;width:24px;height:24px;border-radius:50%;border:1px solid #ffffff35;font-weight:400}
+.endless-journey .current{color:#ffe5a2}
+.endless-journey .current b{background:#e6c67d;color:#263b32;border-color:#e6c67d}
+.endless-latest{font-size:12px;color:#66776b;padding:9px 4px;margin:0;overflow-wrap:anywhere}
+.endless-stats{border:0;gap:1px;background:#b9c6bc;border-radius:8px;margin:8px 0 18px}
+.endless-stats span{background:#f7f8f0;color:var(--ink);font-size:12px;padding:11px 14px}
+.endless-start-grid article,.endless-panel{background:linear-gradient(135deg,#fffef6,#f1f2e7);border:1px solid #bfcabc;border-top:3px solid var(--accent);box-shadow:0 4px 15px #233e2b0b;border-radius:10px}
+.endless-start-grid{gap:16px}
+.endless-start-grid article{display:flex;flex-direction:column}
+.endless-start-grid article>button{align-self:flex-start;margin-top:auto}
+.endless-intro h2{font-size:29px;letter-spacing:1px}
+.endless-intro p{color:#65756c;font-size:14px}
+.endless-start-grid .endless-cards{gap:7px;margin:8px 0 20px}
+.endless-start-grid .endless-card{width:80px}
+.endless-start-grid .endless-card img{width:62px;height:66px}
+.endless-routes{gap:16px}
+.endless-routes button{min-height:172px;border:1px solid #b3c3b4;border-top:4px solid #8b9e79;border-radius:10px;background:linear-gradient(125deg,#fffef3,#e1e9d7)}
+.endless-routes button:before{content:'◇';font-size:28px;color:var(--accent);line-height:1}
+.endless-routes .event-battle:before{content:'⚔'}
+.endless-routes .event-random:before{content:'?'}
+.endless-routes .event-shop:before{content:'¤'}
+.endless-routes strong{font-size:23px;letter-spacing:1px}
+.endless-event>small,.endless-camp>small{display:block;letter-spacing:2px;color:#71836c;margin-bottom:10px}
+.endless-event>p{max-width:760px;color:#607161}
+.endless-event-actions button{display:flex;flex-direction:column;gap:8px;padding:18px;margin:0;background:#fffdf3;border-color:#c3cbb9}
+.endless-event-actions strong{font-size:16px}
+.endless-event-actions small{font-size:12px;color:#62715f;font-weight:400}
+.endless-event-actions em{font-size:11px;font-style:normal}
+.endless-event-actions [aria-pressed=true]{background:#f9ebc7;border-color:#ac8b40;box-shadow:inset 0 0 0 1px #ac8b40}
+.endless-confirm{position:sticky;bottom:12px;z-index:4;display:flex;align-items:center;gap:14px;margin:18px 0;padding:18px 22px;background:#fff8e8;border:1px solid #ba9957;border-radius:10px;box-shadow:0 6px 24px #1f332d30}
+.endless-confirm>div{flex:1}
+.endless-confirm small{display:block;color:#8b764e;font-size:11px;margin-bottom:5px}
+.endless-confirm strong{display:block;font-size:17px}
+.endless-confirm p{font-size:12px;color:#687057;margin:5px 0 0}
+.endless-confirm button{flex-shrink:0}
+.endless-camp-summary{display:flex;align-items:center;gap:18px;padding:20px;margin:20px 0;background:#e6eddf;border-radius:8px}
+.endless-camp-summary strong{color:var(--accent-dark);font-size:22px}
+.endless-camp-summary span{font-size:12px;color:#697963}
+.endless-loadout{margin:22px 0;border:1px solid #b7c5b4;border-radius:8px;background:#f4f6eb}
+.endless-loadout>summary{padding:16px 20px;font-size:13px;color:var(--accent-dark)}
+.endless-loadout .endless-bottom{margin:0;border:0;border-top:1px solid #c9d3bf;border-radius:0;background:transparent}
+.endless-page .primary{background:linear-gradient(#f7df96,#e7c16a);border-color:#bda05f}
+.endless-room-note{position:absolute;left:31%;top:5px;max-width:58%;padding:5px 10px;border-radius:5px;background:#223b30e8;color:#fff0bb;font-size:12px;z-index:12;pointer-events:none}
+@media(max-width:1000px){.endless-journey{flex-wrap:wrap;gap:15px}.endless-journey ol{flex-wrap:wrap;gap:12px}.endless-room-note{font-size:10px;left:28%}}
+@media(max-width:600px){.endless-journey{padding:16px}.endless-journey strong{font-size:24px}.endless-journey ol{gap:9px}.endless-journey li{font-size:10px}.endless-journey li b{width:19px;height:19px}.endless-meta details{margin-left:0}.endless-confirm{padding:12px;flex-wrap:wrap;bottom:8px;gap:9px}.endless-confirm>div{flex-basis:100%}.endless-confirm button{flex:1}.endless-camp-summary{align-items:flex-start;flex-direction:column;gap:10px}.endless-start-grid .endless-card{width:72px}.endless-intro h2{font-size:24px}}
+@media(max-height:760px){.endless-header{min-height:86px;padding-top:16px;padding-bottom:16px}.endless-journey{padding:15px 20px}.endless-journey strong{font-size:25px}.endless-meta{margin-bottom:12px}}
+/* On narrow screens the confirmation must not cover the selected event card. */
+@media(max-width:600px){.endless-confirm{position:static}}

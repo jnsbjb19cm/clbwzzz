@@ -159,6 +159,7 @@ function loadDeckStates() {
 }
 
 function saveDeckStates(view) {
+  if (view._roomState?.endless) return;
   try {
     const payload = {};
     for (const tab of DECK_TABS) payload[tab] = cloneDeck(view._deckSelections?.[tab]);
@@ -167,7 +168,7 @@ function saveDeckStates(view) {
 }
 
 function initializeDeckStates(view, initialDeck) {
-  const stored = loadDeckStates();
+  const stored = view._roomState?.endless ? { default: initialDeck } : loadDeckStates();
   view._deckSelections = Object.fromEntries(
     DECK_TABS.map((tab) => [tab, normalizeDeck(view, stored[tab])]),
   );

@@ -361,7 +361,7 @@ function installDeckRenderGuard() {
 
   function renderWithDeckGroupGuard(root, options = {}) {
     const result = previousRender.call(this, root, options);
-    if (!options.roomState) return result;
+    if (!options.roomState || options.roomState.endless) return result;
     // 2026-09-12：玩家亲手点过战团（且点的那组就是他这次要编辑的），后续房间渲染
     // 不许再用房间/记住的组覆盖他 —— 否则"切到战团2，又被拉回默认并显示默认卡组的牌"。
     const picked = this.__deckTabPicked20260912;

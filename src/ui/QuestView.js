@@ -162,6 +162,12 @@ export class QuestView{
     let changed=false;
     const completed=[];
     const extra=state._extra||{};
+    // 2026-10-23：升级事件把最新等级同步给任务系统（主线「升至10级」/支线等级成长补给/等级成就
+    // 之前只有打开任务面板才会更新 _lastPlayerLevel，导致升级后任务徽章要等面板刷新才亮）。
+    if(event==='level'){
+      const level=Math.max(1,Math.min(MAX_PLAYER_LEVEL,Math.floor(Number(data?.level)||0)));
+      if(level>Number(state._lastPlayerLevel||0)){state._lastPlayerLevel=level;changed=true;}
+    }
     if(event==='kill_enemy')extra.totalKills=(extra.totalKills||0)+dataCount(data);
     if(event==='battle_complete')extra.totalBattles=(extra.totalBattles||0)+dataCount(data);
     if(event==='battle_win')extra.totalBattleWins=(extra.totalBattleWins||0)+dataCount(data);
@@ -311,6 +317,12 @@ export class QuestView{
   }
   static hasClaimableReward(playerLevel = 1) {
     const state = loadState();
+    // 2026-10-23：徽章轮询时也把玩家等级同步进来，避免升级后要打开任务面板才刷新等级类任务。
+    const level = Math.max(1, Math.floor(Number(playerLevel) || 1));
+    if (level > Number(state._lastPlayerLevel || 0)) {
+      state._lastPlayerLevel = level;
+      saveState(state);
+    }
     syncCumulativeProgress(state, ownedItemCount);
     for (const [category, quests] of Object.entries(QUEST_GROUPS)) {
       if (quests.some(q => requirementsMet(state, category, q)

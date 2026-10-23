@@ -1,4 +1,5 @@
 import { CoopBossBattle } from './CoopBossBattle.js';
+import { invalidateAuthoritySnapshot } from './AuthorityPerformance20260905.js';
 const { createEndlessBattle } = await import('../../src/battle/EndlessBattleAdapter.js');
 
 // The normal multiplayer authority and snapshot protocol, with one owner and
@@ -42,12 +43,14 @@ export class EndlessRoomBattle extends CoopBossBattle {
       if (!await this.engine.deploy(lane, col, index)) throw new Error(this.engine.lastDeployError || '冷却、资源或位置不允许部署');
       const units = this.engine.units.filter(unit => !before.has(unit) && unit.team === 'player');
       for (const unit of units) unit.pvpOwnerUserId = this.ownerId;
+      invalidateAuthoritySnapshot(this);
       return { unit: units[0] ? this.publicUnit(units[0]) : null, resources: this.publicResources(userId) };
     } finally { this.deployPending = false; }
   }
   tick(dt) {
     if (this.status !== 'playing') return;
     this.engine.tick(Math.max(0, Math.min(.2, Number(dt) || 0)));
+    invalidateAuthoritySnapshot(this);
     if (this.engine.status !== 'playing') {
       this.status = 'finished';
       this.winner = this.engine.status === 'win' ? 'blue' : 'red';

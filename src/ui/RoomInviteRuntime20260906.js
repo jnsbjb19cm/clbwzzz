@@ -84,7 +84,7 @@ async function openInvitePanel(view) {
 }
 
 function ensureInviteButton(view) {
-  if (!view?.room || view.room.status !== 'waiting') return;
+  if (!view?.room || view.room.endless || view.room.status !== 'waiting') return;
   const roomRoot = view.root?.querySelector?.('.game-room.room-exact, .game-room');
   if (!roomRoot || roomRoot.querySelector('.room-lobby-invite-btn-20260906')) return;
 

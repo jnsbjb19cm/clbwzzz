@@ -437,6 +437,7 @@ export function installAccountDeckMirror20260911() {
   globalThis[ACCOUNT_MIRROR_FLAG] = true;
   const previousRender = DeckSelectView.prototype.render;
   DeckSelectView.prototype.render = function renderWithAccountDeckMirror(root, options = {}) {
+    if (options.roomState?.endless) return previousRender.call(this, root, options);
     try {
       const fixed = mirrorAccountDecksToLocal20260911(options.cardInventory, options.db);
       if (fixed > 0) {

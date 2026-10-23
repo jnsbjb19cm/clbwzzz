@@ -38,6 +38,7 @@ function markSnapshotDirty(battle) {
   battle.__authorityPerfRevision20260905 = (battle.__authorityPerfRevision20260905 ?? 0) + 1;
   battle.__authorityPerfSnapshot20260905 = null;
 }
+export { markSnapshotDirty as invalidateAuthoritySnapshot };
 
 function patchBattleClass(BattleClass) {
   const proto = BattleClass?.prototype;

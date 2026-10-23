@@ -153,6 +153,7 @@ function installDeckGroupRuntime() {
 
   const originalDeckRender = DeckSelectView.prototype.render;
   DeckSelectView.prototype.render = function renderDeckGroups(root, options = {}) {
+    if (options.roomState?.endless) return originalDeckRender.call(this, root, options);
     const roomOwner = globalThis.__clbwzDeckRoomView20260907 ?? null;
     const roomState = options.roomState
       ? { ...options.roomState }

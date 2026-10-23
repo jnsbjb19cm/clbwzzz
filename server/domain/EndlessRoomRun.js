@@ -41,5 +41,33 @@ export function normalizeEndlessRoomRun(input, db, ownedCards = []) {
   return { version: ENDLESS_VERSION, mode: input.mode, seed: input.seed, attempt: input.attempt, phase: 'battle',
     floor: input.floor, step: input.step, battles: input.battles, cleared: input.cleared,
     baseHp: input.baseHp, baseMaxHp: 1000, items: [...input.items], contracts: [...(input.contracts ?? [])],
-    bounty: input.bounty ?? null, roster, deck: [...input.deck] };
+    bounty: input.bounty ?? null, roster, deck: [...input.deck],
+    preparation: { initial: input.mode === 'trial' && input.cleared === 0,
+      swapsLeft: input.mode === 'trial' && input.cleared === 0 ? 10
+        : Math.min(1, Math.max(0, Math.floor(Number(input.preparation?.swapsLeft) || 0))) } };
+}
+
+// Only selections are accepted here: clients cannot replace encounter/modifier data.
+export function updateEndlessRoomDeck(run, entries, db, ownedCards = []) {
+  if (!Array.isArray(entries) || !entries.length || entries.length > 10) throw new Error('请选择 1–10 张卡牌');
+  const selected = entries.map(entry => {
+    const existing = run.roster.find(c => c.uid === entry?.uid);
+    if (existing) return existing;
+    if (run.mode !== 'trial' || !/^bag:\d+$/.test(entry?._ownedKey || '')) throw new Error('请选择本局储备中的卡牌');
+    const owned = ownedCards.find(c => Number(c.slotIndex) === Number(entry._ownedKey.slice(4)));
+    if (!owned || (owned.expiresAt && owned.expiresAt <= Date.now())) throw new Error('背包卡牌已变化，请重新进入准备房间');
+    return { uid: `owned-${owned.slotIndex}-${owned.cardId}`, cardId: owned.cardId, _ownedKey: entry._ownedKey };
+  });
+  const keys = selected.map(c => c._ownedKey || c.uid);
+  if (new Set(keys).size !== keys.length) throw new Error('同一张卡不能重复上阵');
+  const oldKeys = run.deck.map(uid => { const c = run.roster.find(c => c.uid === uid); return c._ownedKey || c.uid; });
+  const changed = keys.filter(key => !oldKeys.includes(key)).length;
+  const permission = run.preparation ?? { initial: false, swapsLeft: 0 };
+  if (!permission.initial && selected.length !== run.deck.length) throw new Error('途中整备只能替换卡牌，不能增减卡槽');
+  if (!permission.initial && changed > permission.swapsLeft) throw new Error(`本次整备剩余 ${permission.swapsLeft} 次换卡机会`);
+  // Trial pools come from the live bag; expedition reserves must be retained.
+  const roster = run.mode === 'trial' ? selected : run.roster;
+  const normalized = normalizeEndlessRoomRun({ ...run, roster, deck: selected.map(c => c.uid) }, db, ownedCards);
+  normalized.preparation = { ...permission, swapsLeft: permission.initial ? 10 : permission.swapsLeft - changed };
+  return normalized;
 }

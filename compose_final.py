@@ -17,7 +17,7 @@ def checker(size, cell=32):
     return im
 
 def load_records(anim):
-    d=WORK/"cutouts_final2"/anim
+    d=WORK/("cutouts_attack_68/attack" if anim=="attack" else "cutouts_v13/idle")
     recs=json.loads((d/"frames.json").read_text(encoding='utf-8'))
     return d,recs
 
@@ -115,7 +115,7 @@ readme=f'''玉米炮手 精灵图集（透明 PNG）
 抠图范围：只保留主体（脚下三片玉米叶、身上两片高叶、玉米果实及叶间下沿、眼睛）；
 去除背景、青绿色底座/水花、飞行的玉米炮弹、场景杂物。
 
-攻击来源：1.60-3.00s 中主体无遮挡的帧（原片 0-1.60s 是编辑器/空白/残影，2.30-2.70s 炮弹遮挡主体，均未纳入）。
+攻击来源：6.00-8.00s 的 120 帧完整攻击动作，包含蓄力、蓝色玉米炮弹出现、飞过主体并离开的全过程。
 待机来源：7.90-9.90s 的完整左右摇摆周期（120帧）。
 '''
 (OUT/"使用说明.txt").write_text(readme,encoding='utf-8-sig')
